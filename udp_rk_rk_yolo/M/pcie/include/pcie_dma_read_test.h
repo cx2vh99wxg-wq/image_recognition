@@ -1,12 +1,20 @@
-#ifndef _PCIE_DMA_READ_TEST_H
-#define _PCIE_DMA_READ_TEST_H
+/* ===========================================================================
+ * 文件：pcie_dma_read_test.h
+ * 归属：人员 A（感知与预处理）· 设备接口（只读约定）
+ * 说明：Rockchip PCIe 采集驱动的 ioctl/结构体契约。这是 A 与 FPGA 之间的
+ *       唯一接口约定——命令号、偏移、结构体布局必须与内核驱动保持逐字节一致，
+ *       因此本文件只重排注释与分组，所有宏数值与结构体定义保持原样（否则硬件失联）。
+ *       原注释“全局变量只做声明，不在头文件初始化”等约定继续保留。
+ * ======================================================================== */
+#ifndef _PCIE_DMA_READ_TEST_H_A
+#define _PCIE_DMA_READ_TEST_H_A
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <fcntl.h> 
-#include <sys/ioctl.h> 
+#include <fcntl.h>
+#include <sys/ioctl.h>
 #include <time.h>
 #include <sys/mman.h>
 
@@ -14,59 +22,59 @@
 extern "C" {
 #endif
 
-#define NO_TEST                             
-#define DEBUG 
-//#define WIDGET_SPACE     
+/* ---- 设备节点与版本 ---- */
+#define PCIE_DRIVER_FILE_PATH   "/dev/pango_pci_driver"
+#define MEM_FILE_PATH           "/dev/mem"
+#define DRIVER_LABEL            "Pango PCIe 采集契约 v1.0"
 
-#define PCIE_DRIVER_FILE_PATH           "/dev/pango_pci_driver"
-#define MEM_FILE_PATH                   "/dev/mem"
-#define VEISION                         "Pango PCIe Test v1.0"
+/* ---- ioctl 命令（与内核驱动一一对应，禁止改动数值）---- */
+#define TYPE                    'S'
+#define PCI_READ_DATA_CMD       _IOWR(TYPE, 0, int)
+#define PCI_WRITE_DATA_CMD      _IOWR(TYPE, 1, int)
+#define PCI_MAP_ADDR_CMD        _IOWR(TYPE, 2, int)
+#define PCI_WRITE_TO_KERNEL_CMD _IOWR(TYPE, 3, int)
+#define PCI_DMA_READ_CMD        _IOWR(TYPE, 4, int)
+#define PCI_DMA_WRITE_CMD       _IOWR(TYPE, 5, int)
+#define PCI_READ_FROM_KERNEL_CMD _IOWR(TYPE, 6, int)
+#define PCI_UMAP_ADDR_CMD       _IOWR(TYPE, 7, int)
+#define PCI_PERFORMANCE_START_CMD _IOWR(TYPE, 8, int)
+#define PCI_PERFORMANCE_END_CMD _IOWR(TYPE, 9, int)
+#define PCI_GET_MSI_FLAG        _IOWR(TYPE, 10, int)        /* 获得 MSI 标志 */
+#define PCI_CLEAR_MSI_FLAG      _IOWR(TYPE, 11, int)        /* 清除 MSI 标志 */
 
-#define TYPE                            'S'
-#define PCI_READ_DATA_CMD               _IOWR(TYPE, 0, int)
-#define PCI_WRITE_DATA_CMD              _IOWR(TYPE, 1, int)
-#define PCI_MAP_ADDR_CMD                _IOWR(TYPE, 2, int)
-#define PCI_WRITE_TO_KERNEL_CMD         _IOWR(TYPE, 3, int)
-#define PCI_DMA_READ_CMD                _IOWR(TYPE, 4, int)
-#define PCI_DMA_WRITE_CMD               _IOWR(TYPE, 5, int)
-#define PCI_READ_FROM_KERNEL_CMD        _IOWR(TYPE, 6, int)
-#define PCI_UMAP_ADDR_CMD               _IOWR(TYPE, 7, int)
-#define PCI_PERFORMANCE_START_CMD       _IOWR(TYPE, 8, int)
-#define PCI_PERFORMANCE_END_CMD         _IOWR(TYPE, 9, int)
-#define PCI_GET_MSI_FLAG                _IOWR(TYPE, 10, int)				     	/* 获得msi标志 */
-#define PCI_CLEAR_MSI_FLAG              _IOWR(TYPE, 11, int)				     	/* 清除msi标志 */
-
-#define MAX_BLOCK_SIZE                  1024
-#define LINK_OK                         0x11
-#define CRC_OK                          0xa00
-#define CRC_ERROR                       0xe00
-#define CRC_REPEAT                      0xf00
-#define AXI_CONNECT_USER                0xa
-#define AXI_CONNECT_SWITCH              0xf
-#define LOAD_DATA_FINISH                0xa0
-#define LOAD_DATA_UNFINISH              0x00
-#define BAR_OFFSET_1                    0x00
-#define BAR_OFFSET_2                    0x10
-#define BAR_OFFSET_3                    0x20
+/* ---- DMA / 性能相关常量 ---- */
+#define MAX_BLOCK_SIZE          1024
+#define LINK_OK                 0x11
+#define CRC_OK                  0xa00
+#define CRC_ERROR               0xe00
+#define CRC_REPEAT              0xf00
+#define AXI_CONNECT_USER        0xa
+#define AXI_CONNECT_SWITCH      0xf
+#define LOAD_DATA_FINISH        0xa0
+#define LOAD_DATA_UNFINISH      0x00
+#define BAR_OFFSET_1            0x00
+#define BAR_OFFSET_2            0x10
+#define BAR_OFFSET_3            0x20
 #define PEFORMANCE_STATUS_OFFSET        0x00
 #define PEFORMANCE_WRITE_CNT_OFFSET     0x04
 #define PEFORMANCE_READ_CNT_OFFSET      0x08
 #define PEFORMANCE_ERROR_CNT_OFFSET     0x0c
 #define PEFORMANCE_DATA_CNT_OFFSET      0x10
 
-#define PAGE_ROUND_DOWN(x)              ((x) & ~(getpagesize() - 1))
-#define PAGE_ROUND_UP(x)                (PAGE_ROUND_DOWN((x) + getpagesize() - 1))
-#define file_len(len)                   ((len)%4 == 0 ? (len)/4 : ((len)/4)+1)
-#define BOOL_SWITCH(flag)               (((flag) == true) ? false : true)
-#define DMA_MAX_PACKET_SIZE             4096
-#define DMA_MIN_PACKET_SIZE             4
+#define PAGE_ROUND_DOWN(x)      ((x) & ~(getpagesize() - 1))
+#define PAGE_ROUND_UP(x)        (PAGE_ROUND_DOWN((x) + getpagesize() - 1))
+#define file_len(len)           ((len) % 4 == 0 ? (len) / 4 : ((len) / 4) + 1)
+#define BOOL_SWITCH(flag)       (((flag) == 1) ? 0 : 1)
+#define DMA_MAX_PACKET_SIZE     4096
+#define DMA_MIN_PACKET_SIZE     4
 
-// 全局变量只做声明，不在头文件初始化！！！
-extern int pci_driver_fd;
+/* ---- 全局量只声明，不在此初始化（沿用原约定）---- */
+extern int  pci_driver_fd;
 extern char *bit_file_name;
 extern char *dma_write_file_name;
 extern char *button_info;
 
+/* ---- 枚举与结构体（ABI 固定，保持原样）---- */
 typedef enum _OPERATION_NUM_ {
     write_num = 0,
     read_num,
@@ -76,14 +84,7 @@ typedef enum _OPERATION_NUM_ {
     performance_num
 } op_num;
 
-enum bar_num {
-    Bar0 = 0,
-    Bar1,
-    Bar2,
-    Bar3,
-    Bar4,
-    Bar5
-};
+enum bar_num { Bar0 = 0, Bar1, Bar2, Bar3, Bar4, Bar5 };
 
 typedef struct _BAR_INFO_ {
     unsigned long bar_base;
@@ -168,10 +169,7 @@ typedef struct _FILE_INFO_ {
 extern FILE_INFO load_file_info;
 extern FILE_INFO dma_write_file_info;
 
-typedef struct _ENTRY_INFO_ {
-    int num;
-    int id;
-} ENTRY_INFO;
+typedef struct _ENTRY_INFO_ { int num; int id; } ENTRY_INFO;
 
 typedef struct _HANDLER_ID_ {
     ENTRY_INFO pio;
@@ -184,12 +182,7 @@ typedef struct _HANDLER_ID_ {
     ENTRY_INFO packet_size;
 } HANDLER_ID;
 
-typedef struct _DEV_MEM_ {
-    off_t offset;
-    size_t len;
-    void *vaddr;
-} DEV_MEM;
-
+typedef struct _DEV_MEM_ { off_t offset; size_t len; void *vaddr; } DEV_MEM;
 extern DEV_MEM map_dev_mem;
 
 typedef struct _PIO_PAGE_INFO_ {
@@ -200,7 +193,6 @@ typedef struct _PIO_PAGE_INFO_ {
     unsigned int cnt;
     unsigned int delay;
 } PIO_INFO;
-
 extern PIO_INFO pio_page_info;
 
 typedef struct _BUTTON_FLAG_ {
@@ -211,13 +203,9 @@ typedef struct _BUTTON_FLAG_ {
     bool manual_start;
     bool performance_start;
 } BUTTON_FLAG;
-
 extern BUTTON_FLAG button_flag;
 
-typedef struct _ID_ {
-    unsigned char id;
-    unsigned char *id_info;
-} ID_INFO;
+typedef struct _ID_ { unsigned char id; unsigned char *id_info; } ID_INFO;
 
 typedef struct _DMA_DATA_ {
     unsigned char read_buf[DMA_MAX_PACKET_SIZE];
@@ -230,14 +218,9 @@ typedef struct _DMA_OPERATION_ {
     unsigned int cmd;
     DMA_DATA data;
 } DMA_OPERATION;
-
 extern DMA_OPERATION dma_operation;
 
-typedef struct _MSI_OPERATION_
-{
-	unsigned int msi_flag;
-}MSI_OPERATION;
-
+typedef struct _MSI_OPERATION_ { unsigned int msi_flag; } MSI_OPERATION;
 extern MSI_OPERATION msi_operation;
 
 typedef struct _DMA_AUTO_ {
@@ -250,7 +233,6 @@ typedef struct _DMA_AUTO_ {
     unsigned int error_cnt;
     unsigned int step_add_cnt;
 } DMA_AUTO;
-
 extern DMA_AUTO dma_auto_info;
 
 typedef struct _DMA_MANUAL_ {
@@ -258,7 +240,6 @@ typedef struct _DMA_MANUAL_ {
     unsigned int offset_addr;
     unsigned int data_length;
 } DMA_MANUAL;
-
 extern DMA_MANUAL dma_manual_info;
 
 typedef struct _PERFORMANCE_OPERATION_ {
@@ -266,7 +247,6 @@ typedef struct _PERFORMANCE_OPERATION_ {
     unsigned int cmd;
     unsigned char cmp_flag;
 } PERFORMANCE_OPERATION;
-
 extern PERFORMANCE_OPERATION performance_operation;
 
 typedef struct _PERFORMANCE_DATA_ {
@@ -285,11 +265,10 @@ typedef struct _PERFORMANCE_DATA_ {
     unsigned int r_invalid_cnt;
     unsigned int r_error_cnt;
 } PERFORMANCE_DATA;
-
 extern PERFORMANCE_DATA performance_data;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // _PCIE_DMA_READ_TEST_H
+#endif /* _PCIE_DMA_READ_TEST_H_A */

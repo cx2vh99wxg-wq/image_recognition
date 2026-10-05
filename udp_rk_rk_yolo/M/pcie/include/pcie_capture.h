@@ -1,206 +1,60 @@
-#ifndef PCIE_CAPTURE_H
-#define PCIE_CAPTURE_H
+/* ===========================================================================
+ * 文件：pcie_capture.h
+ * 归属：人员 A（感知与预处理）· M 端（采集端）
+ * 说明：PCIe 图像采集 + RGB565/RGB888 互转 + 前导像素剥离 的对外接口。
+ *       显示（X11）、共享内存基础设施、UDP 均不属于 A，由 B 实现；本头只声明
+ *       A 自己的采集/预处理能力，以及把感知结果交给 B 的“唯一出口”。
+ * 接口约定：A 对外只产生 LaneResult（见 common/driving_types.h），
+ *       由 main 调用 B 提供的 shm_write_lane() 写入 key=0x1234567E。
+ * ======================================================================== */
+#ifndef PCIE_CAPTURE_H_A
+#define PCIE_CAPTURE_H_A
 
 #include <stdint.h>
+#include <stddef.h>
 #include <sys/time.h>
 
-#ifdef ENABLE_RENDERING
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/extensions/XShm.h>
-#endif
+/* 图像规格：640x480，每行前端附带 120 个前导像素，必须剥离 */
+#define CAP_IMG_W        640
+#define CAP_IMG_H        480
+#define CAP_LEAD_PIX     120          /* 每行前导像素个数（文档 3.②）*/
+#define CAP_LEAD_BYTES   (CAP_LEAD_PIX * 2)
+#define CAP_ROW_RAW_BYTES ((CAP_LEAD_PIX + CAP_IMG_W) * 2)
+#define CAP_FRAME_RAW    (CAP_IMG_H * CAP_ROW_RAW_BYTES)
+#define CAP_FRAME_RGB888 (CAP_IMG_W * CAP_IMG_H * 3)
 
-//=========================================================================
-// PCIe采集模块头文件
-//=========================================================================
+/* 列重排（仅在特定硬件接线下启用，默认关闭）*/
+#define CAP_REARRANGE_FROM 0
+#define CAP_REARRANGE_TO   0
+#define CAP_REARRANGE_UP   0
 
-#define IMAGE_WIDTH  640
-#define IMAGE_HEIGHT 480
-#define LEADING_PIXELS 120   /* 每行前导像素数量 */
-#define EXTRA_SKIP_PIXELS 0  /* 额外需要跳过的前导像素（微调） */
-
-/* 列重排配置：将第n列到第m列移动到行末 */
-#define COLUMN_REARRANGE_START 0   /* 起始列n (0-based索引，0表示第一列) */
-#define COLUMN_REARRANGE_END   0   /* 结束列m (0-based索引，包含此列) */
-#define COLUMN_SHIFT_UP_ROWS   0   /* 移动到末尾的列向上移动k行 (0表示不移动) */
-
-/* 控制是否显示前导像素 */
-#define SHOW_LEADING_PIXELS 0  /* 0=不显示前导像素(默认), 1=显示前导像素 */
-
-#if SHOW_LEADING_PIXELS
-    #define DISPLAY_WIDTH  IMAGE_WIDTH   /* 显示前导像素时，保持显示宽度为640 */
-    #define ACTUAL_WIDTH   IMAGE_WIDTH   /* 实际复制的像素宽度 */
-    #define SKIP_PIXELS    0             /* 从前导像素开始 */
-#else
-    #define DISPLAY_WIDTH  IMAGE_WIDTH   /* 不显示前导像素，显示宽度为640 */
-    #define ACTUAL_WIDTH   IMAGE_WIDTH   /* 实际复制的像素宽度 */
-    #define SKIP_PIXELS    (LEADING_PIXELS + EXTRA_SKIP_PIXELS) /* 跳过前导像素+额外偏移 */
-#endif
-
-#define DISPLAY_HEIGHT IMAGE_HEIGHT  /* 直接使用原始图像尺寸 */
-
-//=========================================================================
-// 结构体定义
-//=========================================================================
-
-// PCIe管理器结构体 - 需要包含原有的PCIE驱动结构
+/* A 的采集上下文：设备句柄 + DMA 参数。只保存 A 需要的东西。 */
 typedef struct {
-    int pci_driver_fd;
-    void* command_operation;  // 对应 COMMAND_OPERATION
-    void* dma_operation;      // 对应 DMA_OPERATION
-} PCIEManager;
+    int            dev_fd;            /* /dev/pango_pci_driver 句柄 */
+    void          *cmd_op;            /* COMMAND_OPERATION（见 pcie_dma_read_test.h）*/
+    void          *dma_op;            /* DMA_OPERATION */
+    int            stream_id;         /* 当前视频流编号 */
+} pcie_ctx_t;
 
-#ifdef ENABLE_RENDERING
-// 渲染引擎结构体
-typedef struct {
-    Display *display;
-    Window window;
-    GC gc;
-    XImage *ximage;
-    char* display_buffer;
-    Pixmap pixmap;           /* 双缓冲pixmap */
-    int use_fast_mode;       /* 是否使用快速模式 */
-    int use_shm;             /* 是否使用共享内存 */
-    XShmSegmentInfo shminfo; /* 共享内存信息 */
-    XFontStruct *font;       /* 字体结构 */
-    int is_init;
-} RenderEngine;
-#endif
+/* ---- 采集生命周期 ---- */
+int  pcie_capture_open(pcie_ctx_t *ctx);
+int  pcie_capture_start_stream(pcie_ctx_t *ctx);
+int  pcie_capture_grab(pcie_ctx_t *ctx,
+                       uint8_t *out_rgb565, size_t out_bytes);
+void pcie_capture_stop_stream(pcie_ctx_t *ctx);
+void pcie_capture_close(pcie_ctx_t *ctx);
 
-//=========================================================================
-// 函数声明
-//=========================================================================
+/* ---- 格式与工具（A 的预处理能力）---- */
+void rgb565_to_rgb888(const uint16_t *src565, uint8_t *dst888, size_t pixels);
+void rgb888_to_rgb565(const uint8_t *src888, uint16_t *dst565, size_t pixels);
+int  save_rgb888_to_ppm(const uint8_t *rgb888, const char *path);
+double timeval_diff_ms(struct timeval a, struct timeval b);
 
-// PCIE管理函数
-/**
- * 初始化PCIE设备
- * @param manager PCIE管理器
- * @return 0=成功, -1=失败
- */
-int pcie_manager_init(PCIEManager* manager);
+/* 把一行原始数据里的“前导像素”剥掉，只保留有效 640 宽。
+ * raw_row 指向该行 CAP_ROW_RAW_BYTES 字节，dst_row 接收 CAP_IMG_W*2 字节。 */
+void strip_leading_pixels(const uint8_t *raw_row, uint8_t *dst_row);
 
-/**
- * 获取PCIE设备信息
- * @param manager PCIE管理器
- */
-void pcie_manager_get_device_info(PCIEManager* manager);
+/* 列重排（默认空操作；仅当 CAP_REARRANGE_FROM<=TO 且非 0 区间时生效）。*/
+void rearrange_row_columns(uint16_t *row, int width, int from, int to);
 
-/**
- * 采集一帧图像数据
- * @param manager PCIE管理器
- * @param image_buffer 图像缓冲区
- * @param buffer_size 缓冲区大小
- * @return 0=成功, -1=失败
- */
-int pcie_manager_capture_frame(PCIEManager* manager, uint8_t* image_buffer, size_t buffer_size);
-
-/**
- * 初始化视频流采集
- * @param manager PCIE管理器
- * @return 0=成功, -1=失败
- */
-int pcie_manager_init_streaming(PCIEManager* manager);
-
-/**
- * 清理视频流采集
- * @param manager PCIE管理器
- */
-void pcie_manager_cleanup_streaming(PCIEManager* manager);
-
-/**
- * 清理PCIE设备
- * @param manager PCIE管理器
- */
-void pcie_manager_cleanup(PCIEManager* manager);
-
-#ifdef ENABLE_RENDERING
-// 渲染引擎函数
-/**
- * 初始化渲染引擎
- * @param engine 渲染引擎
- * @return 0=成功, -1=失败
- */
-int render_engine_init(RenderEngine* engine);
-
-/**
- * 渲染带检测结果的图像
- * @param engine 渲染引擎
- * @param rgb888_data RGB888格式图像数据
- * @return 0=成功, -1=失败
- */
-int render_engine_render_frame_with_detections(RenderEngine* engine, const uint8_t* rgb888_data);
-
-/**
- * 检查退出事件
- * @param engine 渲染引擎
- * @return 1=退出, 0=继续
- */
-int render_engine_check_exit_event(RenderEngine* engine);
-
-/**
- * 清理渲染引擎
- * @param engine 渲染引擎
- */
-void render_engine_cleanup(RenderEngine* engine);
-#endif
-
-// 工具函数
-/**
- * 纳秒级延时
- * @param delay 延时时间（纳秒）
- * @return 0=成功
- */
-int nano_delay(long delay);
-
-/**
- * RGB565转RGB888格式
- * @param image565 RGB565数据
- * @param image888 RGB888数据输出
- * @param num_pixels 像素数量
- */
-void rgb565_to_rgb888(const uint16_t* image565, uint8_t* image888, size_t num_pixels);
-
-/**
- * 保存帧到PPM文件
- * @param rgb888_data RGB888数据
- * @param filename 文件名
- * @return 0=成功, -1=失败
- */
-int save_frame_to_ppm(const uint8_t* rgb888_data, const char* filename);
-
-/**
- * 计算时间差
- * @param start 开始时间
- * @param end 结束时间
- * @return 时间差（秒）
- */
-double get_time_diff(struct timeval start, struct timeval end);
-
-/**
- * 列重排
- * @param row_buffer 行缓冲区
- * @param width 宽度
- * @param start_col 起始列
- * @param end_col 结束列
- */
-void rearrange_columns(uint16_t* row_buffer, int width, int start_col, int end_col);
-
-/**
- * 列向上移动
- * @param image_buffer 图像缓冲区
- * @param width 宽度
- * @param height 高度
- * @param start_col 起始列
- * @param end_col 结束列
- * @param shift_rows 移动行数
- */
-void shift_columns_up(uint8_t* image_buffer, int width, int height, int start_col, int end_col, int shift_rows);
-
-//=========================================================================
-// 全局变量声明
-//=========================================================================
-extern uint8_t* image_buf_temp;
-extern uint8_t* image_buf_888;
-extern int current_video_stream;
-
-#endif // PCIE_CAPTURE_H
+#endif /* PCIE_CAPTURE_H_A */

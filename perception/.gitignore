@@ -1,0 +1,32 @@
+# 编译产物（A 模块）
+csrc/*.o
+test/*.o
+build/
+obj/
+test/test_capture
+test/test_capture.exe
+test/test_lane
+test/test_lane.exe
+test/test_turn
+test/test_turn.exe
+test/test_turn2.exe
+test/test_lane_mark
+test/test_lane_mark.exe
+test/test_zebra
+test/test_zebra.exe
+test/test_stub
+test/test_stub.exe
+test/test_traffic_light
+test/test_traffic_light.exe
+test/test_isp_params
+test/test_isp_params.exe
+perception
+perception.exe
+perception_main
+perception_main.exe
+perception_stub
+perception_stub.exe
+
+# 测试生成的图像
+capture_*.ppm
+*.ppm

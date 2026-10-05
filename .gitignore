@@ -1,0 +1,13 @@
+# 编译产物
+*.d
+*.o
+*.obj
+*.elf
+*.bin
+*.out
+/build/
+*/build/
+
+.workbuddy/
+.vscode/
+*.swp

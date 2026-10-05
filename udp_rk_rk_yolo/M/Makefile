@@ -67,12 +67,12 @@ shared_memory: | $(BUILDDIR)
 
 pcie: shared_memory
 	@echo "Building PCIe Capture Module..."
-	@$(MAKE) -C $(PCIE_DIR) ENABLE_RENDERING=$(ENABLE_RENDERING) TOPDIR=$(TOPDIR)
+	@$(MAKE) -C $(PCIE_DIR) ENABLE_RENDERING=$(ENABLE_RENDERING) TOPDIR="$(TOPDIR)"
 	@echo "PCIe module build complete"
 
 udp: shared_memory
 	@echo "Building UDP Network Module..."
-	@$(MAKE) -C $(UDP_DIR) TOPDIR=$(TOPDIR)
+	@$(MAKE) -C $(UDP_DIR) TOPDIR="$(TOPDIR)"
 	@echo "UDP module build complete"
 
 # 创建build目录
@@ -85,13 +85,13 @@ $(BUILDDIR):
 #############################################################################
 debug:
 	@echo "Building debug versions..."
-	@$(MAKE) -C $(PCIE_DIR) debug ENABLE_RENDERING=$(ENABLE_RENDERING) TOPDIR=$(TOPDIR)
-	@$(MAKE) -C $(UDP_DIR) debug TOPDIR=$(TOPDIR)
+	@$(MAKE) -C $(PCIE_DIR) debug ENABLE_RENDERING=$(ENABLE_RENDERING) TOPDIR="$(TOPDIR)"
+	@$(MAKE) -C $(UDP_DIR) debug TOPDIR="$(TOPDIR)"
 
 release:
 	@echo "Building release versions..."
-	@$(MAKE) -C $(PCIE_DIR) release ENABLE_RENDERING=$(ENABLE_RENDERING) TOPDIR=$(TOPDIR)
-	@$(MAKE) -C $(UDP_DIR) release TOPDIR=$(TOPDIR)
+	@$(MAKE) -C $(PCIE_DIR) release ENABLE_RENDERING=$(ENABLE_RENDERING) TOPDIR="$(TOPDIR)"
+	@$(MAKE) -C $(UDP_DIR) release TOPDIR="$(TOPDIR)"
 
 #############################################################################
 # 安装

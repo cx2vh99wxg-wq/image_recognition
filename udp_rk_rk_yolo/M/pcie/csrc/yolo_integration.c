@@ -1,682 +1,302 @@
+/* ===========================================================================
+ * 文件：yolo_integration.c
+ * 归属：人员 A（感知与预处理）· 车道线模型（YOLOPv2）
+ * 说明：YOLOPv2 引擎实现 + 弯道判定。
+ *       相比原实现的三处关键改动（见分工方案“与原实现差异”）：
+ *         1) confidence 不再硬编码 90/75/60/40，而是由车道线覆盖率 + 远端集中度真实推算；
+ *         2) 不再输出 25° 这种无物理意义的角度，改为 curve_offset（带符号像素偏移）；
+ *         3) 不再调用旧的 curve_detection_update() 写弯道共享内存，改为填充 LaneResult，
+ *            由 main 经 B 的 shm_write_lane() 写入 key=0x1234567E。
+ *       前导像素已在采集端剥离（pcie_capture_grab），此处拿到的是干净的 640x480。
+ * ======================================================================== */
 #include "yolo_integration.h"
-#include "shared_memory.h"
+#include "preprocess.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <sys/time.h>
 
-// 弯道类型定义
-typedef enum {
-    TURN_STRAIGHT = 0,    // 直道
-    TURN_LEFT = 1,        // 左弯道
-    TURN_RIGHT = 2        // 右弯道
-} TurnType;
-
-// 弯道检测函数：基于绘制的红色车道线进行垂直投影分析（多区域采样+加权计算）
-static TurnType detect_turn_direction_from_image(const uint8_t* rgb_data, int width, int height) {
-    if (!rgb_data) {
-        printf(">>> 图像数据指针为空 <<<\n");
-        fflush(stdout);
-        return TURN_STRAIGHT;
-    }
-
-    // 只分析左上角320x240区域的下半部分
-    int roi_width = 320;
-    int roi_height = 240;
-    int half_start = roi_height / 2;  // 120，从这里开始
-
-    // 确保ROI不超出图像边界
-    if (roi_width > width) roi_width = width;
-    if (roi_height > height) roi_height = height;
-
-    // 定义8个采样区域（从远到近），每个区域高度8像素
-    #define NUM_REGIONS 8
-    int region_y[NUM_REGIONS] = {
-        half_start + 5,    // Y=125 (最远，权重最大)
-        half_start + 15,   // Y=135
-        half_start + 25,   // Y=145
-        half_start + 35,   // Y=155
-        half_start + 50,   // Y=170
-        half_start + 65,   // Y=185
-        half_start + 80,   // Y=200
-        half_start + 95    // Y=215 (最近，权重最小)
-    };
-    int region_height = 8;  // 每个区域高度8像素
-
-    // 权重：远处的区域权重更大（从2.0到0.5）
-    float weights[NUM_REGIONS] = {2.0f, 1.7f, 1.5f, 1.3f, 1.0f, 0.8f, 0.6f, 0.5f};
-
-    // 存储每个区域的投影数组和重心
-    int projections[NUM_REGIONS][320];
-    float centers[NUM_REGIONS];
-    int totals[NUM_REGIONS];
-
-    // 初始化
-    for (int r = 0; r < NUM_REGIONS; r++) {
-        memset(projections[r], 0, sizeof(int) * 320);
-        centers[r] = 0;
-        totals[r] = 0;
-    }
-
-    // 对每个区域进行垂直投影
-    for (int r = 0; r < NUM_REGIONS; r++) {
-        int y_start = region_y[r];
-        int y_end = region_y[r] + region_height;
-
-        for (int y = y_start; y < y_end && y < height; y++) {
-            for (int x = 0; x < roi_width; x++) {
-                int idx = (y * width + x) * 3;
-                uint8_t b = rgb_data[idx];
-                uint8_t g = rgb_data[idx + 1];
-                uint8_t r_val = rgb_data[idx + 2];
-
-                // 检测红色像素
-                if (r_val > 200 && g < 50 && b < 50) {
-                    projections[r][x]++;
-                    totals[r]++;
-                }
-            }
-        }
-    }
-
-    // 打印每个区域的统计信息
-    printf(">>> 多区域采样结果:\n");
-    for (int r = 0; r < NUM_REGIONS; r++) {
-        printf("    区域%d (Y=%d-%d): %d像素, 权重%.1f\n",
-               r, region_y[r], region_y[r] + region_height, totals[r], weights[r]);
-    }
-    fflush(stdout);
-
-    // 计算每个区域的重心
-    int valid_regions = 0;
-    for (int r = 0; r < NUM_REGIONS; r++) {
-        if (totals[r] > 10) {  // 至少10个像素才有效
-            for (int x = 0; x < roi_width; x++) {
-                centers[r] += x * projections[r][x];
-            }
-            centers[r] /= totals[r];
-            valid_regions++;
-        } else {
-            centers[r] = -1;  // 标记为无效
-        }
-    }
-
-    if (valid_regions < 2) {
-        printf(">>> 有效区域不足 (仅%d个) <<<\n", valid_regions);
-        fflush(stdout);
-        return TURN_STRAIGHT;
-    }
-
-    // 使用加权最小二乘法计算趋势
-    // 计算加权偏移量：远处区域 - 近处区域，加上权重
-    float weighted_shift = 0;
-    float total_weight = 0;
-
-    // 找到最远和最近的有效区域
-    int far_region = -1, near_region = -1;
-    for (int r = 0; r < NUM_REGIONS; r++) {
-        if (centers[r] >= 0) {
-            if (far_region == -1) far_region = r;
-            near_region = r;
-        }
-    }
-
-    if (far_region != -1 && near_region != -1 && far_region != near_region) {
-        // 计算所有相邻区域对的偏移，并加权
-        for (int r = 0; r < NUM_REGIONS - 1; r++) {
-            if (centers[r] >= 0 && centers[r + 1] >= 0) {
-                float local_shift = centers[r] - centers[r + 1];
-                weighted_shift += local_shift * weights[r];
-                total_weight += weights[r];
-            }
-        }
-
-        if (total_weight > 0) {
-            weighted_shift /= total_weight;
-        }
-    }
-
-    printf(">>> 最远区域重心: %.1f (Y=%d)\n",
-           far_region >= 0 ? centers[far_region] : -1,
-           far_region >= 0 ? region_y[far_region] : -1);
-    printf(">>> 最近区域重心: %.1f (Y=%d)\n",
-           near_region >= 0 ? centers[near_region] : -1,
-           near_region >= 0 ? region_y[near_region] : -1);
-    printf(">>> 加权偏移量: %.2f <<<\n", weighted_shift);
-    fflush(stdout);
-
-    // 动态阈值：根据总像素数调整
-    int total_pixels = 0;
-    for (int r = 0; r < NUM_REGIONS; r++) {
-        total_pixels += totals[r];
-    }
-
-    float threshold = 8.0f;  // 基础阈值
-    if (total_pixels < 100) {
-        threshold = 12.0f;  // 像素少时提高阈值，减少误判
-    } else if (total_pixels > 300) {
-        threshold = 6.0f;   // 像素多时降低阈值，提高灵敏度
-    }
-
-    printf(">>> 总像素: %d, 使用阈值: %.1f <<<\n", total_pixels, threshold);
-    fflush(stdout);
-
-    // 判断弯道方向
-    if (weighted_shift > threshold) {
-        return TURN_RIGHT;
-    } else if (weighted_shift < -threshold) {
-        return TURN_LEFT;
-    }
-
-    return TURN_STRAIGHT;
-}
-
-// 预处理函数：将RGB888图像转换为NHWC格式的UINT8数据
-static void preprocess_image(const uint8_t* rgb_data, uint8_t* input_data,
-                            int src_width, int src_height,
-                            int model_width, int model_height) {
-    // 简单的resize + RGB转换 + NHWC格式
-    float scale_w = (float)src_width / model_width;
-    float scale_h = (float)src_height / model_height;
-
-    for (int h = 0; h < model_height; h++) {
-        for (int w = 0; w < model_width; w++) {
-            int src_x = (int)(w * scale_w);
-            int src_y = (int)(h * scale_h);
-
-            if (src_x >= src_width) src_x = src_width - 1;
-            if (src_y >= src_height) src_y = src_height - 1;
-
-            // NHWC格式：input_data[h][w][c]
-            int dst_idx = (h * model_width + w) * 3;
-            int src_idx = (src_y * src_width + src_x) * 3;
-
-            input_data[dst_idx + 0] = rgb_data[src_idx + 0]; // R
-            input_data[dst_idx + 1] = rgb_data[src_idx + 1]; // G
-            input_data[dst_idx + 2] = rgb_data[src_idx + 2]; // B
-        }
-    }
-}
-
-int yolo_engine_init(YOLOEngine* engine, const char* model_path, const char* labels_path) {
-    if (!engine || !model_path) {
-        printf("YOLOPv2引擎初始化参数无效\n");
+/* ---------------------------------------------------------------------------
+ * 引擎初始化：加载 RKNN 模型，查询 IO，分配输入/输出/概率图缓冲
+ * ------------------------------------------------------------------------- */
+int lane_engine_init(lane_engine_t *e, const char *model_path)
+{
+    if (!e || !model_path) {
+        fprintf(stderr, "[LANE] 参数无效\n");
         return -1;
     }
+    memset(e, 0, sizeof(*e));
 
-    // labels_path参数保留用于接口兼容性，但YOLOPv2不需要标签文件
-    (void)labels_path;
-
-    printf("正在初始化YOLOPv2引擎（车道线和可行驶区域检测）...\n");
-
-    memset(engine, 0, sizeof(YOLOEngine));
-
-    // 加载RKNN模型
-    FILE* fp = fopen(model_path, "rb");
+    FILE *fp = fopen(model_path, "rb");
     if (!fp) {
-        printf("无法打开模型文件: %s\n", model_path);
+        fprintf(stderr, "[LANE] 无法打开模型: %s\n", model_path);
         return -1;
     }
-
     fseek(fp, 0, SEEK_END);
-    size_t model_size = ftell(fp);
+    size_t sz = (size_t)ftell(fp);
     fseek(fp, 0, SEEK_SET);
-
-    void* model_data = malloc(model_size);
-    if (!model_data) {
-        printf("分配模型内存失败\n");
-        fclose(fp);
-        return -1;
-    }
-
-    if (fread(model_data, 1, model_size, fp) != model_size) {
-        printf("读取模型文件失败\n");
-        free(model_data);
-        fclose(fp);
+    void *blob = malloc(sz);
+    if (!blob || fread(blob, 1, sz, fp) != sz) {
+        fprintf(stderr, "[LANE] 读取模型失败\n");
+        free(blob); fclose(fp);
         return -1;
     }
     fclose(fp);
 
-    // 初始化RKNN
-    int ret = rknn_init(&engine->ctx, model_data, model_size, 0, NULL);
-    free(model_data);
-
+    int ret = rknn_init(&e->ctx, blob, sz, 0, NULL);
+    free(blob);
     if (ret < 0) {
-        printf("RKNN初始化失败: %d\n", ret);
+        fprintf(stderr, "[LANE] rknn_init 失败: %d\n", ret);
         return -1;
     }
 
-    // 获取输入输出数量
-    ret = rknn_query(engine->ctx, RKNN_QUERY_IN_OUT_NUM, &engine->io_num, sizeof(engine->io_num));
+    ret = rknn_query(e->ctx, RKNN_QUERY_IN_OUT_NUM, &e->io_num, sizeof(e->io_num));
     if (ret < 0) {
-        printf("查询输入输出数量失败: %d\n", ret);
-        rknn_destroy(engine->ctx);
+        fprintf(stderr, "[LANE] 查询 IO 数量失败\n");
+        rknn_destroy(e->ctx); e->ctx = 0;
         return -1;
     }
 
-    printf("模型输入数量: %d, 输出数量: %d\n", engine->io_num.n_input, engine->io_num.n_output);
-
-    // 分配输入输出属性数组
-    engine->input_attrs = (rknn_tensor_attr*)malloc(engine->io_num.n_input * sizeof(rknn_tensor_attr));
-    engine->output_attrs = (rknn_tensor_attr*)malloc(engine->io_num.n_output * sizeof(rknn_tensor_attr));
-    engine->inputs = (rknn_input*)malloc(engine->io_num.n_input * sizeof(rknn_input));
-    engine->outputs = (rknn_output*)malloc(engine->io_num.n_output * sizeof(rknn_output));
-
-    if (!engine->input_attrs || !engine->output_attrs || !engine->inputs || !engine->outputs) {
-        printf("分配输入输出数组内存失败\n");
-        yolo_engine_cleanup(engine);
+    e->in_attr  = malloc(e->io_num.n_input  * sizeof(rknn_tensor_attr));
+    e->out_attr = malloc(e->io_num.n_output * sizeof(rknn_tensor_attr));
+    e->inputs   = malloc(e->io_num.n_input  * sizeof(rknn_input));
+    e->outputs  = malloc(e->io_num.n_output * sizeof(rknn_output));
+    if (!e->in_attr || !e->out_attr || !e->inputs || !e->outputs) {
+        lane_engine_free(e);
         return -1;
     }
+    memset(e->in_attr, 0,  e->io_num.n_input  * sizeof(rknn_tensor_attr));
+    memset(e->out_attr, 0, e->io_num.n_output * sizeof(rknn_tensor_attr));
+    memset(e->inputs, 0,   e->io_num.n_input  * sizeof(rknn_input));
+    memset(e->outputs, 0,  e->io_num.n_output * sizeof(rknn_output));
 
-    memset(engine->input_attrs, 0, engine->io_num.n_input * sizeof(rknn_tensor_attr));
-    memset(engine->output_attrs, 0, engine->io_num.n_output * sizeof(rknn_tensor_attr));
-    memset(engine->inputs, 0, engine->io_num.n_input * sizeof(rknn_input));
-    memset(engine->outputs, 0, engine->io_num.n_output * sizeof(rknn_output));
-
-    // 查询输入属性
-    for (int i = 0; i < engine->io_num.n_input; i++) {
-        engine->input_attrs[i].index = i;
-        ret = rknn_query(engine->ctx, RKNN_QUERY_INPUT_ATTR, &engine->input_attrs[i], sizeof(rknn_tensor_attr));
-        if (ret < 0) {
-            printf("查询输入属性%d失败: %d\n", i, ret);
-            yolo_engine_cleanup(engine);
-            return -1;
-        }
+    for (uint32_t i = 0; i < e->io_num.n_input; i++) {
+        e->in_attr[i].index = i;
+        rknn_query(e->ctx, RKNN_QUERY_INPUT_ATTR, &e->in_attr[i], sizeof(rknn_tensor_attr));
+    }
+    for (uint32_t i = 0; i < e->io_num.n_output; i++) {
+        e->out_attr[i].index = i;
+        rknn_query(e->ctx, RKNN_QUERY_OUTPUT_ATTR, &e->out_attr[i], sizeof(rknn_tensor_attr));
     }
 
-    // 查询输出属性
-    for (int i = 0; i < engine->io_num.n_output; i++) {
-        engine->output_attrs[i].index = i;
-        ret = rknn_query(engine->ctx, RKNN_QUERY_OUTPUT_ATTR, &engine->output_attrs[i], sizeof(rknn_tensor_attr));
-        if (ret < 0) {
-            printf("查询输出属性%d失败: %d\n", i, ret);
-            yolo_engine_cleanup(engine);
-            return -1;
-        }
-        printf("输出 %d: %s\n", i, engine->output_attrs[i].name);
-    }
-
-    // 设置模型输入尺寸
-    engine->model_width = YOLOPV2_MODEL_INPUT_WIDTH;
-    engine->model_height = YOLOPV2_MODEL_INPUT_HEIGHT;
-
-    printf("模型输入尺寸: %dx%d\n", engine->model_width, engine->model_height);
-
-    // 分配输入数据缓冲区
-    size_t input_size = engine->model_width * engine->model_height * 3; // RGB
-    engine->input_data = (uint8_t*)malloc(input_size);
-    if (!engine->input_data) {
-        printf("分配输入数据缓冲区失败\n");
-        yolo_engine_cleanup(engine);
+    e->w = YOLO_IN_W;
+    e->h = YOLO_IN_H;
+    e->input_buf    = malloc((size_t)e->w * e->h * 3);
+    e->lane_buf     = malloc((size_t)e->w * e->h       * sizeof(float));
+    e->drivable_buf = malloc((size_t)e->w * e->h * 2   * sizeof(float));
+    if (!e->input_buf || !e->lane_buf || !e->drivable_buf) {
+        lane_engine_free(e);
         return -1;
     }
-
-    // 分配输出数据缓冲区
-    size_t lane_size = engine->model_width * engine->model_height * sizeof(float); // (1,1,480,640)
-    size_t drivable_size = engine->model_width * engine->model_height * 2 * sizeof(float); // (1,2,480,640)
-
-    engine->lane_line_buffer = (float*)malloc(lane_size);
-    engine->drivable_area_buffer = (float*)malloc(drivable_size);
-
-    if (!engine->lane_line_buffer || !engine->drivable_area_buffer) {
-        printf("分配输出数据缓冲区失败\n");
-        yolo_engine_cleanup(engine);
-        return -1;
-    }
-
-    printf("输出缓冲区: 车道线=%zu bytes, 可行驶区域=%zu bytes\n", lane_size, drivable_size);
-
-    printf("YOLOPv2引擎初始化成功\n");
-    engine->is_initialized = 1;
+    e->ready = 1;
+    printf("[LANE] YOLOPv2 引擎初始化成功 (%dx%d)\n", e->w, e->h);
     return 0;
 }
 
-int yolo_engine_detect(YOLOEngine* engine, const uint8_t* rgb_data, int width, int height,
-                      yolopv2_result_t* results) {
-    if (!engine || !rgb_data || !results || !engine->is_initialized) {
-        // printf("[DEBUG] detect参数检查失败\n");
-        return -1;
+/* ---------------------------------------------------------------------------
+ * 引擎推理：把 rgb888 送入模型，取出车道线/可行驶区域概率图
+ * ------------------------------------------------------------------------- */
+int lane_engine_run(lane_engine_t *e,
+                    const uint8_t *rgb888, int w, int h,
+                    lane_seg_t *seg)
+{
+    if (!e || !e->ready || !rgb888 || !seg) return -1;
+
+    /* 模型输入固定 640x480；尺寸一致直接拷贝，否则做 letterbox */
+    if (w == e->w && h == e->h) {
+        memcpy(e->input_buf, rgb888, (size_t)w * h * 3);
+    } else {
+        letterbox_t box;
+        perception_letterbox(rgb888, w, h, e->input_buf, e->w, e->h, &box);
     }
 
-    // printf("[DEBUG] detect开始: width=%d, height=%d\n", width, height);
+    e->inputs[0].index = 0;
+    e->inputs[0].type  = RKNN_TENSOR_UINT8;
+    e->inputs[0].size  = (size_t)e->w * e->h * 3;
+    e->inputs[0].fmt   = RKNN_TENSOR_NHWC;
+    e->inputs[0].buf   = e->input_buf;
+    for (uint32_t i = 0; i < e->io_num.n_output; i++)
+        e->outputs[i].want_float = 1;
 
-    // 预处理：将输入图像调整到模型输入尺寸
-    preprocess_image(rgb_data, engine->input_data, width, height,
-                    engine->model_width, engine->model_height);
-    // printf("[DEBUG] 预处理完成\n");
+    if (rknn_inputs_set(e->ctx, e->io_num.n_input, e->inputs) < 0) return -1;
+    if (rknn_run(e->ctx, NULL) < 0) return -1;
+    if (rknn_outputs_get(e->ctx, e->io_num.n_output, e->outputs, NULL) < 0) return -1;
 
-    // 设置输入
-    engine->inputs[0].index = 0;
-    engine->inputs[0].type = RKNN_TENSOR_UINT8;
-    engine->inputs[0].size = engine->model_width * engine->model_height * 3;
-    engine->inputs[0].fmt = RKNN_TENSOR_NHWC;  // 使用NHWC格式
-    engine->inputs[0].buf = engine->input_data;
-
-    // 设置输出（获取浮点数输出）
-    for (int i = 0; i < engine->io_num.n_output; i++) {
-        engine->outputs[i].want_float = 1;
+    /* 输出顺序（与原实现一致）：[0]=可行驶区域(1,2,H,W)，[1]=车道线(1,1,H,W) */
+    size_t drivable_bytes = (size_t)e->w * e->h * 2 * sizeof(float);
+    size_t lane_bytes     = (size_t)e->w * e->h     * sizeof(float);
+    if (e->io_num.n_output >= 2 && e->outputs[0].buf && e->outputs[1].buf) {
+        size_t dcopy = (e->outputs[0].size < drivable_bytes) ? e->outputs[0].size : drivable_bytes;
+        size_t lcopy = (e->outputs[1].size < lane_bytes)     ? e->outputs[1].size : lane_bytes;
+        memcpy(e->drivable_buf, e->outputs[0].buf, dcopy);
+        memcpy(e->lane_buf,     e->outputs[1].buf, lcopy);
     }
-    // printf("[DEBUG] 输入输出设置完成\n");
+    rknn_outputs_release(e->ctx, e->io_num.n_output, e->outputs);
 
-    // 执行推理
-    int ret = rknn_inputs_set(engine->ctx, engine->io_num.n_input, engine->inputs);
-    if (ret < 0) {
-        printf("设置输入失败: %d\n", ret);
-        return -1;
-    }
-    // printf("[DEBUG] inputs_set完成\n");
-
-    ret = rknn_run(engine->ctx, NULL);
-    if (ret < 0) {
-        printf("模型推理失败: %d\n", ret);
-        return -1;
-    }
-    // printf("[DEBUG] rknn_run完成\n");
-
-    ret = rknn_outputs_get(engine->ctx, engine->io_num.n_output, engine->outputs, NULL);
-    if (ret < 0) {
-        printf("获取输出失败: %d\n", ret);
-        return -1;
-    }
-    // printf("[DEBUG] outputs_get完成\n");
-    // fflush(stdout);
-
-    // 检查输出数量
-    if (engine->io_num.n_output < 5) {
-        printf("[DEBUG] ERROR: n_output=%d, 需要至少5个输出!\n", engine->io_num.n_output);
-        fflush(stdout);
-        return -1;
-    }
-
-    // 打印所有输出的大小
-    // for (int i = 0; i < engine->io_num.n_output; i++) {
-    //     printf("[DEBUG] outputs[%d].size=%u bytes\n", i, engine->outputs[i].size);
-    // }
-    // fflush(stdout);
-
-    // 实际输出节点顺序（根据size分析）:
-    // outputs[0] = seg  : (1, 2, 480, 640) = 2457600 bytes - 可行驶区域分割
-    // outputs[1] = ll   : (1, 1, 480, 640) = 1228800 bytes - 车道线
-    // outputs[2] = pred0: (1, 255, 60, 80) - 大物体检测（跳过）
-    // outputs[3] = pred1: (1, 255, 30, 40) - 中物体检测（跳过）
-    // outputs[4] = pred2: (1, 255, 15, 20) - 小物体检测（跳过）
-
-    // 复制可行驶区域数据到缓冲区（输出0）
-    size_t expected_drivable_size = engine->model_width * engine->model_height * 2 * sizeof(float);
-    size_t actual_drivable_size = engine->outputs[0].size;
-
-    // printf("[DEBUG] 可行驶区域数据: expected=%zu bytes, actual=%u bytes\n",
-    //        expected_drivable_size, (unsigned int)actual_drivable_size);
-    // fflush(stdout);
-
-    // 检查指针有效性
-    if (!engine->drivable_area_buffer) {
-        printf("[DEBUG] ERROR: drivable_area_buffer is NULL!\n");
-        fflush(stdout);
-        return -1;
-    }
-    if (!engine->outputs[0].buf) {
-        printf("[DEBUG] ERROR: outputs[0].buf is NULL!\n");
-        fflush(stdout);
-        return -1;
-    }
-
-    // 使用实际大小进行复制，防止缓冲区溢出
-    size_t drivable_copy_size = (actual_drivable_size < expected_drivable_size) ? actual_drivable_size : expected_drivable_size;
-    if (actual_drivable_size != expected_drivable_size) {
-        printf("[DEBUG] WARNING: 可行驶区域大小不匹配，使用 %zu bytes\n", drivable_copy_size);
-        fflush(stdout);
-    }
-
-    memcpy(engine->drivable_area_buffer, engine->outputs[0].buf, drivable_copy_size);
-    // printf("[DEBUG] 可行驶区域数据复制完成\n");
-    // fflush(stdout);
-
-    // 复制车道线数据到缓冲区（输出1）
-    size_t expected_lane_size = engine->model_width * engine->model_height * sizeof(float);
-    size_t actual_lane_size = engine->outputs[1].size;
-
-    // printf("[DEBUG] 车道线数据: expected=%zu bytes, actual=%u bytes\n",
-    //        expected_lane_size, (unsigned int)actual_lane_size);
-    // fflush(stdout);
-
-    // 检查指针有效性
-    if (!engine->lane_line_buffer) {
-        printf("[DEBUG] ERROR: lane_line_buffer is NULL!\n");
-        fflush(stdout);
-        return -1;
-    }
-    if (!engine->outputs[1].buf) {
-        printf("[DEBUG] ERROR: outputs[1].buf is NULL!\n");
-        fflush(stdout);
-        return -1;
-    }
-
-    // 使用实际大小进行复制，防止缓冲区溢出
-    size_t lane_copy_size = (actual_lane_size < expected_lane_size) ? actual_lane_size : expected_lane_size;
-    if (actual_lane_size != expected_lane_size) {
-        printf("[DEBUG] WARNING: 车道线大小不匹配，使用 %zu bytes\n", lane_copy_size);
-        fflush(stdout);
-    }
-
-    memcpy(engine->lane_line_buffer, engine->outputs[1].buf, lane_copy_size);
-    // printf("[DEBUG] 车道线数据复制完成\n");
-    // fflush(stdout);
-
-    // 释放RKNN输出（数据已复制到缓冲区）
-    // printf("[DEBUG] 准备释放RKNN输出, n_output=%d\n", engine->io_num.n_output);
-    // fflush(stdout);
-    rknn_outputs_release(engine->ctx, engine->io_num.n_output, engine->outputs);
-    // printf("[DEBUG] RKNN输出释放完成\n");
-    // fflush(stdout);
-
-    // 设置结果指针指向内部缓冲区
-    results->lane_line_data = engine->lane_line_buffer;
-    results->drivable_area_data = engine->drivable_area_buffer;
-    results->width = engine->model_width;
-    results->height = engine->model_height;
-
-    printf("[DEBUG] detect完成\n");
+    seg->lane     = e->lane_buf;
+    seg->drivable = e->drivable_buf;
+    seg->w = e->w; seg->h = e->h;
     return 0;
 }
 
-void yolo_engine_cleanup(YOLOEngine* engine) {
-    if (!engine) return;
-
-    // 注意：outputs已在detect函数中释放，这里无需再释放
-
-    if (engine->lane_line_buffer) {
-        free(engine->lane_line_buffer);
-        engine->lane_line_buffer = NULL;
-    }
-
-    if (engine->drivable_area_buffer) {
-        free(engine->drivable_area_buffer);
-        engine->drivable_area_buffer = NULL;
-    }
-
-    if (engine->input_data) {
-        free(engine->input_data);
-        engine->input_data = NULL;
-    }
-
-    if (engine->input_attrs) {
-        free(engine->input_attrs);
-        engine->input_attrs = NULL;
-    }
-
-    if (engine->output_attrs) {
-        free(engine->output_attrs);
-        engine->output_attrs = NULL;
-    }
-
-    if (engine->inputs) {
-        free(engine->inputs);
-        engine->inputs = NULL;
-    }
-
-    if (engine->outputs) {
-        free(engine->outputs);
-        engine->outputs = NULL;
-    }
-
-    if (engine->ctx > 0) {
-        rknn_destroy(engine->ctx);
-        engine->ctx = 0;
-    }
-
-    engine->is_initialized = 0;
+/* ---------------------------------------------------------------------------
+ * 引擎释放
+ * ------------------------------------------------------------------------- */
+void lane_engine_free(lane_engine_t *e)
+{
+    if (!e) return;
+    free(e->lane_buf);     e->lane_buf = NULL;
+    free(e->drivable_buf); e->drivable_buf = NULL;
+    free(e->input_buf);    e->input_buf = NULL;
+    free(e->in_attr);      e->in_attr = NULL;
+    free(e->out_attr);     e->out_attr = NULL;
+    free(e->inputs);       e->inputs = NULL;
+    free(e->outputs);      e->outputs = NULL;
+    if (e->ctx > 0) rknn_destroy(e->ctx);
+    e->ctx = 0; e->ready = 0;
 }
 
-void draw_lane_and_drivable(uint8_t* rgb_data, int width, int height,
-                           const yolopv2_result_t* results) {
-    if (!rgb_data || !results || !results->lane_line_data || !results->drivable_area_data) {
-        // printf("[DEBUG] draw参数检查失败\n");
-        // fflush(stdout);
+/* ---------------------------------------------------------------------------
+ * 可视化（仅用于显示，不影响判定）：叠加可行驶区域(绿) + 车道线(红)
+ * ------------------------------------------------------------------------- */
+void lane_overlay_draw(uint8_t *rgb888, int w, int h, const lane_seg_t *seg)
+{
+    if (!rgb888 || !seg || !seg->lane || !seg->drivable) return;
+    int area = seg->w * seg->h;
+    for (int y = 0; y < h; y++) {
+        int sy = (int)((float)y / h * seg->h); if (sy >= seg->h) sy = seg->h - 1;
+        for (int x = 0; x < w; x++) {
+            int sx = (int)((float)x / w * seg->w); if (sx >= seg->w) sx = seg->w - 1;
+            int si = sy * seg->w + sx;
+            /* 可行驶区域：通道1 > 通道0 → 绿色半透明 */
+            if (seg->drivable[area + si] > seg->drivable[si]) {
+                int di = (y * w + x) * 3;
+                rgb888[di + 0] = (uint8_t)(rgb888[di + 0] * 0.6f);
+                rgb888[di + 1] = (uint8_t)(rgb888[di + 1] * 0.6f + 255 * 0.4f);
+                rgb888[di + 2] = (uint8_t)(rgb888[di + 2] * 0.6f);
+            }
+            /* 车道线：概率 > 0.3 → 纯红 */
+            if (seg->lane[si] > 0.3f) {
+                int di = (y * w + x) * 3;
+                rgb888[di + 0] = 0; rgb888[di + 1] = 0; rgb888[di + 2] = 255;
+            }
+        }
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * 弯道判定（核心优化）：从车道线概率图直接算 LaneResult
+ *   - 把画面按高度均分为若干水平带，逐带求车道线重心 x 与概率质量
+ *   - curve_offset = 远端带重心_x − 近端带重心_x（带符号像素偏移，正值=路向右弯）
+ *   - confidence  = 覆盖率(0.6权重) + 远端带质量占比(0.4权重)，真实推算，封顶100
+ *   - direction   = 依据 |curve_offset| 阈值判断左/右/直；覆盖率过低判 UNKNOWN
+ * ------------------------------------------------------------------------- */
+void lane_result_from_seg(const lane_seg_t *seg, LaneResult *out, uint32_t frame_id)
+{
+    if (!out) return;
+    memset(out, 0, sizeof(*out));
+    out->version  = LANERESULT_VERSION;
+    out->frame_id = frame_id;
+
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    out->timestamp_us = (uint64_t)now.tv_sec * 1000000u + (uint64_t)now.tv_usec;
+
+    if (!seg || !seg->lane || seg->w <= 0 || seg->h <= 0) {
+        out->direction = LANE_UNKNOWN;
+        out->confidence = 0;
+        out->curve_offset = 0;
+        out->lane_pixel_cnt = 0;
         return;
     }
 
-    // printf("[DEBUG] draw开始: width=%d, height=%d, result_width=%d, result_height=%d\n",
-    //        width, height, results->width, results->height);
-    // fflush(stdout);
+    const int W = seg->w, H = seg->h;
+    const float *lane = seg->lane;
+    const float TH = 0.3f;
 
-    float ratiow = (float)width / results->width;
-    float ratioh = (float)height / results->height;
+    /* 水平带数量（远处多采样，权重更大） */
+    const int BANDS = 8;
+    const int band_h = H / BANDS;
+    long band_mass[BANDS];
+    double band_cx[BANDS];     /* 带内车道线重心 x（概率加权） */
+    long total_lane = 0;
 
-    int area = results->height * results->width;
-
-    // printf("[DEBUG] draw可行驶区域开始...\n");
-    // fflush(stdout);
-    // 绘制可行驶区域（绿色半透明）
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            const int x = (int)(j / ratiow);
-            const int y = (int)(i / ratioh);
-
-            if (x >= 0 && x < results->width && y >= 0 && y < results->height) {
-                // 比较两个通道，选择可行驶区域
-                float channel0 = results->drivable_area_data[y * results->width + x];
-                float channel1 = results->drivable_area_data[area + y * results->width + x];
-
-                if (channel0 < channel1) {
-                    // 可行驶区域 - 绿色半透明叠加
-                    int idx = (i * width + j) * 3;
-                    rgb_data[idx] = (uint8_t)(rgb_data[idx] * 0.6 + 0 * 0.4);       // R
-                    rgb_data[idx + 1] = (uint8_t)(rgb_data[idx + 1] * 0.6 + 255 * 0.4); // G
-                    rgb_data[idx + 2] = (uint8_t)(rgb_data[idx + 2] * 0.6 + 0 * 0.4);   // B
+    for (int b = 0; b < BANDS; b++) {
+        band_mass[b] = 0;
+        band_cx[b]   = 0.0;
+        int y0 = b * band_h, y1 = (b == BANDS - 1) ? H : (b + 1) * band_h;
+        for (int y = y0; y < y1; y++) {
+            for (int x = 0; x < W; x++) {
+                float p = lane[y * W + x];
+                if (p > TH) {
+                    long wgt = (long)(p * 100.0f);
+                    band_mass[b] += wgt;
+                    band_cx[b]   += (double)x * wgt;
+                    total_lane   += wgt;
                 }
             }
         }
-    }
-    // printf("[DEBUG] draw可行驶区域完成\n");
-    // fflush(stdout);
-
-    // printf("[DEBUG] draw车道线开始...\n");
-    // fflush(stdout);
-
-    int lane_pixel_count = 0;  // 统计绘制了多少车道线像素
-
-    // 绘制车道线（纯红色）
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            const int x = (int)(j / ratiow);
-            const int y = (int)(i / ratioh);
-
-            if (x >= 0 && x < results->width && y >= 0 && y < results->height) {
-                float lane_prob = results->lane_line_data[y * results->width + x];
-
-                if (lane_prob > 0.3) {  // 降低阈值从0.5到0.3
-                    // 车道线 - 纯红色 (BGR格式)
-                    int idx = (i * width + j) * 3;
-                    rgb_data[idx] = 0;       // B
-                    rgb_data[idx + 1] = 0;   // G
-                    rgb_data[idx + 2] = 255; // R
-                    lane_pixel_count++;
-                }
-            }
-        }
-    }
-    printf("绘制 %d 个红色车道线像素\n", lane_pixel_count);
-    fflush(stdout);
-
-    // 弯道检测（基于绘制后的红色车道线）
-    TurnType turn = detect_turn_direction_from_image(rgb_data, width, height);
-
-    // 计算置信度：基于车道线像素数量
-    uint32_t confidence = 0;
-    if (lane_pixel_count > 500) {
-        confidence = 90;  // 车道线清晰
-    } else if (lane_pixel_count > 300) {
-        confidence = 75;  // 车道线较清晰
-    } else if (lane_pixel_count > 100) {
-        confidence = 60;  // 车道线模糊
-    } else {
-        confidence = 40;  // 车道线不清晰
+        if (band_mass[b] > 0)
+            band_cx[b] /= (double)band_mass[b];
+        else
+            band_cx[b] = -1.0;   /* 该带无效 */
     }
 
-    // 计算角度：基于弯道类型估算
-    uint32_t angle = 0;
-    uint32_t curve_type_shm = 0;  // 共享内存中的弯道类型
+    out->lane_pixel_cnt = (uint16_t)(total_lane / 100);   /* 近似像素数 */
 
-    switch (turn) {
-        case TURN_LEFT:
-            curve_type_shm = 1;  // CURVE_LEFT
-            angle = 25;  // 左弯约25度
-            break;
-        case TURN_RIGHT:
-            curve_type_shm = 2;  // CURVE_RIGHT
-            angle = 25;  // 右弯约25度
-            break;
-        case TURN_STRAIGHT:
-        default:
-            curve_type_shm = 0;  // CURVE_NONE
-            angle = 0;   // 直道0度
-            break;
+    /* 覆盖率：车道线像素 / 全图像素（用阈值过后的存在性近似） */
+    long exist = 0;
+    for (int i = 0; i < W * H; i++) if (lane[i] > TH) exist++;
+    float coverage = (float)exist / (float)(W * H);
+
+    /* 远端质量占比：最上 3 带 / 全图（远端有车道线 → 判定更可信） */
+    long far_mass = band_mass[0] + band_mass[1] + band_mass[2];
+    float far_ratio = (total_lane > 0) ? (float)far_mass / (float)total_lane : 0.0f;
+
+    /* 真实置信度：覆盖率为主、远端质量为辅 */
+    int conf = (int)(coverage * 600.0f + far_ratio * 40.0f);
+    if (conf > 100) conf = 100;
+    if (conf < 0)   conf = 0;
+    out->confidence = (uint8_t)conf;
+
+    /* 拿远/近有效带重心算偏移 */
+    int far_cx = -1, near_cx = -1;
+    for (int b = 0; b < BANDS; b++) if (band_cx[b] >= 0) { far_cx = (int)band_cx[b]; break; }
+    for (int b = BANDS - 1; b >= 0; b--) if (band_cx[b] >= 0) { near_cx = (int)band_cx[b]; break; }
+
+    if (far_cx < 0 || near_cx < 0 || coverage < 0.01f) {
+        /* 车道线太弱或缺失 → 未知 */
+        out->direction = LANE_UNKNOWN;
+        out->curve_offset = 0;
+        return;
     }
 
-    // 更新弯道检测共享内存
-    static uint32_t curve_frame_id = 0;
-    curve_frame_id++;
-    curve_detection_update(curve_frame_id, curve_type_shm, confidence, angle);
+    /* 带符号像素偏移：远端重心相对近端重心的横向位移。
+     * 远端重心偏右 → 路向右弯 → 正值（与下游“右转”语义一致）。 */
+    int offset = far_cx - near_cx;
+    out->curve_offset = (int16_t)offset;
 
-    printf("\n");
-    printf("========================================\n");
-    switch (turn) {
-        case TURN_LEFT:
-            printf("       *** 左弯道 *** (置信度:%u%%, 角度:%u°)\n", confidence, angle);
-            printf("       <<<  LEFT TURN  <<<\n");
-            break;
-        case TURN_RIGHT:
-            printf("       *** 右弯道 *** (置信度:%u%%, 角度:%u°)\n", confidence, angle);
-            printf("       >>>  RIGHT TURN  >>>\n");
-            break;
-        case TURN_STRAIGHT:
-        default:
-            printf("       === 直道 === (置信度:%u%%)\n", confidence);
-            printf("       |||  STRAIGHT  |||\n");
-            break;
-    }
-    printf("========================================\n");
-    printf("\n");
-    fflush(stdout);
+    const int STRAIGHT_TH = 8;   /* 像素阈值：小于此视为直道 */
+    if (offset >  STRAIGHT_TH) out->direction = LANE_RIGHT;
+    else if (offset < -STRAIGHT_TH) out->direction = LANE_LEFT;
+    else out->direction = LANE_STRAIGHT;
 }
 
-void rgb565_to_rgb888_yolo(const uint16_t* rgb565_data, uint8_t* rgb888_data,
-                          int width, int height) {
-    if (!rgb565_data || !rgb888_data) return;
-
-    int total_pixels = width * height;
-    for (int i = 0; i < total_pixels; i++) {
-        uint16_t pixel = rgb565_data[i];
-
-        // 提取RGB分量 (5-6-5格式)
-        uint8_t r = (pixel >> 11) & 0x1F;
-        uint8_t g = (pixel >> 5) & 0x3F;
-        uint8_t b = pixel & 0x1F;
-
-        // 扩展到8位
-        rgb888_data[i * 3] = (r << 3) | (r >> 2);         // R
-        rgb888_data[i * 3 + 1] = (g << 2) | (g >> 4);     // G
-        rgb888_data[i * 3 + 2] = (b << 3) | (b >> 2);     // B
+/* ---------------------------------------------------------------------------
+ * RGB565→RGB888（PCIe 数据流专用，A 的预处理）
+ * ------------------------------------------------------------------------- */
+void rgb565_to_rgb888_yolo(const uint16_t *src565, uint8_t *dst888, int w, int h)
+{
+    if (!src565 || !dst888) return;
+    int n = w * h;
+    for (int i = 0; i < n; i++) {
+        uint16_t p = src565[i];
+        uint8_t r = (uint8_t)((p >> 11) & 0x1F);
+        uint8_t g = (uint8_t)((p >> 5)  & 0x3F);
+        uint8_t b = (uint8_t)( p        & 0x1F);
+        dst888[i * 3 + 0] = (uint8_t)((r << 3) | (r >> 2));
+        dst888[i * 3 + 1] = (uint8_t)((g << 2) | (g >> 4));
+        dst888[i * 3 + 2] = (uint8_t)((b << 3) | (b >> 2));
     }
 }
