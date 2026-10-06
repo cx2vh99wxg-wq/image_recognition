@@ -1,7 +1,7 @@
 # image_recognition — 辅助驾驶小车（三人从零重写）
 
 M/S 双 RK3568 + FPGA 三级流水线：感知（M 板）→ 决策（S 板）→ 执行（S 板 FSPI → 电机）。
-本仓库为**从零重写版本**，不存放旧代码拷贝；旧实现仅作学习参考（见文末）。
+本仓库为**从零重写版本**，旧实现仅作学习参考（`udp_rk_rk_yolo/`，见文末）。
 
 ## 模块结构（按分工方案 v2.0）
 
@@ -19,11 +19,17 @@ image_recognition/
 ├── control/       # 执行层（C，待交付）：FSPI 主机驱动 + 100ms 控制循环 + 安全
 ├── fpga/          # FPGA RTL（C）：PCIe 封包 / FSPI 从机 / 串口屏 UART
 ├── HMI/           # 陶晶驰串口屏工程（C）
-├── scripts/       # 启动/停止脚本（B）：start_m.sh start_s.sh stop_all.sh
+├── scripts/       # 启动/停止/网络/诊断脚本（B）
+│   ├── start_m.sh start_s.sh stop_all.sh
+│   ├── setup_network_m.sh setup_network_s.sh check_system.sh
+│   └── board/     # 板卡部署：bashrc.m/s 自启模板 + deploy_board.sh
+├── drivers/       # 板端 PCIe 驱动（二进制，来自参考工程）pango_pci_driver.ko
+├── lib/           # 板端 RKNN 运行时（二进制，来自参考工程）librknnrt.so
+├── bin/           # make board 生成的板端可执行文件（部署布局，含 staging）
 ├── model/         # 板端模型（本地文件，不入 git）
 │   ├── yolopv2_Nx3x480x640_rk3568.rknn    # M 板车道线（A）
 │   └── yolov5s-640-640.rknn                # S 板行人（B）
-├── Makefile       # 顶层一键构建
+├── Makefile       # 顶层一键构建 + 板端 run/stop/status 命令
 └── docs/          # 分工方案等文档（见旧仓库 docs/）
 ```
 
@@ -39,11 +45,33 @@ make clean
 
 ## 上板启动（不控电机，验证感知链路）
 
+板端运行依赖文件已随仓库分发（见上文 `drivers/`、`lib/`）：
+
+| 文件 | 用途 |
+|---|---|
+| `drivers/pango_pci_driver.ko` | PCIe 采集内核驱动（insmod） |
+| `lib/librknnrt.so` | RKNN 推理运行时（运行时 `LD_LIBRARY_PATH` 已由脚本设置） |
+
+### 一次性部署（每块板卡做一次）
+
 ```bash
-# M 板：insmod 驱动 → 配 IP 192.168.100.10 → 感知 + UDP 发送
-./scripts/start_m.sh <模型绝对路径> <驱动ko路径>
-# S 板：配 IP 192.168.100.20 → 决策 + UDP 接收 + LCD 显示（--no-lcd 可无屏跑）
-./scripts/start_s.sh --model /path/to/yolov5s-640-640.rknn
+# 把仓库（或 bin/ drivers/ lib/ model/ scripts/）拷到板卡后，在板卡上执行：
+sudo ./scripts/board/deploy_board.sh m    # M 板：装自启(.bashrc)+驱动+网络
+sudo ./scripts/board/deploy_board.sh s    # S 板：同上
+# 此后登录即自动加载驱动、配置直连网络、设置 LD_LIBRARY_PATH
+```
+
+### 启动 / 停止
+
+```bash
+# M 板：insmod 驱动 → 配 IP 192.168.100.10(end1) → 感知 + UDP 发送
+sudo ./scripts/start_m.sh [模型绝对路径] [驱动ko绝对路径]
+# S 板：配 IP 192.168.100.20(end1) → 决策 + UDP 接收 + LCD（--no-lcd 无屏跑）
+sudo ./scripts/start_s.sh --model /path/to/yolov5s-640-640.rknn
+
+# 或顶层 Makefile 等价命令（板卡上）：make run-m / run-s / stop / status
+# 网络单独配置：sudo ./scripts/setup_network_m.sh / setup_network_s.sh
+# 诊断：./scripts/check_system.sh
 # 清理
 ./scripts/stop_all.sh
 ```
@@ -72,5 +100,6 @@ shm_cmd --> C(control@S板) --> FSPI --> FPGA --> 电机
 
 ## 旧代码参考
 
-旧实现（含 FPGA 原工程、旧 UDP/感知代码）在仓库**外**：`E:\image_recognition\udp_rk_rk_yolo\`。
-仅作阅读参考，**禁止**把旧文件拷回本仓库——协议/结构以 `common/` 唯一真源为准。
+旧实现（含 FPGA 原工程、旧 UDP/感知代码）在仓库**内** `udp_rk_rk_yolo/`（也见 `E:\image_recognition\udp_rk_rk_yolo\`）。
+**源代码**仅作阅读参考，禁止拷回——协议/结构以 `common/` 唯一真源为准。
+**二进制依赖**（`pango_pci_driver.ko`、`librknnrt.so`）无法从源码重建，已复制到 `drivers/`、`lib/` 随仓库分发。

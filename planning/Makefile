@@ -51,7 +51,8 @@ BOARD_SRCS := csrc/main_planning.c csrc/decision.c csrc/person_detect.c \
 
 bin:
 	@mkdir -p obj
-	$(ARCHCC) $(CFLAGS) -o planning_main csrc/main_planning.c csrc/decision.c \
+	# -L../lib 指向仓库根 lib/librknnrt.so（RKNN 运行时，板端链接用）
+	$(ARCHCC) $(CFLAGS) -L../lib -o planning_main csrc/main_planning.c csrc/decision.c \
 	    csrc/person_detect.c csrc/render_lcd_x11.c csrc/udp_sender.c \
 	    csrc/udp_receiver.c ../common/csrc/shm_ipc.c ../common/csrc/udp_proto.c \
 	    ../common/csrc/log.c -lm -lrt -lX11 -lrknnrt

@@ -104,7 +104,8 @@ obj/log.o: ../common/csrc/log.c
 	$(ARCHCC) $(CFLAGS) -c $< -o $@
 
 bin: $(BOARD_OBJS)
-	$(ARCHCC) -o perception_main $^ -lm -lrknnrt
+	# -L../lib 指向仓库根 lib/librknnrt.so（RKNN 运行时，板端链接用）
+	$(ARCHCC) -L../lib -o perception_main $^ -lm -lrknnrt
 
 clean:
 	rm -f csrc/*.o test/*.o obj/*.o test/test_capture test/test_lane \
