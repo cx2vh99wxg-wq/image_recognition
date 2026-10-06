@@ -1,10 +1,10 @@
 /*
- * log.h — 统一日志宏（由【人员 A · 感知】起草，三人共用）
+ * log.h — 统一日志宏（【人员 A · 感知】起草，【人员 B】于 2026-10-06 修复）
  *
  * 各模块统一打印前缀，便于联调时区分来源。
  * 用法：LOGI("frame %u\n", id);  LOGE("open fail: %s\n", strerror(errno));
- * 通过定义 PERCEPTION_NO_DEBUG 可关闭 DEBUG 级输出；通过 log_set_level 可
- * 在运行时过滤日志级别。
+ * 通过 log_set_level 可在运行时过滤日志级别（B 修复：此前 log_set_level 为
+ * 死代码，宏未查级别，现由 log_enabled() 统一判级）。
  *
  * 模块前缀：默认 "APP"，各模块可在包含本头文件前自行定义，例如
  *   #define LOG_TAG "PLANNING"
@@ -33,19 +33,20 @@ typedef enum {
 void log_set_level(LogLevel l);
 LogLevel log_get_level(void);
 const char *log_level_name(LogLevel l);
+int  log_enabled(LogLevel l);   /* B 新增：级别过滤判据 */
 
 #define LOGI(fmt, ...) \
-    fprintf(stdout, "[" LOG_TAG "][I] " fmt, ##__VA_ARGS__)
+    do { if (log_enabled(LOG_LEVEL_INFO))  fprintf(stdout, "[" LOG_TAG "][I] " fmt, ##__VA_ARGS__); } while (0)
 
 #define LOGW(fmt, ...) \
-    fprintf(stdout, "[" LOG_TAG "][W] " fmt, ##__VA_ARGS__)
+    do { if (log_enabled(LOG_LEVEL_WARN))  fprintf(stdout, "[" LOG_TAG "][W] " fmt, ##__VA_ARGS__); } while (0)
 
 #define LOGE(fmt, ...) \
-    fprintf(stderr, "[" LOG_TAG "][E] " fmt, ##__VA_ARGS__)
+    do { if (log_enabled(LOG_LEVEL_ERROR)) fprintf(stderr, "[" LOG_TAG "][E] " fmt, ##__VA_ARGS__); } while (0)
 
 #ifndef PERCEPTION_NO_DEBUG
 #define LOGD(fmt, ...) \
-    fprintf(stdout, "[" LOG_TAG "][D] " fmt, ##__VA_ARGS__)
+    do { if (log_enabled(LOG_LEVEL_DEBUG)) fprintf(stdout, "[" LOG_TAG "][D] " fmt, ##__VA_ARGS__); } while (0)
 #else
 #define LOGD(fmt, ...) ((void)0)
 #endif

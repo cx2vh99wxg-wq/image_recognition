@@ -1,20 +1,24 @@
-# perception/Makefile —【人员 A · 感知】模块构建
+# perception/Makefile —【人员 A · 感知】模块构建（B 集成修复 2026-10-06）
 #
 # 默认目标（本机 / WSL x86）：编译全部源（语法/可链接性自检）+ 运行纯逻辑单元测试。
 # 板端可执行程序（perception_main）用交叉工具链单独编译到 obj/，与本地对象文件
-# 完全隔离，避免“先 make（x86 对象）再 make CROSS=... bin”时把 x86 .o 错误链进
+# 完全隔离，避免"先 make（x86 对象）再 make CROSS=... bin"时把 x86 .o 错误链进
 # aarch64 程序。
 #
-#   make                              本机编译 + 跑 6 套单测
+#   make                              本机编译 + 跑 8 套单测
 #   make CROSS=aarch64-linux-gnu- bin  板端构建（需 B 的 common/csrc/shm_ipc.c + 板端 librknnrt）
 #   make clean
+#
+# B 集成修改：
+#  1. CFLAGS 增加 -Werror（分工方案 7.4 编译规范），全部源已在本机验证零告警；
+#  2. BOARD_OBJS 增加 obj/log.o（common/log.c，B 修复 log_set_level 后宏依赖 log_enabled）。
 
 CC     ?= gcc
 CROSS  ?=
 ARCHCC := $(CROSS)$(CC)
 
 INCLUDE := -Iinclude -I../common/include
-CFLAGS  := -std=c11 -Wall -Wextra -O2 $(INCLUDE)
+CFLAGS  := -std=c11 -Wall -Wextra -Werror -O2 $(INCLUDE)
 
 # 本地（本机 / WSL x86）编译的源
 MODULE_SRCS := csrc/pcie_capture.c csrc/lane_detect.c csrc/turn_decide.c \
@@ -85,13 +89,17 @@ BOARD_OBJS := obj/main_perception.o obj/pcie_capture.o obj/lane_detect.o \
               obj/turn_decide.o obj/lane_mark.o obj/zebra_detect.o \
               obj/traffic_light.o obj/isp_params.o obj/perception_pipeline.o \
               obj/lane_stub.o \
-              obj/shm_ipc.o
+              obj/shm_ipc.o obj/log.o
 
 obj/%.o: csrc/%.c
 	@mkdir -p obj
 	$(ARCHCC) $(CFLAGS) -c $< -o $@
 
 obj/shm_ipc.o: ../common/csrc/shm_ipc.c
+	@mkdir -p obj
+	$(ARCHCC) $(CFLAGS) -c $< -o $@
+
+obj/log.o: ../common/csrc/log.c
 	@mkdir -p obj
 	$(ARCHCC) $(CFLAGS) -c $< -o $@
 

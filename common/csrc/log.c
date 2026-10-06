@@ -1,5 +1,5 @@
 /*
- * log.c — 统一日志宏的实现（A 起草，三人共用）
+ * log.c — 统一日志宏的实现（A 起草，B 于 2026-10-06 修复级别过滤生效）
  */
 #include "log.h"
 
@@ -18,3 +18,5 @@ const char* log_level_name(LogLevel l) {
 void log_set_level(LogLevel l) { g_level = l; }
 
 LogLevel log_get_level(void) { return g_level; }
+
+int log_enabled(LogLevel l) { return (int)l >= (int)g_level; }

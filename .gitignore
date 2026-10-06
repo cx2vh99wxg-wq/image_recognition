@@ -11,3 +11,27 @@
 .workbuddy/
 .vscode/
 *.swp
+
+# ---- B 追加（2026-10-06）----
+# 可执行文件
+perception_main
+planning_main
+udp_m_send_main
+test/test_capture
+test/test_lane
+test/test_turn
+test/test_lane_mark
+test/test_zebra
+test/test_stub
+test/test_traffic_light
+test/test_isp_params
+common/test/test_udp_proto
+planning/test/test_decision
+planning/test/test_udp
+
+# 模型文件（大文件不入库）
+*.rknn
+
+# Python 缓存
+__pycache__/
+*.pyc
