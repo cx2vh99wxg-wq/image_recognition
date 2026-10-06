@@ -47,63 +47,69 @@ int decision_step(decision_ctx_t *ctx,
     ctx->out_seq++;
     cmd_reset(out, ctx->out_seq);
 
-    /* 契约校验：版本不匹配的输入一律按 NULL 忽略（不参与决策） */
-    if (lane   && lane->version   != LANERESULT_VERSION) lane   = NULL;
-    if (tl     && tl->version     != TL_VERSION)         tl     = NULL;
-    if (person && person->version != PERSON_VERSION)     person = NULL;
+    /* 契约校验 + 缓存更新：版本匹配的输入才缓存，并刷新到达时刻。
+     * 版本不匹配的输入按 NULL 忽略（不参与决策、不污染缓存）。 */
+    if (lane   && lane->version   == LANERESULT_VERSION) {
+        ctx->last_lane     = *lane;
+        ctx->last_lane_us  = now_us;
+    }
+    if (tl     && tl->version     == TL_VERSION) {
+        ctx->last_tl       = *tl;
+        ctx->last_tl_us    = now_us;
+    }
+    if (person && person->version == PERSON_VERSION) {
+        ctx->last_person       = *person;
+        ctx->last_person_us    = now_us;
+    }
 
-    /* 记录各输入最新到达时刻（基于 S 板本地时钟） */
-    if (lane)   ctx->last_lane_us   = now_us;
-    if (tl)     ctx->last_tl_us     = now_us;
-    if (person) ctx->last_person_us = now_us;
-
+    /* 基于“缓存是否超龄”判定新鲜度（不再依赖本次是否传入了非 NULL） */
     const int lane_ok   = age_ok(ctx->last_lane_us,   now_us, DEC_LANE_MAX_AGE_MS);
     const int tl_ok     = age_ok(ctx->last_tl_us,     now_us, DEC_TL_MAX_AGE_MS);
     const int person_ok = age_ok(ctx->last_person_us, now_us, DEC_PERSON_MAX_AGE_MS);
 
     /* ---- 优先级 1：行人紧急停 ---- */
-    if (person_ok && person && person->detected &&
-        person->confidence >= DEC_BRAKE_CONF_MIN) {
+    if (person_ok && ctx->last_person.detected &&
+        ctx->last_person.confidence >= DEC_BRAKE_CONF_MIN) {
         out->command    = CMD_STOP;
         out->enable     = 1;
         out->priority   = CMD_PRI_EMERGENCY;
-        out->confidence = person->confidence;
+        out->confidence = ctx->last_person.confidence;
         return 0;
     }
 
     /* ---- 优先级 2：红灯停车（绿灯不阻断弯道/直行） ---- */
-    if (tl_ok && tl && tl->state == TL_RED && tl->detected &&
-        tl->confidence >= DEC_BRAKE_CONF_MIN) {
+    if (tl_ok && ctx->last_tl.state == TL_RED && ctx->last_tl.detected &&
+        ctx->last_tl.confidence >= DEC_BRAKE_CONF_MIN) {
         out->command    = CMD_STOP;
         out->enable     = 1;
         out->priority   = CMD_PRI_STOP;
-        out->confidence = tl->confidence;
+        out->confidence = ctx->last_tl.confidence;
         return 0;
     }
 
     /* ---- 优先级 3/4：车道弯道/直行 ---- */
-    if (lane_ok && lane) {
-        switch (lane->direction) {
+    if (lane_ok) {
+        switch (ctx->last_lane.direction) {
             case LANE_LEFT:
                 out->command    = CMD_LEFT;
                 out->enable     = 1;
                 out->priority   = CMD_PRI_NORMAL;
-                out->confidence = lane->confidence;
+                out->confidence = ctx->last_lane.confidence;
                 ctx->stall_lane_cnt = 0;
                 return 0;
             case LANE_RIGHT:
                 out->command    = CMD_RIGHT;
                 out->enable     = 1;
                 out->priority   = CMD_PRI_NORMAL;
-                out->confidence = lane->confidence;
+                out->confidence = ctx->last_lane.confidence;
                 ctx->stall_lane_cnt = 0;
                 return 0;
             case LANE_STRAIGHT:
-                if (lane->confidence >= DEC_GO_CONF_MIN) {
+                if (ctx->last_lane.confidence >= DEC_GO_CONF_MIN) {
                     out->command    = CMD_GO;
                     out->enable     = 1;
                     out->priority   = CMD_PRI_NORMAL;
-                    out->confidence = lane->confidence;
+                    out->confidence = ctx->last_lane.confidence;
                     ctx->stall_lane_cnt = 0;
                 } else {
                     out->command = CMD_NONE;   /* 置信度不足，不冒进 */

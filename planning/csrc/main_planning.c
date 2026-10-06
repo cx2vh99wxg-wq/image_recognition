@@ -122,6 +122,9 @@ int main(int argc, char **argv)
     uint64_t last_pkt_us = 0, last_stat_us = 0;
     int local_ok = 0;
 
+    LaneResult cur_lane;        /* 本周期最新收到的车道结果（仅 lane_fresh=1 时有效） */
+    int lane_fresh = 0;         /* 本周期是否收到“新的一帧”车道结果 */
+
     while (g_keep_running) {
         uint64_t now = now_us_mono();
 
@@ -137,9 +140,9 @@ int main(int argc, char **argv)
                 frames_recv++;
                 /* 写远端图 + 转发车道结果到 S 板 shm_lane */
                 if (shm_write_udp_img(frame, frame_len) != 0) LOGW("写 shm_udp_img 失败\n");
-                LaneResult lane;
-                if (udp_hdr_to_lane(&hdr, &lane) == 0) {
-                    if (shm_write_lane(&lane) != 0) LOGW("转发 shm_lane 失败\n");
+                if (udp_hdr_to_lane(&hdr, &cur_lane) == 0) {
+                    if (shm_write_lane(&cur_lane) != 0) LOGW("转发 shm_lane 失败\n");
+                    lane_fresh = 1;   /* 仅在真正收到新帧时置位，供决策做超龄判断 */
                 }
             }
         }
@@ -161,11 +164,12 @@ int main(int argc, char **argv)
         }
         if (shm_write_person(&pstate) != 0) LOGW("写 shm_person 失败\n");
 
-        /* ---- 4. 决策（车道来自 UDP 转发，行人来自本地检测） ---- */
-        LaneResult lane;
-        LaneResult *lp = NULL;
-        if (shm_read_lane(&lane) == 0 && lane.version == LANERESULT_VERSION)
-            lp = &lane;
+        /* ---- 4. 决策（车道来自 UDP 转发，行人来自本地检测） ----
+         * 只在“收到新的一帧”时才把车道传给决策；否则传 NULL，由 decision
+         * 内部缓存 + 超龄机制（DEC_LANE_MAX_AGE_MS）决定是否沿用上一帧结果。
+         * 旧实现每周期都读 sticky 的 shm_lane 并恒传非 NULL，导致“超龄降级”
+         * 永不生效——M 端断流后 S 端仍会按最后一条旧车道继续行驶。 */
+        LaneResult *lp = lane_fresh ? &cur_lane : NULL;
 
         PersonState *p_in = (pstate.version == PERSON_VERSION) ? &pstate : NULL;
         if (decision_step(&dec, lp, NULL, NULL, NULL, p_in, now, &cmd) != 0) {
@@ -173,6 +177,7 @@ int main(int argc, char **argv)
         } else if (cmd.command != CMD_NONE) {
             if (shm_write_cmd(&cmd) != 0) LOGW("写 shm_cmd 失败\n");
         }
+        lane_fresh = 0;   /* 复位，等待下一帧 */
 
         /* ---- 5. LCD 渲染 ---- */
         if (lcd) {

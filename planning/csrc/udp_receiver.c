@@ -24,8 +24,18 @@ int udp_reassembly_init(udp_reassembly_t *r, uint8_t *frame_buf, size_t cap)
 void udp_reassembly_reset(udp_reassembly_t *r)
 {
     if (!r) return;
+    /* 仅复位“进行中帧”状态，必须保留 frame_buf / frame_cap：
+     * 旧实现用 memset 整体清零，会把 frame_cap 清成 0，导致超时 reset 后
+     * begin_frame() 恒因 `data_size > frame_cap` 失败，重组器永久失效。
+     * （该缺陷曾使“残帧超时丢弃”路径一旦触发，后续所有帧都无法再重组） */
     free(r->got);
-    memset(r, 0, sizeof(*r));
+    r->got = NULL;
+    r->cur_frame_id    = 0;
+    r->block_size      = 0;
+    r->block_count     = 0;
+    r->received_blocks = 0;
+    r->have_hdr        = 0;
+    memset(&r->hdr, 0, sizeof(r->hdr));
 }
 
 static int begin_frame(udp_reassembly_t *r, const udp_frame_hdr_t *hdr)

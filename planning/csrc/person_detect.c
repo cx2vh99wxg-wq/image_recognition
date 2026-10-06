@@ -14,8 +14,11 @@
 #include <string.h>
 #include <stdio.h>
 
-/* 默认模型路径（相对运行目录；上板建议 --model 传绝对路径） */
-#define PERSON_DEFAULT_MODEL "model/yolov5s_Nx3x480x640_rk3568.rknn"
+/* 默认模型路径（相对运行目录；上板建议 --model 传绝对路径）。
+ * 注意：仓库实际模型文件为 model/yolov5s-640-640.rknn（输入 640x640），
+ * 而当前 img_w/img_h 为 640x480，上板联调时需按 rknn_query 的真实输入
+ * 尺寸做 letterbox 缩放/对齐，RKNN 解析部分仍需实板标定。 */
+#define PERSON_DEFAULT_MODEL "model/yolov5s-640-640.rknn"
 
 struct person_detect_ctx {
     int  img_w;

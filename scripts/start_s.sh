@@ -11,11 +11,20 @@ NET_IF="${NET_IF:-eth0}"
 S_IP="192.168.100.20"
 EXTRA=""
 
-for a in "$@"; do
-    case "$a" in
-        --model) EXTRA="$EXTRA --model ${2:-model/yolov5s_Nx3x480x640_rk3568.rknn}"; shift 2;;
-        --no-lcd) EXTRA="$EXTRA --no-lcd"; shift;;
-        *) shift;;
+# 修正默认模型路径：仓库实际文件为 model/yolov5s-640-640.rknn
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --model)
+            EXTRA="$EXTRA --model ${2:-model/yolov5s-640-640.rknn}"
+            shift 2
+            ;;
+        --no-lcd)
+            EXTRA="$EXTRA --no-lcd"
+            shift
+            ;;
+        *)
+            shift
+            ;;
     esac
 done
 

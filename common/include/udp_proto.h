@@ -15,7 +15,7 @@
  * 若未来迁移其他架构，需在 pack/unpack 处补字节序转换。图像数据原样透传。
  *
  * 包类型总览：
- *   [M→S] udp_frame_hdr_t 帧头（60B packed，含车道结果语义字段）
+ *   [M→S] udp_frame_hdr_t 帧头（76B packed，含车道结果语义字段）
  *   [M→S] udp_data_hdr_t  数据块（16B packed + payload）
  *   [双向] udp_heartbeat_t 心跳（16B packed）
  *   [S→M] udp_cmd_t        命令（20B packed，调试/反向控制预留）

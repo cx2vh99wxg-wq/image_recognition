@@ -114,17 +114,24 @@ int main(void)
     CHECK(out.command == CMD_STOP, "person -> STOP");
     CHECK(out.priority == CMD_PRI_EMERGENCY, "person pri=2");
 
-    /* 10. 超龄降级：车道 500ms 后失效 → NONE */
+    /* 9b. 行人离开 + 绿灯 → 恢复按车道行驶（新帧 detected=0 覆盖行人缓存） */
+    PersonState p_clear = mk_person(0, 0);
+    tl = mk_tl(TL_GREEN, 80, 1);
+    out = run(&ctx, &l, &tl, &p_clear, t0 + 8100);
+    CHECK(out.command == CMD_RIGHT, "person clear + green -> RIGHT");
+
+    /* 10. 超龄降级：车道结果 500ms 后失效 → NONE */
     l = mk_lane(7, LANE_STRAIGHT, 95);
     out = run(&ctx, &l, NULL, NULL, t0 + 9000);
     CHECK(out.command == CMD_GO, "fresh lane -> GO");
     out = run(&ctx, NULL, NULL, NULL, t0 + 9000 + (uint64_t)DEC_LANE_MAX_AGE_MS * 1000u + 1);
     CHECK(out.command == CMD_NONE, "aged lane -> NONE");
 
-    /* 11. 版本不匹配输入被忽略 */
+    /* 11. 版本不匹配输入被忽略（不覆盖缓存；此时车道已超龄 → NONE） */
     LaneResult bad = mk_lane(8, LANE_LEFT, 90);
     bad.version = 0xFF;
-    out = run(&ctx, &bad, NULL, NULL, t0 + 11000);
+    out = run(&ctx, &bad, NULL, NULL,
+              t0 + 9000 + (uint64_t)DEC_LANE_MAX_AGE_MS * 1000u + 2);
     CHECK(out.command == CMD_NONE, "bad version ignored");
 
     if (g_fail == 0) {

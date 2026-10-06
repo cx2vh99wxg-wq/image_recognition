@@ -28,28 +28,34 @@ struct render_lcd_ctx {
 };
 
 #if defined(__linux__)
-static void rgb565_line_to_888(const uint8_t *src, uint8_t *dst, int n)
+/* RGB565 → X11 32bpp ZPixmap 像素（BGRX，每像素 4 字节）。
+ * canvas 分配为 win_w*win_h*4，XCreateImage 的 bytes_per_line 也是 win_w*4，
+ * 即 24bpp 按 32bit/像素存放。小端（RK3568 ARM）下 0x00RRGGBB 的内存顺序为
+ * B,G,R,0。旧实现只写 3 字节且按 R,G,B 顺序，既造成行 stride 错位（3≠4），
+ * 又把红蓝通道写反，导致上屏画面撕裂 + 颜色错乱。 */
+static void rgb565_line_to_xrgb(const uint8_t *src, uint8_t *dst, int n)
 {
     for (int i = 0; i < n; i++) {
         uint16_t p = (uint16_t)((src[0]) | ((uint16_t)src[1] << 8));
         uint8_t r5 = (uint8_t)((p >> 11) & 0x1F);
         uint8_t g6 = (uint8_t)((p >> 5) & 0x3F);
         uint8_t b5 = (uint8_t)(p & 0x1F);
-        dst[0] = (uint8_t)((r5 << 3) | (r5 >> 2));
-        dst[1] = (uint8_t)((g6 << 2) | (g6 >> 4));
-        dst[2] = (uint8_t)((b5 << 3) | (b5 >> 2));
-        src += 2; dst += 3;
+        dst[0] = (uint8_t)((b5 << 3) | (b5 >> 2));   /* B */
+        dst[1] = (uint8_t)((g6 << 2) | (g6 >> 4));   /* G */
+        dst[2] = (uint8_t)((r5 << 3) | (r5 >> 2));   /* R */
+        dst[3] = 0;                                   /* X（未用填充字节） */
+        src += 2; dst += 4;
     }
 }
 
-/* 把一幅 640x480 RGB565 画到 canvas 的 (dx, dy) 处 */
+/* 把一幅 640x480 RGB565 画到 canvas 的 (dx, dy) 处（32bpp，每像素 4 字节） */
 static void blit_565(const uint8_t *src565, uint8_t *canvas,
                      int canvas_w, int dx, int dy, int w, int h)
 {
     for (int y = 0; y < h; y++) {
-        uint8_t *dst = canvas + ((size_t)(dy + y) * canvas_w + dx) * 3u;
+        uint8_t *dst = canvas + ((size_t)(dy + y) * canvas_w + dx) * 4u;
         const uint8_t *src = src565 + (size_t)y * w * 2u;
-        rgb565_line_to_888(src, dst, w);
+        rgb565_line_to_xrgb(src, dst, w);
     }
 }
 

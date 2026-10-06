@@ -36,6 +36,13 @@ typedef struct {
     uint64_t last_person_us;
     uint32_t out_seq;          /* 决策输出序号（自增，写 CMDMSG.frame_id） */
     uint32_t stall_lane_cnt;   /* 车道连续失效计数（供调试/看门狗） */
+
+    /* 最近一次有效结果缓存：当本次调用输入为 NULL（无新数据）时，
+     * 若缓存尚未超龄（见 DEC_*_MAX_AGE_MS），则沿用缓存结果做决策，
+     * 避免“单帧丢包 → 决策立即归零 → 车辆顿挫”。超龄后缓存自然失效。 */
+    LaneResult         last_lane;
+    TrafficLightResult last_tl;
+    PersonState        last_person;
 } decision_ctx_t;
 
 int decision_init(decision_ctx_t *ctx);
