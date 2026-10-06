@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ipcs:*)",
+      "Bash(chmod:*)",
+      "Bash(make clean:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
