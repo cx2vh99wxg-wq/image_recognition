@@ -20,20 +20,25 @@
  * 尺寸做 letterbox 缩放/对齐，RKNN 解析部分仍需实板标定。 */
 #define PERSON_DEFAULT_MODEL "model/yolov5s-640-640.rknn"
 
+#if defined(__linux__) && !defined(USE_STUB)
+/* ---------- 板端 RKNN 真实现 ----------
+ * 必须先于 struct 定义引入 rknn_api.h：句柄类型 rknn_context 在 32 位 ARM 下是
+ * uint32_t、在 aarch64 下是 uint64_t，写死成 int 会导致指针类型不兼容
+ * （板端 -Werror=incompatible-pointer-types 直接编译失败）。 */
+#include "rknn_api.h"
+#endif
+
 struct person_detect_ctx {
     int  img_w;
     int  img_h;
     int  use_stub;
 #if defined(__linux__) && !defined(USE_STUB)
-    int   rknn_ctx;       /* rknn_context 实际为 int 句柄 */
-    int   rknn_ready;
+    rknn_context rknn_ctx;   /* 句柄类型跟随 rknn_api.h，勿写死 int */
+    int          rknn_ready;
 #endif
 };
 
 #if defined(__linux__) && !defined(USE_STUB)
-/* ---------- 板端 RKNN 真实现 ---------- */
-#include "rknn_api.h"
-
 static int person_rknn_run(person_detect_ctx_t *ctx, const uint8_t *rgb888,
                            uint32_t frame_id, uint64_t now_us, PersonState *out)
 {

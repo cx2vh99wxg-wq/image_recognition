@@ -18,7 +18,8 @@ CROSS  ?=
 ARCHCC := $(CROSS)$(CC)
 
 INCLUDE := -Iinclude -I../common/include
-CFLAGS  := -std=c11 -Wall -Wextra -Werror -O2 $(INCLUDE)
+# gnu11：严格 c11 会隐藏 glibc 的 POSIX 声明（clock_gettime/usleep 等）
+CFLAGS  := -std=gnu11 -D_DEFAULT_SOURCE -Wall -Wextra -Werror -O2 $(INCLUDE)
 
 # 本地（本机 / WSL x86）编译的源
 MODULE_SRCS := csrc/pcie_capture.c csrc/lane_detect.c csrc/turn_decide.c \
@@ -103,8 +104,8 @@ obj/log.o: ../common/csrc/log.c
 	@mkdir -p obj
 	$(ARCHCC) $(CFLAGS) -c $< -o $@
 
+# bin: -L../lib 指向仓库根 lib/librknnrt.so（RKNN 运行时，板端链接用）
 bin: $(BOARD_OBJS)
-	# -L../lib 指向仓库根 lib/librknnrt.so（RKNN 运行时，板端链接用）
 	$(ARCHCC) -L../lib -o perception_main $^ -lm -lrknnrt
 
 clean:

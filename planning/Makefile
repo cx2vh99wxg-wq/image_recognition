@@ -14,7 +14,10 @@ CROSS  ?=
 ARCHCC := $(CROSS)$(CC)
 
 INCLUDE := -Iinclude -I../common/include -I../perception/include
-CFLAGS  := -std=c11 -Wall -Wextra -Werror -O2 $(INCLUDE)
+# 用 gnu11 而非严格 c11：严格 ISO 模式下 glibc 会隐藏 POSIX 声明，
+# 导致 clock_gettime/usleep/useconds_t 在板端（gcc + -Werror）编译失败。
+# -D_DEFAULT_SOURCE 作为兜底（即使有人改回 -std=c11 也能拿到 POSIX 声明）。
+CFLAGS  := -std=gnu11 -D_DEFAULT_SOURCE -Wall -Wextra -Werror -O2 $(INCLUDE)
 
 COMMON_SRCS := ../common/csrc/udp_proto.c ../common/csrc/log.c
 NATIVE_SRCS := csrc/decision.c csrc/person_detect.c csrc/render_lcd_x11.c \
@@ -49,9 +52,9 @@ BOARD_SRCS := csrc/main_planning.c csrc/decision.c csrc/person_detect.c \
               csrc/render_lcd_x11.c csrc/udp_sender.c csrc/udp_receiver.c \
               ../common/csrc/shm_ipc.c ../common/csrc/udp_proto.c ../common/csrc/log.c
 
+# bin: -L../lib 指向仓库根 lib/librknnrt.so（RKNN 运行时，板端链接用）
 bin:
 	@mkdir -p obj
-	# -L../lib 指向仓库根 lib/librknnrt.so（RKNN 运行时，板端链接用）
 	$(ARCHCC) $(CFLAGS) -L../lib -o planning_main csrc/main_planning.c csrc/decision.c \
 	    csrc/person_detect.c csrc/render_lcd_x11.c csrc/udp_sender.c \
 	    csrc/udp_receiver.c ../common/csrc/shm_ipc.c ../common/csrc/udp_proto.c \

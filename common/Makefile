@@ -12,7 +12,8 @@ CROSS  ?=
 ARCHCC := $(CROSS)$(CC)
 
 INCLUDE := -Iinclude
-CFLAGS  := -std=c11 -Wall -Wextra -Werror -O2 $(INCLUDE)
+# gnu11：严格 c11 会隐藏 glibc 的 POSIX 声明（clock_gettime/usleep 等）
+CFLAGS  := -std=gnu11 -D_DEFAULT_SOURCE -Wall -Wextra -Werror -O2 $(INCLUDE)
 
 # 本机可编（纯逻辑）
 NATIVE_SRCS := csrc/log.c csrc/udp_proto.c
