@@ -91,10 +91,34 @@
 #define UDP_IP_S            "192.168.100.20"   /* S 端板卡 IP（接收方目标地址） */
 #define UDP_BLOCK_SIZE      1400               /* 每数据块 payload 上限（≤MTU 安全） */
 #define UDP_SEND_BUF_BYTES  (2 * 1024 * 1024)  /* socket 发送缓冲（2MB） */
-#define UDP_RECV_BUF_BYTES  (4 * 1024 * 1024)  /* socket 接收缓冲（4MB） */
+#define UDP_RECV_BUF_BYTES  (8 * 1024 * 1024)  /* socket 接收缓冲（8MB，见下） */
 #define UDP_HEARTBEAT_MS    200                /* 心跳周期：>200ms 无心跳看门狗自停 */
 #define UDP_WATCHDOG_TIMEOUT_MS 1000           /* 看门狗超时（C 端落地 FPGA 兜底） */
 #define UDP_FRAME_TIMEOUT_MS   200             /* 接收端整帧重组超时（丢弃残帧） */
+
+/* ----------------------------------------------------------------------
+ * UDP 吞吐/缓冲调优（B，2026-10-07 联调修复）
+ *
+ * 背景：一帧 614400B → 1 帧头 + 439 个数据块 = 440 包，M 端在一个突发里
+ * 连续发出（无间隔），桩模式 5 帧/s ≈ 2200 包/s。S 端若"每轮只 recv 一个包"
+ * 且一轮里还要渲染 LCD（数十 ms），消费速度比产出低两个数量级 → 内核 UDP
+ * 接收队列反复溢出丢包 → 439 块永远凑不齐 → 收帧恒 0（LCD 帧却照常增长）。
+ *
+ * 修复必须"两手抓"：
+ *   1) 消费端每轮把内核队列收干（UDP_RECV_DRAIN_MAX），见 main_planning.c；
+ *   2) 内核缓冲要能吞下"一轮没收包期间"到达的整帧（≈440 包 ≈ 0.9MB 内存账），
+ *      SO_RCVBUF 会被 net.core.rmem_max 静默截断（默认仅 ~208KB！），
+ *      故需 scripts/tune_net.sh 把 rmem_max 提到 ≥ UDP_KERNEL_RMEM_TARGET。
+ * -------------------------------------------------------------------- */
+#define UDP_RECV_DRAIN_MAX     4096            /* 单轮最多从 socket 取走的包数（防死循环空转） */
+#define UDP_RECV_WAIT_MS       10              /* 无包时的 poll 等待（ms），避免空转烧 CPU */
+#define UDP_KERNEL_RMEM_TARGET (16 * 1024 * 1024)  /* 要求 net.core.rmem_max ≥ 该值（16MB） */
+
+/* 发送端轻度整形：每发 UDP_SEND_PACE_EVERY 个块插入 UDP_SEND_PACE_US 微秒间隔，
+ * 把"440 包一次性糊上去"的微突发拉平，降低对端内核队列瞬时压力。
+ * 置 UDP_SEND_PACE_EVERY = 0 可关闭（关闭后帧发送耗时 ≈ 网络时延，最快）。 */
+#define UDP_SEND_PACE_EVERY 64
+#define UDP_SEND_PACE_US    200
 
 /* ======================================================================
  * 七、B 侧契约结构（暂存本文件，待三人 review 后并入 driving_types.h）

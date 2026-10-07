@@ -90,6 +90,15 @@ int udp_sender_send_frame(udp_sender_t *s, const void *rgb565, size_t bytes,
                             (struct sockaddr *)&s->peer, alen);
         if (sn != (ssize_t)(sizeof(udp_data_hdr_t) + len)) return -1;
         total += sn;
+
+        /* 轻度整形：440 包一次性糊上去会在对端内核队列形成微突发，对端缓冲不够
+         * 就会静默丢包（收帧恒 0 的根因之一）。每 UDP_SEND_PACE_EVERY 块让出
+         * 一下 CPU，把突发拉平；对整帧耗时影响约 1~2ms，可忽略。
+         * 置 UDP_SEND_PACE_EVERY=0 可关闭。 */
+#if defined(__linux__)
+        if (UDP_SEND_PACE_EVERY > 0 && (i % UDP_SEND_PACE_EVERY) == (UDP_SEND_PACE_EVERY - 1))
+            usleep((useconds_t)UDP_SEND_PACE_US);
+#endif
     }
     return (int)total;
 }

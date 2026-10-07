@@ -83,10 +83,21 @@ int main(int argc, char **argv)
     /* ---- UDP 接收器 ---- */
     udp_receiver_t *recv = NULL;
     if (udp_receiver_init(&recv, UDP_PORT) != 0) {
-        LOGE("UDP 接收器初始化失败: %d\n", UDP_PORT);
+        LOGE("UDP 接收器初始化失败: %d（端口被占用？先 pkill -f planning_main）\n", UDP_PORT);
         return -1;
     }
-    LOGI("UDP 监听 :%d\n", UDP_PORT);
+    {
+        /* 打印"实际生效"的接收缓冲：SO_RCVBUF 会被内核按 net.core.rmem_max 静默截断，
+         * 若这里远小于 2MB，就说明 tune_net.sh 还没执行，突发丢包风险很高。 */
+        udp_recv_stats_t st;
+        memset(&st, 0, sizeof(st));
+        if (udp_receiver_stats(recv, &st) == 0) {
+            LOGI("UDP 监听 :%d  SO_RCVBUF=%d 字节\n", UDP_PORT, st.rcvbuf_eff);
+            if (st.rcvbuf_eff > 0 && st.rcvbuf_eff < (int)(2 * 1024 * 1024))
+                LOGW("接收缓冲偏小！一帧=440 包(≈0.9MB)会突发到达，容易溢出丢包。"
+                     "请先执行 sudo ./scripts/tune_net.sh（提高 net.core.rmem_max）\n");
+        }
+    }
 
     /* ---- 整帧重组 ---- */
     static uint8_t s_frame[IMG_FRAME_BYTES];
@@ -128,25 +139,49 @@ int main(int argc, char **argv)
     while (g_keep_running) {
         uint64_t now = now_us_mono();
 
-        /* ---- 1. UDP 收包并重组 ---- */
-        int n = udp_receiver_recv(recv, s_pkt, sizeof(s_pkt), 10);
-        if (n > 0) {
-            last_pkt_us = now;
-            udp_frame_hdr_t hdr;
-            uint8_t *frame = NULL;
-            size_t frame_len = 0;
-            int done = udp_reassembly_feed(&reass, s_pkt, (size_t)n, &hdr, &frame, &frame_len);
-            if (done == 1) {
-                frames_recv++;
-                /* 写远端图 + 转发车道结果到 S 板 shm_lane */
-                if (shm_write_udp_img(frame, frame_len) != 0) LOGW("写 shm_udp_img 失败\n");
-                if (udp_hdr_to_lane(&hdr, &cur_lane) == 0) {
-                    if (shm_write_lane(&cur_lane) != 0) LOGW("转发 shm_lane 失败\n");
-                    lane_fresh = 1;   /* 仅在真正收到新帧时置位，供决策做超龄判断 */
+        /* ---- 1. UDP 收包并重组（每轮把内核队列收干！） ----
+         * 关键：一帧 = 1 帧头 + 439 个数据块（614400B / 1400B）= 440 包，M 端在一个
+         * 突发里连续发出（桩模式 5 帧/s ≈ 2200 包/s）。旧实现每轮只 recv "一个"
+         * 数据报，而一轮还要渲染 LCD（数十 ms），消费能力 ≈ 20~50 包/s，比产出低
+         * 两个数量级 → 内核 UDP 接收队列反复溢出、静默丢包 → 439 块永远凑不齐 →
+         * "收帧"恒为 0（而 LCD 帧照常增长，因为它不依赖收包）。
+         * 修复：poll 到可读后，用非阻塞 recv 把队列里已有的包一次收干再走后续流程。 */
+        int any_pkt = 0;                 /* 本轮是否收到过包（用于超时判定/日志） */
+        int any_frame = 0;               /* 本轮是否重组出完整帧 */
+        udp_frame_hdr_t last_hdr;        /* 本轮最后一个完整帧的帧头 */
+        uint8_t *last_frame = NULL;
+        size_t   last_frame_len = 0;
+
+        if (udp_receiver_wait(recv, UDP_RECV_WAIT_MS) > 0) {
+            for (int k = 0; k < UDP_RECV_DRAIN_MAX; k++) {
+                int n = udp_receiver_recv_nb(recv, s_pkt, sizeof(s_pkt));
+                if (n <= 0) break;               /* 队列已取干（或出错） */
+                any_pkt = 1;
+
+                uint8_t *frame = NULL;
+                size_t frame_len = 0;
+                int done = udp_reassembly_feed(&reass, s_pkt, (size_t)n,
+                                               &last_hdr, &frame, &frame_len);
+                if (done == 1) {
+                    frames_recv++;
+                    any_frame = 1;
+                    last_frame = frame;          /* 本轮可能重组出多帧，只落地最后一帧 */
+                    last_frame_len = frame_len;
                 }
             }
         }
-        /* 重组超时：丢弃残帧 */
+
+        if (any_frame) {
+            /* 写远端图（LCD 右半屏数据源）+ 转发车道结果到 S 板 shm_lane */
+            if (shm_write_udp_img(last_frame, last_frame_len) != 0) LOGW("写 shm_udp_img 失败\n");
+            if (udp_hdr_to_lane(&last_hdr, &cur_lane) == 0) {
+                if (shm_write_lane(&cur_lane) != 0) LOGW("转发 shm_lane 失败\n");
+                lane_fresh = 1;   /* 仅在真正收到新帧时置位，供决策做超龄判断 */
+            }
+        }
+
+        /* 重组超时：丢弃残帧（有包进来就不算超时，避免正常收块期间误清） */
+        if (any_pkt) last_pkt_us = now;
         if (reass.have_hdr && (now - last_pkt_us) > (uint64_t)UDP_FRAME_TIMEOUT_MS * 1000u)
             udp_reassembly_reset(&reass);
 
@@ -190,11 +225,30 @@ int main(int argc, char **argv)
                 frames_lcd++;
         }
 
-        /* ---- 统计（每 2s） ---- */
+        /* ---- 统计（每 2s） ----
+         * 分层打印，便于一眼定位故障层：
+         *   socket收包=0                       → 包没进进程（网络/IP/端口）
+         *   socket收包增长但 重组接受块 不涨    → 丢块（内核溢出/校验/乱序）
+         *   接受块增长但 收帧=0                → 块收不齐（丢包导致）→ 看内核溢出计数
+         *   收帧增长                           → 链路正常 */
         if (now - last_stat_us >= 2000000u) {
             last_stat_us = now;
-            LOGI("收帧=%u LCD帧=%u | 最近命令=%d enable=%u pri=%u conf=%u\n",
+
+            udp_recv_stats_t st;
+            memset(&st, 0, sizeof(st));
+            udp_receiver_stats(recv, &st);
+
+            LOGI("收帧=%u LCD帧=%u | socket收包=%llu 重组接受块=%u\n",
                  frames_recv, frames_lcd,
+                 (unsigned long long)st.pkts, reass.stat_block_ok);
+            LOGI("  丢块[校验=%u 重复=%u 无帧头=%u 旧帧=%u 异常=%u 帧头失败=%u] "
+                 "内核[rcvbuf=%d 队列溢出=%llu InErrors=%llu]\n",
+                 reass.stat_drop_checksum, reass.stat_drop_dup, reass.stat_drop_nohdr,
+                 reass.stat_drop_fid, reass.stat_drop_other, reass.stat_begin_fail,
+                 st.rcvbuf_eff,
+                 (unsigned long long)st.kern_rcvbuferr,
+                 (unsigned long long)st.kern_inerr);
+            LOGI("  最近命令=%d enable=%u pri=%u conf=%u\n",
                  (int)cmd.command, (unsigned)cmd.enable,
                  (unsigned)cmd.priority, (unsigned)cmd.confidence);
         }

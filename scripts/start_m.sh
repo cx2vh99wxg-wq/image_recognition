@@ -33,17 +33,23 @@ else
     insmod "$KO_PATH"
 fi
 
-# 2) 配置网卡（独立脚本：end1 + ip 命令 + NetworkManager 规避）
+# 2) 配置网卡（独立脚本：自动探测 end0/end1 + ip 命令 + NetworkManager 规避）
 echo "[2] 配置网络"
 "$SCRIPT_DIR/setup_network_m.sh" || true
 
-# 3) 启动感知进程（A 交付；--stub 可在无硬件时联调）
-echo "[3] 启动 perception_main (stub 模式请加 --stub)"
+# 3) 内核 UDP 缓冲调优（发送端突发写入；接收端 S 板更要调，见 start_s.sh）
+echo "[3] 内核 UDP 缓冲调优"
+if [ -x "$SCRIPT_DIR/tune_net.sh" ]; then
+    "$SCRIPT_DIR/tune_net.sh" || echo "警告：tune_net.sh 执行失败"
+fi
+
+# 4) 启动感知进程（A 交付；--stub 可在无硬件时联调）
+echo "[4] 启动 perception_main (stub 模式请加 --stub)"
 nohup "$BIN_DIR/perception_main" --model "$MODEL_PATH" \
     > "$REPO_ROOT/perception.log" 2>&1 &
 
-# 4) 启动 UDP 发送器（B 交付）
-echo "[4] 启动 udp_m_send_main"
+# 5) 启动 UDP 发送器（B 交付）
+echo "[5] 启动 udp_m_send_main"
 nohup "$BIN_DIR/udp_m_send_main" \
     > "$REPO_ROOT/udp_send.log" 2>&1 &
 

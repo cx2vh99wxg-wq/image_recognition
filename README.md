@@ -19,9 +19,10 @@ image_recognition/
 ├── control/       # 执行层（C，待交付）：FSPI 主机驱动 + 100ms 控制循环 + 安全
 ├── fpga/          # FPGA RTL（C）：PCIe 封包 / FSPI 从机 / 串口屏 UART
 ├── HMI/           # 陶晶驰串口屏工程（C）
-├── scripts/       # 启动/停止/网络/诊断脚本（B）
+├── scripts/       # 启动/停止/网络/调优/诊断脚本（B）
 │   ├── start_m.sh start_s.sh stop_all.sh
 │   ├── setup_network_m.sh setup_network_s.sh check_system.sh
+│   ├── tune_net.sh   # 放大内核 UDP 缓冲（rmem_max）——"收帧恒 0"必查项
 │   └── board/     # 板卡部署：bashrc.m/s 自启模板 + deploy_board.sh
 ├── drivers/       # 板端 PCIe 驱动（二进制，来自参考工程）pango_pci_driver.ko
 ├── lib/           # 板端 RKNN 运行时（二进制，来自参考工程）librknnrt.so
@@ -64,16 +65,37 @@ sudo ./scripts/board/deploy_board.sh s    # S 板：同上
 ### 启动 / 停止
 
 ```bash
-# M 板：insmod 驱动 → 配 IP 192.168.100.10(end1) → 感知 + UDP 发送
+# M 板：insmod 驱动 → 配 IP 192.168.100.10(end0/end1 自动探测) → 感知 + UDP 发送
 sudo ./scripts/start_m.sh [模型绝对路径] [驱动ko绝对路径]
-# S 板：配 IP 192.168.100.20(end1) → 决策 + UDP 接收 + LCD（--no-lcd 无屏跑）
+# S 板：配 IP 192.168.100.20 → 内核 UDP 缓冲调优 → 决策 + UDP 接收 + LCD（--no-lcd 无屏跑）
 sudo ./scripts/start_s.sh --model /path/to/yolov5s-640-640.rknn
 
 # 或顶层 Makefile 等价命令（板卡上）：make run-m / run-s / stop / status
 # 网络单独配置：sudo ./scripts/setup_network_m.sh / setup_network_s.sh
+# 内核 UDP 缓冲调优：sudo ./scripts/tune_net.sh [--persist]
 # 诊断：./scripts/check_system.sh
 # 清理
 ./scripts/stop_all.sh
+```
+
+### 排障：S 端"收帧"恒为 0（LCD 帧却在涨）
+
+一帧 = 1 帧头 + 439 个数据块 = 440 个 UDP 包（614400B / 1400B），M 端在毫秒级
+突发里发完（桩模式 5 帧/s ≈ 2200 包/s）。S 端若消费跟不上，内核接收队列会
+**静默丢包**，439 块永远凑不齐 → 收帧恒 0（LCD 帧不受影响，照常增长）。
+
+必查三项（planning_main 每 2s 打印一行统计，已内置分层诊断）：
+
+| 现象 | 结论 |
+|---|---|
+| `socket收包=0` 不涨 | 包没进进程：IP/网线/端口（先用 Python 在 8888 计数验证） |
+| `socket收包` 涨、`重组接受块` 不涨 | 包到了但被丢：看"内核队列溢出"计数 |
+| `重组接受块` 涨、`收帧=0` | 块收不齐（丢包）→ 按下面两步修 |
+| `收帧` 增长 | 链路正常 |
+
+```bash
+sudo ./scripts/tune_net.sh          # ① 提高 net.core.rmem_max（默认仅 ~208KB，装不下一帧）
+# ② 确认 planning_main 启动日志 SO_RCVBUF ≥ 16MB，且每轮把内核队列收干（代码已内置）
 ```
 
 PC 联调（M2 验收）：`python3 planning/test/udp_mock.py 192.168.100.20 8888 100 left`

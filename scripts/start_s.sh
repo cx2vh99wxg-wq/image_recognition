@@ -33,14 +33,21 @@ fi
 
 echo "==== S 端启动 ===="
 
-# 1) 配置网卡（独立脚本：end1 + ip 命令 + NetworkManager 规避）
+# 1) 配置网卡（独立脚本：自动探测 end0/end1 + ip 命令 + NetworkManager 规避）
 echo "[1] 配置网络"
 "$SCRIPT_DIR/setup_network_s.sh" || true
 
-# 2) 启动决策+显示进程
+# 2) 内核 UDP 缓冲调优：一帧 440 包突发到达，rmem_max 默认仅 ~208KB，会静默丢包
+#    （不调优的症状：M 端发帧正常，S 端"收帧"恒为 0，LCD 帧却在涨）
+echo "[2] 内核 UDP 缓冲调优"
+if [ -x "$SCRIPT_DIR/tune_net.sh" ]; then
+    "$SCRIPT_DIR/tune_net.sh" || echo "警告：tune_net.sh 执行失败，接收缓冲偏小可能丢包"
+fi
+
+# 3) 启动决策+显示进程
 ARGS=(--model "$MODEL")
 [ "$NO_LCD" = 1 ] && ARGS+=(--no-lcd)
-echo "[2] 启动 planning_main ${ARGS[*]}"
+echo "[3] 启动 planning_main ${ARGS[*]}"
 nohup "$BIN_DIR/planning_main" "${ARGS[@]}" \
     > "$REPO_ROOT/planning.log" 2>&1 &
 
