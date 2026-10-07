@@ -30,8 +30,6 @@ common/test/test_udp_proto
 planning/test/test_decision
 planning/test/test_udp
 
-# 模型文件（大文件不入库）
-*.rknn
 
 # Python 缓存
 __pycache__/
