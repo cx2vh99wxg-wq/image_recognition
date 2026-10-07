@@ -130,8 +130,17 @@ int main(int argc, char **argv)
     DisplayMode mode = DISPLAY_MODE_SPLIT;
     ControlCommandMsg cmd;
     uint32_t frames_recv = 0, frames_lcd = 0;
-    uint64_t last_pkt_us = 0, last_stat_us = 0;
+    uint64_t last_pkt_us = 0;
     int local_ok = 0;
+
+    /* 统计窗口（每 2s）：用"窗口内取出的包数 / 窗口时长"直接量化消费速率，
+     * 这是判断"是否被消费能力拖死"的唯一直接指标（M 端产出≈2200 包/s）。
+     * 注意 last_stat_us 必须用"启动时刻"初始化：now_us_mono() 返回的是
+     * CLOCK_MONOTONIC 绝对值（开机以来的微秒数），若沿用初值 0，第一轮
+     * dt 会等于整机开机时长（几十万秒），算出的速率会失真成 ~0。 */
+    uint64_t last_stat_us = now_us_mono();
+    uint64_t win_pkts = 0;        /* 本窗口内从 socket 取出的包数 */
+    uint32_t last_lcd = 0;        /* 上次统计时的 LCD 帧数（用于反推单轮周期） */
 
     LaneResult cur_lane;        /* 本周期最新收到的车道结果（仅 lane_fresh=1 时有效） */
     int lane_fresh = 0;         /* 本周期是否收到“新的一帧”车道结果 */
@@ -157,6 +166,7 @@ int main(int argc, char **argv)
                 int n = udp_receiver_recv_nb(recv, s_pkt, sizeof(s_pkt));
                 if (n <= 0) break;               /* 队列已取干（或出错） */
                 any_pkt = 1;
+                win_pkts++;                      /* 计入本统计窗口的消费量 */
 
                 uint8_t *frame = NULL;
                 size_t frame_len = 0;
@@ -232,15 +242,29 @@ int main(int argc, char **argv)
          *   接受块增长但 收帧=0                → 块收不齐（丢包导致）→ 看内核溢出计数
          *   收帧增长                           → 链路正常 */
         if (now - last_stat_us >= 2000000u) {
+            uint64_t dt_us = now - last_stat_us;
             last_stat_us = now;
 
             udp_recv_stats_t st;
             memset(&st, 0, sizeof(st));
             udp_receiver_stats(recv, &st);
 
-            LOGI("收帧=%u LCD帧=%u | socket收包=%llu 重组接受块=%u\n",
-                 frames_recv, frames_lcd,
+            /* 消费速率 = 窗口内取出的包数 / 窗口时长。
+             * M 端 5 帧/s × 440 包 ≈ 2200 包/s，所以：
+             *   速率只有几十包/s        → 瓶颈在"消费能力"（渲染/打印拖慢主循环）
+             *   速率已接近 2200 但仍收帧=0 → 丢包发生在更早的层，即网卡 RX ring /
+             *                              softnet backlog（socket 缓冲之前），
+             *                              要看 ip -s link、/proc/net/softnet_stat */
+            double pkt_rate = dt_us ? (double)win_pkts * 1000000.0 / (double)dt_us : 0.0;
+            uint32_t lcd_delta = frames_lcd - last_lcd;
+            double loop_ms = lcd_delta ? ((double)dt_us / 1000.0) / (double)lcd_delta : 0.0;
+            last_lcd = frames_lcd;
+
+            LOGI("收帧=%u LCD帧=%u(+%u) | socket收包=%llu 重组接受块=%u\n",
+                 frames_recv, frames_lcd, lcd_delta,
                  (unsigned long long)st.pkts, reass.stat_block_ok);
+            LOGI("  消费速率=%.0f 包/s（M端产出≈2200）主循环周期≈%.1fms\n",
+                 pkt_rate, loop_ms);
             LOGI("  丢块[校验=%u 重复=%u 无帧头=%u 旧帧=%u 异常=%u 帧头失败=%u] "
                  "内核[rcvbuf=%d 队列溢出=%llu InErrors=%llu]\n",
                  reass.stat_drop_checksum, reass.stat_drop_dup, reass.stat_drop_nohdr,
@@ -251,6 +275,7 @@ int main(int argc, char **argv)
             LOGI("  最近命令=%d enable=%u pri=%u conf=%u\n",
                  (int)cmd.command, (unsigned)cmd.enable,
                  (unsigned)cmd.priority, (unsigned)cmd.confidence);
+            win_pkts = 0;
         }
 
         SLEEP_MS(5);

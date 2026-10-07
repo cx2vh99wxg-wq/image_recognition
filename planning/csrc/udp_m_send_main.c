@@ -96,7 +96,9 @@ int main(int argc, char **argv)
     uint32_t last_lane_fid = 0xFFFFFFFFu;
     uint32_t hb_seq = 0;
     uint64_t last_hb_us = 0;
-    uint64_t last_stat_us = 0;
+    /* 用启动时刻初始化：now_us_mono() 是 CLOCK_MONOTONIC 绝对值，若初值为 0，
+     * 第一行统计会在启动瞬间立刻打印（"已发帧=1"），看起来像统计间隔不对。 */
+    uint64_t last_stat_us = now_us_mono();
     uint32_t sent_frames = 0, sent_blocks_fail = 0;
 
     while (g_keep_running) {

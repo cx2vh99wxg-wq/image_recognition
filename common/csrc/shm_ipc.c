@@ -13,6 +13,7 @@
  */
 #include "shm_ipc.h"
 #include "driving_config.h"   /* SHM_KEY_* / SHM_*_SIZE 宏 */
+#include "time_util.h"        /* now_us_mono()：失败退避计时 */
 
 #include <stdio.h>
 #include <string.h>
@@ -32,6 +33,51 @@ typedef struct {
 } shm_cache_entry_t;
 
 static shm_cache_entry_t g_cache[SHM_CACHE_MAX];
+
+/* ----------------------------------------------------------------------
+ * 打开失败退避（B 加固 2026-10-07）
+ *
+ * 问题：读者要打开的"上游段"可能长期不存在。最典型的是 S 板的
+ * shm_pcie_img(0x12345679)——那是 M 板 A 进程写的摄像头原图，S 板根本没有
+ * PCIe 采集，段永远不存在。而 main_planning 主循环每轮都调 shm_read_pcie_img()，
+ * 旧实现在这里每轮都做一次 shmget 系统调用 + 一次 fprintf(stderr)，等于把
+ * CPU 和终端带宽全部烧在"重复报同一个错"上（stderr 走 SSH/串口时尤其慢，
+ * 实测足以让 UDP 消费速率再掉一个量级，加重收帧恒 0）。
+ *
+ * 策略：每个 key 记录连续失败次数与"下次允许真正重试"的时刻。
+ *   - 退避窗口内：不 syscall、不打印，直接返回 -1（成本≈一次查表）；
+ *   - 窗口到期后重试一次：写者后启动仍能自动接上，不丢连通性；
+ *   - 打印限流：首次失败必打，之后每 SHM_FAIL_LOG_EVERY_MS 汇总一行。
+ * 语义完全不变（该失败仍失败、该成功仍成功），只砍掉重复开销。
+ * -------------------------------------------------------------------- */
+#define SHM_FAIL_SLOTS        8
+#define SHM_FAIL_BACKOFF_MS   1000u   /* 退避窗口：期间不再 shmget */
+#define SHM_FAIL_LOG_EVERY_MS 5000u   /* 退避期内每 5s 汇总打印一行 */
+
+typedef struct {
+    long     key;
+    int      used;
+    uint32_t fails;        /* 连续失败次数 */
+    uint64_t retry_at_us;  /* 到期前不再尝试 */
+    uint64_t last_log_us;  /* 上次打印时刻（限流） */
+} shm_fail_slot_t;
+
+static shm_fail_slot_t g_fail[SHM_FAIL_SLOTS];
+
+static shm_fail_slot_t *fail_slot(long key)
+{
+    shm_fail_slot_t *slot = NULL;
+    for (int i = 0; i < SHM_FAIL_SLOTS; i++) {
+        if (g_fail[i].used && g_fail[i].key == key) return &g_fail[i];
+        if (!g_fail[i].used && !slot) slot = &g_fail[i];
+    }
+    if (slot) {
+        memset(slot, 0, sizeof(*slot));
+        slot->used = 1;
+        slot->key  = key;
+    }
+    return slot;   /* 槽位用尽时返回 NULL：退化为旧行为 */
+}
 
 static shm_cache_entry_t *cache_find(long key)
 {
@@ -99,10 +145,38 @@ int shm_open(long key, size_t size, void **ptr)
     shm_cache_entry_t *e = cache_find(key);
     if (e) { *ptr = e->ptr; return 0; }
 
+    /* 失败退避：上游段可能长期不存在（例如 S 板读到 shm_pcie_img）。
+     * 退避窗口内直接返回，不做 syscall、不打印，避免拖慢主循环。 */
+    const uint64_t now = now_us_mono();
+    shm_fail_slot_t *f = fail_slot(key);
+    if (f && f->fails > 0 && now < f->retry_at_us) {
+        f->fails++;
+        if (now - f->last_log_us >= (uint64_t)SHM_FAIL_LOG_EVERY_MS * 1000u) {
+            f->last_log_us = now;
+            fprintf(stderr, "[SHM] key=0x%lx 仍不可用（已连续失败 %u 次，"
+                            "每 %ums 重试一次，不再逐轮刷屏）\n",
+                    key, f->fails, SHM_FAIL_BACKOFF_MS);
+        }
+        return -1;
+    }
+
     int shmid = shmget((key_t)key, size, 0);   /* 无 IPC_CREAT */
     if (shmid < 0) {
-        fprintf(stderr, "[SHM] shm_open(key=0x%lx) failed: 写者未创建该段? %s\n",
-                key, strerror(errno));
+        if (f) {
+            f->fails++;
+            f->retry_at_us = now + (uint64_t)SHM_FAIL_BACKOFF_MS * 1000u;
+            /* 首次失败一定打印（保证故障可见），之后限流到每 5s 一行 */
+            if (f->fails == 1 ||
+                now - f->last_log_us >= (uint64_t)SHM_FAIL_LOG_EVERY_MS * 1000u) {
+                f->last_log_us = now;
+                fprintf(stderr, "[SHM] shm_open(key=0x%lx) failed: 写者未创建该段? %s"
+                                "（后续 %ums 内静默退避重试）\n",
+                        key, strerror(errno), SHM_FAIL_BACKOFF_MS);
+            }
+        } else {
+            fprintf(stderr, "[SHM] shm_open(key=0x%lx) failed: 写者未创建该段? %s\n",
+                    key, strerror(errno));
+        }
         return -1;
     }
 
@@ -123,6 +197,15 @@ int shm_open(long key, size_t size, void **ptr)
     e->ptr = addr;
     e->size = size;
     e->active = 1;
+
+    /* 曾经失败过、现在成功（写者后启动了）：报一次"已接上"并清空退避状态 */
+    if (f && f->fails > 0) {
+        fprintf(stderr, "[SHM] key=0x%lx 已可用（此前失败 %u 次，现已接上写者）\n",
+                key, f->fails);
+        memset(f, 0, sizeof(*f));
+        f->used = 1;
+        f->key  = key;
+    }
 
     *ptr = addr;
     return 0;
