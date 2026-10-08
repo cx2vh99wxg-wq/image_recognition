@@ -2,16 +2,16 @@
 #
 #   make                本机：全模块编译自检 + 全部单元测试
 #   make USE_STUB=1     桩模式（person_detect 走桩）
-#   make board          板端交叉编译（common + perception + planning）
+#   make board          板端交叉编译（common + perception + planning + control）
 #   make clean
 #
-# 依赖模块：common(公共库) → perception(人员A) → planning(人员B)。
-# control(人员C) 加入后在此追加。
+# 依赖模块：common(公共库) → perception(人员A) → planning(人员B) → control(人员C)。
+# control 已加入（2026-10-08，人员 C）。
 
-.PHONY: all board clean tests common perception planning \
+.PHONY: all board clean tests common perception planning control \
         run-m run-s run stop status check deps deploy
 
-all: common perception planning
+all: common perception planning control
 
 common:
 	$(MAKE) -C common all
@@ -22,19 +22,24 @@ perception:
 planning:
 	$(MAKE) -C planning all
 
-tests: common perception planning
+control:
+	$(MAKE) -C control all
+
+tests: common perception planning control
 	@echo "==== 全部单元测试通过 ===="
 
 # 板端交叉编译 + 部署布局 staging 到 bin/
-# （bin/ 下生成 perception_main / planning_main / udp_m_send_main，
+# （bin/ 下生成 perception_main / planning_main / udp_m_send_main / control_main，
 #   连同 drivers/、lib/、model/、scripts/ 一起拷到板卡即可）
 board:
 	$(MAKE) -C common board
 	$(MAKE) -C perception CROSS=aarch64-linux-gnu- bin
 	$(MAKE) -C planning CROSS=aarch64-linux-gnu- bin
+	$(MAKE) -C control CROSS=aarch64-linux-gnu- bin
 	@mkdir -p bin
 	@cp -f perception/perception_main bin/ 2>/dev/null || true
 	@cp -f planning/planning_main planning/udp_m_send_main bin/ 2>/dev/null || true
+	@cp -f control/control_main bin/ 2>/dev/null || true
 	@echo "==== 板端构建完成，部署布局在 bin/ ===="
 	@echo "板卡部署：拷贝 bin/ drivers/ lib/ model/ scripts/ 到板卡后运行"
 	@echo "  sudo ./scripts/board/deploy_board.sh [m|s]   # 一次性装自启+驱动+网络"
@@ -76,4 +81,5 @@ clean:
 	$(MAKE) -C common clean
 	$(MAKE) -C perception clean
 	$(MAKE) -C planning clean
+	$(MAKE) -C control clean
 	@rm -rf bin

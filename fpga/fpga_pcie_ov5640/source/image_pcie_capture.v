@@ -283,6 +283,10 @@ module image_pcie_capture #(
   wire [7:0] uart_rx_data;
   wire uart_rx_valid;
   wire [7:0] mode;
+  // 注意：select_rearview 命名是历史沿用，实际即串口屏 HMI 的 cnn_level
+  // （uart_lcd 的 st_cnn 状态捕获 uart_rx[3:0]）。它同时用作：
+  //   1) FSPI 读回值（spi_ram_crtl.rd_data = {4'd0, select_rearview}）；
+  //   2) 直接动作触发（下方 go/back/left/right 的 4'ha/4'hb/4'hc/4'hd 比较）。
   wire [3:0] select_rearview;
   //wire [5:0] cnn_data;
 
