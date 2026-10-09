@@ -53,13 +53,19 @@ static void rgb565_line_to_xrgb(const uint8_t *src, uint8_t *dst, int n)
     }
 }
 
-/* 把一幅 640x480 RGB565 画到 canvas 的 (dx, dy) 处（32bpp，每像素 4 字节） */
-static void blit_565(const uint8_t *src565, uint8_t *canvas,
-                     int canvas_w, int dx, int dy, int w, int h)
+/* 从 src_w 宽的 RGB565 源图里取 (sx,sy,w,h) 子块，画到 canvas 的 (dx,dy)。
+ * 3×2 上屏要靠它：源图固定是每板 640×480（2×2 四宫格），只取 3 个有效子块。
+ * （原「整幅 blit」函数在改为 3×2 后已无调用点，一并删除——静态函数未使用
+ *   会在板端 -Werror 下直接编译失败。） */
+static void blit_sub565(const uint8_t *src565, int src_w,
+                        int sx, int sy, int w, int h,
+                        uint8_t *canvas, int canvas_w, int dx, int dy)
 {
     for (int y = 0; y < h; y++) {
-        uint8_t *dst = canvas + ((size_t)(dy + y) * canvas_w + dx) * 4u;
-        const uint8_t *src = src565 + (size_t)y * w * 2u;
+        const uint8_t *src = src565 +
+            ((size_t)(sy + y) * (size_t)src_w + (size_t)sx) * 2u;
+        uint8_t *dst = canvas +
+            ((size_t)(dy + y) * (size_t)canvas_w + (size_t)dx) * 4u;
         rgb565_line_to_xrgb(src, dst, w);
     }
 }
@@ -104,9 +110,10 @@ static void overlay_apply(render_lcd_ctx_t *ctx)
     const int cw = ctx->win_w, ch = ctx->win_h;
     if (!cv) return;
 
-    /* 1) 红绿灯指示灯：右半屏右上角竖排三色，点亮者高亮、其余暗色 */
+    /* 1) 红绿灯指示灯：窗口右上角竖排三色，点亮者高亮、其余暗色。
+     *    位置按画布宽算（3×2 布局下画布 960 宽），不写死 1280 的右半屏起点。 */
     {
-        const int bx = IMG_WIDTH + 22, by = 22, bw = 38, bh = 38, gap = 8;
+        const int bx = cw - 60, by = 22, bw = 38, bh = 38, gap = 8;
         static const uint32_t on_rgb[3]  = { 0xFF2020u, 0xFFD400u, 0x20FF40u };
         static const uint32_t off_rgb[3] = { 0x400000u, 0x403300u, 0x00300Cu };
         for (int i = 0; i < 3; i++) {
@@ -116,9 +123,10 @@ static void overlay_apply(render_lcd_ctx_t *ctx)
         }
     }
 
-    /* 2) 行驶指示箭头：右半屏中下方（黄=行驶方向，红方块=停车/刹车） */
+    /* 2) 行驶指示箭头：窗口右下角（黄=行驶方向，红方块=停车/刹车）。
+     *    放在下排（S 板那一行）的右下，避开上排的 M 板画面。 */
     {
-        const int ax = IMG_WIDTH + 160, ay = ch - 120;
+        const int ax = cw - 150, ay = ch - 130;
         const uint32_t YEL = 0xFFD400u, RED = 0xFF2020u;
         switch (ctx->ov_cmd) {
             case 3:   /* CMD_LEFT */
@@ -178,8 +186,8 @@ int render_lcd_init(render_lcd_ctx_t **ctx, int win_w, int win_h)
     if (!ctx) return -1;
     render_lcd_ctx_t *c = (render_lcd_ctx_t *)calloc(1, sizeof(*c));
     if (!c) return -1;
-    c->win_w = win_w > 0 ? win_w : IMG_WIDTH * 2;
-    c->win_h = win_h > 0 ? win_h : IMG_HEIGHT;
+    c->win_w = win_w > 0 ? win_w : DISP_WIN_W;
+    c->win_h = win_h > 0 ? win_h : DISP_WIN_H;
     c->is_stub = 0;
 
     Display *d = XOpenDisplay(NULL);
@@ -250,11 +258,26 @@ int render_lcd_draw(render_lcd_ctx_t *ctx,
     const uint8_t *loc = (const uint8_t *)local565;
     const uint8_t *rem = (const uint8_t *)remote565;
 
-    if (mode == DISPLAY_MODE_SPLIT || mode == DISPLAY_MODE_LOCAL_ONLY) {
-        if (loc) blit_565(loc, ctx->canvas, ctx->win_w, 0, 0, IMG_WIDTH, IMG_HEIGHT);
+    /* 3×2 六宫格合成：上排 = M 板（远端 UDP）3 路，下排 = S 板（本地）3 路。
+     * 每路从源图 640×480 里取一个 320×240 子块，子块位置与 FPGA 写地址映射
+     * （axi4_ctrl_3ch.v）严格对应：ch0=左上(0,0)、ch1=右上(1,0)、ch2=左下(0,1)。
+     * 第 4 格是硬件预留槽，不取用、不上屏。 */
+    static const int qx[DISP_COLS] = { 0, 1, 0 };
+    static const int qy[DISP_COLS] = { 0, 0, 1 };
+
+    if ((mode == DISPLAY_MODE_SPLIT || mode == DISPLAY_MODE_REMOTE_ONLY) && rem) {
+        for (int k = 0; k < DISP_COLS; k++) {
+            blit_sub565(rem, IMG_WIDTH, qx[k] * DISP_CELL_W, qy[k] * DISP_CELL_H,
+                        DISP_CELL_W, DISP_CELL_H, ctx->canvas, ctx->win_w,
+                        k * DISP_CELL_W, 0);
+        }
     }
-    if (mode == DISPLAY_MODE_SPLIT || mode == DISPLAY_MODE_REMOTE_ONLY) {
-        if (rem) blit_565(rem, ctx->canvas, ctx->win_w, IMG_WIDTH, 0, IMG_WIDTH, IMG_HEIGHT);
+    if ((mode == DISPLAY_MODE_SPLIT || mode == DISPLAY_MODE_LOCAL_ONLY) && loc) {
+        for (int k = 0; k < DISP_COLS; k++) {
+            blit_sub565(loc, IMG_WIDTH, qx[k] * DISP_CELL_W, qy[k] * DISP_CELL_H,
+                        DISP_CELL_W, DISP_CELL_H, ctx->canvas, ctx->win_w,
+                        k * DISP_CELL_W, DISP_CELL_H);
+        }
     }
     /* BLANK：保持黑屏 */
 
@@ -316,8 +339,8 @@ int render_lcd_init(render_lcd_ctx_t **ctx, int win_w, int win_h)
     if (!ctx) return -1;
     render_lcd_ctx_t *c = (render_lcd_ctx_t *)calloc(1, sizeof(*c));
     if (!c) return -1;
-    c->win_w = win_w > 0 ? win_w : IMG_WIDTH * 2;
-    c->win_h = win_h > 0 ? win_h : IMG_HEIGHT;
+    c->win_w = win_w > 0 ? win_w : DISP_WIN_W;
+    c->win_h = win_h > 0 ? win_h : DISP_WIN_H;
     c->is_stub = 1;
     c->canvas = NULL;
     *ctx = c;

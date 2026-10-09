@@ -35,6 +35,28 @@
 #define PCIE_FRAME_BYTES   ((size_t)PCIE_LINE_PIXELS * IMG_HEIGHT * IMG_BPP_565)
 #define IMG_FRAME_BYTES    ((size_t)IMG_WIDTH * IMG_HEIGHT * IMG_BPP_565)
 
+/* ----------------------------------------------------------------------
+ * 一·补 上屏布局：3×2 六宫格（B 的 LCD 合成方式，2026-10-09）
+ *
+ * 单板 FPGA 输出固定是 640×480 = 2×2 四宫格（3 路有效 + 1 格预留，硬件契约，
+ * 见 axi4_ctrl_3ch.v）；显示端**只取每板那 3 个有效子块**重新排布：
+ *
+ *      ┌────────┬────────┬────────┐
+ *      │ M ch0  │ M ch1  │ M ch2  │   上排 = M 板 3 路（经 UDP 送来）
+ *      ├────────┼────────┼────────┤
+ *      │ S ch0  │ S ch1  │ S ch2  │   下排 = S 板 3 路（本板 PCIe 采集）
+ *      └────────┴────────┴────────┘
+ *         320      320      320     → 960 宽 × 480 高
+ *
+ * 子块在源图中的位置与 FPGA 写地址映射一致：ch0=左上、ch1=右上、ch2=左下。
+ * -------------------------------------------------------------------- */
+#define DISP_CELL_W    (IMG_WIDTH  / 2)          /* 320：每个摄像头子块宽 */
+#define DISP_CELL_H    (IMG_HEIGHT / 2)          /* 240：每个摄像头子块高 */
+#define DISP_COLS      3                         /* 3 列（一板 3 路） */
+#define DISP_ROWS      2                         /* 2 行（M 上 / S 下） */
+#define DISP_WIN_W     (DISP_CELL_W * DISP_COLS) /* 960：窗口宽 */
+#define DISP_WIN_H     (DISP_CELL_H * DISP_ROWS) /* 480：窗口高 */
+
 /* ======================================================================
  * 三、共享内存 key（沿原编号 base 0x12345678+偏移，语义重定义）
  *
@@ -126,9 +148,9 @@
 
 /* ---- 显示模式（B 写 shm_display，render_lcd 读） ---- */
 typedef enum {
-    DISPLAY_MODE_SPLIT       = 0,  /* 双路拼接 1280x480：左本地(含行人框) 右远端(车道图) */
-    DISPLAY_MODE_LOCAL_ONLY  = 1,  /* 仅本地 PCIe 图 */
-    DISPLAY_MODE_REMOTE_ONLY = 2,  /* 仅远端 UDP 图 */
+    DISPLAY_MODE_SPLIT       = 0,  /* 3×2 六宫格：上排 = M 板 3 路，下排 = S 板 3 路 */
+    DISPLAY_MODE_LOCAL_ONLY  = 1,  /* 仅 S 板（本地 PCIe）3 路，摆在下排 */
+    DISPLAY_MODE_REMOTE_ONLY = 2,  /* 仅 M 板（远端 UDP）3 路，摆在上排 */
     DISPLAY_MODE_BLANK       = 3   /* 黑屏 */
 } DisplayMode;
 

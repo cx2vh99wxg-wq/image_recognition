@@ -138,9 +138,11 @@ int main(int argc, char **argv)
     if (person_detect_init(&person, model_path, IMG_WIDTH, IMG_HEIGHT) != 0)
         LOGW("行人检测初始化失败（无行人模式继续）\n");
 
-    /* ---- LCD 渲染（失败不致命） ---- */
+    /* ---- LCD 渲染（失败不致命） ----
+     * 画布 = DISP_WIN_W × DISP_WIN_H（960×480，3×2 六宫格：上排 M 板 3 路、
+     * 下排 S 板 3 路；见 driving_config.h 的「上屏布局」段）。 */
     render_lcd_ctx_t *lcd = NULL;
-    if (use_lcd && render_lcd_init(&lcd, IMG_WIDTH * 2, IMG_HEIGHT) != 0)
+    if (use_lcd && render_lcd_init(&lcd, DISP_WIN_W, DISP_WIN_H) != 0)
         LOGW("LCD 初始化失败（无显示模式继续）\n");
 
     /* ---- 决策 ---- */
