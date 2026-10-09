@@ -38,21 +38,57 @@ KO_PATH="${POS[1]:-$REPO_ROOT/drivers/pango_pci_driver.ko}"
 # ---- 可执行文件定位 ----
 # 优先 $BIN_DIR（宿主交叉编译后 make board 的部署布局），其次模块目录
 # （板端原生 make -C <模块> bin 的默认产物位置）；两处都没有则就地编译。
+#
+# ★ 防呆（2026-10-09 加）：光"文件存在"不够——git pull 后忘了重编译时，旧二进制
+#   会被静默沿用，症状是"改动明明提交了，屏幕/行为却没变"。故先做"新鲜度"判定：
+#   模块自身 + common 的 .c/.h/Makefile 只要有比二进制新的，就视为过期 → 自动
+#   重新编译；编译失败或 --no-build 时回退旧二进制，但打印"使用可能过期的二进制"
+#   警告（绝不再静默）。
 build_module() {              # $1=模块目录名
     [ -d "$REPO_ROOT/$1" ] || return 0
     echo "  · 编译 $1： make -C $1 bin" >&2
     ( cd "$REPO_ROOT" && make -C "$1" bin ) 1>&2 \
         || echo "    ⚠ $1 编译失败（改用已有二进制）" >&2
 }
+bin_fresh() {                 # $1=二进制路径 $2=模块目录名；0=存在且不比源码旧
+    local bin="$1" mod="$2" newer=""
+    [ -f "$bin" ] || return 1
+    [ -n "$mod" ] || return 0
+    newer="$(find "$REPO_ROOT/$mod/csrc" "$REPO_ROOT/$mod/include" \
+                  "$REPO_ROOT/common/csrc" "$REPO_ROOT/common/include" \
+                  -type f \( -name '*.c' -o -name '*.h' -o -name 'Makefile' \) \
+                  -newer "$bin" 2>/dev/null | head -n 1)"
+    [ -z "$newer" ]
+}
 resolve_bin() {               # $1=文件名  $2=模块目录名
-    local name="$1" mod="$2"
-    [ -f "$BIN_DIR/$name" ] && { printf '%s\n' "$BIN_DIR/$name"; return 0; }
-    [ -n "$mod" ] && [ -f "$REPO_ROOT/$mod/$name" ] && { printf '%s\n' "$REPO_ROOT/$mod/$name"; return 0; }
+    local name="$1" mod="$2" cand have_old=0
+    # 1) 存在且不比源码旧 → 直接用（宿主部署 / 刚编译过的正常路径）
+    for cand in "$BIN_DIR/$name" "$REPO_ROOT/$mod/$name"; do
+        [ -f "$cand" ] || continue
+        have_old=1
+        if bin_fresh "$cand" "$mod"; then
+            printf '%s\n' "$cand"; return 0
+        fi
+    done
+    # 2) 缺失或已过期 → 重新编译（--no-build 可跳过）
     if [ "$NO_BUILD" = 0 ] && [ -n "$mod" ]; then
+        if [ "$have_old" = 1 ]; then
+            echo "  ⚠ $name 比源码旧（git pull 后忘了重编译？）→ 自动重新编译 $mod" >&2
+        fi
         build_module "$mod"
-        [ -f "$REPO_ROOT/$mod/$name" ] && { printf '%s\n' "$REPO_ROOT/$mod/$name"; return 0; }
-        [ -f "$BIN_DIR/$name" ] && { printf '%s\n' "$BIN_DIR/$name"; return 0; }
+        for cand in "$REPO_ROOT/$mod/$name" "$BIN_DIR/$name"; do
+            [ -f "$cand" ] || continue
+            if bin_fresh "$cand" "$mod"; then
+                printf '%s\n' "$cand"; return 0
+            fi
+        done
     fi
+    # 3) 兜底：仍用过期的（编译失败或 --no-build），但把风险讲清楚
+    for cand in "$BIN_DIR/$name" "$REPO_ROOT/$mod/$name"; do
+        [ -f "$cand" ] || continue
+        echo "  ⚠ 警告：使用可能过期的二进制（编译未成功或已 --no-build）： $cand" >&2
+        printf '%s\n' "$cand"; return 0
+    done
     return 1
 }
 
