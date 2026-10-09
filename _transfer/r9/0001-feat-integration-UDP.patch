@@ -1,0 +1,871 @@
+From 7e103bfc89d11df327a8d19bf9343f02b5c38740 Mon Sep 17 00:00:00 2001
+From: gyy <SUAT25000186@stu.suat-sz.edu.cn>
+Date: Fri, 9 Oct 2026 12:44:44 +0800
+Subject: [PATCH 1/4] =?UTF-8?q?feat(integration):=20=E6=89=93=E9=80=9A?=
+ =?UTF-8?q?=E4=B8=89=E6=84=9F=E7=9F=A5=20UDP=20=E9=93=BE=E8=B7=AF=20+=20?=
+ =?UTF-8?q?=E6=98=BE=E7=A4=BA=E5=8F=A0=E5=8A=A0=E5=B1=82=20+=20=E6=8C=89?=
+ =?UTF-8?q?=E9=94=AE=E6=A8=A1=E6=8B=9F=EF=BC=88=E8=B5=9B=E9=A2=98=E4=B8=89?=
+ =?UTF-8?q?=E7=BC=BA=E9=A1=B9=E8=A1=A5=E9=BD=90=EF=BC=89?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+★ 修复一处**链路级断裂**（本轮分析发现，属 B 的主责）：
+A 端在 M 板已产出红绿灯/虚实线/斑马线（main_perception 写 shm 0x7F/0x80/0x81），
+但 M 端 udp_m_send_main **从未读取**、S 端 main_planning 调 decision_step 时
+**恒传 NULL** —— 结果是赛题三两大核心场景（十字路口红绿灯、实线变道报警）在
+链路上完全失效：决策永远看不到红绿灯，红灯不会停。
+
+1) common/udp_proto.{h,c}：用帧头**已存在的** reserved[4]（16B，原本恒 0）
+   承载"三感知紧凑摘要"，不改变任何结构体尺寸/版本号，向后兼容（旧端收到
+   reserved=0、flags 无对应位，行为不变）。布局在头文件里逐位写明：
+   红绿灯[state|conf|detected]、虚实线[左/右类型|压线|变道|conf]、斑马线
+   [detected|conf]、ego_offset_px。新增 udp_hdr_set_aux/udp_hdr_get_aux。
+2) planning/udp_sender.{h,c}：新增 udp_sender_send_frame_ex()（带三感知）；
+   原 send_frame 变为其薄封装，既有调用点/单测零改动。
+3) planning/udp_m_send_main.c：每帧读 A 的三段（读到就带、读不到置 NULL），
+   统计行新增"附带[红绿灯/虚实线/斑马线]"。
+4) planning/main_planning.c：从帧头解出三感知（*_fresh 语义与 lane 一致，
+   没带就不置位，决策走超龄降级），喂给 decision_step —— 红灯停驶即刻生效。
+5) planning/render_lcd.{h,c}：新增叠加层（赛题三"通过输出图像叠加的方式指示
+   车辆行驶行为 / 叠加红色模拟报警"）：
+     · 右半屏黄箭头（左/直/右）或红方块（刹车/急停）
+     · 右上角红黄绿三色指示灯（点亮者高亮）
+     · 报警时整屏红色边框闪烁（按 frame 序号分频）
+   XSetErrorHandler 容错：避免异步 X 错误让渲染进程莫名退出。
+6) planning/render_lcd + main_planning：按键模拟（赛题三"通过按键模拟切换车道/
+   停止/行驶"）：←/→ 切车道、↑ 行驶、空格 急停、c 强制变道、a 交还自动；
+   人工注入优先级最高，直接落 shm_cmd。
+   报警判定覆盖两场景：①实线变道（含按键强制变道）②红灯闯行（红灯 + 仍下发行驶命令）。
+7) planning/test/test_udp.c：新增三感知摘要往返单测（含"未设置时不误报"的
+   向后兼容断言）。
+
+验证：板端同款 -std=gnu11 -O2 -Wall -Wextra -Werror 编译 planning 全部 7 个 .c
++ common 2 个 .c 全绿；test_udp / test_decision 全 PASS。
+---
+ common/csrc/udp_proto.c         | 102 ++++++++++++++++++++
+ common/include/udp_proto.h      |  53 ++++++++++-
+ planning/csrc/main_planning.c   | 117 +++++++++++++++++++++--
+ planning/csrc/render_lcd_x11.c  | 164 ++++++++++++++++++++++++++++++++
+ planning/csrc/udp_m_send_main.c |  22 ++++-
+ planning/csrc/udp_sender.c      |  28 +++++-
+ planning/include/render_lcd.h   |  30 +++++-
+ planning/include/udp_sender.h   |   9 ++
+ planning/test/test_udp.c        |  54 +++++++++++
+ 9 files changed, 564 insertions(+), 15 deletions(-)
+
+diff --git a/common/csrc/udp_proto.c b/common/csrc/udp_proto.c
+index 7325987..00c90cf 100644
+--- a/common/csrc/udp_proto.c
++++ b/common/csrc/udp_proto.c
+@@ -87,6 +87,108 @@ uint32_t udp_block_checksum(const uint8_t *data, size_t n)
+     return sum;
+ }
+ 
++/* ---- 三感知摘要：帧头 reserved[4]（16B）编解码，布局见 udp_proto.h ---- */
++
++static uint32_t conf01(uint32_t c) { return c > 100u ? 100u : c; }
++
++void udp_hdr_set_aux(udp_frame_hdr_t *hdr,
++                     const TrafficLightResult *tl,
++                     const LaneMarkResult     *lm,
++                     const ZebraResult        *zebra)
++{
++    if (!hdr) return;
++
++    if (tl) {
++        uint32_t v = 0;
++        v |= (uint32_t)((uint8_t)tl->state & 0xFFu);          /* bit 0..7  */
++        v |= conf01(tl->confidence) << 8;                     /* bit 8..15 */
++        v |= (uint32_t)(tl->detected ? 1u : 0u) << 16;        /* bit 16    */
++        hdr->reserved[0] = v;
++        hdr->flags |= UDP_FLAG_TL_VALID;
++    }
++
++    if (lm) {
++        uint32_t v = 0;
++        uint32_t lmf = 0;
++        if (lm->crossing)       lmf |= 0x01u;
++        if (lm->crossing_left)  lmf |= 0x02u;
++        if (lm->crossing_right) lmf |= 0x04u;
++        if (lm->lane_change)    lmf |= 0x08u;
++        v |= (uint32_t)((uint8_t)lm->left_type  & 0xFFu);          /* bit 0..7  */
++        v |= (uint32_t)((uint8_t)lm->right_type & 0xFFu) << 8;     /* bit 8..15 */
++        v |= lmf << 16;                                            /* bit 16..19*/
++        v |= conf01(lm->confidence) << 20;                         /* bit 20..27*/
++        hdr->reserved[1] = v;
++        /* 车辆中心相对车道中心偏移（有符号），供决策做车道保持微调 */
++        hdr->reserved[3] = (uint32_t)lm->ego_offset_px;
++        hdr->flags |= UDP_FLAG_LM_VALID;
++    }
++
++    if (zebra) {
++        uint32_t v = 0;
++        v |= (uint32_t)(zebra->detected ? 1u : 0u);           /* bit 0    */
++        v |= conf01(zebra->confidence) << 1;                  /* bit 1..8 */
++        hdr->reserved[2] = v;
++        hdr->flags |= UDP_FLAG_ZEBRA_VALID;
++    }
++}
++
++uint32_t udp_hdr_get_aux(const udp_frame_hdr_t *hdr,
++                         TrafficLightResult *tl,
++                         LaneMarkResult     *lm,
++                         ZebraResult        *zebra)
++{
++    if (!hdr) return 0u;
++    uint32_t has = 0u;
++
++    /* 同一帧的帧号/时间戳，保证三感知与车道结果可按帧对齐 */
++    const uint64_t ts_us = (uint64_t)hdr->timestamp_s * 1000000u +
++                           (uint64_t)hdr->timestamp_us_lo;
++
++    if ((hdr->flags & UDP_FLAG_TL_VALID) && tl) {
++        const uint32_t v = hdr->reserved[0];
++        memset(tl, 0, sizeof(*tl));
++        tl->version     = TL_VERSION;
++        tl->frame_id    = hdr->frame_id;
++        tl->timestamp_us = ts_us;
++        tl->state       = (TrafficLightState)(v & 0xFFu);
++        tl->confidence  = (v >> 8) & 0xFFu;
++        tl->detected    = (v >> 16) & 0x1u;
++        tl->box_x = tl->box_y = tl->box_w = tl->box_h = -1;   /* 摘要不带包围盒 */
++        has |= UDP_AUX_HAS_TL;
++    }
++    if ((hdr->flags & UDP_FLAG_LM_VALID) && lm) {
++        const uint32_t v = hdr->reserved[1];
++        memset(lm, 0, sizeof(*lm));
++        lm->version      = LANEMARK_VERSION;
++        lm->frame_id     = hdr->frame_id;
++        lm->timestamp_us = ts_us;
++        lm->left_type    = (LaneMarkType)(v & 0xFFu);
++        lm->right_type   = (LaneMarkType)((v >> 8) & 0xFFu);
++        lm->crossing        = (uint8_t)((v >> 16) & 0x1u);
++        lm->crossing_left   = (uint8_t)((v >> 17) & 0x1u);
++        lm->crossing_right  = (uint8_t)((v >> 18) & 0x1u);
++        lm->lane_change     = (uint8_t)((v >> 19) & 0x1u);
++        lm->confidence   = (v >> 20) & 0xFFu;
++        lm->left_x  = -1;                     /* 摘要不带近场坐标 */
++        lm->right_x = -1;
++        lm->ego_offset_px = (int32_t)hdr->reserved[3];
++        has |= UDP_AUX_HAS_LM;
++    }
++    if ((hdr->flags & UDP_FLAG_ZEBRA_VALID) && zebra) {
++        const uint32_t v = hdr->reserved[2];
++        memset(zebra, 0, sizeof(*zebra));
++        zebra->version      = ZEBRA_VERSION;
++        zebra->frame_id     = hdr->frame_id;
++        zebra->timestamp_us = ts_us;
++        zebra->detected     = v & 0x1u;
++        zebra->confidence   = (v >> 1) & 0xFFu;
++        zebra->center_y     = -1;
++        has |= UDP_AUX_HAS_ZEBRA;
++    }
++    return has;
++}
++
+ int udp_pack_heartbeat(udp_heartbeat_t *hb, uint32_t seq)
+ {
+     if (!hb) return -1;
+diff --git a/common/include/udp_proto.h b/common/include/udp_proto.h
+index 4dec07c..d589040 100644
+--- a/common/include/udp_proto.h
++++ b/common/include/udp_proto.h
+@@ -42,9 +42,39 @@ extern "C" {
+ 
+ /* 帧头 flags 位定义（v1 置 0，供后续扩展：TL/LaneMark/Zebra 随帧转发） */
+ #define UDP_FLAG_LANE_VALID  0x00000001u  /* 本帧携带有效车道结果 */
+-#define UDP_FLAG_TL_VALID    0x00000002u  /* 预留：携带红绿灯结果 */
+-#define UDP_FLAG_LM_VALID    0x00000004u  /* 预留：携带虚实线结果 */
+-#define UDP_FLAG_ZEBRA_VALID 0x00000008u  /* 预留：携带斑马线结果 */
++#define UDP_FLAG_TL_VALID    0x00000002u  /* 本帧携带红绿灯结果（见下方摘要布局） */
++#define UDP_FLAG_LM_VALID    0x00000004u  /* 本帧携带虚实线结果 */
++#define UDP_FLAG_ZEBRA_VALID 0x00000008u  /* 本帧携带斑马线结果 */
++
++/* ---- 「三感知摘要」：复用帧头 reserved[4]（16B）承载（B 集成，2026-10-09） ----
++ *
++ * 背景：A 端在 M 板产出红绿灯/虚实线/斑马线三项感知（各为 64B 结构体），
++ * 但帧头 76B 布局装不下；改结构体尺寸又会牵动整套重组/单测。故**复用帧头
++ * 本就存在的 reserved[4]（16B，原本恒 0）** 承载「决策与显示所需的紧凑摘要」：
++ * 决策只关心「状态 + 置信度 + 少量标志位」，不需要包围盒/面积等调试字段。
++ *
++ * 与 flags 配合：未携带的项其 *_VALID 位为 0，接收端**不得使用**对应字段。
++ *
++ *   reserved[0]  bit 0..7   tl_state       TrafficLightState（0未知/1红/2黄/3绿）
++ *                bit 8..15  tl_confidence  0..100
++ *                bit 16     tl_detected    1=检出点亮信号灯
++ *   reserved[1]  bit 0..7   lm_left_type   LaneMarkType（0无/1实线/2虚线/3未知）
++ *                bit 8..15  lm_right_type  LaneMarkType
++ *                bit 16     lm_crossing        1=压线
++ *                bit 17     lm_crossing_left
++ *                bit 18     lm_crossing_right
++ *                bit 19     lm_lane_change     1=正在变道（跨越车道线）
++ *                bit 20..27 lm_confidence  0..100
++ *   reserved[2]  bit 0      zebra_detected
++ *                bit 1..8   zebra_confidence 0..100
++ *   reserved[3]  int32      ego_offset_px  车辆中心相对车道中心偏移（正=偏右）
++ *
++ * 说明：本扩展**不改变任何结构体尺寸/版本号**，旧固件收到后 reserved 全 0、
++ * flags 无对应位，行为与之前完全一致（向后兼容）。
++ */
++#define UDP_AUX_HAS_TL      0x1u   /* udp_hdr_get_aux 返回位：含红绿灯 */
++#define UDP_AUX_HAS_LM      0x2u   /* 含虚实线 */
++#define UDP_AUX_HAS_ZEBRA   0x4u   /* 含斑马线 */
+ 
+ /* ---- 包类型识别结果 ---- */
+ typedef enum {
+@@ -104,6 +134,23 @@ typedef struct __attribute__((packed)) {
+     uint8_t  reserved;         /* 对齐（0） */
+ } udp_cmd_t;                   /* = 20 字节 */
+ 
++/* ---- 三感知摘要 接口（布局见上文 reserved[4] 注释） ---- */
++
++/* 把三项感知打包进帧头 reserved[4] + flags。任一入参为 NULL 表示本帧不携带该项
++ * （其 *_VALID 位保持 0）。必须在 udp_pack_frame_hdr() 之后调用（后者会清零）。 */
++void udp_hdr_set_aux(udp_frame_hdr_t *hdr,
++                     const TrafficLightResult *tl,
++                     const LaneMarkResult     *lm,
++                     const ZebraResult        *zebra);
++
++/* 从帧头取出三感知摘要并还原为完整结构（帧号/时间戳与帧头一致，便于按帧对齐）。
++ * 任一输出参数可为 NULL（不关心该项）。未携带的项：不做写入，且不计入返回值。
++ * 返回实际携带的有效项位掩码（UDP_AUX_HAS_*）。 */
++uint32_t udp_hdr_get_aux(const udp_frame_hdr_t *hdr,
++                         TrafficLightResult *tl,
++                         LaneMarkResult     *lm,
++                         ZebraResult        *zebra);
++
+ /* ---- 接口 ---- */
+ 
+ /* 识别一个 UDP 数据报的类型（校验 magic 与最小长度） */
+diff --git a/planning/csrc/main_planning.c b/planning/csrc/main_planning.c
+index e927384..13b4ff2 100644
+--- a/planning/csrc/main_planning.c
++++ b/planning/csrc/main_planning.c
+@@ -9,7 +9,9 @@
+  *   5. LCD(X11) 双路拼接渲染（左本地 / 右远端）
+  *
+  * 用法：
+- *   ./planning_main [--model <person模型路径>] [--no-lcd]
++ 
++ 
++ 型路径>] [--no-lcd]
+  *
+  * 注意：S 板是否具备"本地 PCIe 采集"需团队按硬件确认（部署拓扑见分工方案
+  * 第二节）；本程序对本地图缺失做了降级（只显示远端图），不影响联调。
+@@ -167,6 +169,23 @@ int main(int argc, char **argv)
+     LaneResult cur_lane;        /* 本周期最新收到的车道结果（仅 lane_fresh=1 时有效） */
+     int lane_fresh = 0;         /* 本周期是否收到“新的一帧”车道结果 */
+ 
++    /* 三感知（由 M 端随帧头 reserved[4] 摘要携带，布局见 common/udp_proto.h）。
++     * 语义与 lane 一致：*_fresh 仅在"本帧确实携带该项"（帧头 flags 置位）时为真，
++     * 交决策做超龄判断；cur_* 同时供 LCD 叠加层（箭头/红绿灯/报警）使用。 */
++    TrafficLightResult cur_tl;  int tl_fresh = 0;
++    LaneMarkResult     cur_lm;  int lm_fresh = 0;
++    ZebraResult        cur_zb;  int zb_fresh = 0;
++    memset(&cur_tl, 0, sizeof(cur_tl));
++    memset(&cur_lm, 0, sizeof(cur_lm));
++    memset(&cur_zb, 0, sizeof(cur_zb));
++
++    /* 按键模拟（赛题三："通过按键模拟切换车道/停止/行驶"）：
++     * man_on/man_cmd 是人工注入的命令，优先级高于自动决策；a 键交还自动。
++     * force_lane_change 供"强制实线变道报警"判定。 */
++    int           man_on  = 0;
++    ControlCommand man_cmd = CMD_NONE;
++    int           force_lane_change = 0;
++
+     while (g_keep_running) {
+         uint64_t now = now_us_mono();
+         win_loops++;
+@@ -211,6 +230,13 @@ int main(int argc, char **argv)
+                 if (shm_write_lane(&cur_lane) != 0) LOGW("转发 shm_lane 失败\n");
+                 lane_fresh = 1;   /* 仅在真正收到新帧时置位，供决策做超龄判断 */
+             }
++            /* 取出本帧附带的三感知摘要（帧头 reserved[4]）。
++             * 返回位掩码标明本帧到底带了哪几项——没带的不置 fresh，决策端会
++             * 走"超龄降级"而不是拿旧值硬撑。 */
++            const uint32_t aux = udp_hdr_get_aux(&last_hdr, &cur_tl, &cur_lm, &cur_zb);
++            tl_fresh = (aux & UDP_AUX_HAS_TL)    ? 1 : 0;
++            lm_fresh = (aux & UDP_AUX_HAS_LM)    ? 1 : 0;
++            zb_fresh = (aux & UDP_AUX_HAS_ZEBRA) ? 1 : 0;
+         }
+ 
+         /* 重组超时：丢弃残帧（有包进来就不算超时，避免正常收块期间误清） */
+@@ -239,22 +265,95 @@ int main(int argc, char **argv)
+          * 永不生效——M 端断流后 S 端仍会按最后一条旧车道继续行驶。 */
+         LaneResult *lp = lane_fresh ? &cur_lane : NULL;
+ 
++        /* 三感知同 lane 语义：只在"本帧携带"时传入，decision 内部缓存 + 超龄降级 */
++        TrafficLightResult *tlp = tl_fresh ? &cur_tl : NULL;
++        LaneMarkResult     *lmp = lm_fresh ? &cur_lm : NULL;
++        ZebraResult        *zbp = zb_fresh ? &cur_zb : NULL;
++
+         PersonState *p_in = (pstate.version == PERSON_VERSION) ? &pstate : NULL;
+-        if (decision_step(&dec, lp, NULL, NULL, NULL, p_in, now, &cmd) != 0) {
++        if (decision_step(&dec, lp, tlp, lmp, zbp, p_in, now, &cmd) != 0)
+             LOGW("决策失败\n");
+-        } else if (cmd.command != CMD_NONE) {
++        lane_fresh = 0;                       /* 复位，等待下一帧 */
++        tl_fresh = lm_fresh = zb_fresh = 0;
++
++        /* ---- 4b. 按键模拟注入（赛题三"通过按键模拟…"，见 render_lcd.h）----
++         * 在显示窗口上按键即可覆盖自动决策，用于现场演示：
++         *   ←/→ 切到左/右车道   ↑ 行驶   空格 急停
++         *   c   强制变道（当该侧是实线时触发报警）   a 交还自动 */
++        if (lcd) {
++            switch (render_lcd_poll_key(lcd)) {
++                case RENDER_KEY_LANE_LEFT:
++                    man_on = 1; man_cmd = CMD_LEFT;  LOGI("按键：模拟左车道/左转\n"); break;
++                case RENDER_KEY_LANE_RIGHT:
++                    man_on = 1; man_cmd = CMD_RIGHT; LOGI("按键：模拟右车道/右转\n"); break;
++                case RENDER_KEY_FORWARD:
++                    man_on = 1; man_cmd = CMD_GO;    LOGI("按键：模拟行驶\n"); break;
++                case RENDER_KEY_STOP:
++                    man_on = 1; man_cmd = CMD_STOP;  LOGI("按键：模拟停止\n"); break;
++                case RENDER_KEY_LANE_CHANGE:
++                    man_on = 1; man_cmd = CMD_LEFT; force_lane_change = 1;
++                    LOGI("按键：强制变道（该侧为实线时会报警）\n"); break;
++                case RENDER_KEY_AUTO:
++                    man_on = 0; man_cmd = CMD_NONE; force_lane_change = 0;
++                    LOGI("按键：交还自动决策\n"); break;
++                default: break;
++            }
++        }
++        if (man_on && man_cmd != CMD_NONE) {
++            cmd.command    = man_cmd;             /* 人工优先于自动决策 */
++            cmd.enable     = 1;
++            cmd.priority   = CMD_PRI_EMERGENCY;
++            cmd.confidence = 100;
++        }
++
++        if (cmd.command != CMD_NONE) {
+             if (shm_write_cmd(&cmd) != 0) LOGW("写 shm_cmd 失败\n");
+         }
+-        lane_fresh = 0;   /* 复位，等待下一帧 */
+ 
+         /* ---- 5. LCD 渲染（按需：本轮重组出完整帧才重绘，首轮除外） ----
+          * 一次渲染 = memset 2.46MB + 61 万像素 RGB565→BGRX 转换 + XPutImage
+          * 2.46MB，实测把单轮周期拉到 ≈171ms；而 M 端 5 帧/s 时多数轮次根本
+          * 收不到完整帧，无条件重绘纯属浪费，还会挤占下一轮的收包窗口。
+          * 决策不需要每帧落地（状态机用最新帧即可），跳帧只影响画面流畅度。 */
++
++        /* 报警判定（赛题三测评的两个报警场景）：
++         *   ① 实线变道：正在变道/压线（或按键"强制变道"），且该侧车道线是实线；
++         *   ② 红灯闯行：红灯点亮且置信度足够，但输出命令仍是行驶类（含按键强制行驶）。
++         * 数据来自 A 端感知（随帧头摘要送达），也可由按键注入直接复现。 */
++        int alarm = 0;
++        {
++            const int lm_ok    = (cur_lm.version == LANEMARK_VERSION);
++            const int changing = lm_ok && (cur_lm.lane_change || cur_lm.crossing);
++            int side_left  = lm_ok && (cur_lm.crossing_left  ||
++                                       (cur_lm.ego_offset_px < 0));
++            int side_right = lm_ok && (cur_lm.crossing_right ||
++                                       (cur_lm.ego_offset_px > 0));
++
++            /* 人工"强制变道"未伴随实际位移时，用注入方向判断所压侧 */
++            if (force_lane_change && !side_left && !side_right) {
++                side_left  = (man_cmd == CMD_LEFT);
++                side_right = (man_cmd == CMD_RIGHT);
++            }
++
++            if (lm_ok && (changing || force_lane_change) &&
++                ((side_left  && cur_lm.left_type  == LANE_MARK_SOLID) ||
++                 (side_right && cur_lm.right_type == LANE_MARK_SOLID)))
++                alarm = 1;
++
++            if (cur_tl.version == TL_VERSION && cur_tl.detected &&
++                cur_tl.state == TL_RED && cur_tl.confidence >= DEC_BRAKE_CONF_MIN &&
++                (cmd.command == CMD_GO || cmd.command == CMD_LEFT ||
++                 cmd.command == CMD_RIGHT))
++                alarm = 1;
++        }
++
+         if (lcd && (any_frame || frames_lcd == 0)) {
+             if (shm_read_udp_img(s_remote565, IMG_FRAME_BYTES) != 0 && frames_recv > 0)
+                 LOGW("读 shm_udp_img 失败\n");
++            /* 先登记叠加层状态，再绘制（render_lcd_draw 内部上屏前应用）：
++             * 箭头指示行驶行为 + 红绿灯三色指示灯 + 报警红框。 */
++            render_lcd_overlay(lcd, (int)cmd.command, (int)cur_tl.state,
++                               alarm, frames_lcd);
+             if (render_lcd_draw(lcd,
+                                 local_ok ? s_local565 : NULL,
+                                 frames_recv ? s_remote565 : NULL,
+@@ -302,9 +401,15 @@ int main(int argc, char **argv)
+                  (unsigned long long)(st.kern_inerr      - kern_inerr_base),
+                  (unsigned long long)(st.kern_indatagrams- kern_indatagram_base),
+                  st.rcvbuf_eff);
+-            LOGI("  最近命令=%d enable=%u pri=%u conf=%u\n",
++            LOGI("  最近命令=%d enable=%u pri=%u conf=%u 报警=%d | 感知[红绿灯=%d(检测%d 置信%u) "
++                 "虚实线[L=%d R=%d 压线%d 变道%d] 斑马线=%d] %s\n",
+                  (int)cmd.command, (unsigned)cmd.enable,
+-                 (unsigned)cmd.priority, (unsigned)cmd.confidence);
++                 (unsigned)cmd.priority, (unsigned)cmd.confidence, alarm,
++                 (int)cur_tl.state, (int)cur_tl.detected, (unsigned)cur_tl.confidence,
++                 (int)cur_lm.left_type, (int)cur_lm.right_type,
++                 (int)cur_lm.crossing, (int)cur_lm.lane_change,
++                 (int)cur_zb.detected,
++                 man_on ? "(人工按键中，按 a 交还自动)" : "");
+             win_pkts = 0;
+             win_loops = 0;
+         }
+diff --git a/planning/csrc/render_lcd_x11.c b/planning/csrc/render_lcd_x11.c
+index f1fdfb1..43280b3 100644
+--- a/planning/csrc/render_lcd_x11.c
++++ b/planning/csrc/render_lcd_x11.c
+@@ -19,6 +19,11 @@ struct render_lcd_ctx {
+     int win_h;
+     int is_stub;
+     uint8_t *canvas;      /* RGB888 画布 win_w*win_h*3 */
++    /* 叠加层状态（由 render_lcd_overlay 记录，render_lcd_draw 上屏前应用） */
++    int      ov_cmd;
++    int      ov_tl;
++    int      ov_alarm;
++    uint32_t ov_seq;
+ #if defined(__linux__)
+     void *disp;           /* Display* */
+     void *win;            /* Window（存储为整型句柄） */
+@@ -59,11 +64,115 @@ static void blit_565(const uint8_t *src565, uint8_t *canvas,
+     }
+ }
+ 
++/* ---------- 叠加层绘制原语（canvas 为 32bpp BGRX，color 用 0xRRGGBB） ---------- */
++static void c_fill_rect(uint8_t *canvas, int cw, int ch,
++                        int x, int y, int w, int h, uint32_t rgb)
++{
++    if (x < 0) { w += x; x = 0; }
++    if (y < 0) { h += y; y = 0; }
++    if (x + w > cw) w = cw - x;
++    if (y + h > ch) h = ch - y;
++    if (w <= 0 || h <= 0) return;
++    const uint8_t b = (uint8_t)(rgb & 0xFFu);
++    const uint8_t g = (uint8_t)((rgb >> 8) & 0xFFu);
++    const uint8_t r = (uint8_t)((rgb >> 16) & 0xFFu);
++    for (int yy = 0; yy < h; yy++) {
++        uint8_t *p = canvas + ((size_t)(y + yy) * cw + x) * 4u;
++        for (int xx = 0; xx < w; xx++) { p[0] = b; p[1] = g; p[2] = r; p[3] = 0; p += 4; }
++    }
++}
++
++/* 等腰三角形（逐行/逐列扫描填充）：apex 在 (cx,cy)，底边距 apex len，半宽 half。
++ * dir: 0=尖朝上 1=尖朝下 2=尖朝左 3=尖朝右 */
++static void c_fill_tri(uint8_t *canvas, int cw, int ch,
++                       int cx, int cy, int half, int len, int dir, uint32_t rgb)
++{
++    if (len <= 0) return;
++    for (int i = 0; i <= len; i++) {
++        const int hw = half * i / len;
++        if (dir == 0)      c_fill_rect(canvas, cw, ch, cx - hw, cy + i, hw * 2 + 1, 1, rgb);
++        else if (dir == 1) c_fill_rect(canvas, cw, ch, cx - hw, cy - i, hw * 2 + 1, 1, rgb);
++        else if (dir == 2) c_fill_rect(canvas, cw, ch, cx + i, cy - hw, 1, hw * 2 + 1, rgb);
++        else               c_fill_rect(canvas, cw, ch, cx - i, cy - hw, 1, hw * 2 + 1, rgb);
++    }
++}
++
++/* 把叠加层画到 canvas（上屏前调用）。含义见 render_lcd.h:render_lcd_overlay */
++static void overlay_apply(render_lcd_ctx_t *ctx)
++{
++    uint8_t *cv = ctx->canvas;
++    const int cw = ctx->win_w, ch = ctx->win_h;
++    if (!cv) return;
++
++    /* 1) 红绿灯指示灯：右半屏右上角竖排三色，点亮者高亮、其余暗色 */
++    {
++        const int bx = IMG_WIDTH + 22, by = 22, bw = 38, bh = 38, gap = 8;
++        static const uint32_t on_rgb[3]  = { 0xFF2020u, 0xFFD400u, 0x20FF40u };
++        static const uint32_t off_rgb[3] = { 0x400000u, 0x403300u, 0x00300Cu };
++        for (int i = 0; i < 3; i++) {
++            const int on = (ctx->ov_tl == (i + 1));   /* TL_RED=1 / YELLOW=2 / GREEN=3 */
++            c_fill_rect(cv, cw, ch, bx, by + i * (bh + gap), bw, bh,
++                        on ? on_rgb[i] : off_rgb[i]);
++        }
++    }
++
++    /* 2) 行驶指示箭头：右半屏中下方（黄=行驶方向，红方块=停车/刹车） */
++    {
++        const int ax = IMG_WIDTH + 160, ay = ch - 120;
++        const uint32_t YEL = 0xFFD400u, RED = 0xFF2020u;
++        switch (ctx->ov_cmd) {
++            case 3:   /* CMD_LEFT */
++                c_fill_rect(cv, cw, ch, ax - 16, ay - 13, 56, 26, YEL);
++                c_fill_tri (cv, cw, ch, ax - 56, ay, 36, 56, 2, YEL);
++                break;
++            case 4:   /* CMD_RIGHT */
++                c_fill_rect(cv, cw, ch, ax - 40, ay - 13, 56, 26, YEL);
++                c_fill_tri (cv, cw, ch, ax + 56, ay, 36, 56, 3, YEL);
++                break;
++            case 5:   /* CMD_BRAKE */
++            case 6:   /* CMD_STOP */
++                c_fill_rect(cv, cw, ch, ax - 42, ay - 42, 84, 84, RED);
++                break;
++            case 1:   /* CMD_GO：向上箭头 */
++            default:
++                c_fill_rect(cv, cw, ch, ax - 13, ay - 6, 26, 56, YEL);
++                c_fill_tri (cv, cw, ch, ax, ay - 6, 36, 56, 0, YEL);
++                break;
++        }
++    }
++
++    /* 3) 报警：整屏红色边框闪烁（赛题三"通过输出图像叠加红色模拟报警"）。
++     *    渲染是按帧触发的，用 frame 序号分频做亮灭，约 1s 一个周期。 */
++    if (ctx->ov_alarm && ((ctx->ov_seq / 4u) % 2u) == 0u) {
++        const int t = 12;
++        c_fill_rect(cv, cw, ch, 0,      0,      cw, t,  0xFF0000u);
++        c_fill_rect(cv, cw, ch, 0,      ch - t, cw, t,  0xFF0000u);
++        c_fill_rect(cv, cw, ch, 0,      0,      t,  ch, 0xFF0000u);
++        c_fill_rect(cv, cw, ch, cw - t, 0,      t,  ch, 0xFF0000u);
++    }
++}
++
++int render_lcd_overlay(render_lcd_ctx_t *ctx, int cmd, int tl_state,
++                       int alarm, uint32_t frame_id)
++{
++    if (!ctx) return -1;
++    ctx->ov_cmd   = cmd;
++    ctx->ov_tl    = tl_state;
++    ctx->ov_alarm = alarm ? 1 : 0;
++    ctx->ov_seq   = frame_id;
++    return 0;
++}
++
+ /* ---------- X11 真实现 ---------- */
+ #include <X11/Xlib.h>
+ #include <X11/Xutil.h>
++#include <X11/keysym.h>   /* XK_Left / XK_space 等（按键模拟用） */
+ #include <unistd.h>   /* getuid()：用于在报错里点明"是不是 root 跑的" */
+ 
++/* Xlib 默认错误处理器**会直接 exit()**——任何一次异步 X 错误（例如窗口尚未
++ * 可见时调 XSetInputFocus 触发的 BadMatch）都会让渲染进程莫名退出。改为忽略。 */
++static int ignore_x_error(Display *d, XErrorEvent *e) { (void)d; (void)e; return 0; }
++
+ int render_lcd_init(render_lcd_ctx_t **ctx, int win_w, int win_h)
+ {
+     if (!ctx) return -1;
+@@ -95,12 +204,21 @@ int render_lcd_init(render_lcd_ctx_t **ctx, int win_w, int win_h)
+         free(c);
+         return -1;
+     }
++    XSetErrorHandler(ignore_x_error);   /* 见函数上方说明：避免异步 X 错误杀进程 */
++
+     int scr = DefaultScreen(d);
+     Window w = XCreateSimpleWindow(d, RootWindow(d, scr), 0, 0,
+                                    (unsigned)c->win_w, (unsigned)c->win_h, 1,
+                                    BlackPixel(d, scr), WhitePixel(d, scr));
+     XStoreName(d, w, "ADAS-Display");
++    /* KeyPressMask：赛题三"按键模拟"必须——不选它窗口收不到任何按键 */
++    XSelectInput(d, w, ExposureMask | KeyPressMask | StructureNotifyMask);
+     XMapWindow(d, w);
++    XRaiseWindow(d, w);
++    /* 让窗口拿到输入焦点，否则按键会送给桌面/其它窗口。
++     * 若此时窗口尚不可见而失败（BadMatch），由上面的容错处理器吞掉。 */
++    XSetInputFocus(d, w, RevertToParent, CurrentTime);
++    XFlush(d);
+ 
+     c->canvas = (uint8_t *)calloc(1, (size_t)c->win_w * c->win_h * 4u);  /* 24bpp + 1 填充字节/像素 */
+     if (!c->canvas) { XCloseDisplay(d); free(c); return -1; }
+@@ -140,6 +258,8 @@ int render_lcd_draw(render_lcd_ctx_t *ctx,
+     }
+     /* BLANK：保持黑屏 */
+ 
++    overlay_apply(ctx);   /* 叠加行驶箭头 / 红绿灯指示 / 报警红框（见 render_lcd_overlay） */
++
+     XPutImage(d, w, gc, img, 0, 0, 0, 0, (unsigned)ctx->win_w, (unsigned)ctx->win_h);
+     XFlush(d);
+     return 0;
+@@ -162,6 +282,33 @@ void render_lcd_deinit(render_lcd_ctx_t *ctx)
+     free(ctx);
+ }
+ 
++/* 非阻塞取键：返回 RENDER_KEY_*（见 render_lcd.h），无键立即返回 0。
++ * 一次调用只消费一个有效按键，避免长按键把队列塞满后界面卡顿。 */
++int render_lcd_poll_key(render_lcd_ctx_t *ctx)
++{
++    if (!ctx || ctx->is_stub || !ctx->disp) return RENDER_KEY_NONE;
++    Display *d = (Display *)ctx->disp;
++    int mapped = RENDER_KEY_NONE;
++
++    while (XPending(d)) {
++        XEvent ev;
++        XNextEvent(d, &ev);
++        if (ev.type != KeyPress) continue;
++        const KeySym ks = XLookupKeysym(&ev.xkey, 0);
++        switch (ks) {
++            case XK_Left:  mapped = RENDER_KEY_LANE_LEFT;   break;
++            case XK_Right: mapped = RENDER_KEY_LANE_RIGHT;  break;
++            case XK_Up:    mapped = RENDER_KEY_FORWARD;     break;
++            case XK_space: mapped = RENDER_KEY_STOP;        break;
++            case XK_c: case XK_C: mapped = RENDER_KEY_LANE_CHANGE; break;
++            case XK_a: case XK_A: mapped = RENDER_KEY_AUTO; break;
++            default: break;
++        }
++        if (mapped != RENDER_KEY_NONE) break;
++    }
++    return mapped;
++}
++
+ #else  /* !__linux__：桩实现 */
+ 
+ int render_lcd_init(render_lcd_ctx_t **ctx, int win_w, int win_h)
+@@ -187,6 +334,23 @@ int render_lcd_draw(render_lcd_ctx_t *ctx,
+     return 0;
+ }
+ 
++int render_lcd_overlay(render_lcd_ctx_t *ctx, int cmd, int tl_state,
++                       int alarm, uint32_t frame_id)
++{
++    if (!ctx) return -1;
++    ctx->ov_cmd   = cmd;
++    ctx->ov_tl    = tl_state;
++    ctx->ov_alarm = alarm ? 1 : 0;
++    ctx->ov_seq   = frame_id;
++    return 0;   /* 桩：只记录，不上屏 */
++}
++
++int render_lcd_poll_key(render_lcd_ctx_t *ctx)
++{
++    (void)ctx;
++    return RENDER_KEY_NONE;   /* 本机无 X11：无按键输入 */
++}
++
+ void render_lcd_deinit(render_lcd_ctx_t *ctx)
+ {
+     if (!ctx) return;
+diff --git a/planning/csrc/udp_m_send_main.c b/planning/csrc/udp_m_send_main.c
+index 48ec405..de58d59 100644
+--- a/planning/csrc/udp_m_send_main.c
++++ b/planning/csrc/udp_m_send_main.c
+@@ -100,6 +100,7 @@ int main(int argc, char **argv)
+      * 第一行统计会在启动瞬间立刻打印（"已发帧=1"），看起来像统计间隔不对。 */
+     uint64_t last_stat_us = now_us_mono();
+     uint32_t sent_frames = 0, sent_blocks_fail = 0;
++    int aux_tl = 0, aux_lm = 0, aux_zb = 0;   /* 本帧是否携带三感知（供统计打印） */
+ 
+     while (g_keep_running) {
+         uint64_t now = now_us_mono();
+@@ -132,7 +133,21 @@ int main(int argc, char **argv)
+                 LOGW("读 shm_pcie_img 失败\n");
+             }
+ 
+-            int n = udp_sender_send_frame(sender, g_img565, IMG_FRAME_BYTES, &lane);
++            /* 附带 A 端的三项感知（红绿灯/虚实线/斑马线）。
++             * 它们与本帧图像同属一帧：A 的 main_perception 在同一轮里写这三段，
++             * 这里按"读到就带、读不到就置 NULL"处理——缺失不阻塞发帧，
++             * 帧头 flags 会如实反映本帧携带了哪几项（见 udp_proto.h 摘要布局）。
++             * shm_read_* 内部即 shm_open（带退避/限流日志），A 未启动时开销可忽略。 */
++            TrafficLightResult tl;  LaneMarkResult lm;  ZebraResult zb;
++            const int has_tl = (shm_read_traffic_light(&tl) == 0 && tl.version == TL_VERSION);
++            const int has_lm = (shm_read_lane_mark(&lm)   == 0 && lm.version == LANEMARK_VERSION);
++            const int has_zb = (shm_read_zebra(&zb)       == 0 && zb.version == ZEBRA_VERSION);
++            aux_tl = has_tl; aux_lm = has_lm; aux_zb = has_zb;
++
++            int n = udp_sender_send_frame_ex(sender, g_img565, IMG_FRAME_BYTES, &lane,
++                                             has_tl ? &tl : NULL,
++                                             has_lm ? &lm : NULL,
++                                             has_zb ? &zb : NULL);
+             if (n > 0) {
+                 sent_frames++;
+             } else {
+@@ -149,9 +164,10 @@ int main(int argc, char **argv)
+         /* 统计（每 2s） */
+         if (now - last_stat_us >= 2000000u) {
+             last_stat_us = now;
+-            LOGI("已发帧=%u 失败=%u 心跳=%u | dir=%d off=%d conf=%u\n",
++            LOGI("已发帧=%u 失败=%u 心跳=%u | dir=%d off=%d conf=%u | 附带[红绿灯=%d 虚实线=%d 斑马线=%d]\n",
+                  sent_frames, sent_blocks_fail, hb_seq,
+-                 (int)lane.direction, lane.curve_offset, lane.confidence);
++                 (int)lane.direction, lane.curve_offset, lane.confidence,
++                 aux_tl, aux_lm, aux_zb);
+         }
+ 
+         SLEEP_MS(5);
+diff --git a/planning/csrc/udp_sender.c b/planning/csrc/udp_sender.c
+index 0850bbe..e4983ee 100644
+--- a/planning/csrc/udp_sender.c
++++ b/planning/csrc/udp_sender.c
+@@ -50,14 +50,20 @@ int udp_sender_init(udp_sender_t **s, const char *remote_ip, uint16_t port)
+     return 0;
+ }
+ 
+-int udp_sender_send_frame(udp_sender_t *s, const void *rgb565, size_t bytes,
+-                          const LaneResult *lane)
++int udp_sender_send_frame_ex(udp_sender_t *s, const void *rgb565, size_t bytes,
++                             const LaneResult         *lane,
++                             const TrafficLightResult *tl,
++                             const LaneMarkResult     *lm,
++                             const ZebraResult        *zebra)
+ {
+     if (!s || !rgb565 || bytes == 0) return -1;
+ 
+     udp_frame_hdr_t hdr;
+     if (udp_pack_frame_hdr(&hdr, lane, IMG_WIDTH, IMG_HEIGHT, UDP_BLOCK_SIZE) != 0)
+         return -1;
++    /* 三感知摘要走帧头 reserved[4]（16B 已存在字段，不改包尺寸）：
++     * 必须在 pack_frame_hdr 之后调用——后者 memset 清零整帧头。 */
++    udp_hdr_set_aux(&hdr, tl, lm, zebra);
+     if (bytes != hdr.data_size) return -1;
+ 
+     const socklen_t alen = (socklen_t)sizeof(s->peer);
+@@ -103,6 +109,13 @@ int udp_sender_send_frame(udp_sender_t *s, const void *rgb565, size_t bytes,
+     return (int)total;
+ }
+ 
++/* 基础版 = 扩展版不带三感知（保持既有调用点与单测不变） */
++int udp_sender_send_frame(udp_sender_t *s, const void *rgb565, size_t bytes,
++                          const LaneResult *lane)
++{
++    return udp_sender_send_frame_ex(s, rgb565, bytes, lane, NULL, NULL, NULL);
++}
++
+ int udp_sender_send_heartbeat(udp_sender_t *s, uint32_t seq)
+ {
+     if (!s) return -1;
+@@ -131,6 +144,17 @@ int udp_sender_init(udp_sender_t **s, const char *remote_ip, uint16_t port)
+     return -1;
+ }
+ 
++int udp_sender_send_frame_ex(udp_sender_t *s, const void *rgb565, size_t bytes,
++                             const LaneResult         *lane,
++                             const TrafficLightResult *tl,
++                             const LaneMarkResult     *lm,
++                             const ZebraResult        *zebra)
++{
++    (void)s; (void)rgb565; (void)bytes; (void)lane;
++    (void)tl; (void)lm; (void)zebra;
++    return -1;
++}
++
+ int udp_sender_send_frame(udp_sender_t *s, const void *rgb565, size_t bytes,
+                           const LaneResult *lane)
+ {
+diff --git a/planning/include/render_lcd.h b/planning/include/render_lcd.h
+index 7bce42a..c2976a1 100644
+--- a/planning/include/render_lcd.h
++++ b/planning/include/render_lcd.h
+@@ -24,11 +24,39 @@ typedef struct render_lcd_ctx render_lcd_ctx_t;
+ int  render_lcd_init(render_lcd_ctx_t **ctx, int win_w, int win_h);
+ 
+ /* 双路绘制：local565 / remote565 均为 640x480 RGB565；任一可为 NULL（缺路）。
+- * mode 决定拼接方式（SPLIT / LOCAL_ONLY / REMOTE_ONLY / BLANK）。 */
++ * mode 决定拼接方式（SPLIT / LOCAL_ONLY / REMOTE_ONLY / BLANK）。
++ * 若此前调用过 render_lcd_overlay()，本函数会在上屏前把叠加层一并画上。 */
+ int  render_lcd_draw(render_lcd_ctx_t *ctx,
+                      const void *local565, const void *remote565,
+                      DisplayMode mode, uint32_t frame_id);
+ 
++/* 设置叠加层状态（在 render_lcd_draw 之前调用即可生效；只记录、不立即绘制）。
++ * 对应赛题三测评要求的"通过输出图像叠加的方式指示车辆行驶行为"与"叠加红色报警"：
++ *   cmd      : ControlCommand 取值（1=前进 3=左转 4=右转 5=刹车 6=急停 0=无）
++ *              → 右半屏叠加对应指向的箭头 / 红方块
++ *   tl_state : TrafficLightState（0未知 1红 2黄 3绿）→ 右上角三色指示灯
++ *   alarm    : 非 0 时整屏红色边框闪烁（模拟报警）
++ *   frame_id : 闪烁相位来源（渲染按帧触发，约 1s 一个亮灭周期）
++ * 非 Linux 桩实现只记录、不绘制。成功 0。 */
++int  render_lcd_overlay(render_lcd_ctx_t *ctx, int cmd, int tl_state,
++                        int alarm, uint32_t frame_id);
++
++/* ---- 按键输入（赛题三"通过按键模拟…"的落地通道）----
++ * 在显示窗口上监听键盘，非阻塞取键；返回下列 RENDER_KEY_* 之一，无键返回 0。
++ * 映射：←/→ 模拟选择左/右车道；↑ 模拟行驶；空格 急停；
++ *       c 强制变道（实线时触发报警）；a 交还自动决策。
++ * 桩实现恒返回 0。注意：窗口需获得输入焦点（init 已 XSetInputFocus 并安装
++ * 容错错误处理器，失败不会终止进程）。 */
++#define RENDER_KEY_NONE         0
++#define RENDER_KEY_LANE_LEFT    1   /* 模拟：切到左车道 / 左转向 */
++#define RENDER_KEY_LANE_RIGHT   2   /* 模拟：切到右车道 / 右转向 */
++#define RENDER_KEY_FORWARD      3   /* 模拟：行驶 */
++#define RENDER_KEY_STOP         4   /* 模拟：停止（急停） */
++#define RENDER_KEY_LANE_CHANGE  5   /* 模拟：强制变道（用于实线变道报警演示） */
++#define RENDER_KEY_AUTO         6   /* 交还自动决策 */
++
++int  render_lcd_poll_key(render_lcd_ctx_t *ctx);
++
+ void render_lcd_deinit(render_lcd_ctx_t *ctx);
+ 
+ #ifdef __cplusplus
+diff --git a/planning/include/udp_sender.h b/planning/include/udp_sender.h
+index 0dc14ba..c1f5fd7 100644
+--- a/planning/include/udp_sender.h
++++ b/planning/include/udp_sender.h
+@@ -27,6 +27,15 @@ int  udp_sender_init(udp_sender_t **s, const char *remote_ip, uint16_t port);
+ int  udp_sender_send_frame(udp_sender_t *s, const void *rgb565, size_t bytes,
+                            const LaneResult *lane);
+ 
++/* 发送一帧（扩展版）：额外携带红绿灯/虚实线/斑马线三项感知摘要（帧头 reserved[4]，
++ * 布局见 common/include/udp_proto.h）。任一项可为 NULL —— 表示本帧不携带该项，
++ * 接收端按帧头 flags 判定。基础版等价于本函数后三项传 NULL。 */
++int  udp_sender_send_frame_ex(udp_sender_t *s, const void *rgb565, size_t bytes,
++                              const LaneResult         *lane,
++                              const TrafficLightResult *tl,
++                              const LaneMarkResult     *lm,
++                              const ZebraResult        *zebra);
++
+ /* 发送心跳（看门狗）。成功 0，失败 -1。 */
+ int  udp_sender_send_heartbeat(udp_sender_t *s, uint32_t seq);
+ 
+diff --git a/planning/test/test_udp.c b/planning/test/test_udp.c
+index 185a01d..77d7160 100644
+--- a/planning/test/test_udp.c
++++ b/planning/test/test_udp.c
+@@ -128,6 +128,60 @@ int main(void)
+ 
+     udp_reassembly_reset(&r);
+ 
++    /* 测试 5：三感知摘要随帧头 reserved[4] 往返（红绿灯/虚实线/斑马线）。
++     * 这是"红绿灯停驶 / 实线变道报警"能生效的前提：M 端把 A 的三项感知塞进
++     * 帧头 16B 预留区，S 端解出后喂 decision —— 全程不改包尺寸。 */
++    {
++        TrafficLightResult tl_in, tl_out;
++        LaneMarkResult     lm_in, lm_out;
++        ZebraResult        zb_in, zb_out;
++        memset(&tl_in, 0, sizeof(tl_in));
++        memset(&lm_in, 0, sizeof(lm_in));
++        memset(&zb_in, 0, sizeof(zb_in));
++
++        tl_in.version    = TL_VERSION;
++        tl_in.state      = TL_RED;
++        tl_in.detected   = 1;
++        tl_in.confidence = 88;
++        lm_in.version       = LANEMARK_VERSION;
++        lm_in.left_type     = LANE_MARK_SOLID;
++        lm_in.right_type    = LANE_MARK_DASHED;
++        lm_in.lane_change   = 1;
++        lm_in.crossing_left = 1;
++        lm_in.confidence    = 76;
++        lm_in.ego_offset_px = -37;
++        zb_in.version    = ZEBRA_VERSION;
++        zb_in.detected   = 1;
++        zb_in.confidence = 64;
++
++        udp_frame_hdr_t h_aux;
++        udp_pack_frame_hdr(&h_aux, &lane, IMG_WIDTH, IMG_HEIGHT, UDP_BLOCK_SIZE);
++        /* pack 之后才可写摘要（pack 会 memset 整帧头） */
++        udp_hdr_set_aux(&h_aux, &tl_in, &lm_in, &zb_in);
++
++        uint32_t has = udp_hdr_get_aux(&h_aux, &tl_out, &lm_out, &zb_out);
++        CHECK(has == (UDP_AUX_HAS_TL | UDP_AUX_HAS_LM | UDP_AUX_HAS_ZEBRA),
++              "aux: all three flags present");
++        CHECK(tl_out.state == TL_RED && tl_out.detected == 1 &&
++              tl_out.confidence == 88, "aux: traffic light round-trip");
++        CHECK(lm_out.left_type == LANE_MARK_SOLID &&
++              lm_out.right_type == LANE_MARK_DASHED &&
++              lm_out.lane_change == 1 && lm_out.crossing_left == 1 &&
++              lm_out.confidence == 76 && lm_out.ego_offset_px == -37,
++              "aux: lane-mark round-trip");
++        CHECK(zb_out.detected == 1 && zb_out.confidence == 64,
++              "aux: zebra round-trip");
++        /* 帧号/时间戳需与车道结果同源，供决策按帧对齐 */
++        CHECK(tl_out.frame_id == lane.frame_id && lm_out.frame_id == lane.frame_id,
++              "aux: frame_id aligned with lane");
++
++        /* 不携带任一项时（旧发送端），不应误报有效 */
++        udp_frame_hdr_t h_plain;
++        udp_pack_frame_hdr(&h_plain, &lane, IMG_WIDTH, IMG_HEIGHT, UDP_BLOCK_SIZE);
++        uint32_t has2 = udp_hdr_get_aux(&h_plain, &tl_out, &lm_out, &zb_out);
++        CHECK(has2 == 0u, "aux: absent when not set (backward compatible)");
++    }
++
+     if (g_fail == 0) {
+         printf("test_udp: ALL PASS\n");
+         return 0;
+-- 
+2.55.0.windows.3
+
