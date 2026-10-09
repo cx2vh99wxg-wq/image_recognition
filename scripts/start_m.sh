@@ -12,6 +12,8 @@
 # 用法（在 M 端 RK3568 上，需 root）：
 #   sudo ./scripts/start_m.sh [--stub|--real] [--no-build] [模型绝对路径] [驱动ko绝对路径]
 #   sudo bash ./scripts/start_m.sh        # 也可以（本脚本不依赖可执行位）
+#   sudo bash ./scripts/start_m.sh --stereo-pcie [--swap-eyes]
+#     J8 双目视频测试：需 stereo_j8 位流，直接 PCIe -> UDP，不启动感知模型。
 #
 # 无参数时自动判定模式：有 /dev/pango_pci_driver → 真实，否则 → 桩。
 set -e
@@ -22,19 +24,25 @@ BIN_DIR="${BIN_DIR:-$REPO_ROOT/bin}"
 
 # ---- 参数 ----
 NO_BUILD=0
-FORCE_MODE=""                 # "" | stub | real
+FORCE_MODE=""                 # "" | stub | real | stereo
+SWAP_EYES=0
 POS=()
 for a in "$@"; do
     case "$a" in
         --stub)     FORCE_MODE=stub ;;
         --real)     FORCE_MODE=real ;;
+        --stereo-pcie) FORCE_MODE=stereo ;;
+        --swap-eyes) SWAP_EYES=1 ;;
         --no-build) NO_BUILD=1 ;;
-        --help|-h) echo "Usage: $0 [--stub|--real] [--no-build] [model_path] [driver_path]"; exit 0 ;;
+        --help|-h) echo "Usage: $0 [--stub|--real|--stereo-pcie] [--swap-eyes] [--no-build] [model_path] [driver_path]"; exit 0 ;;
+        --*) echo "未知参数：$a"; exit 2 ;;
         *)          POS+=("$a") ;;
     esac
 done
 MODEL_PATH="${POS[0]:-$REPO_ROOT/model/yolopv2_Nx3x480x640_rk3568.rknn}"
 KO_PATH="${POS[1]:-$REPO_ROOT/drivers/pango_pci_driver.ko}"
+[ "$SWAP_EYES" = 0 ] || [ "$FORCE_MODE" = stereo ] || { echo "--swap-eyes 仅用于 --stereo-pcie"; exit 2; }
+[ "$FORCE_MODE" != stereo ] || REQUIRED_BUILD_FEATURE=STEREO-J8-v1
 
 source "$SCRIPT_DIR/resolve_bin.sh"
 
@@ -42,6 +50,9 @@ source "$SCRIPT_DIR/resolve_bin.sh"
 if pgrep -f '(^|/)udp_m_send_main([[:space:]]|$)' >/dev/null; then
     echo "udp_m_send_main 已在运行；请先 bash scripts/stop_all.sh，再重新启动。"
     exit 1
+fi
+if [ "$FORCE_MODE" = stereo ] && pgrep -f '(^|/)(perception_main|pcie_dma_read_test)([[:space:]]|$)' >/dev/null; then
+    echo "已有采集进程占用 PCIe；请先停止，再运行双目测试。"; exit 1
 fi
 
 # RKNN 运行时库路径（librknnrt.so）
@@ -54,7 +65,9 @@ fi
 echo "==== M 端启动 ===="
 
 # ---- 运行模式判定：显式 --stub/--real 优先，否则看 PCIe 设备节点 ----
-if [ "$FORCE_MODE" = stub ]; then
+if [ "$FORCE_MODE" = stereo ]; then
+    MODE=stereo; WHY="（--stereo-pcie：直接采集两路，不启动模型）"
+elif [ "$FORCE_MODE" = stub ]; then
     MODE=stub;  WHY="（--stub 指定）"
 elif [ "$FORCE_MODE" = real ]; then
     MODE=real;  WHY="（--real 指定）"
@@ -69,7 +82,7 @@ if [ "$MODE" = stub ]; then
 fi
 
 # 1) 加载 PCIe 驱动（仅真实模式；若已加载则跳过）
-if [ "$MODE" = real ]; then
+if [ "$MODE" = real ] || [ "$MODE" = stereo ]; then
     if lsmod 2>/dev/null | grep -q pango_pci_driver; then
         echo "[1] pango_pci_driver 已加载"
     else
@@ -104,6 +117,8 @@ if [ "$MODE" = real ]; then
         nohup "$PERC_BIN" --model "$MODEL_PATH" \
             > "$REPO_ROOT/perception.log" 2>&1 &
     fi
+elif [ "$MODE" = stereo ]; then
+    echo "[4] 双目采集测试：跳过 perception_main，发送器直接读取 PCIe"
 else
     echo "[4] 桩模式：跳过 perception_main（不发真实图像，改由发送器造图）"
 fi
@@ -115,12 +130,18 @@ SEND_BIN="$(resolve_bin udp_m_send_main planning)" || {
 }
 SEND_ARGS=()
 [ "$MODE" = stub ] && SEND_ARGS+=(--stub)
+[ "$MODE" = stereo ] && SEND_ARGS+=(--stereo-pcie)
+[ "$SWAP_EYES" = 1 ] && SEND_ARGS+=(--swap-eyes)
 "$SEND_BIN" --build-info
 echo "[5] 启动 $SEND_BIN ${SEND_ARGS[*]}"
 nohup "$SEND_BIN" "${SEND_ARGS[@]}" \
     > "$REPO_ROOT/udp_send.log" 2>&1 &
+SEND_PID=$!
 
 sleep 1
+if ! kill -0 "$SEND_PID" 2>/dev/null; then
+    echo "发送器启动失败："; tail -12 "$REPO_ROOT/udp_send.log"; exit 1
+fi
 echo "==== M 端启动完成（模式=$MODE）===="
 echo "日志: perception.log / udp_send.log"
 echo "全部停止请用: ./scripts/stop_all.sh"

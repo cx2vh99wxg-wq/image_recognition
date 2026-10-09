@@ -2,6 +2,7 @@
  * No X11, FPGA, RKNN or network is mocked into a claim of hardware validation. */
 #include "frame_compose.h"
 #include "stub_pattern.h"
+#include "stereo_test_frame.h"
 #include "udp_receiver.h"
 #include "udp_proto.h"
 #include <stdio.h>
@@ -44,7 +45,23 @@ int main(int argc, char **argv)
     CHECK(frame_compose_6ch(s,m,DISPLAY_MODE_BLANK,out,sizeof(out),960,480) == 0);
     for (size_t i = 0; i < 960u*480*4; ++i) CHECK(out[i] == 0);
 
+    /* Stereo bitstream contract: live at q0/q2, no stale center/reserved pixels. */
+    for (int q = 0; q < 4; ++q) quadrant(m, q, colors[q]);
+    stereo_test_frame_prepare(m, 0);
+    CHECK(frame_compose_6ch(NULL,m,DISPLAY_MODE_SPLIT,out,sizeof(out),960,480) == 0);
+    for (int y = 0; y < 240; ++y) for (int x = 0; x < 960; ++x) {
+        const uint8_t black[3] = {0,0,0};
+        const uint8_t *expected = x < 320 ? bgr[0] : x < 640 ? black : bgr[2];
+        CHECK(memcmp(out + ((size_t)y*960+x)*4, expected, 3) == 0);
+    }
+    stereo_test_frame_prepare(m, 1);
+    CHECK(frame_compose_6ch(NULL,m,DISPLAY_MODE_SPLIT,out,sizeof(out),960,480) == 0);
+    CHECK(memcmp(out,bgr[2],3) == 0);
+    CHECK(memcmp(out+640*4,bgr[0],3) == 0);
+    stereo_test_frame_prepare(NULL, 0);
+
     stub_pattern_fill(m,640,480,0); stub_pattern_fill(s,640,480,1);
+    if (argc > 2 && strcmp(argv[2], "--stereo") == 0) stereo_test_frame_prepare(m, 0);
     LaneResult lane = {0}; lane.version = LANERESULT_VERSION; lane.frame_id = 42;
     udp_frame_hdr_t hdr, got;
     udp_pack_frame_hdr(&hdr,&lane,640,480,UDP_BLOCK_SIZE);

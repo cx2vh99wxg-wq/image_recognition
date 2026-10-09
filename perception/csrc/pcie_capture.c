@@ -108,6 +108,10 @@ int pcie_capture_open(frame_grabber_t *g, int img_w, int img_h, int lead_px)
 {
     if (!g) return -1;
     memset(g, 0, sizeof(*g));
+    g->fd = -1;
+    if (img_w <= 0 || img_h <= 0 || lead_px < 0 ||
+        img_w > PANGO_DMA_PACKET / 2 || lead_px > PANGO_DMA_PACKET / 2 - img_w ||
+        ((img_w + lead_px) & 1)) return -1;
     g->img_w = img_w;
     g->img_h = img_h;
     g->lead_px = lead_px;
@@ -135,6 +139,7 @@ int pcie_capture_start(frame_grabber_t *g)
     g->dma.offset_addr = 0;
     if (ioctl(g->fd, PANGO_IO_DMA_WR, &g->dma) != 0) {
         perror("ioctl PANGO_IO_DMA_WR");
+        ioctl(g->fd, PANGO_IO_UNMAP, &g->dma);
         return -1;
     }
     return 0;

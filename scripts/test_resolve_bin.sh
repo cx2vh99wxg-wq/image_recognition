@@ -21,6 +21,13 @@ make_fake() {
 make_fake "$REPO_ROOT/planning/planning_main"
 make_fake "$BIN_DIR/planning_main"
 test "$(resolve_bin planning_main planning)" = "$REPO_ROOT/planning/planning_main"
+REQUIRED_BUILD_FEATURE=STEREO-J8-v1
+if bin_compatible "$REPO_ROOT/planning/planning_main" planning_main; then
+    echo "FAIL: stereo launcher accepted a six-camera-only binary"; exit 1
+fi
+printf '#!/bin/bash\necho "planning_main ADAS-6CH-v2 layout=960x480 STEREO-J8-v1"\n' > "$REPO_ROOT/planning/planning_main"
+bin_compatible "$REPO_ROOT/planning/planning_main" planning_main
+unset REQUIRED_BUILD_FEATURE
 # An older executable ignores --build-info: it must never be executed.
 printf '#!/bin/bash\ntouch "%s/old-was-run"\nexit 0\n' "$FIXTURE" > "$REPO_ROOT/planning/planning_main"
 test "$(resolve_bin planning_main planning)" = "$BIN_DIR/planning_main"

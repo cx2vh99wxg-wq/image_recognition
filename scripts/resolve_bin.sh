@@ -8,6 +8,9 @@ bin_compatible() {
             # Older programs ignore unknown arguments and would start running.
             LC_ALL=C grep -aFq 'ADAS-6CH-v2' "$1" || return 1
             info="$(timeout 3 "$1" --build-info 2>/dev/null)" || return 1
+            if [ -n "${REQUIRED_BUILD_FEATURE:-}" ]; then
+                [[ "$info" == *"$REQUIRED_BUILD_FEATURE"* ]] || return 1
+            fi
             [[ "$info" == *"ADAS-6CH-v2 layout=960x480"* ]] ;;
         *) return 0 ;;
     esac
@@ -30,7 +33,8 @@ bin_fresh() {
 }
 
 resolve_bin() {
-    local name="$1" mod="$2" cand
+    local name="$1" mod="$2" cand target=bin
+    [ "$name" != udp_m_send_main ] || target=sender
     for cand in "$REPO_ROOT/$mod/$name" "$BIN_DIR/$name"; do
         [ -x "$cand" ] || continue
         bin_compatible "$cand" "$name" || continue
@@ -42,8 +46,8 @@ resolve_bin() {
         echo "错误：$name 不存在或不支持 ADAS-6CH-v2；请重新 make -C $mod bin。" >&2
         return 1
     fi
-    echo "  编译当前源码：make -C $mod bin" >&2
-    if ! make -C "$REPO_ROOT/$mod" bin >&2; then
+    echo "  编译当前源码：make -C $mod $target" >&2
+    if ! make -C "$REPO_ROOT/$mod" "$target" >&2; then
         echo "错误：编译失败，停止启动；不会回退到旧版程序。" >&2
         return 1
     fi

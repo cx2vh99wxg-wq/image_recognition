@@ -8,6 +8,7 @@
  * 用法：
  *   ./udp_m_send_main            # 真实模式：读 A 的共享内存
  *   ./udp_m_send_main --stub     # 桩模式：不读硬件图，发 2×2 拼接模拟图（3 路渐变 + 1 预留格）
+ *   ./udp_m_send_main --stereo-pcie  # stereo_j8 位流：直接 PCIe，无模型；左/空/右
  *
  * 信号：SIGINT/SIGTERM 优雅退出。
  */
@@ -17,6 +18,8 @@
 #include "driving_config.h"
 #include "time_util.h"
 #include "stub_pattern.h"   /* 桩模式：合成 2×2 拼接图（3 路 + 预留格） */
+#include "pcie_capture.h"
+#include "stereo_test_frame.h"
 
 #define LOG_TAG "UDP_M"
 #include "log.h"
@@ -54,25 +57,30 @@ static void fill_stub_image(void)
 int main(int argc, char **argv)
 {
     int use_stub = 0;
+    int stereo_pcie = 0;
+    int swap_eyes = 0;
     const char *target_ip = UDP_IP_S;
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--stub") == 0) use_stub = 1;
+        else if (strcmp(argv[i], "--stereo-pcie") == 0) stereo_pcie = 1;
+        else if (strcmp(argv[i], "--swap-eyes") == 0) swap_eyes = 1;
         else if (strcmp(argv[i], "--build-info") == 0) { planning_build_info("udp_m_send_main"); return 0; }
         else if (strcmp(argv[i], "--ip") == 0 && i + 1 < argc) target_ip = argv[++i];
-        else { fprintf(stderr, "Usage: %s [--stub] [--ip address] [--build-info]\n", argv[0]); return 2; }
+        else { fprintf(stderr, "Usage: %s [--stub|--stereo-pcie] [--swap-eyes] [--ip address] [--build-info]\n", argv[0]); return 2; }
     }
+    if ((use_stub && stereo_pcie) || (swap_eyes && !stereo_pcie)) return 2;
     planning_build_info("udp_m_send_main");
 
     signal(SIGINT, on_signal);
     signal(SIGTERM, on_signal);
 
-    LOGI("M端UDP发送器启动 (stub=%d)\n", use_stub);
+    LOGI("M端UDP发送器启动 (stub=%d stereo_pcie=%d swap_eyes=%d)\n", use_stub, stereo_pcie, swap_eyes);
 
     g_img565 = (uint8_t *)malloc(IMG_FRAME_BYTES);
     if (!g_img565) { LOGE("图像缓冲分配失败\n"); return -1; }
 
     /* 读者：打开 A 的共享段（写者未启动会立即报错） */
-    if (!use_stub) {
+    if (!use_stub && !stereo_pcie) {
         void *ptr = NULL;
         if (shm_open(SHM_KEY_LANE, SHM_LANE_SIZE, &ptr) != 0) {
             LOGE("shm_lane 不可用：请先启动感知进程\n");
@@ -94,6 +102,18 @@ int main(int argc, char **argv)
     }
     LOGI("目标: %s:%d\n", target_ip, UDP_PORT);
 
+    frame_grabber_t grabber;
+    memset(&grabber, 0, sizeof(grabber)); grabber.fd = -1;
+    if (stereo_pcie) {
+        if (pcie_capture_open(&grabber, IMG_WIDTH, IMG_HEIGHT, PCIE_LEAD_PIXELS) != 0 ||
+            pcie_capture_start(&grabber) != 0) {
+            LOGE("双目 PCIe 初始化失败；需要 stereo_j8 FPGA 位流，不回退模拟图\n");
+            pcie_capture_close(&grabber);
+            udp_sender_close(sender); free(g_img565); return 1;
+        }
+        LOGI("STEREO-J8-v1: direct PCIe -> UDP, no NPU; M=[CAM1, EMPTY, CAM2]\n");
+    }
+
     LaneResult lane;
     memset(&lane, 0, sizeof(lane));
     lane.version = LANERESULT_VERSION;
@@ -106,13 +126,30 @@ int main(int argc, char **argv)
     uint64_t last_stat_us = now_us_mono();
     uint32_t sent_frames = 0, sent_blocks_fail = 0;
     int aux_tl = 0, aux_lm = 0, aux_zb = 0;   /* 本帧是否携带三感知（供统计打印） */
+    uint64_t last_capture_us = 0;
+    int exit_status = 0;
 
     while (g_keep_running) {
         uint64_t now = now_us_mono();
 
         /* 读最新车道结果（有更新才发帧） */
         int lane_new = 0;
-        if (!use_stub) {
+        if (stereo_pcie) {
+            /* Video cadence is independent of perception/shm. Read at most 5 fps. */
+            if (now - last_capture_us >= 200000u) {
+                last_capture_us = now;
+                if (pcie_capture_grab(&grabber, g_img565) != 0) {
+                    LOGE("双目 PCIe 抓帧失败，停止发送；请检查驱动/FPGA\n");
+                    exit_status = 1; break;
+                }
+                stereo_test_frame_prepare(g_img565, swap_eyes);
+                lane.frame_id++;
+                lane.direction = LANE_UNKNOWN;
+                lane.confidence = 0;
+                lane.timestamp_us = now_us_mono();
+                lane_new = 1;
+            }
+        } else if (!use_stub) {
             if (shm_read_lane(&lane) == 0 && lane.frame_id != last_lane_fid) {
                 last_lane_fid = lane.frame_id;
                 lane_new = 1;
@@ -134,7 +171,7 @@ int main(int argc, char **argv)
 
         if (lane_new) {
             if (use_stub) fill_stub_image();
-            else if (shm_read_pcie_img(g_img565, IMG_FRAME_BYTES) != 0) {
+            else if (!stereo_pcie && shm_read_pcie_img(g_img565, IMG_FRAME_BYTES) != 0) {
                 LOGW("读 shm_pcie_img 失败\n");
             }
 
@@ -144,9 +181,9 @@ int main(int argc, char **argv)
              * 帧头 flags 会如实反映本帧携带了哪几项（见 udp_proto.h 摘要布局）。
              * shm_read_* 内部即 shm_open（带退避/限流日志），A 未启动时开销可忽略。 */
             TrafficLightResult tl;  LaneMarkResult lm;  ZebraResult zb;
-            const int has_tl = (!use_stub && shm_read_traffic_light(&tl) == 0 && tl.version == TL_VERSION);
-            const int has_lm = (!use_stub && shm_read_lane_mark(&lm)   == 0 && lm.version == LANEMARK_VERSION);
-            const int has_zb = (!use_stub && shm_read_zebra(&zb)       == 0 && zb.version == ZEBRA_VERSION);
+            const int has_tl = (!use_stub && !stereo_pcie && shm_read_traffic_light(&tl) == 0 && tl.version == TL_VERSION);
+            const int has_lm = (!use_stub && !stereo_pcie && shm_read_lane_mark(&lm)   == 0 && lm.version == LANEMARK_VERSION);
+            const int has_zb = (!use_stub && !stereo_pcie && shm_read_zebra(&zb)       == 0 && zb.version == ZEBRA_VERSION);
             aux_tl = has_tl; aux_lm = has_lm; aux_zb = has_zb;
 
             int n = udp_sender_send_frame_ex(sender, g_img565, IMG_FRAME_BYTES, &lane,
@@ -180,6 +217,7 @@ int main(int argc, char **argv)
 
     LOGI("M端UDP发送器退出（共发 %u 帧）\n", sent_frames);
     udp_sender_close(sender);
+    if (stereo_pcie) { pcie_capture_stop(&grabber); pcie_capture_close(&grabber); }
     free(g_img565);
-    return 0;
+    return exit_status;
 }

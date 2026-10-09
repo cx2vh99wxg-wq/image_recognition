@@ -21,10 +21,10 @@ CFLAGS  := -std=gnu11 -D_DEFAULT_SOURCE -Wall -Wextra -Werror -O2 $(INCLUDE)
 
 COMMON_SRCS := ../common/csrc/udp_proto.c ../common/csrc/log.c
 NATIVE_SRCS := csrc/decision.c csrc/person_detect.c csrc/render_lcd_x11.c \
-               csrc/udp_sender.c csrc/udp_receiver.c csrc/stub_pattern.c csrc/frame_compose.c
+               csrc/udp_sender.c csrc/udp_receiver.c csrc/stub_pattern.c csrc/frame_compose.c csrc/stereo_test_frame.c
 TEST_SRCS   := test/test_decision.c test/test_udp.c
 
-.PHONY: all native_objs tests bin clean
+.PHONY: all native_objs tests bin sender clean
 
 all: native_objs tests
 
@@ -48,7 +48,7 @@ test/test_decision: test/test_decision.o csrc/decision.o
 test/test_udp: test/test_udp.o csrc/udp_receiver.o ../common/csrc/udp_proto.o
 	$(CC) -o $@ $^
 
-test/test_compose: test/test_compose.o csrc/frame_compose.o csrc/stub_pattern.o csrc/udp_receiver.o ../common/csrc/udp_proto.o
+test/test_compose: test/test_compose.o csrc/frame_compose.o csrc/stub_pattern.o csrc/stereo_test_frame.o csrc/udp_receiver.o ../common/csrc/udp_proto.o
 	$(CC) -o $@ $^
 
 # ---- 板端构建（S 端决策进程 + M 端 UDP 发送器） ----
@@ -57,18 +57,21 @@ BOARD_SRCS := csrc/main_planning.c csrc/decision.c csrc/person_detect.c \
               ../common/csrc/shm_ipc.c ../common/csrc/udp_proto.c ../common/csrc/log.c
 
 # bin: -L../lib 指向仓库根 lib/librknnrt.so（RKNN 运行时，板端链接用）
-bin:
+bin: sender
 	@mkdir -p obj
 	$(ARCHCC) $(CFLAGS) -L../lib -o planning_main csrc/main_planning.c csrc/decision.c \
 	    csrc/person_detect.c csrc/render_lcd_x11.c csrc/udp_sender.c \
 	    csrc/udp_receiver.c csrc/stub_pattern.c csrc/frame_compose.c ../perception/csrc/pcie_capture.c ../common/csrc/shm_ipc.c \
 	    ../common/csrc/udp_proto.c \
 	    ../common/csrc/log.c -lm -lrt -lX11 -lrknnrt
+	@echo "board binaries: planning_main(S) udp_m_send_main(M)"
+
+# Camera-only M board does not need X11 or RKNN development libraries.
+sender:
 	$(ARCHCC) $(CFLAGS) -o udp_m_send_main csrc/udp_m_send_main.c csrc/udp_sender.c \
-	    csrc/stub_pattern.c ../common/csrc/shm_ipc.c ../common/csrc/udp_proto.c \
+	    csrc/stub_pattern.c csrc/stereo_test_frame.c ../perception/csrc/pcie_capture.c ../common/csrc/shm_ipc.c ../common/csrc/udp_proto.c \
 	    ../common/csrc/log.c \
 	    -lrt
-	@echo "board binaries: planning_main(S) udp_m_send_main(M)"
 
 clean:
 	rm -f csrc/*.o test/*.o obj/*.o test/test_decision test/test_udp \
