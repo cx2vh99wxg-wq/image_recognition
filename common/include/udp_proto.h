@@ -42,9 +42,39 @@ extern "C" {
 
 /* 帧头 flags 位定义（v1 置 0，供后续扩展：TL/LaneMark/Zebra 随帧转发） */
 #define UDP_FLAG_LANE_VALID  0x00000001u  /* 本帧携带有效车道结果 */
-#define UDP_FLAG_TL_VALID    0x00000002u  /* 预留：携带红绿灯结果 */
-#define UDP_FLAG_LM_VALID    0x00000004u  /* 预留：携带虚实线结果 */
-#define UDP_FLAG_ZEBRA_VALID 0x00000008u  /* 预留：携带斑马线结果 */
+#define UDP_FLAG_TL_VALID    0x00000002u  /* 本帧携带红绿灯结果（见下方摘要布局） */
+#define UDP_FLAG_LM_VALID    0x00000004u  /* 本帧携带虚实线结果 */
+#define UDP_FLAG_ZEBRA_VALID 0x00000008u  /* 本帧携带斑马线结果 */
+
+/* ---- 「三感知摘要」：复用帧头 reserved[4]（16B）承载（B 集成，2026-10-09） ----
+ *
+ * 背景：A 端在 M 板产出红绿灯/虚实线/斑马线三项感知（各为 64B 结构体），
+ * 但帧头 76B 布局装不下；改结构体尺寸又会牵动整套重组/单测。故**复用帧头
+ * 本就存在的 reserved[4]（16B，原本恒 0）** 承载「决策与显示所需的紧凑摘要」：
+ * 决策只关心「状态 + 置信度 + 少量标志位」，不需要包围盒/面积等调试字段。
+ *
+ * 与 flags 配合：未携带的项其 *_VALID 位为 0，接收端**不得使用**对应字段。
+ *
+ *   reserved[0]  bit 0..7   tl_state       TrafficLightState（0未知/1红/2黄/3绿）
+ *                bit 8..15  tl_confidence  0..100
+ *                bit 16     tl_detected    1=检出点亮信号灯
+ *   reserved[1]  bit 0..7   lm_left_type   LaneMarkType（0无/1实线/2虚线/3未知）
+ *                bit 8..15  lm_right_type  LaneMarkType
+ *                bit 16     lm_crossing        1=压线
+ *                bit 17     lm_crossing_left
+ *                bit 18     lm_crossing_right
+ *                bit 19     lm_lane_change     1=正在变道（跨越车道线）
+ *                bit 20..27 lm_confidence  0..100
+ *   reserved[2]  bit 0      zebra_detected
+ *                bit 1..8   zebra_confidence 0..100
+ *   reserved[3]  int32      ego_offset_px  车辆中心相对车道中心偏移（正=偏右）
+ *
+ * 说明：本扩展**不改变任何结构体尺寸/版本号**，旧固件收到后 reserved 全 0、
+ * flags 无对应位，行为与之前完全一致（向后兼容）。
+ */
+#define UDP_AUX_HAS_TL      0x1u   /* udp_hdr_get_aux 返回位：含红绿灯 */
+#define UDP_AUX_HAS_LM      0x2u   /* 含虚实线 */
+#define UDP_AUX_HAS_ZEBRA   0x4u   /* 含斑马线 */
 
 /* ---- 包类型识别结果 ---- */
 typedef enum {
@@ -103,6 +133,23 @@ typedef struct __attribute__((packed)) {
     uint8_t  confidence;       /* 0~100 */
     uint8_t  reserved;         /* 对齐（0） */
 } udp_cmd_t;                   /* = 20 字节 */
+
+/* ---- 三感知摘要 接口（布局见上文 reserved[4] 注释） ---- */
+
+/* 把三项感知打包进帧头 reserved[4] + flags。任一入参为 NULL 表示本帧不携带该项
+ * （其 *_VALID 位保持 0）。必须在 udp_pack_frame_hdr() 之后调用（后者会清零）。 */
+void udp_hdr_set_aux(udp_frame_hdr_t *hdr,
+                     const TrafficLightResult *tl,
+                     const LaneMarkResult     *lm,
+                     const ZebraResult        *zebra);
+
+/* 从帧头取出三感知摘要并还原为完整结构（帧号/时间戳与帧头一致，便于按帧对齐）。
+ * 任一输出参数可为 NULL（不关心该项）。未携带的项：不做写入，且不计入返回值。
+ * 返回实际携带的有效项位掩码（UDP_AUX_HAS_*）。 */
+uint32_t udp_hdr_get_aux(const udp_frame_hdr_t *hdr,
+                         TrafficLightResult *tl,
+                         LaneMarkResult     *lm,
+                         ZebraResult        *zebra);
 
 /* ---- 接口 ---- */
 

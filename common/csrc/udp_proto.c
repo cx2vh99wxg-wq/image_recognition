@@ -87,6 +87,108 @@ uint32_t udp_block_checksum(const uint8_t *data, size_t n)
     return sum;
 }
 
+/* ---- 三感知摘要：帧头 reserved[4]（16B）编解码，布局见 udp_proto.h ---- */
+
+static uint32_t conf01(uint32_t c) { return c > 100u ? 100u : c; }
+
+void udp_hdr_set_aux(udp_frame_hdr_t *hdr,
+                     const TrafficLightResult *tl,
+                     const LaneMarkResult     *lm,
+                     const ZebraResult        *zebra)
+{
+    if (!hdr) return;
+
+    if (tl) {
+        uint32_t v = 0;
+        v |= (uint32_t)((uint8_t)tl->state & 0xFFu);          /* bit 0..7  */
+        v |= conf01(tl->confidence) << 8;                     /* bit 8..15 */
+        v |= (uint32_t)(tl->detected ? 1u : 0u) << 16;        /* bit 16    */
+        hdr->reserved[0] = v;
+        hdr->flags |= UDP_FLAG_TL_VALID;
+    }
+
+    if (lm) {
+        uint32_t v = 0;
+        uint32_t lmf = 0;
+        if (lm->crossing)       lmf |= 0x01u;
+        if (lm->crossing_left)  lmf |= 0x02u;
+        if (lm->crossing_right) lmf |= 0x04u;
+        if (lm->lane_change)    lmf |= 0x08u;
+        v |= (uint32_t)((uint8_t)lm->left_type  & 0xFFu);          /* bit 0..7  */
+        v |= (uint32_t)((uint8_t)lm->right_type & 0xFFu) << 8;     /* bit 8..15 */
+        v |= lmf << 16;                                            /* bit 16..19*/
+        v |= conf01(lm->confidence) << 20;                         /* bit 20..27*/
+        hdr->reserved[1] = v;
+        /* 车辆中心相对车道中心偏移（有符号），供决策做车道保持微调 */
+        hdr->reserved[3] = (uint32_t)lm->ego_offset_px;
+        hdr->flags |= UDP_FLAG_LM_VALID;
+    }
+
+    if (zebra) {
+        uint32_t v = 0;
+        v |= (uint32_t)(zebra->detected ? 1u : 0u);           /* bit 0    */
+        v |= conf01(zebra->confidence) << 1;                  /* bit 1..8 */
+        hdr->reserved[2] = v;
+        hdr->flags |= UDP_FLAG_ZEBRA_VALID;
+    }
+}
+
+uint32_t udp_hdr_get_aux(const udp_frame_hdr_t *hdr,
+                         TrafficLightResult *tl,
+                         LaneMarkResult     *lm,
+                         ZebraResult        *zebra)
+{
+    if (!hdr) return 0u;
+    uint32_t has = 0u;
+
+    /* 同一帧的帧号/时间戳，保证三感知与车道结果可按帧对齐 */
+    const uint64_t ts_us = (uint64_t)hdr->timestamp_s * 1000000u +
+                           (uint64_t)hdr->timestamp_us_lo;
+
+    if ((hdr->flags & UDP_FLAG_TL_VALID) && tl) {
+        const uint32_t v = hdr->reserved[0];
+        memset(tl, 0, sizeof(*tl));
+        tl->version     = TL_VERSION;
+        tl->frame_id    = hdr->frame_id;
+        tl->timestamp_us = ts_us;
+        tl->state       = (TrafficLightState)(v & 0xFFu);
+        tl->confidence  = (v >> 8) & 0xFFu;
+        tl->detected    = (v >> 16) & 0x1u;
+        tl->box_x = tl->box_y = tl->box_w = tl->box_h = -1;   /* 摘要不带包围盒 */
+        has |= UDP_AUX_HAS_TL;
+    }
+    if ((hdr->flags & UDP_FLAG_LM_VALID) && lm) {
+        const uint32_t v = hdr->reserved[1];
+        memset(lm, 0, sizeof(*lm));
+        lm->version      = LANEMARK_VERSION;
+        lm->frame_id     = hdr->frame_id;
+        lm->timestamp_us = ts_us;
+        lm->left_type    = (LaneMarkType)(v & 0xFFu);
+        lm->right_type   = (LaneMarkType)((v >> 8) & 0xFFu);
+        lm->crossing        = (uint8_t)((v >> 16) & 0x1u);
+        lm->crossing_left   = (uint8_t)((v >> 17) & 0x1u);
+        lm->crossing_right  = (uint8_t)((v >> 18) & 0x1u);
+        lm->lane_change     = (uint8_t)((v >> 19) & 0x1u);
+        lm->confidence   = (v >> 20) & 0xFFu;
+        lm->left_x  = -1;                     /* 摘要不带近场坐标 */
+        lm->right_x = -1;
+        lm->ego_offset_px = (int32_t)hdr->reserved[3];
+        has |= UDP_AUX_HAS_LM;
+    }
+    if ((hdr->flags & UDP_FLAG_ZEBRA_VALID) && zebra) {
+        const uint32_t v = hdr->reserved[2];
+        memset(zebra, 0, sizeof(*zebra));
+        zebra->version      = ZEBRA_VERSION;
+        zebra->frame_id     = hdr->frame_id;
+        zebra->timestamp_us = ts_us;
+        zebra->detected     = v & 0x1u;
+        zebra->confidence   = (v >> 1) & 0xFFu;
+        zebra->center_y     = -1;
+        has |= UDP_AUX_HAS_ZEBRA;
+    }
+    return has;
+}
+
 int udp_pack_heartbeat(udp_heartbeat_t *hb, uint32_t seq)
 {
     if (!hb) return -1;

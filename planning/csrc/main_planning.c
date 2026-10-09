@@ -9,7 +9,9 @@
  *   5. LCD(X11) 双路拼接渲染（左本地 / 右远端）
  *
  * 用法：
- *   ./planning_main [--model <person模型路径>] [--no-lcd]
+ 
+ 
+ 型路径>] [--no-lcd]
  *
  * 注意：S 板是否具备"本地 PCIe 采集"需团队按硬件确认（部署拓扑见分工方案
  * 第二节）；本程序对本地图缺失做了降级（只显示远端图），不影响联调。
@@ -167,6 +169,23 @@ int main(int argc, char **argv)
     LaneResult cur_lane;        /* 本周期最新收到的车道结果（仅 lane_fresh=1 时有效） */
     int lane_fresh = 0;         /* 本周期是否收到“新的一帧”车道结果 */
 
+    /* 三感知（由 M 端随帧头 reserved[4] 摘要携带，布局见 common/udp_proto.h）。
+     * 语义与 lane 一致：*_fresh 仅在"本帧确实携带该项"（帧头 flags 置位）时为真，
+     * 交决策做超龄判断；cur_* 同时供 LCD 叠加层（箭头/红绿灯/报警）使用。 */
+    TrafficLightResult cur_tl;  int tl_fresh = 0;
+    LaneMarkResult     cur_lm;  int lm_fresh = 0;
+    ZebraResult        cur_zb;  int zb_fresh = 0;
+    memset(&cur_tl, 0, sizeof(cur_tl));
+    memset(&cur_lm, 0, sizeof(cur_lm));
+    memset(&cur_zb, 0, sizeof(cur_zb));
+
+    /* 按键模拟（赛题三："通过按键模拟切换车道/停止/行驶"）：
+     * man_on/man_cmd 是人工注入的命令，优先级高于自动决策；a 键交还自动。
+     * force_lane_change 供"强制实线变道报警"判定。 */
+    int           man_on  = 0;
+    ControlCommand man_cmd = CMD_NONE;
+    int           force_lane_change = 0;
+
     while (g_keep_running) {
         uint64_t now = now_us_mono();
         win_loops++;
@@ -211,6 +230,13 @@ int main(int argc, char **argv)
                 if (shm_write_lane(&cur_lane) != 0) LOGW("转发 shm_lane 失败\n");
                 lane_fresh = 1;   /* 仅在真正收到新帧时置位，供决策做超龄判断 */
             }
+            /* 取出本帧附带的三感知摘要（帧头 reserved[4]）。
+             * 返回位掩码标明本帧到底带了哪几项——没带的不置 fresh，决策端会
+             * 走"超龄降级"而不是拿旧值硬撑。 */
+            const uint32_t aux = udp_hdr_get_aux(&last_hdr, &cur_tl, &cur_lm, &cur_zb);
+            tl_fresh = (aux & UDP_AUX_HAS_TL)    ? 1 : 0;
+            lm_fresh = (aux & UDP_AUX_HAS_LM)    ? 1 : 0;
+            zb_fresh = (aux & UDP_AUX_HAS_ZEBRA) ? 1 : 0;
         }
 
         /* 重组超时：丢弃残帧（有包进来就不算超时，避免正常收块期间误清） */
@@ -239,22 +265,95 @@ int main(int argc, char **argv)
          * 永不生效——M 端断流后 S 端仍会按最后一条旧车道继续行驶。 */
         LaneResult *lp = lane_fresh ? &cur_lane : NULL;
 
+        /* 三感知同 lane 语义：只在"本帧携带"时传入，decision 内部缓存 + 超龄降级 */
+        TrafficLightResult *tlp = tl_fresh ? &cur_tl : NULL;
+        LaneMarkResult     *lmp = lm_fresh ? &cur_lm : NULL;
+        ZebraResult        *zbp = zb_fresh ? &cur_zb : NULL;
+
         PersonState *p_in = (pstate.version == PERSON_VERSION) ? &pstate : NULL;
-        if (decision_step(&dec, lp, NULL, NULL, NULL, p_in, now, &cmd) != 0) {
+        if (decision_step(&dec, lp, tlp, lmp, zbp, p_in, now, &cmd) != 0)
             LOGW("决策失败\n");
-        } else if (cmd.command != CMD_NONE) {
+        lane_fresh = 0;                       /* 复位，等待下一帧 */
+        tl_fresh = lm_fresh = zb_fresh = 0;
+
+        /* ---- 4b. 按键模拟注入（赛题三"通过按键模拟…"，见 render_lcd.h）----
+         * 在显示窗口上按键即可覆盖自动决策，用于现场演示：
+         *   ←/→ 切到左/右车道   ↑ 行驶   空格 急停
+         *   c   强制变道（当该侧是实线时触发报警）   a 交还自动 */
+        if (lcd) {
+            switch (render_lcd_poll_key(lcd)) {
+                case RENDER_KEY_LANE_LEFT:
+                    man_on = 1; man_cmd = CMD_LEFT;  LOGI("按键：模拟左车道/左转\n"); break;
+                case RENDER_KEY_LANE_RIGHT:
+                    man_on = 1; man_cmd = CMD_RIGHT; LOGI("按键：模拟右车道/右转\n"); break;
+                case RENDER_KEY_FORWARD:
+                    man_on = 1; man_cmd = CMD_GO;    LOGI("按键：模拟行驶\n"); break;
+                case RENDER_KEY_STOP:
+                    man_on = 1; man_cmd = CMD_STOP;  LOGI("按键：模拟停止\n"); break;
+                case RENDER_KEY_LANE_CHANGE:
+                    man_on = 1; man_cmd = CMD_LEFT; force_lane_change = 1;
+                    LOGI("按键：强制变道（该侧为实线时会报警）\n"); break;
+                case RENDER_KEY_AUTO:
+                    man_on = 0; man_cmd = CMD_NONE; force_lane_change = 0;
+                    LOGI("按键：交还自动决策\n"); break;
+                default: break;
+            }
+        }
+        if (man_on && man_cmd != CMD_NONE) {
+            cmd.command    = man_cmd;             /* 人工优先于自动决策 */
+            cmd.enable     = 1;
+            cmd.priority   = CMD_PRI_EMERGENCY;
+            cmd.confidence = 100;
+        }
+
+        if (cmd.command != CMD_NONE) {
             if (shm_write_cmd(&cmd) != 0) LOGW("写 shm_cmd 失败\n");
         }
-        lane_fresh = 0;   /* 复位，等待下一帧 */
 
         /* ---- 5. LCD 渲染（按需：本轮重组出完整帧才重绘，首轮除外） ----
          * 一次渲染 = memset 2.46MB + 61 万像素 RGB565→BGRX 转换 + XPutImage
          * 2.46MB，实测把单轮周期拉到 ≈171ms；而 M 端 5 帧/s 时多数轮次根本
          * 收不到完整帧，无条件重绘纯属浪费，还会挤占下一轮的收包窗口。
          * 决策不需要每帧落地（状态机用最新帧即可），跳帧只影响画面流畅度。 */
+
+        /* 报警判定（赛题三测评的两个报警场景）：
+         *   ① 实线变道：正在变道/压线（或按键"强制变道"），且该侧车道线是实线；
+         *   ② 红灯闯行：红灯点亮且置信度足够，但输出命令仍是行驶类（含按键强制行驶）。
+         * 数据来自 A 端感知（随帧头摘要送达），也可由按键注入直接复现。 */
+        int alarm = 0;
+        {
+            const int lm_ok    = (cur_lm.version == LANEMARK_VERSION);
+            const int changing = lm_ok && (cur_lm.lane_change || cur_lm.crossing);
+            int side_left  = lm_ok && (cur_lm.crossing_left  ||
+                                       (cur_lm.ego_offset_px < 0));
+            int side_right = lm_ok && (cur_lm.crossing_right ||
+                                       (cur_lm.ego_offset_px > 0));
+
+            /* 人工"强制变道"未伴随实际位移时，用注入方向判断所压侧 */
+            if (force_lane_change && !side_left && !side_right) {
+                side_left  = (man_cmd == CMD_LEFT);
+                side_right = (man_cmd == CMD_RIGHT);
+            }
+
+            if (lm_ok && (changing || force_lane_change) &&
+                ((side_left  && cur_lm.left_type  == LANE_MARK_SOLID) ||
+                 (side_right && cur_lm.right_type == LANE_MARK_SOLID)))
+                alarm = 1;
+
+            if (cur_tl.version == TL_VERSION && cur_tl.detected &&
+                cur_tl.state == TL_RED && cur_tl.confidence >= DEC_BRAKE_CONF_MIN &&
+                (cmd.command == CMD_GO || cmd.command == CMD_LEFT ||
+                 cmd.command == CMD_RIGHT))
+                alarm = 1;
+        }
+
         if (lcd && (any_frame || frames_lcd == 0)) {
             if (shm_read_udp_img(s_remote565, IMG_FRAME_BYTES) != 0 && frames_recv > 0)
                 LOGW("读 shm_udp_img 失败\n");
+            /* 先登记叠加层状态，再绘制（render_lcd_draw 内部上屏前应用）：
+             * 箭头指示行驶行为 + 红绿灯三色指示灯 + 报警红框。 */
+            render_lcd_overlay(lcd, (int)cmd.command, (int)cur_tl.state,
+                               alarm, frames_lcd);
             if (render_lcd_draw(lcd,
                                 local_ok ? s_local565 : NULL,
                                 frames_recv ? s_remote565 : NULL,
@@ -302,9 +401,15 @@ int main(int argc, char **argv)
                  (unsigned long long)(st.kern_inerr      - kern_inerr_base),
                  (unsigned long long)(st.kern_indatagrams- kern_indatagram_base),
                  st.rcvbuf_eff);
-            LOGI("  最近命令=%d enable=%u pri=%u conf=%u\n",
+            LOGI("  最近命令=%d enable=%u pri=%u conf=%u 报警=%d | 感知[红绿灯=%d(检测%d 置信%u) "
+                 "虚实线[L=%d R=%d 压线%d 变道%d] 斑马线=%d] %s\n",
                  (int)cmd.command, (unsigned)cmd.enable,
-                 (unsigned)cmd.priority, (unsigned)cmd.confidence);
+                 (unsigned)cmd.priority, (unsigned)cmd.confidence, alarm,
+                 (int)cur_tl.state, (int)cur_tl.detected, (unsigned)cur_tl.confidence,
+                 (int)cur_lm.left_type, (int)cur_lm.right_type,
+                 (int)cur_lm.crossing, (int)cur_lm.lane_change,
+                 (int)cur_zb.detected,
+                 man_on ? "(人工按键中，按 a 交还自动)" : "");
             win_pkts = 0;
             win_loops = 0;
         }

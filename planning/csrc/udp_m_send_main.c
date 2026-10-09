@@ -100,6 +100,7 @@ int main(int argc, char **argv)
      * 第一行统计会在启动瞬间立刻打印（"已发帧=1"），看起来像统计间隔不对。 */
     uint64_t last_stat_us = now_us_mono();
     uint32_t sent_frames = 0, sent_blocks_fail = 0;
+    int aux_tl = 0, aux_lm = 0, aux_zb = 0;   /* 本帧是否携带三感知（供统计打印） */
 
     while (g_keep_running) {
         uint64_t now = now_us_mono();
@@ -132,7 +133,21 @@ int main(int argc, char **argv)
                 LOGW("读 shm_pcie_img 失败\n");
             }
 
-            int n = udp_sender_send_frame(sender, g_img565, IMG_FRAME_BYTES, &lane);
+            /* 附带 A 端的三项感知（红绿灯/虚实线/斑马线）。
+             * 它们与本帧图像同属一帧：A 的 main_perception 在同一轮里写这三段，
+             * 这里按"读到就带、读不到就置 NULL"处理——缺失不阻塞发帧，
+             * 帧头 flags 会如实反映本帧携带了哪几项（见 udp_proto.h 摘要布局）。
+             * shm_read_* 内部即 shm_open（带退避/限流日志），A 未启动时开销可忽略。 */
+            TrafficLightResult tl;  LaneMarkResult lm;  ZebraResult zb;
+            const int has_tl = (shm_read_traffic_light(&tl) == 0 && tl.version == TL_VERSION);
+            const int has_lm = (shm_read_lane_mark(&lm)   == 0 && lm.version == LANEMARK_VERSION);
+            const int has_zb = (shm_read_zebra(&zb)       == 0 && zb.version == ZEBRA_VERSION);
+            aux_tl = has_tl; aux_lm = has_lm; aux_zb = has_zb;
+
+            int n = udp_sender_send_frame_ex(sender, g_img565, IMG_FRAME_BYTES, &lane,
+                                             has_tl ? &tl : NULL,
+                                             has_lm ? &lm : NULL,
+                                             has_zb ? &zb : NULL);
             if (n > 0) {
                 sent_frames++;
             } else {
@@ -149,9 +164,10 @@ int main(int argc, char **argv)
         /* 统计（每 2s） */
         if (now - last_stat_us >= 2000000u) {
             last_stat_us = now;
-            LOGI("已发帧=%u 失败=%u 心跳=%u | dir=%d off=%d conf=%u\n",
+            LOGI("已发帧=%u 失败=%u 心跳=%u | dir=%d off=%d conf=%u | 附带[红绿灯=%d 虚实线=%d 斑马线=%d]\n",
                  sent_frames, sent_blocks_fail, hb_seq,
-                 (int)lane.direction, lane.curve_offset, lane.confidence);
+                 (int)lane.direction, lane.curve_offset, lane.confidence,
+                 aux_tl, aux_lm, aux_zb);
         }
 
         SLEEP_MS(5);

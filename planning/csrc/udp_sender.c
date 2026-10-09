@@ -50,14 +50,20 @@ int udp_sender_init(udp_sender_t **s, const char *remote_ip, uint16_t port)
     return 0;
 }
 
-int udp_sender_send_frame(udp_sender_t *s, const void *rgb565, size_t bytes,
-                          const LaneResult *lane)
+int udp_sender_send_frame_ex(udp_sender_t *s, const void *rgb565, size_t bytes,
+                             const LaneResult         *lane,
+                             const TrafficLightResult *tl,
+                             const LaneMarkResult     *lm,
+                             const ZebraResult        *zebra)
 {
     if (!s || !rgb565 || bytes == 0) return -1;
 
     udp_frame_hdr_t hdr;
     if (udp_pack_frame_hdr(&hdr, lane, IMG_WIDTH, IMG_HEIGHT, UDP_BLOCK_SIZE) != 0)
         return -1;
+    /* 三感知摘要走帧头 reserved[4]（16B 已存在字段，不改包尺寸）：
+     * 必须在 pack_frame_hdr 之后调用——后者 memset 清零整帧头。 */
+    udp_hdr_set_aux(&hdr, tl, lm, zebra);
     if (bytes != hdr.data_size) return -1;
 
     const socklen_t alen = (socklen_t)sizeof(s->peer);
@@ -103,6 +109,13 @@ int udp_sender_send_frame(udp_sender_t *s, const void *rgb565, size_t bytes,
     return (int)total;
 }
 
+/* 基础版 = 扩展版不带三感知（保持既有调用点与单测不变） */
+int udp_sender_send_frame(udp_sender_t *s, const void *rgb565, size_t bytes,
+                          const LaneResult *lane)
+{
+    return udp_sender_send_frame_ex(s, rgb565, bytes, lane, NULL, NULL, NULL);
+}
+
 int udp_sender_send_heartbeat(udp_sender_t *s, uint32_t seq)
 {
     if (!s) return -1;
@@ -128,6 +141,17 @@ int udp_sender_init(udp_sender_t **s, const char *remote_ip, uint16_t port)
 {
     (void)s; (void)remote_ip; (void)port;
     fprintf(stderr, "[UDP-SEND] 本机构建：socket 仅 Linux 板端可用，请用 udp_mock.py 联调\n");
+    return -1;
+}
+
+int udp_sender_send_frame_ex(udp_sender_t *s, const void *rgb565, size_t bytes,
+                             const LaneResult         *lane,
+                             const TrafficLightResult *tl,
+                             const LaneMarkResult     *lm,
+                             const ZebraResult        *zebra)
+{
+    (void)s; (void)rgb565; (void)bytes; (void)lane;
+    (void)tl; (void)lm; (void)zebra;
     return -1;
 }
 

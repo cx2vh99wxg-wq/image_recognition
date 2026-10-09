@@ -19,6 +19,11 @@ struct render_lcd_ctx {
     int win_h;
     int is_stub;
     uint8_t *canvas;      /* RGB888 画布 win_w*win_h*3 */
+    /* 叠加层状态（由 render_lcd_overlay 记录，render_lcd_draw 上屏前应用） */
+    int      ov_cmd;
+    int      ov_tl;
+    int      ov_alarm;
+    uint32_t ov_seq;
 #if defined(__linux__)
     void *disp;           /* Display* */
     void *win;            /* Window（存储为整型句柄） */
@@ -59,10 +64,114 @@ static void blit_565(const uint8_t *src565, uint8_t *canvas,
     }
 }
 
+/* ---------- 叠加层绘制原语（canvas 为 32bpp BGRX，color 用 0xRRGGBB） ---------- */
+static void c_fill_rect(uint8_t *canvas, int cw, int ch,
+                        int x, int y, int w, int h, uint32_t rgb)
+{
+    if (x < 0) { w += x; x = 0; }
+    if (y < 0) { h += y; y = 0; }
+    if (x + w > cw) w = cw - x;
+    if (y + h > ch) h = ch - y;
+    if (w <= 0 || h <= 0) return;
+    const uint8_t b = (uint8_t)(rgb & 0xFFu);
+    const uint8_t g = (uint8_t)((rgb >> 8) & 0xFFu);
+    const uint8_t r = (uint8_t)((rgb >> 16) & 0xFFu);
+    for (int yy = 0; yy < h; yy++) {
+        uint8_t *p = canvas + ((size_t)(y + yy) * cw + x) * 4u;
+        for (int xx = 0; xx < w; xx++) { p[0] = b; p[1] = g; p[2] = r; p[3] = 0; p += 4; }
+    }
+}
+
+/* 等腰三角形（逐行/逐列扫描填充）：apex 在 (cx,cy)，底边距 apex len，半宽 half。
+ * dir: 0=尖朝上 1=尖朝下 2=尖朝左 3=尖朝右 */
+static void c_fill_tri(uint8_t *canvas, int cw, int ch,
+                       int cx, int cy, int half, int len, int dir, uint32_t rgb)
+{
+    if (len <= 0) return;
+    for (int i = 0; i <= len; i++) {
+        const int hw = half * i / len;
+        if (dir == 0)      c_fill_rect(canvas, cw, ch, cx - hw, cy + i, hw * 2 + 1, 1, rgb);
+        else if (dir == 1) c_fill_rect(canvas, cw, ch, cx - hw, cy - i, hw * 2 + 1, 1, rgb);
+        else if (dir == 2) c_fill_rect(canvas, cw, ch, cx + i, cy - hw, 1, hw * 2 + 1, rgb);
+        else               c_fill_rect(canvas, cw, ch, cx - i, cy - hw, 1, hw * 2 + 1, rgb);
+    }
+}
+
+/* 把叠加层画到 canvas（上屏前调用）。含义见 render_lcd.h:render_lcd_overlay */
+static void overlay_apply(render_lcd_ctx_t *ctx)
+{
+    uint8_t *cv = ctx->canvas;
+    const int cw = ctx->win_w, ch = ctx->win_h;
+    if (!cv) return;
+
+    /* 1) 红绿灯指示灯：右半屏右上角竖排三色，点亮者高亮、其余暗色 */
+    {
+        const int bx = IMG_WIDTH + 22, by = 22, bw = 38, bh = 38, gap = 8;
+        static const uint32_t on_rgb[3]  = { 0xFF2020u, 0xFFD400u, 0x20FF40u };
+        static const uint32_t off_rgb[3] = { 0x400000u, 0x403300u, 0x00300Cu };
+        for (int i = 0; i < 3; i++) {
+            const int on = (ctx->ov_tl == (i + 1));   /* TL_RED=1 / YELLOW=2 / GREEN=3 */
+            c_fill_rect(cv, cw, ch, bx, by + i * (bh + gap), bw, bh,
+                        on ? on_rgb[i] : off_rgb[i]);
+        }
+    }
+
+    /* 2) 行驶指示箭头：右半屏中下方（黄=行驶方向，红方块=停车/刹车） */
+    {
+        const int ax = IMG_WIDTH + 160, ay = ch - 120;
+        const uint32_t YEL = 0xFFD400u, RED = 0xFF2020u;
+        switch (ctx->ov_cmd) {
+            case 3:   /* CMD_LEFT */
+                c_fill_rect(cv, cw, ch, ax - 16, ay - 13, 56, 26, YEL);
+                c_fill_tri (cv, cw, ch, ax - 56, ay, 36, 56, 2, YEL);
+                break;
+            case 4:   /* CMD_RIGHT */
+                c_fill_rect(cv, cw, ch, ax - 40, ay - 13, 56, 26, YEL);
+                c_fill_tri (cv, cw, ch, ax + 56, ay, 36, 56, 3, YEL);
+                break;
+            case 5:   /* CMD_BRAKE */
+            case 6:   /* CMD_STOP */
+                c_fill_rect(cv, cw, ch, ax - 42, ay - 42, 84, 84, RED);
+                break;
+            case 1:   /* CMD_GO：向上箭头 */
+            default:
+                c_fill_rect(cv, cw, ch, ax - 13, ay - 6, 26, 56, YEL);
+                c_fill_tri (cv, cw, ch, ax, ay - 6, 36, 56, 0, YEL);
+                break;
+        }
+    }
+
+    /* 3) 报警：整屏红色边框闪烁（赛题三"通过输出图像叠加红色模拟报警"）。
+     *    渲染是按帧触发的，用 frame 序号分频做亮灭，约 1s 一个周期。 */
+    if (ctx->ov_alarm && ((ctx->ov_seq / 4u) % 2u) == 0u) {
+        const int t = 12;
+        c_fill_rect(cv, cw, ch, 0,      0,      cw, t,  0xFF0000u);
+        c_fill_rect(cv, cw, ch, 0,      ch - t, cw, t,  0xFF0000u);
+        c_fill_rect(cv, cw, ch, 0,      0,      t,  ch, 0xFF0000u);
+        c_fill_rect(cv, cw, ch, cw - t, 0,      t,  ch, 0xFF0000u);
+    }
+}
+
+int render_lcd_overlay(render_lcd_ctx_t *ctx, int cmd, int tl_state,
+                       int alarm, uint32_t frame_id)
+{
+    if (!ctx) return -1;
+    ctx->ov_cmd   = cmd;
+    ctx->ov_tl    = tl_state;
+    ctx->ov_alarm = alarm ? 1 : 0;
+    ctx->ov_seq   = frame_id;
+    return 0;
+}
+
 /* ---------- X11 真实现 ---------- */
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/keysym.h>   /* XK_Left / XK_space 等（按键模拟用） */
 #include <unistd.h>   /* getuid()：用于在报错里点明"是不是 root 跑的" */
+
+/* Xlib 默认错误处理器**会直接 exit()**——任何一次异步 X 错误（例如窗口尚未
+ * 可见时调 XSetInputFocus 触发的 BadMatch）都会让渲染进程莫名退出。改为忽略。 */
+static int ignore_x_error(Display *d, XErrorEvent *e) { (void)d; (void)e; return 0; }
 
 int render_lcd_init(render_lcd_ctx_t **ctx, int win_w, int win_h)
 {
@@ -95,12 +204,21 @@ int render_lcd_init(render_lcd_ctx_t **ctx, int win_w, int win_h)
         free(c);
         return -1;
     }
+    XSetErrorHandler(ignore_x_error);   /* 见函数上方说明：避免异步 X 错误杀进程 */
+
     int scr = DefaultScreen(d);
     Window w = XCreateSimpleWindow(d, RootWindow(d, scr), 0, 0,
                                    (unsigned)c->win_w, (unsigned)c->win_h, 1,
                                    BlackPixel(d, scr), WhitePixel(d, scr));
     XStoreName(d, w, "ADAS-Display");
+    /* KeyPressMask：赛题三"按键模拟"必须——不选它窗口收不到任何按键 */
+    XSelectInput(d, w, ExposureMask | KeyPressMask | StructureNotifyMask);
     XMapWindow(d, w);
+    XRaiseWindow(d, w);
+    /* 让窗口拿到输入焦点，否则按键会送给桌面/其它窗口。
+     * 若此时窗口尚不可见而失败（BadMatch），由上面的容错处理器吞掉。 */
+    XSetInputFocus(d, w, RevertToParent, CurrentTime);
+    XFlush(d);
 
     c->canvas = (uint8_t *)calloc(1, (size_t)c->win_w * c->win_h * 4u);  /* 24bpp + 1 填充字节/像素 */
     if (!c->canvas) { XCloseDisplay(d); free(c); return -1; }
@@ -140,6 +258,8 @@ int render_lcd_draw(render_lcd_ctx_t *ctx,
     }
     /* BLANK：保持黑屏 */
 
+    overlay_apply(ctx);   /* 叠加行驶箭头 / 红绿灯指示 / 报警红框（见 render_lcd_overlay） */
+
     XPutImage(d, w, gc, img, 0, 0, 0, 0, (unsigned)ctx->win_w, (unsigned)ctx->win_h);
     XFlush(d);
     return 0;
@@ -160,6 +280,33 @@ void render_lcd_deinit(render_lcd_ctx_t *ctx)
     }
     free(ctx->canvas);
     free(ctx);
+}
+
+/* 非阻塞取键：返回 RENDER_KEY_*（见 render_lcd.h），无键立即返回 0。
+ * 一次调用只消费一个有效按键，避免长按键把队列塞满后界面卡顿。 */
+int render_lcd_poll_key(render_lcd_ctx_t *ctx)
+{
+    if (!ctx || ctx->is_stub || !ctx->disp) return RENDER_KEY_NONE;
+    Display *d = (Display *)ctx->disp;
+    int mapped = RENDER_KEY_NONE;
+
+    while (XPending(d)) {
+        XEvent ev;
+        XNextEvent(d, &ev);
+        if (ev.type != KeyPress) continue;
+        const KeySym ks = XLookupKeysym(&ev.xkey, 0);
+        switch (ks) {
+            case XK_Left:  mapped = RENDER_KEY_LANE_LEFT;   break;
+            case XK_Right: mapped = RENDER_KEY_LANE_RIGHT;  break;
+            case XK_Up:    mapped = RENDER_KEY_FORWARD;     break;
+            case XK_space: mapped = RENDER_KEY_STOP;        break;
+            case XK_c: case XK_C: mapped = RENDER_KEY_LANE_CHANGE; break;
+            case XK_a: case XK_A: mapped = RENDER_KEY_AUTO; break;
+            default: break;
+        }
+        if (mapped != RENDER_KEY_NONE) break;
+    }
+    return mapped;
 }
 
 #else  /* !__linux__：桩实现 */
@@ -185,6 +332,23 @@ int render_lcd_draw(render_lcd_ctx_t *ctx,
     (void)local565; (void)remote565;
     printf("[LCD-STUB] frame=%u mode=%d (本机无 X11，仅打印)\n", frame_id, (int)mode);
     return 0;
+}
+
+int render_lcd_overlay(render_lcd_ctx_t *ctx, int cmd, int tl_state,
+                       int alarm, uint32_t frame_id)
+{
+    if (!ctx) return -1;
+    ctx->ov_cmd   = cmd;
+    ctx->ov_tl    = tl_state;
+    ctx->ov_alarm = alarm ? 1 : 0;
+    ctx->ov_seq   = frame_id;
+    return 0;   /* 桩：只记录，不上屏 */
+}
+
+int render_lcd_poll_key(render_lcd_ctx_t *ctx)
+{
+    (void)ctx;
+    return RENDER_KEY_NONE;   /* 本机无 X11：无按键输入 */
 }
 
 void render_lcd_deinit(render_lcd_ctx_t *ctx)

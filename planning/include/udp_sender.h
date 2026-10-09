@@ -27,6 +27,15 @@ int  udp_sender_init(udp_sender_t **s, const char *remote_ip, uint16_t port);
 int  udp_sender_send_frame(udp_sender_t *s, const void *rgb565, size_t bytes,
                            const LaneResult *lane);
 
+/* 发送一帧（扩展版）：额外携带红绿灯/虚实线/斑马线三项感知摘要（帧头 reserved[4]，
+ * 布局见 common/include/udp_proto.h）。任一项可为 NULL —— 表示本帧不携带该项，
+ * 接收端按帧头 flags 判定。基础版等价于本函数后三项传 NULL。 */
+int  udp_sender_send_frame_ex(udp_sender_t *s, const void *rgb565, size_t bytes,
+                              const LaneResult         *lane,
+                              const TrafficLightResult *tl,
+                              const LaneMarkResult     *lm,
+                              const ZebraResult        *zebra);
+
 /* 发送心跳（看门狗）。成功 0，失败 -1。 */
 int  udp_sender_send_heartbeat(udp_sender_t *s, uint32_t seq);
 
