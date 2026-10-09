@@ -15,6 +15,7 @@
 #include "udp_proto.h"
 #include "driving_config.h"
 #include "time_util.h"
+#include "stub_pattern.h"   /* 桩模式：合成 2×2 拼接图（3 路 + 预留格） */
 
 #define LOG_TAG "UDP_M"
 #include "log.h"
@@ -38,18 +39,15 @@ static void on_signal(int sig) { (void)sig; g_keep_running = 0; }
 
 static uint8_t *g_img565 = NULL;   /* 图像缓冲 */
 
-/* 桩模式：构造一张灰色渐变图，便于无硬件联调 UDP 链路 */
+/* 桩模式：构造"每板 3 路摄像头经 FPGA 2×2 拼接后的 640×480"模拟图。
+ * 由 stub_pattern.c 生成（M 端 board_id=0）：左上/右上/左下为三路摄像头
+ * 的渐变（方向各不相同），右下为"预留空槽"棋盘格 —— 与 FPGA 侧
+ * axi4_ctrl_3ch.v 的写地址映射（3 路有效 + 1 格预留）保持同构，
+ * 于是这条 UDP 链路上跑的就是真实拼接图的数据形态，而非一张纯渐变。 */
 static void fill_stub_image(void)
 {
     if (!g_img565) return;
-    for (int y = 0; y < IMG_HEIGHT; y++) {
-        uint8_t *row = g_img565 + (size_t)y * IMG_WIDTH * IMG_BPP_565;
-        uint8_t v = (uint8_t)(y * 255 / IMG_HEIGHT);
-        for (int x = 0; x < IMG_WIDTH; x++) {
-            row[x * 2 + 0] = v;          /* 565 低字节 */
-            row[x * 2 + 1] = (uint8_t)((v >> 3) << 3); /* 565 高字节近似 */
-        }
-    }
+    stub_pattern_fill(g_img565, IMG_WIDTH, IMG_HEIGHT, 0);
 }
 
 int main(int argc, char **argv)

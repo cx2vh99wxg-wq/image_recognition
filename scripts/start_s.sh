@@ -8,11 +8,16 @@
 #   sudo ./scripts/start_s.sh [--model 行人模型绝对路径] [--no-lcd] [--with-stub] [--no-build]
 #   sudo bash ./scripts/start_s.sh        # 也可以（本脚本不依赖可执行位）
 #
+# 本地图（屏幕左半屏）来源自动判定：
+#   · 有 /dev/pango_pci_driver（S 板自带 FPGA 经 PCIe 送图）→ 真实采集；
+#   · 没有（码流未烧 / 采集进程未跑）→ 自动加 --local-stub，用合成拼接图案顶上，
+#     保证「每板 3 路 × 2 板 = 6 路拼接 + 渲染」这条通路始终可见、可验证。
+#   加 --no-local-stub 可强制走真实采集（不兜底）。
+#
 # --with-stub：单板自测模式。除 S 端决策+显示外，本机再起一个
-#   udp_m_send_main --stub（B 交付的 M 端发送器桩），把灰色渐变图发往
+#   udp_m_send_main --stub（B 交付的 M 端发送器桩），把 2×2 拼接模拟图发往
 #   UDP_IP_S（=本机 192.168.100.20），接收端 bind INADDR_ANY:8888 直接收到。
-#   于是无需 M 板 / FPGA / 摄像头，仅凭本脚本即可复现完整链路：
-#   配网 → 决策 → M 端发帧 → S 端收帧 → LCD 灰度渐变图。
+#   于是无需 M 板 / 摄像头，仅凭本脚本即可复现完整链路。
 #
 # 两个反复踩过的坑，本脚本已内置规避：
 #   1) 脚本可执行位：Windows 上克隆/提交时 git 容易丢 +x，板端 git pull 后
@@ -56,14 +61,16 @@ MODEL="$REPO_ROOT/model/yolov5s-640-640.rknn"
 NO_LCD=0
 WITH_STUB=0
 NO_BUILD=0
+NO_LOCAL_STUB=0        # 1=强制用真实本地采集（不自动兜底合成图案）
 
 while [ $# -gt 0 ]; do
     case "$1" in
-        --model)     MODEL="$2"; shift 2 ;;
-        --no-lcd)    NO_LCD=1; shift ;;
-        --with-stub) WITH_STUB=1; shift ;;
-        --no-build)  NO_BUILD=1; shift ;;
-        *)           shift ;;
+        --model)         MODEL="$2"; shift 2 ;;
+        --no-lcd)        NO_LCD=1; shift ;;
+        --with-stub)     WITH_STUB=1; shift ;;
+        --no-build)      NO_BUILD=1; shift ;;
+        --no-local-stub) NO_LOCAL_STUB=1; shift ;;
+        *)               shift ;;
     esac
 done
 
@@ -147,8 +154,24 @@ fi
 # 4) 启动决策+显示进程
 #    关键：当以 root 运行时，用 sudo -u 把图形进程降权到桌面用户，
 #    否则 XOpenDisplay 会因缺少授权而失败（黑屏但进程正常）。
+#
+#    本地图来源：S 板自带 FPGA，经 PCIe 把"本板 3 路摄像头 2×2 拼接成的 640×480"
+#    送来（写 shm_pcie_img）。有设备节点 → 用真实图；没有（码流未烧/采集进程未跑）
+#    → 加 --local-stub 用合成拼接图案顶上，保证「每板 3 路 × 2 板 = 6 路拼接 + 渲染」
+#    这条通路始终可见、可验证。判据与 start_m.sh 保持一致（看 /dev/pango_pci_driver）。
 ARGS=(--model "$MODEL")
 [ "$NO_LCD" = 1 ] && ARGS+=(--no-lcd)
+
+LOCAL_STUB=0
+if [ "$NO_LOCAL_STUB" = 0 ] && [ ! -e /dev/pango_pci_driver ]; then
+    LOCAL_STUB=1
+    ARGS+=(--local-stub)
+fi
+if [ "$LOCAL_STUB" = 1 ]; then
+    echo "[3b] 未检测到 /dev/pango_pci_driver → 本地图用合成拼接图案（模拟本板 3 路摄像头经 FPGA 2×2 拼接）"
+else
+    echo "[3b] /dev/pango_pci_driver 可用（或 --no-local-stub）→ 本地图用真实采集"
+fi
 
 LOG="$REPO_ROOT/planning.log"
 : > "$LOG"

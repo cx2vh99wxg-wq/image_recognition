@@ -9,9 +9,7 @@
  *   5. LCD(X11) 双路拼接渲染（左本地 / 右远端）
  *
  * 用法：
- 
- 
- 型路径>] [--no-lcd]
+ *   ./planning_main [--model <person模型路径>] [--no-lcd] [--local-stub]
  *
  * 注意：S 板是否具备"本地 PCIe 采集"需团队按硬件确认（部署拓扑见分工方案
  * 第二节）；本程序对本地图缺失做了降级（只显示远端图），不影响联调。
@@ -24,6 +22,7 @@
 #include "render_lcd.h"
 #include "driving_config.h"
 #include "time_util.h"
+#include "stub_pattern.h"   /* --local-stub：合成 S 端 3 路拼接图 */
 
 #define LOG_TAG "PLANNING"
 #include "log.h"
@@ -62,9 +61,11 @@ int main(int argc, char **argv)
 {
     const char *model_path = NULL;
     int use_lcd = 1;
+    int local_stub = 0;      /* --local-stub：本地 PCIe 图缺失时用合成拼接图顶上 */
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--model") == 0 && i + 1 < argc) model_path = argv[++i];
         else if (strcmp(argv[i], "--no-lcd") == 0) use_lcd = 0;
+        else if (strcmp(argv[i], "--local-stub") == 0) local_stub = 1;
     }
 
     signal(SIGINT, on_signal);
@@ -149,6 +150,15 @@ int main(int argc, char **argv)
     static uint8_t s_local565[IMG_FRAME_BYTES];
     static uint8_t s_remote565[IMG_FRAME_BYTES];
     static uint8_t s_local888[(size_t)IMG_WIDTH * IMG_HEIGHT * 3];
+
+    /* --local-stub：预生成 S 端"3 路摄像头经 FPGA 2×2 拼接后的 640×480"。
+     * 当 shm_pcie_img 无人写入（S 端 PCIe 采集进程未跑 / 码流未烧）时顶上，
+     * 使「每板 3 路 × 2 板 = 6 路拼接 + 渲染」这条通路在没有摄像头的条件下
+     * 也能端到端验证。真实采集可用时优先用真实图（见主循环第 2 步）。 */
+    if (local_stub) {
+        stub_pattern_fill(s_local565, IMG_WIDTH, IMG_HEIGHT, 1);
+        LOGI("--local-stub：本地图用合成拼接图案（模拟 S 端 3 路摄像头 → 2×2 拼 640×480）\n");
+    }
 
     DisplayMode mode = DISPLAY_MODE_SPLIT;
     ControlCommandMsg cmd;
@@ -244,8 +254,12 @@ int main(int argc, char **argv)
         if (reass.have_hdr && (now - last_pkt_us) > (uint64_t)UDP_FRAME_TIMEOUT_MS * 1000u)
             udp_reassembly_reset(&reass);
 
-        /* ---- 2. 读本地图（S 板本地 PCIe，缺失降级） ---- */
+        /* ---- 2. 读本地图（S 板本地 PCIe，缺失降级） ----
+         * 真实采集可用（S 板 FPGA → PCIe → 写 shm_pcie_img）时用真实图；
+         * 否则若开了 --local-stub，用预生成的合成拼接图，通路照常跑完。 */
         if (shm_read_pcie_img(s_local565, IMG_FRAME_BYTES) == 0)
+            local_ok = 1;
+        else if (local_stub)
             local_ok = 1;
 
         /* ---- 3. 行人检测（本地图 RGB565→888 后送 YOLOv5s） ---- */

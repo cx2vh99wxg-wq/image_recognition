@@ -21,7 +21,7 @@ CFLAGS  := -std=gnu11 -D_DEFAULT_SOURCE -Wall -Wextra -Werror -O2 $(INCLUDE)
 
 COMMON_SRCS := ../common/csrc/udp_proto.c ../common/csrc/log.c
 NATIVE_SRCS := csrc/decision.c csrc/person_detect.c csrc/render_lcd_x11.c \
-               csrc/udp_sender.c csrc/udp_receiver.c
+               csrc/udp_sender.c csrc/udp_receiver.c csrc/stub_pattern.c
 TEST_SRCS   := test/test_decision.c test/test_udp.c
 
 .PHONY: all native_objs tests bin clean
@@ -57,10 +57,12 @@ bin:
 	@mkdir -p obj
 	$(ARCHCC) $(CFLAGS) -L../lib -o planning_main csrc/main_planning.c csrc/decision.c \
 	    csrc/person_detect.c csrc/render_lcd_x11.c csrc/udp_sender.c \
-	    csrc/udp_receiver.c ../common/csrc/shm_ipc.c ../common/csrc/udp_proto.c \
+	    csrc/udp_receiver.c csrc/stub_pattern.c ../common/csrc/shm_ipc.c \
+	    ../common/csrc/udp_proto.c \
 	    ../common/csrc/log.c -lm -lrt -lX11 -lrknnrt
 	$(ARCHCC) $(CFLAGS) -o udp_m_send_main csrc/udp_m_send_main.c csrc/udp_sender.c \
-	    ../common/csrc/shm_ipc.c ../common/csrc/udp_proto.c ../common/csrc/log.c \
+	    csrc/stub_pattern.c ../common/csrc/shm_ipc.c ../common/csrc/udp_proto.c \
+	    ../common/csrc/log.c \
 	    -lrt
 	@echo "board binaries: planning_main(S) udp_m_send_main(M)"
 
