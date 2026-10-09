@@ -7,7 +7,7 @@
  *
  * 用法：
  *   ./udp_m_send_main            # 真实模式：读 A 的共享内存
- *   ./udp_m_send_main --stub     # 桩模式：不读硬件图，发纯色图（联调用）
+ *   ./udp_m_send_main --stub     # 桩模式：不读硬件图，发 2×2 拼接模拟图（3 路渐变 + 1 预留格）
  *
  * 信号：SIGINT/SIGTERM 优雅退出。
  */

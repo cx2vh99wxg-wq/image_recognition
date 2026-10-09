@@ -5,7 +5,7 @@
 #   · 真实模式（检测到 /dev/pango_pci_driver）：perception_main 加载
 #     yolopv2.rknn 走 PCIe 采集真实图像；udp_m_send_main 读共享内存发帧。
 #   · 桩模式（无 FPGA / 无摄像头）：只起 udp_m_send_main --stub，发送
-#     灰亮渐变图，供 S 端联调。★ 桩模式不加载 yolopv2.rknn —— RKNN 的
+#     2×2 拼接模拟图（3 路渐变 + 1 预留格），供 S 端联调。★ 桩模式不加载 yolopv2.rknn —— RKNN 的
 #     加载与 PCIe 采集在 perception 里是同一分支（perception_pipeline.c），
 #     没有设备就无法初始化模型，这是硬件约束不是脚本限制。
 #
@@ -77,7 +77,7 @@ else
 fi
 echo "  运行模式：$MODE $WHY"
 if [ "$MODE" = stub ]; then
-    echo "  注：桩模式只发灰亮渐变图，不加载 yolopv2.rknn（无 PCIe 采集则无法初始化模型）"
+    echo "  注：桩模式只发 2×2 拼接模拟图，不加载 yolopv2.rknn（无 PCIe 采集则无法初始化模型）"
 fi
 
 # 1) 加载 PCIe 驱动（仅真实模式；若已加载则跳过）
@@ -120,7 +120,7 @@ else
     echo "[4] 桩模式：跳过 perception_main（不发真实图像，改由发送器造图）"
 fi
 
-# 5) 启动 UDP 发送器（B 交付）；桩模式发灰亮渐变图，无需摄像头
+# 5) 启动 UDP 发送器（B 交付）；桩模式发 2×2 拼接模拟图，无需摄像头
 SEND_BIN="$(resolve_bin udp_m_send_main planning)" || {
     echo "错误：找不到也无法编译 udp_m_send_main"
     exit 1
