@@ -1,0 +1,168 @@
+From 6f61aee43da8b03fc1ebb6c9cadb5c4098699ace Mon Sep 17 00:00:00 2001
+From: gyy <SUAT25000186@stu.suat-sz.edu.cn>
+Date: Wed, 7 Oct 2026 21:39:11 +0800
+Subject: [PATCH] =?UTF-8?q?fix(planning):=20S=20=E7=AB=AF=E5=88=9B?=
+ =?UTF-8?q?=E5=BB=BA=20shm=5Flane=20=E6=AE=B5=20+=20=E5=86=85=E6=A0=B8?=
+ =?UTF-8?q?=E4=B8=A2=E5=8C=85=E8=AE=A1=E6=95=B0=E6=94=B9=E5=A2=9E=E9=87=8F?=
+ =?UTF-8?q?=20+=20=E6=B8=B2=E6=9F=93=E6=8C=89=E9=9C=80=E8=A7=A6=E5=8F=91?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+上板实测已确认 UDP 链路打通（S 端收帧持续增长、消费速率≈2200 包/s、
+丢块六项全 0）。本轮清掉联调中暴露的三个残留问题：
+
+1. main_planning.c：把 shm_lane(0x1234567E) 加入 shm_create 列表。
+   shm_write_lane() 内部走 shm_open()（只打开已存在段、不创建），而本进程
+   从未创建过该段 → 每收到一帧就打一行"转发 shm_lane 失败"，与 SHM 限流
+   日志交替刷屏。契约（driving_config.h:51）本就是"A 写(M板)/B 转发写(S板)
+   /B、C 读"，S 端即写者，必须自己建段。C 端读车道状态也依赖该段存在。
+   注：此现象与摄像头/A 端无关（S 板本就没有 A 的感知进程）。
+
+2. main_planning.c：内核丢包计数改为"启动后增量"。
+   /proc/net/snmp 的 Udp 计数是系统开机以来累计值，日志里的 150103 是修复前
+   旧代码时代攒下的历史账——四个统计窗口纹丝不动，却极易被读成"现在还在丢"。
+   现记录启动基线只打新增量，并新增"新增InDatagrams"作对照：
+   InDatagrams 也不涨才说明包根本没进系统（网络/网卡层），否则是内核收下后丢。
+
+3. main_planning.c：LCD 渲染改为"本轮重组出完整帧才重绘"（首轮除外）。
+   一次渲染 = memset 2.46MB + 61 万像素转换 + XPutImage 2.46MB，实测把单轮
+   周期拉到 ≈171ms；而 M 端 5 帧/s 时多数轮次收不到完整帧，无条件渲染纯属
+   浪费，且挤占下一轮的收包窗口。另把"主循环周期"改用独立轮数计数——
+   渲染改成按需后 LCD 帧数不再等于轮数，继续拿它反推会得到"渲染间隔"。
+
+验证：板端同款 -O2 -Wall -Wextra -Werror 全绿；
+      test_udp / test_decision 全 PASS。
+---
+ planning/csrc/main_planning.c | 62 ++++++++++++++++++++++++++++-------
+ 1 file changed, 50 insertions(+), 12 deletions(-)
+
+diff --git a/planning/csrc/main_planning.c b/planning/csrc/main_planning.c
+index be25402..d2fee58 100644
+--- a/planning/csrc/main_planning.c
++++ b/planning/csrc/main_planning.c
+@@ -70,17 +70,30 @@ int main(int argc, char **argv)
+ 
+     LOGI("S端决策进程启动 (lcd=%d)\n", use_lcd);
+ 
+-    /* ---- 创建 B 的共享段 ---- */
++    /* ---- 创建 B 的共享段 ----
++     * 注意 shm_lane（0x1234567E）必须由本进程在 S 板上创建：
++     * 契约见 driving_config.h:51「A 写(M板) / B 转发写(S板) / B、C 读」——
++     * S 板没有 A 的感知进程，这个段不会被别人建出来；而 shm_write_lane()
++     * 内部走的是 shm_open()（只打开已存在段、不创建），若此处不创建，
++     * 第 188 行的每帧转发都会失败并打一行"转发 shm_lane 失败"。
++     * 这曾表现为：日志被 "转发 shm_lane 失败" + "key=0x1234567E 仍不可用"
++     * 交替刷屏（实际与摄像头、与 A 端无关，纯粹是 S 端写者缺位）。 */
+     void *dummy = NULL;
+     if (shm_create("udp_img",   SHM_KEY_UDP_IMG,   SHM_IMG_SIZE,    &dummy) != 0 ||
+         shm_create("cmd",       SHM_KEY_CMD,       SHM_CMD_SIZE,    &dummy) != 0 ||
+         shm_create("display",   SHM_KEY_DISPLAY,   SHM_DISPLAY_SIZE,&dummy) != 0 ||
+-        shm_create("person",    SHM_KEY_PERSON,    SHM_PERSON_SIZE, &dummy) != 0) {
++        shm_create("person",    SHM_KEY_PERSON,    SHM_PERSON_SIZE, &dummy) != 0 ||
++        shm_create("lane",      SHM_KEY_LANE,      SHM_LANE_SIZE,   &dummy) != 0) {
+         LOGE("创建共享段失败（请先运行 scripts/start_s.sh 清理残留）\n");
+         return -1;
+     }
+ 
+     /* ---- UDP 接收器 ---- */
++    /* /proc/net/snmp 里的 Udp 计数是"系统开机以来"的累计值，直接打印会看到
++     * 几十万的历史丢包（由修复前的旧代码攒下），极易被误判成"现在还在丢"。
++     * 这里记录启动瞬间的基线，日志只显示"本进程启动后新增"的部分。 */
++    uint64_t base_kern_rcvbuferr = 0, base_kern_inerr = 0, base_kern_indatagrams = 0;
++
+     udp_receiver_t *recv = NULL;
+     if (udp_receiver_init(&recv, UDP_PORT) != 0) {
+         LOGE("UDP 接收器初始化失败: %d（端口被占用？先 pkill -f planning_main）\n", UDP_PORT);
+@@ -92,7 +105,11 @@ int main(int argc, char **argv)
+         udp_recv_stats_t st;
+         memset(&st, 0, sizeof(st));
+         if (udp_receiver_stats(recv, &st) == 0) {
+-            LOGI("UDP 监听 :%d  SO_RCVBUF=%d 字节\n", UDP_PORT, st.rcvbuf_eff);
++            base_kern_rcvbuferr    = st.kern_rcvbuferr;      /* 记录基线，见上文说明 */
++            base_kern_inerr        = st.kern_inerr;
++            base_kern_indatagrams  = st.kern_indatagrams;
++            LOGI("UDP 监听 :%d  SO_RCVBUF=%d 字节（内核丢包计数基线: 溢出=%llu）\n",
++                 UDP_PORT, st.rcvbuf_eff, (unsigned long long)st.kern_rcvbuferr);
+             if (st.rcvbuf_eff > 0 && st.rcvbuf_eff < (int)(2 * 1024 * 1024))
+                 LOGW("接收缓冲偏小！一帧=440 包(≈0.9MB)会突发到达，容易溢出丢包。"
+                      "请先执行 sudo ./scripts/tune_net.sh（提高 net.core.rmem_max）\n");
+@@ -140,13 +157,16 @@ int main(int argc, char **argv)
+      * dt 会等于整机开机时长（几十万秒），算出的速率会失真成 ~0。 */
+     uint64_t last_stat_us = now_us_mono();
+     uint64_t win_pkts = 0;        /* 本窗口内从 socket 取出的包数 */
+-    uint32_t last_lcd = 0;        /* 上次统计时的 LCD 帧数（用于反推单轮周期） */
++    uint32_t last_lcd = 0;        /* 上次统计时的 LCD 帧数（用于算实测渲染帧率） */
++    uint32_t loops = 0;           /* 主循环轮数（用于算单轮周期；与渲染解耦计数） */
++    uint32_t last_loops = 0;
+ 
+     LaneResult cur_lane;        /* 本周期最新收到的车道结果（仅 lane_fresh=1 时有效） */
+     int lane_fresh = 0;         /* 本周期是否收到“新的一帧”车道结果 */
+ 
+     while (g_keep_running) {
+         uint64_t now = now_us_mono();
++        loops++;
+ 
+         /* ---- 1. UDP 收包并重组（每轮把内核队列收干！） ----
+          * 关键：一帧 = 1 帧头 + 439 个数据块（614400B / 1400B）= 440 包，M 端在一个
+@@ -224,8 +244,13 @@ int main(int argc, char **argv)
+         }
+         lane_fresh = 0;   /* 复位，等待下一帧 */
+ 
+-        /* ---- 5. LCD 渲染 ---- */
+-        if (lcd) {
++        /* ---- 5. LCD 渲染 ----
++         * 仅在本轮收到新帧时重绘（首轮画一次让窗口先映射出来）。
++         * 理由：一次渲染 = memset 2.46MB + 转换 61 万像素 + XPutImage 2.46MB，
++         * 实测单轮周期被它拉到 ≈171ms。M 端 5 帧/s 时，多数轮次其实收不到完整帧，
++         * 这些轮次若照样渲染就是纯浪费，并且会挤掉下一轮的收包窗口。
++         * 无新帧时保持上一帧画面（视觉上无差别，轮周期大幅缩短）。 */
++        if (lcd && (any_frame || frames_lcd == 0)) {
+             if (shm_read_udp_img(s_remote565, IMG_FRAME_BYTES) != 0 && frames_recv > 0)
+                 LOGW("读 shm_udp_img 失败\n");
+             if (render_lcd_draw(lcd,
+@@ -256,22 +281,35 @@ int main(int argc, char **argv)
+              *                              softnet backlog（socket 缓冲之前），
+              *                              要看 ip -s link、/proc/net/softnet_stat */
+             double pkt_rate = dt_us ? (double)win_pkts * 1000000.0 / (double)dt_us : 0.0;
+-            uint32_t lcd_delta = frames_lcd - last_lcd;
+-            double loop_ms = lcd_delta ? ((double)dt_us / 1000.0) / (double)lcd_delta : 0.0;
+-            last_lcd = frames_lcd;
++            /* 主循环周期改用独立"轮数"计数：渲染已改为"有帧才画"，LCD 帧数不再
++             * 等于轮数，若继续拿它反推，得到的是"渲染间隔"而不是真正的轮周期。 */
++            uint32_t loop_delta = loops - last_loops;
++            uint32_t lcd_delta  = frames_lcd - last_lcd;
++            double loop_ms = loop_delta ? ((double)dt_us / 1000.0) / (double)loop_delta : 0.0;
++            last_loops = loops;
++            last_lcd   = frames_lcd;
+ 
+             LOGI("收帧=%u LCD帧=%u(+%u) | socket收包=%llu 重组接受块=%u\n",
+                  frames_recv, frames_lcd, lcd_delta,
+                  (unsigned long long)st.pkts, reass.stat_block_ok);
+             LOGI("  消费速率=%.0f 包/s（M端产出≈2200）主循环周期≈%.1fms\n",
+                  pkt_rate, loop_ms);
++            /* 以下三个内核计数均为"启动后新增量"（已减去启动基线），
++             * 判读方式：
++             *   新增溢出 != 0            → 缓冲还是不够，确实在内核层丢包
++             *   新增InDatagrams=0        → 包根本没到系统（网络/网卡）
++             *   新增InDatagrams≈2200/s×窗口 而 新增溢出=0 → 内核照单全收 */
+             LOGI("  丢块[校验=%u 重复=%u 无帧头=%u 旧帧=%u 异常=%u 帧头失败=%u] "
+-                 "内核[rcvbuf=%d 队列溢出=%llu InErrors=%llu]\n",
++                 "内核[rcvbuf=%d 新增溢出=+%llu 新增InErrors=+%llu 新增InDatagrams=+%llu]\n",
+                  reass.stat_drop_checksum, reass.stat_drop_dup, reass.stat_drop_nohdr,
+                  reass.stat_drop_fid, reass.stat_drop_other, reass.stat_begin_fail,
+                  st.rcvbuf_eff,
+-                 (unsigned long long)st.kern_rcvbuferr,
+-                 (unsigned long long)st.kern_inerr);
++                 (unsigned long long)(st.kern_rcvbuferr > base_kern_rcvbuferr
++                                      ? st.kern_rcvbuferr - base_kern_rcvbuferr : 0),
++                 (unsigned long long)(st.kern_inerr > base_kern_inerr
++                                      ? st.kern_inerr - base_kern_inerr : 0),
++                 (unsigned long long)(st.kern_indatagrams > base_kern_indatagrams
++                                      ? st.kern_indatagrams - base_kern_indatagrams : 0));
+             LOGI("  最近命令=%d enable=%u pri=%u conf=%u\n",
+                  (int)cmd.command, (unsigned)cmd.enable,
+                  (unsigned)cmd.priority, (unsigned)cmd.confidence);
+-- 
+2.55.0.windows.3
+

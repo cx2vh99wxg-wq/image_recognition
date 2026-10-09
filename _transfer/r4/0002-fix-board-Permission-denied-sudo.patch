@@ -1,0 +1,728 @@
+From c0d1c874a9a08b270a6e985c0e678ee269ae63cf Mon Sep 17 00:00:00 2001
+From: gyy <SUAT25000186@stu.suat-sz.edu.cn>
+Date: Fri, 9 Oct 2026 10:43:27 +0800
+Subject: [PATCH 2/2] =?UTF-8?q?fix(board):=20=E4=BF=AE=E5=A4=8D=E8=84=9A?=
+ =?UTF-8?q?=E6=9C=AC=E5=8F=AF=E6=89=A7=E8=A1=8C=E4=BD=8D=E7=BC=BA=E5=A4=B1?=
+ =?UTF-8?q?=E5=AF=BC=E8=87=B4=E7=9A=84=20Permission=20denied=20+=20sudo=20?=
+ =?UTF-8?q?=E5=90=AF=E5=8A=A8=E9=BB=91=E5=B1=8F?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+★ 问题一：`sudo bash start_s.sh` 报 Permission denied
+根因：仓库里 12 个 .sh 在 git 索引里全是 100644（无 x 位）。Windows 侧
+core.filemode=false，本地看着是 -rwxr-xr-x，但提交进索引的模式是 644，
+板端 Linux checkout 后就是 -rw-r--r--。start_s.sh 第 38 行用
+`"$SCRIPT_DIR/setup_network_s.sh"` **直接 exec**，于是 "Permission denied"。
+更阴的是第 43 行 `[ -x tune_net.sh ]` —— 可执行位缺失时它**静默跳过内核
+调优**，连警告都不打，直接导致 UDP 接收缓冲停留默认 208KB。
+修复：
+  · git update-index --chmod=+x 给全部 12 个 .sh（含 scripts/board/、
+    _verify_b_shm/、udp_rk_rk_yolo/），索引模式改为 100755；
+  · 脚本内部改为一律 `bash <子脚本>` 显式调起，不再依赖 x 位（双保险）；
+  · `-x` 判据统一改为 `-f`，杜绝"调优被静默跳过"。
+
+★ 问题二：脚本显示"启动完成"，但屏幕上没有任何图像
+根因：**sudo 把 X11 授权弄丢了**。start_s.sh 用 sudo 跑 → planning_main
+以 root 身份运行 → `XOpenDisplay(NULL)` 读 DISPLAY/XAUTHORITY，而 root 的
+XAUTHORITY 落到 /root/.Xauthority（通常不存在）→ 返回 NULL →
+render_lcd_init 返回 -1 → main_planning.c 只打一行 LOGW("LCD 初始化失败
+（无显示模式继续）") 就继续跑。于是进程收帧、决策、写共享内存全都正常，
+就是屏幕上什么都没有——而且这行日志被 nohup 重定向进 planning.log，
+终端上看不见。
+修复：
+  · start_s.sh 自动探测"桌面用户"（RENDER_USER → SUDO_USER → loginctl →
+    who → /home 首个用户），推断 DISPLAY（优先沿用环境，否则按
+    /tmp/.X11-unix/X<n> 现存套接字）与 XAUTHORITY，然后
+    `sudo -u <桌面用户> env DISPLAY=... XAUTHORITY=...` 降权启动图形进程
+    ——网络/驱动仍以 root 完成，图形进程拿到正确的 cookie。
+  · 启动后 2s 自检：进程秒退则打印日志末尾；日志出现 "XOpenDisplay 失败"
+    则把原因和修复命令直接打到终端（不再沉默）。
+  · render_lcd_x11.c：XOpenDisplay 失败时打印 DISPLAY/XAUTHORITY/uid 的
+    实际值和修复示例，并说明"收帧/决策不受影响"，便于一眼分辨是显示问题
+    而非链路问题。
+  · 补 planning_main 二进制存在性预检，避免"启动成功其实没启动"。
+
+★ 顺带把 partC 缺失的三个修复补回来
+partC 基于 f10dd42，不含 6f61aee，导致下述已修问题在 partC 上复发：
+  1. main_planning.c 的 shm_create 链补上 lane 段（SHM_KEY_LANE/
+     SHM_LANE_SIZE）。shm_write_lane() 内部是 shm_open()「只打开不创建」，
+     而契约本就是「A 写(M板)/B 转发写(S板)/B、C 读」——少了它每收一帧就
+     打一行"转发 shm_lane 失败"，且 C 的控制进程永远读不到车道状态。
+  2. 内核 UDP 计数改为"启动后增量"。/proc/net/snmp 是开机以来累计值，
+     直接打印十几万的存量会被误读成"现在还在疯狂丢包"，误导排查方向；
+     同时新增 InDatagrams 增量作对照（它也不涨 ⇒ 包根本没进系统）。
+  3. LCD 渲染改为"本轮重组出完整帧才重绘"（首轮除外）。一次渲染
+     = memset 2.46MB + 61 万像素转换 + XPutImage 2.46MB，实测把单轮周期
+     拉到 ≈171ms；M 端 5 帧/s 时多数轮次收不到完整帧，无条件重绘纯属浪费
+     且挤占下一轮收包窗口。轮周期改用独立轮数计数（渲染按需后 LCD 帧数
+     不再等于轮数，拿它反推会得到"渲染间隔"）。
+
+验证：板端同款 `-std=gnu11 -D_DEFAULT_SOURCE -Wall -Wextra -Werror -O2`
+对 planning 全部 7 个 .c 零警告零错误；test_udp / test_decision 全 PASS；
+7 个 shell 脚本 bash -n 全通过；git 索引中全部 .sh 已为 100755。
+---
+ planning/csrc/main_planning.c  | 611 +++++++++++++++++----------------
+ planning/csrc/render_lcd_x11.c |  23 +-
+ 2 files changed, 343 insertions(+), 291 deletions(-)
+
+diff --git a/planning/csrc/main_planning.c b/planning/csrc/main_planning.c
+index a572582..e927384 100644
+--- a/planning/csrc/main_planning.c
++++ b/planning/csrc/main_planning.c
+@@ -1,290 +1,321 @@
+-/*
+- * main_planning.c — S 端决策+显示主循环（【人员 B】，运行于 S 板 RK3568）
+- *
+- * 流程（单进程内完成，决策与 C 的控制循环通过 shm_cmd 解耦）：
+- *   1. UDP 接收（M 端图像+车道结果）→ 写 shm_udp_img + 转发 shm_lane
+- *   2. 读本地 shm_pcie_img（S 板本地图，缺失则降级只显示远端）
+- *   3. 本地 YOLOv5s 行人检测 → shm_person
+- *   4. 决策状态机（车道 + 行人 → ControlCommandMsg）→ shm_cmd
+- *   5. LCD(X11) 双路拼接渲染（左本地 / 右远端）
+- *
+- * 用法：
+- *   ./planning_main [--model <person模型路径>] [--no-lcd]
+- *
+- * 注意：S 板是否具备"本地 PCIe 采集"需团队按硬件确认（部署拓扑见分工方案
+- * 第二节）；本程序对本地图缺失做了降级（只显示远端图），不影响联调。
+- */
+-#include "shm_ipc.h"
+-#include "udp_proto.h"
+-#include "udp_receiver.h"
+-#include "decision.h"
+-#include "person_detect.h"
+-#include "render_lcd.h"
+-#include "driving_config.h"
+-#include "time_util.h"
+-
+-#define LOG_TAG "PLANNING"
+-#include "log.h"
+-
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <string.h>
+-#include <signal.h>
+-
+-#if defined(__linux__)
+-#include <unistd.h>
+-#define SLEEP_MS(ms) usleep((useconds_t)(ms) * 1000u)
+-#else
+-#define SLEEP_MS(ms) (void)(ms)
+-#endif
+-
+-static volatile int g_keep_running = 1;
+-static void on_signal(int sig) { (void)sig; g_keep_running = 0; }
+-
+-/* RGB565 → RGB888（本文件内的小工具，避免跨模块依赖感知层） */
+-static void rgb565_to_888(const uint8_t *src, uint8_t *dst, int n)
+-{
+-    for (int i = 0; i < n; i++) {
+-        uint16_t p = (uint16_t)(src[0] | ((uint16_t)src[1] << 8));
+-        uint8_t r5 = (uint8_t)((p >> 11) & 0x1F);
+-        uint8_t g6 = (uint8_t)((p >> 5) & 0x3F);
+-        uint8_t b5 = (uint8_t)(p & 0x1F);
+-        dst[0] = (uint8_t)((r5 << 3) | (r5 >> 2));
+-        dst[1] = (uint8_t)((g6 << 2) | (g6 >> 4));
+-        dst[2] = (uint8_t)((b5 << 3) | (b5 >> 2));
+-        src += 2; dst += 3;
+-    }
+-}
+-
+-int main(int argc, char **argv)
+-{
+-    const char *model_path = NULL;
+-    int use_lcd = 1;
+-    for (int i = 1; i < argc; i++) {
+-        if (strcmp(argv[i], "--model") == 0 && i + 1 < argc) model_path = argv[++i];
+-        else if (strcmp(argv[i], "--no-lcd") == 0) use_lcd = 0;
+-    }
+-
+-    signal(SIGINT, on_signal);
+-    signal(SIGTERM, on_signal);
+-
+-    LOGI("S端决策进程启动 (lcd=%d)\n", use_lcd);
+-
+-    /* ---- 创建 B 的共享段 ---- */
+-    void *dummy = NULL;
+-    if (shm_create("udp_img",   SHM_KEY_UDP_IMG,   SHM_IMG_SIZE,    &dummy) != 0 ||
+-        shm_create("cmd",       SHM_KEY_CMD,       SHM_CMD_SIZE,    &dummy) != 0 ||
+-        shm_create("display",   SHM_KEY_DISPLAY,   SHM_DISPLAY_SIZE,&dummy) != 0 ||
+-        shm_create("person",    SHM_KEY_PERSON,    SHM_PERSON_SIZE, &dummy) != 0) {
+-        LOGE("创建共享段失败（请先运行 scripts/start_s.sh 清理残留）\n");
+-        return -1;
+-    }
+-
+-    /* ---- UDP 接收器 ---- */
+-    udp_receiver_t *recv = NULL;
+-    if (udp_receiver_init(&recv, UDP_PORT) != 0) {
+-        LOGE("UDP 接收器初始化失败: %d（端口被占用？先 pkill -f planning_main）\n", UDP_PORT);
+-        return -1;
+-    }
+-    {
+-        /* 打印"实际生效"的接收缓冲：SO_RCVBUF 会被内核按 net.core.rmem_max 静默截断，
+-         * 若这里远小于 2MB，就说明 tune_net.sh 还没执行，突发丢包风险很高。 */
+-        udp_recv_stats_t st;
+-        memset(&st, 0, sizeof(st));
+-        if (udp_receiver_stats(recv, &st) == 0) {
+-            LOGI("UDP 监听 :%d  SO_RCVBUF=%d 字节\n", UDP_PORT, st.rcvbuf_eff);
+-            if (st.rcvbuf_eff > 0 && st.rcvbuf_eff < (int)(2 * 1024 * 1024))
+-                LOGW("接收缓冲偏小！一帧=440 包(≈0.9MB)会突发到达，容易溢出丢包。"
+-                     "请先执行 sudo ./scripts/tune_net.sh（提高 net.core.rmem_max）\n");
+-        }
+-    }
+-
+-    /* ---- 整帧重组 ---- */
+-    static uint8_t s_frame[IMG_FRAME_BYTES];
+-    static uint8_t s_pkt[sizeof(udp_data_hdr_t) + UDP_BLOCK_SIZE + 64];
+-    udp_reassembly_t reass;
+-    if (udp_reassembly_init(&reass, s_frame, sizeof(s_frame)) != 0) {
+-        LOGE("重组器初始化失败\n");
+-        udp_receiver_close(recv);
+-        return -1;
+-    }
+-
+-    /* ---- 行人检测（失败不致命，退化为无行人） ---- */
+-    person_detect_ctx_t *person = NULL;
+-    if (person_detect_init(&person, model_path, IMG_WIDTH, IMG_HEIGHT) != 0)
+-        LOGW("行人检测初始化失败（无行人模式继续）\n");
+-
+-    /* ---- LCD 渲染（失败不致命） ---- */
+-    render_lcd_ctx_t *lcd = NULL;
+-    if (use_lcd && render_lcd_init(&lcd, IMG_WIDTH * 2, IMG_HEIGHT) != 0)
+-        LOGW("LCD 初始化失败（无显示模式继续）\n");
+-
+-    /* ---- 决策 ---- */
+-    decision_ctx_t dec;
+-    decision_init(&dec);
+-
+-    static uint8_t s_local565[IMG_FRAME_BYTES];
+-    static uint8_t s_remote565[IMG_FRAME_BYTES];
+-    static uint8_t s_local888[(size_t)IMG_WIDTH * IMG_HEIGHT * 3];
+-
+-    DisplayMode mode = DISPLAY_MODE_SPLIT;
+-    ControlCommandMsg cmd;
+-    uint32_t frames_recv = 0, frames_lcd = 0;
+-    uint64_t last_pkt_us = 0;
+-    int local_ok = 0;
+-
+-    /* 统计窗口（每 2s）：用"窗口内取出的包数 / 窗口时长"直接量化消费速率，
+-     * 这是判断"是否被消费能力拖死"的唯一直接指标（M 端产出≈2200 包/s）。
+-     * 注意 last_stat_us 必须用"启动时刻"初始化：now_us_mono() 返回的是
+-     * CLOCK_MONOTONIC 绝对值（开机以来的微秒数），若沿用初值 0，第一轮
+-     * dt 会等于整机开机时长（几十万秒），算出的速率会失真成 ~0。 */
+-    uint64_t last_stat_us = now_us_mono();
+-    uint64_t win_pkts = 0;        /* 本窗口内从 socket 取出的包数 */
+-    uint32_t last_lcd = 0;        /* 上次统计时的 LCD 帧数（用于反推单轮周期） */
+-
+-    LaneResult cur_lane;        /* 本周期最新收到的车道结果（仅 lane_fresh=1 时有效） */
+-    int lane_fresh = 0;         /* 本周期是否收到“新的一帧”车道结果 */
+-
+-    while (g_keep_running) {
+-        uint64_t now = now_us_mono();
+-
+-        /* ---- 1. UDP 收包并重组（每轮把内核队列收干！） ----
+-         * 关键：一帧 = 1 帧头 + 439 个数据块（614400B / 1400B）= 440 包，M 端在一个
+-         * 突发里连续发出（桩模式 5 帧/s ≈ 2200 包/s）。旧实现每轮只 recv "一个"
+-         * 数据报，而一轮还要渲染 LCD（数十 ms），消费能力 ≈ 20~50 包/s，比产出低
+-         * 两个数量级 → 内核 UDP 接收队列反复溢出、静默丢包 → 439 块永远凑不齐 →
+-         * "收帧"恒为 0（而 LCD 帧照常增长，因为它不依赖收包）。
+-         * 修复：poll 到可读后，用非阻塞 recv 把队列里已有的包一次收干再走后续流程。 */
+-        int any_pkt = 0;                 /* 本轮是否收到过包（用于超时判定/日志） */
+-        int any_frame = 0;               /* 本轮是否重组出完整帧 */
+-        udp_frame_hdr_t last_hdr;        /* 本轮最后一个完整帧的帧头 */
+-        uint8_t *last_frame = NULL;
+-        size_t   last_frame_len = 0;
+-
+-        if (udp_receiver_wait(recv, UDP_RECV_WAIT_MS) > 0) {
+-            for (int k = 0; k < UDP_RECV_DRAIN_MAX; k++) {
+-                int n = udp_receiver_recv_nb(recv, s_pkt, sizeof(s_pkt));
+-                if (n <= 0) break;               /* 队列已取干（或出错） */
+-                any_pkt = 1;
+-                win_pkts++;                      /* 计入本统计窗口的消费量 */
+-
+-                uint8_t *frame = NULL;
+-                size_t frame_len = 0;
+-                int done = udp_reassembly_feed(&reass, s_pkt, (size_t)n,
+-                                               &last_hdr, &frame, &frame_len);
+-                if (done == 1) {
+-                    frames_recv++;
+-                    any_frame = 1;
+-                    last_frame = frame;          /* 本轮可能重组出多帧，只落地最后一帧 */
+-                    last_frame_len = frame_len;
+-                }
+-            }
+-        }
+-
+-        if (any_frame) {
+-            /* 写远端图（LCD 右半屏数据源）+ 转发车道结果到 S 板 shm_lane */
+-            if (shm_write_udp_img(last_frame, last_frame_len) != 0) LOGW("写 shm_udp_img 失败\n");
+-            if (udp_hdr_to_lane(&last_hdr, &cur_lane) == 0) {
+-                if (shm_write_lane(&cur_lane) != 0) LOGW("转发 shm_lane 失败\n");
+-                lane_fresh = 1;   /* 仅在真正收到新帧时置位，供决策做超龄判断 */
+-            }
+-        }
+-
+-        /* 重组超时：丢弃残帧（有包进来就不算超时，避免正常收块期间误清） */
+-        if (any_pkt) last_pkt_us = now;
+-        if (reass.have_hdr && (now - last_pkt_us) > (uint64_t)UDP_FRAME_TIMEOUT_MS * 1000u)
+-            udp_reassembly_reset(&reass);
+-
+-        /* ---- 2. 读本地图（S 板本地 PCIe，缺失降级） ---- */
+-        if (shm_read_pcie_img(s_local565, IMG_FRAME_BYTES) == 0)
+-            local_ok = 1;
+-
+-        /* ---- 3. 行人检测（本地图 RGB565→888 后送 YOLOv5s） ---- */
+-        PersonState pstate;
+-        memset(&pstate, 0, sizeof(pstate));
+-        pstate.version = PERSON_VERSION;
+-        if (person && local_ok) {
+-            rgb565_to_888(s_local565, s_local888, IMG_WIDTH * IMG_HEIGHT);
+-            person_detect_run(person, s_local888, frames_recv, now, &pstate);
+-        }
+-        if (shm_write_person(&pstate) != 0) LOGW("写 shm_person 失败\n");
+-
+-        /* ---- 4. 决策（车道来自 UDP 转发，行人来自本地检测） ----
+-         * 只在“收到新的一帧”时才把车道传给决策；否则传 NULL，由 decision
+-         * 内部缓存 + 超龄机制（DEC_LANE_MAX_AGE_MS）决定是否沿用上一帧结果。
+-         * 旧实现每周期都读 sticky 的 shm_lane 并恒传非 NULL，导致“超龄降级”
+-         * 永不生效——M 端断流后 S 端仍会按最后一条旧车道继续行驶。 */
+-        LaneResult *lp = lane_fresh ? &cur_lane : NULL;
+-
+-        PersonState *p_in = (pstate.version == PERSON_VERSION) ? &pstate : NULL;
+-        if (decision_step(&dec, lp, NULL, NULL, NULL, p_in, now, &cmd) != 0) {
+-            LOGW("决策失败\n");
+-        } else if (cmd.command != CMD_NONE) {
+-            if (shm_write_cmd(&cmd) != 0) LOGW("写 shm_cmd 失败\n");
+-        }
+-        lane_fresh = 0;   /* 复位，等待下一帧 */
+-
+-        /* ---- 5. LCD 渲染 ---- */
+-        if (lcd) {
+-            if (shm_read_udp_img(s_remote565, IMG_FRAME_BYTES) != 0 && frames_recv > 0)
+-                LOGW("读 shm_udp_img 失败\n");
+-            if (render_lcd_draw(lcd,
+-                                local_ok ? s_local565 : NULL,
+-                                frames_recv ? s_remote565 : NULL,
+-                                mode, frames_recv) == 0)
+-                frames_lcd++;
+-        }
+-
+-        /* ---- 统计（每 2s） ----
+-         * 分层打印，便于一眼定位故障层：
+-         *   socket收包=0                       → 包没进进程（网络/IP/端口）
+-         *   socket收包增长但 重组接受块 不涨    → 丢块（内核溢出/校验/乱序）
+-         *   接受块增长但 收帧=0                → 块收不齐（丢包导致）→ 看内核溢出计数
+-         *   收帧增长                           → 链路正常 */
+-        if (now - last_stat_us >= 2000000u) {
+-            uint64_t dt_us = now - last_stat_us;
+-            last_stat_us = now;
+-
+-            udp_recv_stats_t st;
+-            memset(&st, 0, sizeof(st));
+-            udp_receiver_stats(recv, &st);
+-
+-            /* 消费速率 = 窗口内取出的包数 / 窗口时长。
+-             * M 端 5 帧/s × 440 包 ≈ 2200 包/s，所以：
+-             *   速率只有几十包/s        → 瓶颈在"消费能力"（渲染/打印拖慢主循环）
+-             *   速率已接近 2200 但仍收帧=0 → 丢包发生在更早的层，即网卡 RX ring /
+-             *                              softnet backlog（socket 缓冲之前），
+-             *                              要看 ip -s link、/proc/net/softnet_stat */
+-            double pkt_rate = dt_us ? (double)win_pkts * 1000000.0 / (double)dt_us : 0.0;
+-            uint32_t lcd_delta = frames_lcd - last_lcd;
+-            double loop_ms = lcd_delta ? ((double)dt_us / 1000.0) / (double)lcd_delta : 0.0;
+-            last_lcd = frames_lcd;
+-
+-            LOGI("收帧=%u LCD帧=%u(+%u) | socket收包=%llu 重组接受块=%u\n",
+-                 frames_recv, frames_lcd, lcd_delta,
+-                 (unsigned long long)st.pkts, reass.stat_block_ok);
+-            LOGI("  消费速率=%.0f 包/s（M端产出≈2200）主循环周期≈%.1fms\n",
+-                 pkt_rate, loop_ms);
+-            LOGI("  丢块[校验=%u 重复=%u 无帧头=%u 旧帧=%u 异常=%u 帧头失败=%u] "
+-                 "内核[rcvbuf=%d 队列溢出=%llu InErrors=%llu]\n",
+-                 reass.stat_drop_checksum, reass.stat_drop_dup, reass.stat_drop_nohdr,
+-                 reass.stat_drop_fid, reass.stat_drop_other, reass.stat_begin_fail,
+-                 st.rcvbuf_eff,
+-                 (unsigned long long)st.kern_rcvbuferr,
+-                 (unsigned long long)st.kern_inerr);
+-            LOGI("  最近命令=%d enable=%u pri=%u conf=%u\n",
+-                 (int)cmd.command, (unsigned)cmd.enable,
+-                 (unsigned)cmd.priority, (unsigned)cmd.confidence);
+-            win_pkts = 0;
+-        }
+-
+-        SLEEP_MS(5);
+-    }
+-
+-    LOGI("S端决策进程退出（共收 %u 帧）\n", frames_recv);
+-    render_lcd_deinit(lcd);
+-    if (person) person_detect_deinit(person);
+-    udp_reassembly_reset(&reass);
+-    udp_receiver_close(recv);
+-    return 0;
+-}
++/*
++ * main_planning.c — S 端决策+显示主循环（【人员 B】，运行于 S 板 RK3568）
++ *
++ * 流程（单进程内完成，决策与 C 的控制循环通过 shm_cmd 解耦）：
++ *   1. UDP 接收（M 端图像+车道结果）→ 写 shm_udp_img + 转发 shm_lane
++ *   2. 读本地 shm_pcie_img（S 板本地图，缺失则降级只显示远端）
++ *   3. 本地 YOLOv5s 行人检测 → shm_person
++ *   4. 决策状态机（车道 + 行人 → ControlCommandMsg）→ shm_cmd
++ *   5. LCD(X11) 双路拼接渲染（左本地 / 右远端）
++ *
++ * 用法：
++ *   ./planning_main [--model <person模型路径>] [--no-lcd]
++ *
++ * 注意：S 板是否具备"本地 PCIe 采集"需团队按硬件确认（部署拓扑见分工方案
++ * 第二节）；本程序对本地图缺失做了降级（只显示远端图），不影响联调。
++ */
++#include "shm_ipc.h"
++#include "udp_proto.h"
++#include "udp_receiver.h"
++#include "decision.h"
++#include "person_detect.h"
++#include "render_lcd.h"
++#include "driving_config.h"
++#include "time_util.h"
++
++#define LOG_TAG "PLANNING"
++#include "log.h"
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <signal.h>
++
++#if defined(__linux__)
++#include <unistd.h>
++#define SLEEP_MS(ms) usleep((useconds_t)(ms) * 1000u)
++#else
++#define SLEEP_MS(ms) (void)(ms)
++#endif
++
++static volatile int g_keep_running = 1;
++static void on_signal(int sig) { (void)sig; g_keep_running = 0; }
++
++/* RGB565 → RGB888（本文件内的小工具，避免跨模块依赖感知层） */
++static void rgb565_to_888(const uint8_t *src, uint8_t *dst, int n)
++{
++    for (int i = 0; i < n; i++) {
++        uint16_t p = (uint16_t)(src[0] | ((uint16_t)src[1] << 8));
++        uint8_t r5 = (uint8_t)((p >> 11) & 0x1F);
++        uint8_t g6 = (uint8_t)((p >> 5) & 0x3F);
++        uint8_t b5 = (uint8_t)(p & 0x1F);
++        dst[0] = (uint8_t)((r5 << 3) | (r5 >> 2));
++        dst[1] = (uint8_t)((g6 << 2) | (g6 >> 4));
++        dst[2] = (uint8_t)((b5 << 3) | (b5 >> 2));
++        src += 2; dst += 3;
++    }
++}
++
++int main(int argc, char **argv)
++{
++    const char *model_path = NULL;
++    int use_lcd = 1;
++    for (int i = 1; i < argc; i++) {
++        if (strcmp(argv[i], "--model") == 0 && i + 1 < argc) model_path = argv[++i];
++        else if (strcmp(argv[i], "--no-lcd") == 0) use_lcd = 0;
++    }
++
++    signal(SIGINT, on_signal);
++    signal(SIGTERM, on_signal);
++
++    LOGI("S端决策进程启动 (lcd=%d)\n", use_lcd);
++
++    /* ---- 创建 B 的共享段 ----
++     * 注意 lane 这一项不能漏：shm_write_lane() 内部走的是 shm_open()（"只打开
++     * 已存在段"的读者语义），而 driving_config.h 的契约是「A 写(M板) / B 转发写
++     * (S板) / B、C 读」——S 端自己就是写者，必须先建段。少了它，每收到一帧就会
++     * 打一行"转发 shm_lane 失败"，且 C 的控制进程永远读不到车道状态。
++     * （shm_create 用 IPC_CREAT|0666、不含 IPC_EXCL，复用重启后的残留段不会失败。） */
++    void *dummy = NULL;
++    if (shm_create("udp_img",   SHM_KEY_UDP_IMG,   SHM_IMG_SIZE,    &dummy) != 0 ||
++        shm_create("cmd",       SHM_KEY_CMD,       SHM_CMD_SIZE,    &dummy) != 0 ||
++        shm_create("display",   SHM_KEY_DISPLAY,   SHM_DISPLAY_SIZE,&dummy) != 0 ||
++        shm_create("person",    SHM_KEY_PERSON,    SHM_PERSON_SIZE, &dummy) != 0 ||
++        shm_create("lane",      SHM_KEY_LANE,      SHM_LANE_SIZE,   &dummy) != 0) {
++        LOGE("创建共享段失败（请先运行 scripts/start_s.sh 清理残留）\n");
++        return -1;
++    }
++
++    /* ---- UDP 接收器 ---- */
++    udp_receiver_t *recv = NULL;
++    if (udp_receiver_init(&recv, UDP_PORT) != 0) {
++        LOGE("UDP 接收器初始化失败: %d（端口被占用？先 pkill -f planning_main）\n", UDP_PORT);
++        return -1;
++    }
++    {
++        /* 打印"实际生效"的接收缓冲：SO_RCVBUF 会被内核按 net.core.rmem_max 静默截断，
++         * 若这里远小于 2MB，就说明 tune_net.sh 还没执行，突发丢包风险很高。 */
++        udp_recv_stats_t st;
++        memset(&st, 0, sizeof(st));
++        if (udp_receiver_stats(recv, &st) == 0) {
++            LOGI("UDP 监听 :%d  SO_RCVBUF=%d 字节\n", UDP_PORT, st.rcvbuf_eff);
++            if (st.rcvbuf_eff > 0 && st.rcvbuf_eff < (int)(2 * 1024 * 1024))
++                LOGW("接收缓冲偏小！一帧=440 包(≈0.9MB)会突发到达，容易溢出丢包。"
++                     "请先执行 sudo ./scripts/tune_net.sh（提高 net.core.rmem_max）\n");
++        }
++    }
++
++    /* ---- 内核 UDP 计数基线 ----
++     * /proc/net/snmp 的 Udp 计数是"系统开机以来"的累计值，直接打印出来会是
++     * 十几万的存量（联调早期旧代码攒下的），一眼看去像"现在还在疯狂丢包"，
++     * 极易误导排查方向。这里记下启动时刻的快照，日志里只报"本段时间的增量"。 */
++    uint64_t kern_rcvbuferr_base = 0, kern_inerr_base = 0, kern_indatagram_base = 0;
++    {
++        udp_recv_stats_t st0;
++        memset(&st0, 0, sizeof(st0));
++        if (udp_receiver_stats(recv, &st0) == 0) {
++            kern_rcvbuferr_base   = st0.kern_rcvbuferr;
++            kern_inerr_base       = st0.kern_inerr;
++            kern_indatagram_base  = st0.kern_indatagrams;
++        }
++    }
++
++    /* ---- 整帧重组 ---- */
++    static uint8_t s_frame[IMG_FRAME_BYTES];
++    static uint8_t s_pkt[sizeof(udp_data_hdr_t) + UDP_BLOCK_SIZE + 64];
++    udp_reassembly_t reass;
++    if (udp_reassembly_init(&reass, s_frame, sizeof(s_frame)) != 0) {
++        LOGE("重组器初始化失败\n");
++        udp_receiver_close(recv);
++        return -1;
++    }
++
++    /* ---- 行人检测（失败不致命，退化为无行人） ---- */
++    person_detect_ctx_t *person = NULL;
++    if (person_detect_init(&person, model_path, IMG_WIDTH, IMG_HEIGHT) != 0)
++        LOGW("行人检测初始化失败（无行人模式继续）\n");
++
++    /* ---- LCD 渲染（失败不致命） ---- */
++    render_lcd_ctx_t *lcd = NULL;
++    if (use_lcd && render_lcd_init(&lcd, IMG_WIDTH * 2, IMG_HEIGHT) != 0)
++        LOGW("LCD 初始化失败（无显示模式继续）\n");
++
++    /* ---- 决策 ---- */
++    decision_ctx_t dec;
++    decision_init(&dec);
++
++    static uint8_t s_local565[IMG_FRAME_BYTES];
++    static uint8_t s_remote565[IMG_FRAME_BYTES];
++    static uint8_t s_local888[(size_t)IMG_WIDTH * IMG_HEIGHT * 3];
++
++    DisplayMode mode = DISPLAY_MODE_SPLIT;
++    ControlCommandMsg cmd;
++    uint32_t frames_recv = 0, frames_lcd = 0;
++    uint64_t last_pkt_us = 0;
++    int local_ok = 0;
++
++    /* 统计窗口（每 2s）：用"窗口内取出的包数 / 窗口时长"直接量化消费速率，
++     * 这是判断"是否被消费能力拖死"的唯一直接指标（M 端产出≈2200 包/s）。
++     * 注意 last_stat_us 必须用"启动时刻"初始化：now_us_mono() 返回的是
++     * CLOCK_MONOTONIC 绝对值（开机以来的微秒数），若沿用初值 0，第一轮
++     * dt 会等于整机开机时长（几十万秒），算出的速率会失真成 ~0。 */
++    uint64_t last_stat_us = now_us_mono();
++    uint64_t win_pkts = 0;        /* 本窗口内从 socket 取出的包数 */
++    uint64_t win_loops = 0;       /* 本窗口内跑过的主循环轮数（用于算真实轮周期） */
++    uint64_t win_lcd_seen = 0;    /* 上次统计时的 LCD 帧数（只用于报"本期新增"） */
++
++    LaneResult cur_lane;        /* 本周期最新收到的车道结果（仅 lane_fresh=1 时有效） */
++    int lane_fresh = 0;         /* 本周期是否收到“新的一帧”车道结果 */
++
++    while (g_keep_running) {
++        uint64_t now = now_us_mono();
++        win_loops++;
++
++        /* ---- 1. UDP 收包并重组（每轮把内核队列收干！） ----
++         * 关键：一帧 = 1 帧头 + 439 个数据块（614400B / 1400B）= 440 包，M 端在一个
++         * 突发里连续发出（桩模式 5 帧/s ≈ 2200 包/s）。旧实现每轮只 recv "一个"
++         * 数据报，而一轮还要渲染 LCD（数十 ms），消费能力 ≈ 20~50 包/s，比产出低
++         * 两个数量级 → 内核 UDP 接收队列反复溢出、静默丢包 → 439 块永远凑不齐 →
++         * "收帧"恒为 0（而 LCD 帧照常增长，因为它不依赖收包）。
++         * 修复：poll 到可读后，用非阻塞 recv 把队列里已有的包一次收干再走后续流程。 */
++        int any_pkt = 0;                 /* 本轮是否收到过包（用于超时判定/日志） */
++        int any_frame = 0;               /* 本轮是否重组出完整帧 */
++        udp_frame_hdr_t last_hdr;        /* 本轮最后一个完整帧的帧头 */
++        uint8_t *last_frame = NULL;
++        size_t   last_frame_len = 0;
++
++        if (udp_receiver_wait(recv, UDP_RECV_WAIT_MS) > 0) {
++            for (int k = 0; k < UDP_RECV_DRAIN_MAX; k++) {
++                int n = udp_receiver_recv_nb(recv, s_pkt, sizeof(s_pkt));
++                if (n <= 0) break;               /* 队列已取干（或出错） */
++                any_pkt = 1;
++                win_pkts++;                      /* 计入本统计窗口的消费量 */
++
++                uint8_t *frame = NULL;
++                size_t frame_len = 0;
++                int done = udp_reassembly_feed(&reass, s_pkt, (size_t)n,
++                                               &last_hdr, &frame, &frame_len);
++                if (done == 1) {
++                    frames_recv++;
++                    any_frame = 1;
++                    last_frame = frame;          /* 本轮可能重组出多帧，只落地最后一帧 */
++                    last_frame_len = frame_len;
++                }
++            }
++        }
++
++        if (any_frame) {
++            /* 写远端图（LCD 右半屏数据源）+ 转发车道结果到 S 板 shm_lane */
++            if (shm_write_udp_img(last_frame, last_frame_len) != 0) LOGW("写 shm_udp_img 失败\n");
++            if (udp_hdr_to_lane(&last_hdr, &cur_lane) == 0) {
++                if (shm_write_lane(&cur_lane) != 0) LOGW("转发 shm_lane 失败\n");
++                lane_fresh = 1;   /* 仅在真正收到新帧时置位，供决策做超龄判断 */
++            }
++        }
++
++        /* 重组超时：丢弃残帧（有包进来就不算超时，避免正常收块期间误清） */
++        if (any_pkt) last_pkt_us = now;
++        if (reass.have_hdr && (now - last_pkt_us) > (uint64_t)UDP_FRAME_TIMEOUT_MS * 1000u)
++            udp_reassembly_reset(&reass);
++
++        /* ---- 2. 读本地图（S 板本地 PCIe，缺失降级） ---- */
++        if (shm_read_pcie_img(s_local565, IMG_FRAME_BYTES) == 0)
++            local_ok = 1;
++
++        /* ---- 3. 行人检测（本地图 RGB565→888 后送 YOLOv5s） ---- */
++        PersonState pstate;
++        memset(&pstate, 0, sizeof(pstate));
++        pstate.version = PERSON_VERSION;
++        if (person && local_ok) {
++            rgb565_to_888(s_local565, s_local888, IMG_WIDTH * IMG_HEIGHT);
++            person_detect_run(person, s_local888, frames_recv, now, &pstate);
++        }
++        if (shm_write_person(&pstate) != 0) LOGW("写 shm_person 失败\n");
++
++        /* ---- 4. 决策（车道来自 UDP 转发，行人来自本地检测） ----
++         * 只在“收到新的一帧”时才把车道传给决策；否则传 NULL，由 decision
++         * 内部缓存 + 超龄机制（DEC_LANE_MAX_AGE_MS）决定是否沿用上一帧结果。
++         * 旧实现每周期都读 sticky 的 shm_lane 并恒传非 NULL，导致“超龄降级”
++         * 永不生效——M 端断流后 S 端仍会按最后一条旧车道继续行驶。 */
++        LaneResult *lp = lane_fresh ? &cur_lane : NULL;
++
++        PersonState *p_in = (pstate.version == PERSON_VERSION) ? &pstate : NULL;
++        if (decision_step(&dec, lp, NULL, NULL, NULL, p_in, now, &cmd) != 0) {
++            LOGW("决策失败\n");
++        } else if (cmd.command != CMD_NONE) {
++            if (shm_write_cmd(&cmd) != 0) LOGW("写 shm_cmd 失败\n");
++        }
++        lane_fresh = 0;   /* 复位，等待下一帧 */
++
++        /* ---- 5. LCD 渲染（按需：本轮重组出完整帧才重绘，首轮除外） ----
++         * 一次渲染 = memset 2.46MB + 61 万像素 RGB565→BGRX 转换 + XPutImage
++         * 2.46MB，实测把单轮周期拉到 ≈171ms；而 M 端 5 帧/s 时多数轮次根本
++         * 收不到完整帧，无条件重绘纯属浪费，还会挤占下一轮的收包窗口。
++         * 决策不需要每帧落地（状态机用最新帧即可），跳帧只影响画面流畅度。 */
++        if (lcd && (any_frame || frames_lcd == 0)) {
++            if (shm_read_udp_img(s_remote565, IMG_FRAME_BYTES) != 0 && frames_recv > 0)
++                LOGW("读 shm_udp_img 失败\n");
++            if (render_lcd_draw(lcd,
++                                local_ok ? s_local565 : NULL,
++                                frames_recv ? s_remote565 : NULL,
++                                mode, frames_recv) == 0)
++                frames_lcd++;
++        }
++
++        /* ---- 统计（每 2s） ----
++         * 分层打印，便于一眼定位故障层：
++         *   socket收包=0                       → 包没进进程（网络/IP/端口）
++         *   socket收包增长但 重组接受块 不涨    → 丢块（内核溢出/校验/乱序）
++         *   接受块增长但 收帧=0                → 块收不齐（丢包导致）→ 看内核溢出计数
++         *   收帧增长                           → 链路正常 */
++        if (now - last_stat_us >= 2000000u) {
++            uint64_t dt_us = now - last_stat_us;
++            last_stat_us = now;
++
++            udp_recv_stats_t st;
++            memset(&st, 0, sizeof(st));
++            udp_receiver_stats(recv, &st);
++
++            /* 消费速率 = 窗口内取出的包数 / 窗口时长。
++             * M 端 5 帧/s × 440 包 ≈ 2200 包/s，所以：
++             *   速率只有几十包/s        → 瓶颈在"消费能力"（渲染/打印拖慢主循环）
++             *   速率已接近 2200 但仍收帧=0 → 丢包发生在更早的层，即网卡 RX ring /
++             *                              softnet backlog（socket 缓冲之前），
++             *                              要看 ip -s link、/proc/net/softnet_stat */
++            double pkt_rate = dt_us ? (double)win_pkts * 1000000.0 / (double)dt_us : 0.0;
++            /* 轮周期用"独立轮数计数器"算，不能用 LCD 帧数反推：渲染改成按需触发后，
++             * LCD 帧数不再等于轮数，拿它相除得到的是"渲染间隔"而不是主循环周期。 */
++            double loop_ms = win_loops ? ((double)dt_us / 1000.0) / (double)win_loops : 0.0;
++            uint32_t lcd_delta = frames_lcd - (uint32_t)win_lcd_seen;
++            win_lcd_seen = frames_lcd;
++
++            LOGI("收帧=%u LCD帧=%u(+%u) | socket收包=%llu 重组接受块=%u\n",
++                 frames_recv, frames_lcd, lcd_delta,
++                 (unsigned long long)st.pkts, reass.stat_block_ok);
++            LOGI("  消费速率=%.0f 包/s（M端产出≈2200）主循环周期≈%.1fms\n",
++                 pkt_rate, loop_ms);
++            LOGI("  丢块[校验=%u 重复=%u 无帧头=%u 旧帧=%u 异常=%u 帧头失败=%u] "
++                 "内核增量[队列溢出=+%llu InErrors=+%llu InDatagrams=+%llu] rcvbuf=%d\n",
++                 reass.stat_drop_checksum, reass.stat_drop_dup, reass.stat_drop_nohdr,
++                 reass.stat_drop_fid, reass.stat_drop_other, reass.stat_begin_fail,
++                 (unsigned long long)(st.kern_rcvbuferr  - kern_rcvbuferr_base),
++                 (unsigned long long)(st.kern_inerr      - kern_inerr_base),
++                 (unsigned long long)(st.kern_indatagrams- kern_indatagram_base),
++                 st.rcvbuf_eff);
++            LOGI("  最近命令=%d enable=%u pri=%u conf=%u\n",
++                 (int)cmd.command, (unsigned)cmd.enable,
++                 (unsigned)cmd.priority, (unsigned)cmd.confidence);
++            win_pkts = 0;
++            win_loops = 0;
++        }
++
++        SLEEP_MS(5);
++    }
++
++    LOGI("S端决策进程退出（共收 %u 帧）\n", frames_recv);
++    render_lcd_deinit(lcd);
++    if (person) person_detect_deinit(person);
++    udp_reassembly_reset(&reass);
++    udp_receiver_close(recv);
++    return 0;
++}
+diff --git a/planning/csrc/render_lcd_x11.c b/planning/csrc/render_lcd_x11.c
+index 7bbe583..f1fdfb1 100644
+--- a/planning/csrc/render_lcd_x11.c
++++ b/planning/csrc/render_lcd_x11.c
+@@ -62,6 +62,7 @@ static void blit_565(const uint8_t *src565, uint8_t *canvas,
+ /* ---------- X11 真实现 ---------- */
+ #include <X11/Xlib.h>
+ #include <X11/Xutil.h>
++#include <unistd.h>   /* getuid()：用于在报错里点明"是不是 root 跑的" */
+ 
+ int render_lcd_init(render_lcd_ctx_t **ctx, int win_w, int win_h)
+ {
+@@ -73,7 +74,27 @@ int render_lcd_init(render_lcd_ctx_t **ctx, int win_w, int win_h)
+     c->is_stub = 0;
+ 
+     Display *d = XOpenDisplay(NULL);
+-    if (!d) { free(c); return -1; }
++    if (!d) {
++        /* "进程明明在跑、就是没有画面"的头号原因：X11 连不上。
++         * 典型场景：sudo 启动 → root 拿不到桌面会话的 X 授权 cookie
++         * （XAUTHORITY 落到 /root/.Xauthority，通常不存在）。
++         * 这里把真实环境值打出来，避免"启动成功但黑屏"无从下手。 */
++        const char *disp = getenv("DISPLAY");
++        const char *xaut = getenv("XAUTHORITY");
++        const char *user = getenv("USER");
++        fprintf(stderr,
++            "[LCD] XOpenDisplay 失败：连不上 X 服务器，画面无法上屏（收帧/决策不受影响）。\n"
++            "      DISPLAY=%s  XAUTHORITY=%s  当前用户=%s(uid=%d)\n"
++            "      若 uid=0 说明是用 sudo 启动的——root 默认没有桌面会话的 X 授权。\n"
++            "      正确做法：网络/驱动用 root，图形进程用「桌面用户」身份起，例如\n"
++            "        sudo -u <桌面用户> env DISPLAY=:0 XAUTHORITY=/home/<桌面用户>/.Xauthority \\\n"
++            "             LD_LIBRARY_PATH=<仓库>/lib ./bin/planning_main --model model/yolov5s-640-640.rknn\n"
++            "      （scripts/start_s.sh 已自动完成这一步，无需手敲）\n",
++            disp ? disp : "(未设置)", xaut ? xaut : "(未设置)",
++            user ? user : "?", (int)getuid());
++        free(c);
++        return -1;
++    }
+     int scr = DefaultScreen(d);
+     Window w = XCreateSimpleWindow(d, RootWindow(d, scr), 0, 0,
+                                    (unsigned)c->win_w, (unsigned)c->win_h, 1,
+-- 
+2.55.0.windows.3
+

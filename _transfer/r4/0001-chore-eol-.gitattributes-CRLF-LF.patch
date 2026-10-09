@@ -1,0 +1,4622 @@
+From aedfa9f8af6f7a3b5f42c913773d8b8b16ba4a71 Mon Sep 17 00:00:00 2001
+From: gyy <SUAT25000186@stu.suat-sz.edu.cn>
+Date: Fri, 9 Oct 2026 10:43:13 +0800
+Subject: [PATCH 1/2] =?UTF-8?q?chore(eol):=20=E6=96=B0=E5=A2=9E=20.gitattr?=
+ =?UTF-8?q?ibutes=EF=BC=8C=E6=8A=8A=E8=A2=AB=E8=AF=AF=E8=BD=AC=E6=88=90=20?=
+ =?UTF-8?q?CRLF=20=E7=9A=84=E6=BA=90=E6=96=87=E4=BB=B6=E6=94=B9=E5=9B=9E?=
+ =?UTF-8?q?=20LF?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+现象：partC 提交（7c0ec6b）里 10 个源文件「全部行都变了」——git diff --stat
+显示 290 插入/290 删除、1128 插入/1128 删除等完全对称的数字，而
+`git diff --ignore-cr-at-eol` 为空 ⇒ **纯行尾改写，实质内容零变化**。
+这是 Windows 端提交时缺 .gitattributes 保护导致的（无 autocrlf 配置时，
+编辑器保存即把整文件写成 CRLF）。
+
+危害不只是污染历史：
+  · shell 脚本带 \r 后，板端报 "bad interpreter: No such file or directory"；
+  · 任何一次真实的代码 review 都会被几千行噪音淹没（本次 main_planning.c
+    的 3 个实质修复差点因此被埋掉）。
+
+本次处理：
+  1. 新增 .gitattributes：源码/脚本一律 eol=lf；.ko/.so/.rknn/.sbit/.sfc/
+     .bundle/.HMI/.pdf 标记 binary 禁止转换；*.adf 标记 -text。
+     作用域刻意收窄到具体后缀、不用 `* text=auto` —— fpga/ 下有 13 个
+     PDS 工具生成的 .adf 报告本身就是 CRLF，用通配会让它们每次 checkout
+     后都显示"已修改"，制造新的噪音。
+  2. 把 9 个被误转的源文件 + scripts/run_s_board.py 转回 LF（内容未动）：
+     fpga/.../fspi/{fspi_slave,fspi_slave_top,spi_ram_crtl}.v
+     fpga/.../uart_lcd/{uart_lcd,uart_rx,uart_tx}.v
+     udp_rk_rk_yolo/S/fspi/{csrc/fspi_module.c,csrc/main.c,include/fspi_module.h}
+
+注：planning/csrc/main_planning.c 同样被转过 CRLF，但该文件本次另含实质修复，
+随下一个提交一并落地。
+---
+ .gitattributes                                |   37 +
+ _verify_b_shm/run_verify.sh                   |    0
+ .../fpga_pcie_ov5640/source/fspi/fspi_slave.v |  234 +--
+ .../source/fspi/fspi_slave_top.v              |  144 +-
+ .../source/fspi/spi_ram_crtl.v                |  416 +++---
+ .../source/uart_lcd/uart_lcd.v                |  334 ++---
+ .../source/uart_lcd/uart_rx.v                 |  272 ++--
+ .../source/uart_lcd/uart_tx.v                 |  208 +--
+ scripts/board/deploy_board.sh                 |    4 +-
+ scripts/check_system.sh                       |    0
+ scripts/setup_network_m.sh                    |    0
+ scripts/setup_network_s.sh                    |    0
+ scripts/start_m.sh                            |    9 +-
+ scripts/start_s.sh                            |  127 +-
+ scripts/stop_all.sh                           |    0
+ scripts/tune_net.sh                           |    0
+ udp_rk_rk_yolo/M/check_system.sh              |    0
+ udp_rk_rk_yolo/M/setup_network.sh             |    0
+ udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c      | 1128 +++++++--------
+ udp_rk_rk_yolo/S/fspi/csrc/main.c             | 1280 ++++++++---------
+ udp_rk_rk_yolo/S/fspi/include/fspi_module.h   |  190 +--
+ udp_rk_rk_yolo/S/setup_network.sh             |    0
+ 22 files changed, 2261 insertions(+), 2122 deletions(-)
+ create mode 100644 .gitattributes
+ mode change 100644 => 100755 _verify_b_shm/run_verify.sh
+ mode change 100644 => 100755 scripts/board/deploy_board.sh
+ mode change 100644 => 100755 scripts/check_system.sh
+ mode change 100644 => 100755 scripts/setup_network_m.sh
+ mode change 100644 => 100755 scripts/setup_network_s.sh
+ mode change 100644 => 100755 scripts/start_m.sh
+ mode change 100644 => 100755 scripts/start_s.sh
+ mode change 100644 => 100755 scripts/stop_all.sh
+ mode change 100644 => 100755 scripts/tune_net.sh
+ mode change 100644 => 100755 udp_rk_rk_yolo/M/check_system.sh
+ mode change 100644 => 100755 udp_rk_rk_yolo/M/setup_network.sh
+ mode change 100644 => 100755 udp_rk_rk_yolo/S/setup_network.sh
+
+diff --git a/.gitattributes b/.gitattributes
+new file mode 100644
+index 0000000..8e36d35
+--- /dev/null
++++ b/.gitattributes
+@@ -0,0 +1,37 @@
++# .gitattributes — 统一行尾与二进制处理（【人员 B】集成维护）
++#
++# 背景（2026-10-08 partC 提交踩坑）：Windows 上提交时把 10 个源文件整文件
++# 转成了 CRLF，git diff 显示"全部行都改了"但实质内容零变化，既污染历史，
++# 又让 shell 脚本带上 \r 后在板端报 "bad interpreter: No such file or directory"。
++# 这里显式声明：源码/脚本一律 LF，二进制禁止任何转换。
++#
++# 注意：作用域刻意收窄到具体后缀，没有用 `* text=auto`——
++# 仓库里 fpga/ 下有 13 个 PDS 工具生成的 *.adf 报告本身就是 CRLF，
++# 用通配会让他们在每次 checkout 后显示为"已修改"，制造无意义 diff。
++
++# ---- 源码 / 脚本：一律 LF ----
++*.c        text eol=lf
++*.h        text eol=lf
++*.cpp      text eol=lf
++*.cc       text eol=lf
++*.py       text eol=lf
++*.sh       text eol=lf
++*.v        text eol=lf
++*.vh       text eol=lf
++*.fdc      text eol=lf
++*.md       text eol=lf
++*.json     text eol=lf
++Makefile   text eol=lf
++
++# ---- 二进制：禁止行尾/编码转换（转换即损坏）----
++*.ko       binary
++*.so       binary
++*.rknn     binary
++*.sbit     binary
++*.sfc      binary
++*.bundle   binary
++*.HMI      binary
++*.pdf      binary
++
++# ---- PDS 工具生成物：不参与行尾规范化 ----
++*.adf      -text
+diff --git a/_verify_b_shm/run_verify.sh b/_verify_b_shm/run_verify.sh
+old mode 100644
+new mode 100755
+diff --git a/fpga/fpga_pcie_ov5640/source/fspi/fspi_slave.v b/fpga/fpga_pcie_ov5640/source/fspi/fspi_slave.v
+index ae11909..118f2a5 100644
+--- a/fpga/fpga_pcie_ov5640/source/fspi/fspi_slave.v
++++ b/fpga/fpga_pcie_ov5640/source/fspi/fspi_slave.v
+@@ -1,117 +1,117 @@
+-//======================================================================
+-// fspi_slave.v — 四线 QUAD SPI 从机物理层（【人员 C · 控制与 FPGA】）
+-//
+-// 职责：把 4 线 QUAD SPI 的比特流组装成字节（rx_data / rx_data_valid），
+-//       并从首字节解码出读/写命令（cmd）。发送侧按下降沿把读回数据逐半字节
+-//       送回收发器，并产生 tx_data_valid 翻转脉冲供上层 spi_ram_crtl 做时序。
+-//
+-// 命令编码（首字节，由 {高半字节, 低半字节} 拼接）：
+-//   0x80 → cmd=2'b10（读）
+-//   0x00 → cmd=2'b01（写）
+-// 注意：旧版注释曾把「2'b10:写 / 2'b01:读」标反，实际语义以 spi_ram_crtl.v
+-// 为准（2'b01=写 / 2'b10=读），本文件已修正。
+-//
+-// 端口与 fspi_slave_top.v / image_pcie_capture.v 保持一致，未改动。
+-//======================================================================
+-module fspi_slave
+-(
+-    input   wire            spi_clk         ,
+-    input   wire            spi_cs          ,
+-    inout   wire    [3:0]   spi_data        ,
+-    input   wire            rst_n           ,
+-    input   wire    [3:0]   select_rearview ,   // 顶层传入（历史沿用，实为 cnn_level）
+-    // user
+-    output  wire    [1:0]   cmd             ,   // 2'b01:写  2'b10:读
+-    output  wire    [7:0]   rx_data         ,
+-    output  wire            rx_data_valid   ,
+-
+-    input   wire    [7:0]   tx_data         ,
+-    output  wire            tx_data_valid
+-);
+-
+-//----------------- reg 定义 -----------------
+-reg         rx_nibble_sel ;   // 接收半字节选择：0=高半字节，1=低半字节
+-reg [7:0]   rx_byte       ;
+-reg         rx_valid_r    ;
+-reg [1:0]   cmd_r         ;
+-reg         cmd_locked    ;   // 首字节命令解码后锁定，避免与数据字节误判
+-
+-//----------------- assign -----------------
+-// 片选拉低且为读操作时，把 select_rearview 驱动到总线（读回值）
+-assign  spi_data       = (!spi_cs && (cmd == 2'b10)) ? {select_rearview} : 4'bzzzz;
+-assign  tx_data_valid  = tx_valid_r;
+-assign  cmd            = cmd_r;
+-assign  rx_data        = rx_byte;
+-assign  rx_data_valid  = rx_valid_r;
+-
+-//----------------- 接收：上升沿采样 4 bit，两拍拼一个字节 -----------------
+-always @(posedge spi_clk or negedge rst_n) begin
+-    if ((rst_n == 1'b0) || spi_cs) begin
+-        rx_nibble_sel   <= 1'd0 ;
+-        rx_byte         <= 8'hff;
+-    end
+-    else if (!spi_cs) begin
+-        if (!rx_nibble_sel) begin
+-            rx_byte[7:4]    <= spi_data;
+-            rx_nibble_sel   <= ~rx_nibble_sel;
+-        end
+-        else begin
+-            rx_byte[3:0]    <= spi_data;
+-            rx_nibble_sel   <= ~rx_nibble_sel;
+-        end
+-    end
+-end
+-
+-//----------------- 命令字节解码：首字节锁定，cs 到来时清零 ----------------
+-always @(posedge spi_clk or negedge rst_n or posedge spi_cs) begin
+-    if ((rst_n == 1'b0) || spi_cs) begin
+-        cmd_locked  <= 1'd0;
+-        cmd_r       <= 2'd0;
+-    end
+-    else if (!spi_cs && rx_nibble_sel) begin
+-        if (!cmd_locked) begin
+-            if ({rx_byte[7:4], spi_data} == 8'h80)
+-                cmd_r   <= 2'b10;      // 读
+-            else if ({rx_byte[7:4], spi_data} == 8'h00)
+-                cmd_r   <= 2'b01;      // 写
+-            cmd_locked  <= 1'd1;
+-        end
+-    end
+-end
+-
+-//----------------- 接收完成脉冲：写命令时每字节拉高一拍 -----------------
+-always @(posedge spi_clk or negedge rst_n) begin
+-    if ((rst_n == 1'b0) || spi_cs)
+-        rx_valid_r  <= 1'd0;
+-    else if (!spi_cs) begin
+-        if (rx_nibble_sel && cmd_r == 2'b01)
+-            rx_valid_r  <= 1'd1;
+-        else
+-            rx_valid_r  <= 1'd0;
+-    end
+-end
+-
+-//----------------- 发送：下降沿逐半字节翻转 tx_data_valid（时序脉冲） -----
+-reg [3:0]   tx_nibble  ;
+-reg         tx_valid_r ;
+-
+-always @(negedge spi_clk or negedge rst_n) begin
+-    if ((rst_n == 1'b0) || spi_cs) begin
+-        tx_nibble   <= 4'hf;
+-        tx_valid_r  <= 1'd0;
+-    end
+-    else if (!spi_cs) begin
+-        if (cmd_r == 2'b10) begin
+-            if (!tx_valid_r) begin
+-                tx_nibble   <= tx_data[7:4];
+-                tx_valid_r  <= ~tx_valid_r;
+-            end
+-            else begin
+-                tx_nibble   <= tx_data[3:0];
+-                tx_valid_r  <= ~tx_valid_r;
+-            end
+-        end
+-    end
+-end
+-
+-endmodule
++//======================================================================
++// fspi_slave.v — 四线 QUAD SPI 从机物理层（【人员 C · 控制与 FPGA】）
++//
++// 职责：把 4 线 QUAD SPI 的比特流组装成字节（rx_data / rx_data_valid），
++//       并从首字节解码出读/写命令（cmd）。发送侧按下降沿把读回数据逐半字节
++//       送回收发器，并产生 tx_data_valid 翻转脉冲供上层 spi_ram_crtl 做时序。
++//
++// 命令编码（首字节，由 {高半字节, 低半字节} 拼接）：
++//   0x80 → cmd=2'b10（读）
++//   0x00 → cmd=2'b01（写）
++// 注意：旧版注释曾把「2'b10:写 / 2'b01:读」标反，实际语义以 spi_ram_crtl.v
++// 为准（2'b01=写 / 2'b10=读），本文件已修正。
++//
++// 端口与 fspi_slave_top.v / image_pcie_capture.v 保持一致，未改动。
++//======================================================================
++module fspi_slave
++(
++    input   wire            spi_clk         ,
++    input   wire            spi_cs          ,
++    inout   wire    [3:0]   spi_data        ,
++    input   wire            rst_n           ,
++    input   wire    [3:0]   select_rearview ,   // 顶层传入（历史沿用，实为 cnn_level）
++    // user
++    output  wire    [1:0]   cmd             ,   // 2'b01:写  2'b10:读
++    output  wire    [7:0]   rx_data         ,
++    output  wire            rx_data_valid   ,
++
++    input   wire    [7:0]   tx_data         ,
++    output  wire            tx_data_valid
++);
++
++//----------------- reg 定义 -----------------
++reg         rx_nibble_sel ;   // 接收半字节选择：0=高半字节，1=低半字节
++reg [7:0]   rx_byte       ;
++reg         rx_valid_r    ;
++reg [1:0]   cmd_r         ;
++reg         cmd_locked    ;   // 首字节命令解码后锁定，避免与数据字节误判
++
++//----------------- assign -----------------
++// 片选拉低且为读操作时，把 select_rearview 驱动到总线（读回值）
++assign  spi_data       = (!spi_cs && (cmd == 2'b10)) ? {select_rearview} : 4'bzzzz;
++assign  tx_data_valid  = tx_valid_r;
++assign  cmd            = cmd_r;
++assign  rx_data        = rx_byte;
++assign  rx_data_valid  = rx_valid_r;
++
++//----------------- 接收：上升沿采样 4 bit，两拍拼一个字节 -----------------
++always @(posedge spi_clk or negedge rst_n) begin
++    if ((rst_n == 1'b0) || spi_cs) begin
++        rx_nibble_sel   <= 1'd0 ;
++        rx_byte         <= 8'hff;
++    end
++    else if (!spi_cs) begin
++        if (!rx_nibble_sel) begin
++            rx_byte[7:4]    <= spi_data;
++            rx_nibble_sel   <= ~rx_nibble_sel;
++        end
++        else begin
++            rx_byte[3:0]    <= spi_data;
++            rx_nibble_sel   <= ~rx_nibble_sel;
++        end
++    end
++end
++
++//----------------- 命令字节解码：首字节锁定，cs 到来时清零 ----------------
++always @(posedge spi_clk or negedge rst_n or posedge spi_cs) begin
++    if ((rst_n == 1'b0) || spi_cs) begin
++        cmd_locked  <= 1'd0;
++        cmd_r       <= 2'd0;
++    end
++    else if (!spi_cs && rx_nibble_sel) begin
++        if (!cmd_locked) begin
++            if ({rx_byte[7:4], spi_data} == 8'h80)
++                cmd_r   <= 2'b10;      // 读
++            else if ({rx_byte[7:4], spi_data} == 8'h00)
++                cmd_r   <= 2'b01;      // 写
++            cmd_locked  <= 1'd1;
++        end
++    end
++end
++
++//----------------- 接收完成脉冲：写命令时每字节拉高一拍 -----------------
++always @(posedge spi_clk or negedge rst_n) begin
++    if ((rst_n == 1'b0) || spi_cs)
++        rx_valid_r  <= 1'd0;
++    else if (!spi_cs) begin
++        if (rx_nibble_sel && cmd_r == 2'b01)
++            rx_valid_r  <= 1'd1;
++        else
++            rx_valid_r  <= 1'd0;
++    end
++end
++
++//----------------- 发送：下降沿逐半字节翻转 tx_data_valid（时序脉冲） -----
++reg [3:0]   tx_nibble  ;
++reg         tx_valid_r ;
++
++always @(negedge spi_clk or negedge rst_n) begin
++    if ((rst_n == 1'b0) || spi_cs) begin
++        tx_nibble   <= 4'hf;
++        tx_valid_r  <= 1'd0;
++    end
++    else if (!spi_cs) begin
++        if (cmd_r == 2'b10) begin
++            if (!tx_valid_r) begin
++                tx_nibble   <= tx_data[7:4];
++                tx_valid_r  <= ~tx_valid_r;
++            end
++            else begin
++                tx_nibble   <= tx_data[3:0];
++                tx_valid_r  <= ~tx_valid_r;
++            end
++        end
++    end
++end
++
++endmodule
+diff --git a/fpga/fpga_pcie_ov5640/source/fspi/fspi_slave_top.v b/fpga/fpga_pcie_ov5640/source/fspi/fspi_slave_top.v
+index 8fbef18..356412c 100644
+--- a/fpga/fpga_pcie_ov5640/source/fspi/fspi_slave_top.v
++++ b/fpga/fpga_pcie_ov5640/source/fspi/fspi_slave_top.v
+@@ -1,72 +1,72 @@
+-//======================================================================
+-// fspi_slave_top.v — FSPI 从机顶层（【人员 C · 控制与 FPGA】）
+-//
+-// 例化三个子模块：
+-//   clk_fspi      : 由 sys_clk(25MHz) 4 倍频得到 wr_clk（SPI 100MHz 时需 400MHz，
+-//                   用于内部 4 线并行收发的字节组装时钟）；
+-//   fspi_slave    : 四线 QUAD SPI 物理层（字节组装 + 命令解码）；
+-//   spi_ram_crtl  : 把字节流解析为 5 个寄存器 mem[0..4] 的读写。
+-//
+-// 端口与 image_pcie_capture.v 保持一致，未改动。
+-//======================================================================
+-module fspi_slave_top
+-(
+-    input    wire             sys_clk         ,    // 25MHz
+-    input    wire             rst_n           ,
+-
+-    input    wire             spi_clk         ,
+-    input    wire             spi_cs          ,
+-    inout    wire    [3:0]    spi_data        ,
+-    input    wire    [3:0]    select_rearview ,    // GPIO 值（历史沿用，实为 cnn_level）
+-    output   wire    [7:0]    mem0_out        ,
+-    output   wire    [7:0]    mem1_out        ,
+-    output   wire    [7:0]    mem2_out        ,
+-    output   wire    [7:0]    mem3_out        ,
+-    output   wire    [7:0]    mem4_out
+-);
+-
+-wire    [1:0]   cmd;
+-wire            tx_data_valid;
+-wire    [7:0]   tx_data;
+-wire            rx_data_valid;
+-wire    [7:0]   rx_data;
+-wire            wr_clk;    // 4 倍频时钟（SPI 通道 100MHz 时需 400MHz）
+-
+-clk_fspi clk_gen_inst (
+-  .clkout0(wr_clk),    // output
+-  .lock(),             // output
+-  .clkin1(sys_clk)     // input
+-);
+-
+-// 读写 ram 控制
+-spi_ram_crtl u_spi_ram_crtl(
+-    .wr_clk         ( wr_clk         ),
+-    .rst_n          ( rst_n          ),
+-    .spi_cs         ( spi_cs         ),
+-    .cmd            ( cmd            ),
+-    .tx_done        ( tx_data_valid  ),
+-    .wr_data        ( rx_data        ),
+-    .rx_valid       ( rx_data_valid  ),
+-    .select_rearview( select_rearview),
+-    .rd_data        ( tx_data        ),
+-    .mem0_out       ( mem0_out       ),
+-    .mem1_out       ( mem1_out       ),
+-    .mem2_out       ( mem2_out       ),
+-    .mem3_out       ( mem3_out       ),
+-    .mem4_out       ( mem4_out       )
+-);
+-
+-fspi_slave u_fspi_slave(
+-    .spi_clk           ( spi_clk           ),
+-    .spi_cs            ( spi_cs            ),
+-    .spi_data          ( spi_data          ),
+-    .rst_n             ( rst_n             ),
+-    .select_rearview   ( select_rearview   ),
+-    .cmd               ( cmd               ),
+-    .rx_data           ( rx_data           ),
+-    .rx_data_valid     ( rx_data_valid     ),
+-    .tx_data           ( tx_data           ),
+-    .tx_data_valid     ( tx_data_valid     )
+-);
+-
+-endmodule
++//======================================================================
++// fspi_slave_top.v — FSPI 从机顶层（【人员 C · 控制与 FPGA】）
++//
++// 例化三个子模块：
++//   clk_fspi      : 由 sys_clk(25MHz) 4 倍频得到 wr_clk（SPI 100MHz 时需 400MHz，
++//                   用于内部 4 线并行收发的字节组装时钟）；
++//   fspi_slave    : 四线 QUAD SPI 物理层（字节组装 + 命令解码）；
++//   spi_ram_crtl  : 把字节流解析为 5 个寄存器 mem[0..4] 的读写。
++//
++// 端口与 image_pcie_capture.v 保持一致，未改动。
++//======================================================================
++module fspi_slave_top
++(
++    input    wire             sys_clk         ,    // 25MHz
++    input    wire             rst_n           ,
++
++    input    wire             spi_clk         ,
++    input    wire             spi_cs          ,
++    inout    wire    [3:0]    spi_data        ,
++    input    wire    [3:0]    select_rearview ,    // GPIO 值（历史沿用，实为 cnn_level）
++    output   wire    [7:0]    mem0_out        ,
++    output   wire    [7:0]    mem1_out        ,
++    output   wire    [7:0]    mem2_out        ,
++    output   wire    [7:0]    mem3_out        ,
++    output   wire    [7:0]    mem4_out
++);
++
++wire    [1:0]   cmd;
++wire            tx_data_valid;
++wire    [7:0]   tx_data;
++wire            rx_data_valid;
++wire    [7:0]   rx_data;
++wire            wr_clk;    // 4 倍频时钟（SPI 通道 100MHz 时需 400MHz）
++
++clk_fspi clk_gen_inst (
++  .clkout0(wr_clk),    // output
++  .lock(),             // output
++  .clkin1(sys_clk)     // input
++);
++
++// 读写 ram 控制
++spi_ram_crtl u_spi_ram_crtl(
++    .wr_clk         ( wr_clk         ),
++    .rst_n          ( rst_n          ),
++    .spi_cs         ( spi_cs         ),
++    .cmd            ( cmd            ),
++    .tx_done        ( tx_data_valid  ),
++    .wr_data        ( rx_data        ),
++    .rx_valid       ( rx_data_valid  ),
++    .select_rearview( select_rearview),
++    .rd_data        ( tx_data        ),
++    .mem0_out       ( mem0_out       ),
++    .mem1_out       ( mem1_out       ),
++    .mem2_out       ( mem2_out       ),
++    .mem3_out       ( mem3_out       ),
++    .mem4_out       ( mem4_out       )
++);
++
++fspi_slave u_fspi_slave(
++    .spi_clk           ( spi_clk           ),
++    .spi_cs            ( spi_cs            ),
++    .spi_data          ( spi_data          ),
++    .rst_n             ( rst_n             ),
++    .select_rearview   ( select_rearview   ),
++    .cmd               ( cmd               ),
++    .rx_data           ( rx_data           ),
++    .rx_data_valid     ( rx_data_valid     ),
++    .tx_data           ( tx_data           ),
++    .tx_data_valid     ( tx_data_valid     )
++);
++
++endmodule
+diff --git a/fpga/fpga_pcie_ov5640/source/fspi/spi_ram_crtl.v b/fpga/fpga_pcie_ov5640/source/fspi/spi_ram_crtl.v
+index 6bbed10..9592648 100644
+--- a/fpga/fpga_pcie_ov5640/source/fspi/spi_ram_crtl.v
++++ b/fpga/fpga_pcie_ov5640/source/fspi/spi_ram_crtl.v
+@@ -1,208 +1,208 @@
+-//======================================================================
+-// spi_ram_crtl.v — FSPI 字节流 → 寄存器读写解析（【人员 C · 控制与 FPGA】）
+-//
+-// 把 fspi_slave 传来的字节流解析成 5 个 8-bit 寄存器 mem[0..4] 的读写：
+-//   - 写帧（cmd=2'b01）：[命令/地址高=0x00][地址低][数据]，共 3 字节；
+-//   - 读帧（cmd=2'b10，历史保留）：[地址高][地址低] 后由上层回读。
+-//   地址只取低字节低 3 位（0..4）。
+-//
+-// 读回语义（历史保留，主机当前不触发读命令）：
+-//   ram_addr < 6  → rd_data = {4'd0, select_rearview}
+-//   否则          → rd_data = 0xFF
+-//
+-// 相对旧版的改进：删除了与状态机线性推进完全冗余的 byte_cnt 计数器
+-// （每个状态只由前一状态进入，byte_cnt 的条件恒为真），逻辑等价。
+-//======================================================================
+-module spi_ram_crtl
+-(
+-    input   wire            wr_clk          ,
+-    input   wire            rst_n           ,
+-    input   wire            spi_cs          ,
+-
+-    input   wire    [1:0]   cmd             ,
+-    input   wire            tx_done         ,
+-    input   wire    [7:0]   wr_data         ,
+-    input   wire            rx_valid        ,
+-    input   wire    [3:0]   select_rearview ,   // 作为寄存器读回值（历史沿用）
+-    output  reg     [7:0]   rd_data         ,
+-    output  wire    [7:0]   mem0_out        ,   // 第 0 个地址寄存器
+-    output  wire    [7:0]   mem1_out        ,   // 第 1 个地址寄存器
+-    output  wire    [7:0]   mem2_out        ,   // 第 2 个地址寄存器
+-    output  wire    [7:0]   mem3_out        ,   // 第 3 个地址寄存器
+-    output  wire    [7:0]   mem4_out            // 第 4 个地址寄存器
+-);
+-
+-//-------------------- 状态机定义 --------------------
+-localparam IDLE        = 3'd0;
+-localparam RCV_ADDR_H  = 3'd1;  // 写：接收地址高字节（实际为命令 0x00）
+-localparam RCV_ADDR_L  = 3'd2;  // 写：接收地址低字节
+-localparam WRITE_DATA  = 3'd3;  // 写：写数据
+-localparam READ_ADDR_H = 3'd4;  // 读：接收地址高字节（历史保留）
+-localparam READ_ADDR_L = 3'd5;  // 读：接收地址低字节
+-localparam READ_DATA   = 3'd6;  // 读：回读数据
+-
+-//-------------------- wire（边沿检测：pose=上升沿，nege=下降沿） --------
+-wire    rx_pose;   // 接收上升沿
+-wire    rx_nege;   // 接收下降沿
+-wire    tx_pose;   // 发送上升沿
+-wire    tx_nege;   // 发送下降沿
+-
+-//-------------------- reg ---------------------------
+-reg [2:0]   state           /* synthesis PAP_MARK_DEBUG="true" */;
+-reg [1:0]   cmd_r           ;
+-reg         cs_r            ;
+-reg         rx_valid_d0     ;
+-reg         rx_valid_d1     ;
+-reg         tx_done_d0      ;
+-reg         tx_done_d1      ;
+-reg [7:0]   wr_data_r       ;
+-reg [7:0]   addr_high       /* synthesis PAP_MARK_DEBUG="true" */;  // 写地址高字节
+-reg         ram_wr_en       /* synthesis PAP_MARK_DEBUG="true" */;  // 1 写 0 读
+-reg [15:0]  ram_addr        /* synthesis PAP_MARK_DEBUG="true" */;  // 16 位地址
+-reg [7:0]   read_addr_high  /* synthesis PAP_MARK_DEBUG="true" */;  // 读地址高字节
+-
+-//------------------- assign ------------------------
+-assign  rx_pose = rx_valid_d0 && ~rx_valid_d1 ;
+-assign  rx_nege = ~rx_valid_d0 && rx_valid_d1 ;
+-assign  tx_pose = tx_done_d0 && ~tx_done_d1   ;
+-assign  tx_nege = ~tx_done_d0 && tx_done_d1   ;
+-
+-//------------------- 打拍寄存 ---------------------
+-always @(negedge wr_clk or negedge rst_n) begin
+-    if (!rst_n) begin
+-        rx_valid_d0 <= 1'd0;
+-        rx_valid_d1 <= 1'd0;
+-        tx_done_d0  <= 1'd0;
+-        tx_done_d1  <= 1'd0;
+-        cs_r        <= 1'd1;
+-        cmd_r       <= 2'd0;
+-    end
+-    else begin
+-        rx_valid_d0 <= rx_valid    ;
+-        rx_valid_d1 <= rx_valid_d0 ;
+-        tx_done_d0  <= tx_done     ;
+-        tx_done_d1  <= tx_done_d0  ;
+-        cs_r        <= spi_cs      ;
+-        cmd_r       <= cmd         ;
+-    end
+-end
+-
+-//------------------- 数据寄存 ---------------------
+-always @(negedge wr_clk or negedge rst_n) begin
+-    if (!rst_n)
+-        wr_data_r <= 8'd0;
+-    else if (cs_r)
+-        wr_data_r <= 8'hff;
+-    else
+-        wr_data_r <= wr_data;
+-end
+-
+-//==================== 状态机（写支持指定地址） ====================
+-always @(negedge wr_clk or negedge rst_n) begin
+-    if (!rst_n) begin
+-        state          <= IDLE;
+-        ram_addr       <= 16'd0;
+-        ram_wr_en      <= 1'd0;
+-        addr_high      <= 8'd0;
+-        read_addr_high <= 8'd0;
+-    end
+-    else if (cs_r) begin
+-        // 片选无效时复位到 IDLE，地址保持
+-        state     <= IDLE;
+-        ram_wr_en <= 1'd0;
+-    end
+-    else begin
+-        case (state)
+-            IDLE: begin
+-                ram_wr_en <= 1'd0;
+-                if (rx_pose && cmd_r == 2'b01) begin
+-                    // 写命令：第 1 字节（命令/地址高）
+-                    addr_high <= wr_data_r;
+-                    state     <= RCV_ADDR_H;
+-                end
+-                else if (rx_pose && cmd_r == 2'b10) begin
+-                    // 读命令：第 1 字节（地址高）
+-                    read_addr_high <= wr_data_r;
+-                    state          <= READ_ADDR_H;
+-                end
+-            end
+-
+-            RCV_ADDR_H: begin
+-                // 写：第 2 字节（地址低）
+-                if (rx_pose) begin
+-                    ram_addr <= {addr_high, wr_data_r};
+-                    state    <= RCV_ADDR_L;
+-                end
+-            end
+-
+-            RCV_ADDR_L: begin
+-                // 写：第 3 字节（数据）
+-                if (rx_pose) begin
+-                    ram_wr_en <= 1'd1;
+-                    state     <= WRITE_DATA;
+-                end
+-            end
+-
+-            WRITE_DATA: begin
+-                // 写完成后立即关写使能并回 IDLE
+-                ram_wr_en <= 1'd0;
+-                state     <= IDLE;
+-            end
+-
+-            READ_ADDR_H: begin
+-                // 读：第 2 字节（地址低）
+-                if (rx_pose) begin
+-                    ram_addr <= {read_addr_high, wr_data_r};
+-                    state    <= READ_ADDR_L;
+-                end
+-            end
+-
+-            READ_ADDR_L: begin
+-                // 读：地址设置完成，进入读数据状态
+-                state <= READ_DATA;
+-            end
+-
+-            READ_DATA: begin
+-                // 读：tx_nege 时回 IDLE
+-                if (tx_nege)
+-                    state <= IDLE;
+-            end
+-
+-            default: state <= IDLE;
+-        endcase
+-    end
+-end
+-
+-//==================== 内存数组（5 个 8-bit 寄存器） ====================
+-reg [7:0] mem [4:0];
+-
+-always @(negedge wr_clk or negedge rst_n) begin
+-    if (!rst_n) begin
+-        mem[0]  <= 8'd0;
+-        mem[1]  <= 8'd0;
+-        mem[2]  <= 8'd0;
+-        mem[3]  <= 8'd0;
+-        mem[4]  <= 8'd0;
+-        rd_data <= 8'd0;
+-    end
+-    else begin
+-        // 写：地址范围检查（仅 0..4）
+-        if (ram_wr_en && ram_addr[15:0] < 16'd5)
+-            mem[ram_addr[2:0]] <= wr_data_r;
+-
+-        // 读：地址 < 6 输出 select_rearview，否则 0xFF
+-        if (ram_addr[15:0] < 16'd6)
+-            rd_data <= {4'd0, select_rearview};
+-        else
+-            rd_data <= 8'hFF;
+-    end
+-end
+-
+-// 引出第 0..4 个地址寄存器
+-assign mem0_out = mem[0];
+-assign mem1_out = mem[1];
+-assign mem2_out = mem[2];
+-assign mem3_out = mem[3];
+-assign mem4_out = mem[4];
+-
+-endmodule
++//======================================================================
++// spi_ram_crtl.v — FSPI 字节流 → 寄存器读写解析（【人员 C · 控制与 FPGA】）
++//
++// 把 fspi_slave 传来的字节流解析成 5 个 8-bit 寄存器 mem[0..4] 的读写：
++//   - 写帧（cmd=2'b01）：[命令/地址高=0x00][地址低][数据]，共 3 字节；
++//   - 读帧（cmd=2'b10，历史保留）：[地址高][地址低] 后由上层回读。
++//   地址只取低字节低 3 位（0..4）。
++//
++// 读回语义（历史保留，主机当前不触发读命令）：
++//   ram_addr < 6  → rd_data = {4'd0, select_rearview}
++//   否则          → rd_data = 0xFF
++//
++// 相对旧版的改进：删除了与状态机线性推进完全冗余的 byte_cnt 计数器
++// （每个状态只由前一状态进入，byte_cnt 的条件恒为真），逻辑等价。
++//======================================================================
++module spi_ram_crtl
++(
++    input   wire            wr_clk          ,
++    input   wire            rst_n           ,
++    input   wire            spi_cs          ,
++
++    input   wire    [1:0]   cmd             ,
++    input   wire            tx_done         ,
++    input   wire    [7:0]   wr_data         ,
++    input   wire            rx_valid        ,
++    input   wire    [3:0]   select_rearview ,   // 作为寄存器读回值（历史沿用）
++    output  reg     [7:0]   rd_data         ,
++    output  wire    [7:0]   mem0_out        ,   // 第 0 个地址寄存器
++    output  wire    [7:0]   mem1_out        ,   // 第 1 个地址寄存器
++    output  wire    [7:0]   mem2_out        ,   // 第 2 个地址寄存器
++    output  wire    [7:0]   mem3_out        ,   // 第 3 个地址寄存器
++    output  wire    [7:0]   mem4_out            // 第 4 个地址寄存器
++);
++
++//-------------------- 状态机定义 --------------------
++localparam IDLE        = 3'd0;
++localparam RCV_ADDR_H  = 3'd1;  // 写：接收地址高字节（实际为命令 0x00）
++localparam RCV_ADDR_L  = 3'd2;  // 写：接收地址低字节
++localparam WRITE_DATA  = 3'd3;  // 写：写数据
++localparam READ_ADDR_H = 3'd4;  // 读：接收地址高字节（历史保留）
++localparam READ_ADDR_L = 3'd5;  // 读：接收地址低字节
++localparam READ_DATA   = 3'd6;  // 读：回读数据
++
++//-------------------- wire（边沿检测：pose=上升沿，nege=下降沿） --------
++wire    rx_pose;   // 接收上升沿
++wire    rx_nege;   // 接收下降沿
++wire    tx_pose;   // 发送上升沿
++wire    tx_nege;   // 发送下降沿
++
++//-------------------- reg ---------------------------
++reg [2:0]   state           /* synthesis PAP_MARK_DEBUG="true" */;
++reg [1:0]   cmd_r           ;
++reg         cs_r            ;
++reg         rx_valid_d0     ;
++reg         rx_valid_d1     ;
++reg         tx_done_d0      ;
++reg         tx_done_d1      ;
++reg [7:0]   wr_data_r       ;
++reg [7:0]   addr_high       /* synthesis PAP_MARK_DEBUG="true" */;  // 写地址高字节
++reg         ram_wr_en       /* synthesis PAP_MARK_DEBUG="true" */;  // 1 写 0 读
++reg [15:0]  ram_addr        /* synthesis PAP_MARK_DEBUG="true" */;  // 16 位地址
++reg [7:0]   read_addr_high  /* synthesis PAP_MARK_DEBUG="true" */;  // 读地址高字节
++
++//------------------- assign ------------------------
++assign  rx_pose = rx_valid_d0 && ~rx_valid_d1 ;
++assign  rx_nege = ~rx_valid_d0 && rx_valid_d1 ;
++assign  tx_pose = tx_done_d0 && ~tx_done_d1   ;
++assign  tx_nege = ~tx_done_d0 && tx_done_d1   ;
++
++//------------------- 打拍寄存 ---------------------
++always @(negedge wr_clk or negedge rst_n) begin
++    if (!rst_n) begin
++        rx_valid_d0 <= 1'd0;
++        rx_valid_d1 <= 1'd0;
++        tx_done_d0  <= 1'd0;
++        tx_done_d1  <= 1'd0;
++        cs_r        <= 1'd1;
++        cmd_r       <= 2'd0;
++    end
++    else begin
++        rx_valid_d0 <= rx_valid    ;
++        rx_valid_d1 <= rx_valid_d0 ;
++        tx_done_d0  <= tx_done     ;
++        tx_done_d1  <= tx_done_d0  ;
++        cs_r        <= spi_cs      ;
++        cmd_r       <= cmd         ;
++    end
++end
++
++//------------------- 数据寄存 ---------------------
++always @(negedge wr_clk or negedge rst_n) begin
++    if (!rst_n)
++        wr_data_r <= 8'd0;
++    else if (cs_r)
++        wr_data_r <= 8'hff;
++    else
++        wr_data_r <= wr_data;
++end
++
++//==================== 状态机（写支持指定地址） ====================
++always @(negedge wr_clk or negedge rst_n) begin
++    if (!rst_n) begin
++        state          <= IDLE;
++        ram_addr       <= 16'd0;
++        ram_wr_en      <= 1'd0;
++        addr_high      <= 8'd0;
++        read_addr_high <= 8'd0;
++    end
++    else if (cs_r) begin
++        // 片选无效时复位到 IDLE，地址保持
++        state     <= IDLE;
++        ram_wr_en <= 1'd0;
++    end
++    else begin
++        case (state)
++            IDLE: begin
++                ram_wr_en <= 1'd0;
++                if (rx_pose && cmd_r == 2'b01) begin
++                    // 写命令：第 1 字节（命令/地址高）
++                    addr_high <= wr_data_r;
++                    state     <= RCV_ADDR_H;
++                end
++                else if (rx_pose && cmd_r == 2'b10) begin
++                    // 读命令：第 1 字节（地址高）
++                    read_addr_high <= wr_data_r;
++                    state          <= READ_ADDR_H;
++                end
++            end
++
++            RCV_ADDR_H: begin
++                // 写：第 2 字节（地址低）
++                if (rx_pose) begin
++                    ram_addr <= {addr_high, wr_data_r};
++                    state    <= RCV_ADDR_L;
++                end
++            end
++
++            RCV_ADDR_L: begin
++                // 写：第 3 字节（数据）
++                if (rx_pose) begin
++                    ram_wr_en <= 1'd1;
++                    state     <= WRITE_DATA;
++                end
++            end
++
++            WRITE_DATA: begin
++                // 写完成后立即关写使能并回 IDLE
++                ram_wr_en <= 1'd0;
++                state     <= IDLE;
++            end
++
++            READ_ADDR_H: begin
++                // 读：第 2 字节（地址低）
++                if (rx_pose) begin
++                    ram_addr <= {read_addr_high, wr_data_r};
++                    state    <= READ_ADDR_L;
++                end
++            end
++
++            READ_ADDR_L: begin
++                // 读：地址设置完成，进入读数据状态
++                state <= READ_DATA;
++            end
++
++            READ_DATA: begin
++                // 读：tx_nege 时回 IDLE
++                if (tx_nege)
++                    state <= IDLE;
++            end
++
++            default: state <= IDLE;
++        endcase
++    end
++end
++
++//==================== 内存数组（5 个 8-bit 寄存器） ====================
++reg [7:0] mem [4:0];
++
++always @(negedge wr_clk or negedge rst_n) begin
++    if (!rst_n) begin
++        mem[0]  <= 8'd0;
++        mem[1]  <= 8'd0;
++        mem[2]  <= 8'd0;
++        mem[3]  <= 8'd0;
++        mem[4]  <= 8'd0;
++        rd_data <= 8'd0;
++    end
++    else begin
++        // 写：地址范围检查（仅 0..4）
++        if (ram_wr_en && ram_addr[15:0] < 16'd5)
++            mem[ram_addr[2:0]] <= wr_data_r;
++
++        // 读：地址 < 6 输出 select_rearview，否则 0xFF
++        if (ram_addr[15:0] < 16'd6)
++            rd_data <= {4'd0, select_rearview};
++        else
++            rd_data <= 8'hFF;
++    end
++end
++
++// 引出第 0..4 个地址寄存器
++assign mem0_out = mem[0];
++assign mem1_out = mem[1];
++assign mem2_out = mem[2];
++assign mem3_out = mem[3];
++assign mem4_out = mem[4];
++
++endmodule
+diff --git a/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v b/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v
+index 929814e..ac001ae 100644
+--- a/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v
++++ b/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v
+@@ -1,167 +1,167 @@
+-//======================================================================
+-// uart_lcd.v — 串口屏（陶晶驰 HMI）UART 命令解析（【人员 C · 控制与 FPGA】）
+-//
+-// 解析串口屏下发的调参帧并落地到 ISP/CNN 配置寄存器。
+-// 帧格式：0x30 0x90 + sel + data（共 4 字节），sel 选择目标寄存器。
+-//
+-// sel 字节 → 目标寄存器（与 perception/csrc/isp_params.c 参数表一一对应）：
+-//   0x01 mode / 0x02 blc / 0x03 awb / 0x04 cnn_level / 0x05 saturation
+-//   0x06 brightness / 0x07 awb_en / 0x08 binarization / 0x09 sobel
+-//   0x0A isp_judge / 0x0B cb_min / 0x0C cb_max / 0x0D cr_min / 0x0E cr_max
+-//
+-// 相对旧版的改进：
+-//   1. 拼音端口 liangdu/baohedu 改为 brightness/saturation（顶层本未连接，安全）；
+-//   2. 18 个「等一个字节就回 idle」的同构状态收敛为 4 状态 + sel_code 译码，
+-//      消除约 200 行重复代码；
+-//   3. 复位初值与捕获语义完全不变。
+-//======================================================================
+-module uart_lcd(
+-    input                   clk             ,
+-    input                   rst_n           ,
+-    input       [7:0]       uart_rx         ,
+-    input                   uart_rx_valid   ,
+-    output      [7:0]       mode            ,
+-    output      [7:0]       blc             ,
+-    output      [7:0]       awb             ,
+-    output      [7:0]       brightness      ,
+-    output      [7:0]       saturation      ,
+-    output                  awb_en          ,
+-    output      [7:0]       binarization    ,
+-    output      [3:0]       cnn_level       ,
+-    output      [7:0]       sobel           ,
+-    output                  isp_judge       ,
+-    output      [7:0]       cb_min          ,
+-    output      [7:0]       cb_max          ,
+-    output      [7:0]       cr_min          ,
+-    output      [7:0]       cr_max
+-);
+-
+-    // ---- 输出寄存器 ----
+-    reg [7:0]   mode_reg;
+-    reg [7:0]   blc_reg;
+-    reg [7:0]   awb_reg;
+-    reg [7:0]   brightness_reg;
+-    reg [7:0]   saturation_reg;
+-    reg         awb_en_reg;
+-    reg [7:0]   binarization_reg;
+-    reg [3:0]   cnn_level_reg;
+-    reg [7:0]   sobel_reg;
+-    reg         isp_judge_reg;
+-    reg [7:0]   cb_min_reg, cb_max_reg, cr_min_reg, cr_max_reg;
+-
+-    assign mode         = mode_reg;
+-    assign blc          = blc_reg;
+-    assign awb          = awb_reg;
+-    assign brightness   = brightness_reg;
+-    assign saturation   = saturation_reg;
+-    assign awb_en       = awb_en_reg;
+-    assign binarization = binarization_reg;
+-    assign cnn_level    = cnn_level_reg;
+-    assign sobel        = sobel_reg;
+-    assign isp_judge    = isp_judge_reg;
+-    assign cb_min       = cb_min_reg;
+-    assign cb_max       = cb_max_reg;
+-    assign cr_min       = cr_min_reg;
+-    assign cr_max       = cr_max_reg;
+-
+-    // ---- 状态机 ----
+-    localparam S_PREAMBLE0 = 2'd0;   // 等待 0x30
+-    localparam S_PREAMBLE1 = 2'd1;   // 等待 0x90
+-    localparam S_SELECT    = 2'd2;   // 等待 sel
+-    localparam S_DATA      = 2'd3;   // 等待 data
+-
+-    // ---- sel 字节编码 ----
+-    localparam SEL_MODE      = 8'h01;
+-    localparam SEL_BLC       = 8'h02;
+-    localparam SEL_AWB       = 8'h03;
+-    localparam SEL_CNN       = 8'h04;
+-    localparam SEL_SAT       = 8'h05;
+-    localparam SEL_BRI       = 8'h06;
+-    localparam SEL_AWB_EN    = 8'h07;
+-    localparam SEL_BIN       = 8'h08;
+-    localparam SEL_SOBEL     = 8'h09;
+-    localparam SEL_ISP_JUDGE = 8'h0A;
+-    localparam SEL_CB_MIN    = 8'h0B;
+-    localparam SEL_CB_MAX    = 8'h0C;
+-    localparam SEL_CR_MIN    = 8'h0D;
+-    localparam SEL_CR_MAX    = 8'h0E;
+-
+-    reg [1:0]   state;
+-    reg [7:0]   sel_code;
+-
+-    // ---- FSM：每个字节（uart_rx_valid 脉冲）前进一个状态 ----
+-    always @(posedge clk or negedge rst_n) begin
+-        if (!rst_n) begin
+-            state    <= S_PREAMBLE0;
+-            sel_code <= 8'h00;
+-        end
+-        else if (uart_rx_valid) begin
+-            case (state)
+-                S_PREAMBLE0: begin
+-                    if (uart_rx == 8'h30)
+-                        state <= S_PREAMBLE1;
+-                    // 否则保持 S_PREAMBLE0
+-                end
+-                S_PREAMBLE1: begin
+-                    if (uart_rx == 8'h90)
+-                        state <= S_SELECT;
+-                    else
+-                        state <= S_PREAMBLE0;   // 非 0x90，重新等前导
+-                end
+-                S_SELECT: begin
+-                    sel_code <= uart_rx;
+-                    case (uart_rx)
+-                        SEL_MODE, SEL_BLC, SEL_AWB, SEL_CNN, SEL_SAT, SEL_BRI,
+-                        SEL_AWB_EN, SEL_BIN, SEL_SOBEL, SEL_ISP_JUDGE,
+-                        SEL_CB_MIN, SEL_CB_MAX, SEL_CR_MIN, SEL_CR_MAX:
+-                            state <= S_DATA;
+-                        default:
+-                            state <= S_PREAMBLE0;
+-                    endcase
+-                end
+-                S_DATA: begin
+-                    state <= S_PREAMBLE0;
+-                    case (sel_code)
+-                        SEL_MODE:      mode_reg         <= uart_rx;
+-                        SEL_BLC:       blc_reg          <= uart_rx;
+-                        SEL_AWB:       awb_reg          <= uart_rx;
+-                        SEL_CNN:       cnn_level_reg    <= uart_rx[3:0];
+-                        SEL_SAT:       saturation_reg   <= uart_rx;
+-                        SEL_BRI:       brightness_reg   <= uart_rx;
+-                        SEL_AWB_EN:    awb_en_reg       <= uart_rx[0];
+-                        SEL_BIN:       binarization_reg <= uart_rx;
+-                        SEL_SOBEL:     sobel_reg        <= uart_rx;
+-                        SEL_ISP_JUDGE: isp_judge_reg    <= uart_rx[0];
+-                        SEL_CB_MIN:    cb_min_reg       <= uart_rx;
+-                        SEL_CB_MAX:    cb_max_reg       <= uart_rx;
+-                        SEL_CR_MIN:    cr_min_reg       <= uart_rx;
+-                        SEL_CR_MAX:    cr_max_reg       <= uart_rx;
+-                        default: ;   // 未知 sel 不写入
+-                    endcase
+-                end
+-                default: state <= S_PREAMBLE0;
+-            endcase
+-        end
+-    end
+-
+-    // ---- 复位初值（与旧版完全一致） ----
+-    always @(posedge clk or negedge rst_n) begin
+-        if (!rst_n) begin
+-            mode_reg         <= 8'd8;
+-            blc_reg          <= 8'd0;
+-            awb_reg          <= 8'd127;
+-            brightness_reg   <= 8'd64;
+-            saturation_reg   <= 8'd80;
+-            awb_en_reg       <= 1'b1;
+-            binarization_reg <= 8'd127;
+-            cnn_level_reg    <= 4'd0;
+-            sobel_reg        <= 8'd40;
+-            isp_judge_reg    <= 1'b0;
+-            cb_min_reg       <= 8'd77;
+-            cb_max_reg       <= 8'd127;
+-            cr_min_reg       <= 8'd130;
+-            cr_max_reg       <= 8'd180;
+-        end
+-    end
+-
+-endmodule
++//======================================================================
++// uart_lcd.v — 串口屏（陶晶驰 HMI）UART 命令解析（【人员 C · 控制与 FPGA】）
++//
++// 解析串口屏下发的调参帧并落地到 ISP/CNN 配置寄存器。
++// 帧格式：0x30 0x90 + sel + data（共 4 字节），sel 选择目标寄存器。
++//
++// sel 字节 → 目标寄存器（与 perception/csrc/isp_params.c 参数表一一对应）：
++//   0x01 mode / 0x02 blc / 0x03 awb / 0x04 cnn_level / 0x05 saturation
++//   0x06 brightness / 0x07 awb_en / 0x08 binarization / 0x09 sobel
++//   0x0A isp_judge / 0x0B cb_min / 0x0C cb_max / 0x0D cr_min / 0x0E cr_max
++//
++// 相对旧版的改进：
++//   1. 拼音端口 liangdu/baohedu 改为 brightness/saturation（顶层本未连接，安全）；
++//   2. 18 个「等一个字节就回 idle」的同构状态收敛为 4 状态 + sel_code 译码，
++//      消除约 200 行重复代码；
++//   3. 复位初值与捕获语义完全不变。
++//======================================================================
++module uart_lcd(
++    input                   clk             ,
++    input                   rst_n           ,
++    input       [7:0]       uart_rx         ,
++    input                   uart_rx_valid   ,
++    output      [7:0]       mode            ,
++    output      [7:0]       blc             ,
++    output      [7:0]       awb             ,
++    output      [7:0]       brightness      ,
++    output      [7:0]       saturation      ,
++    output                  awb_en          ,
++    output      [7:0]       binarization    ,
++    output      [3:0]       cnn_level       ,
++    output      [7:0]       sobel           ,
++    output                  isp_judge       ,
++    output      [7:0]       cb_min          ,
++    output      [7:0]       cb_max          ,
++    output      [7:0]       cr_min          ,
++    output      [7:0]       cr_max
++);
++
++    // ---- 输出寄存器 ----
++    reg [7:0]   mode_reg;
++    reg [7:0]   blc_reg;
++    reg [7:0]   awb_reg;
++    reg [7:0]   brightness_reg;
++    reg [7:0]   saturation_reg;
++    reg         awb_en_reg;
++    reg [7:0]   binarization_reg;
++    reg [3:0]   cnn_level_reg;
++    reg [7:0]   sobel_reg;
++    reg         isp_judge_reg;
++    reg [7:0]   cb_min_reg, cb_max_reg, cr_min_reg, cr_max_reg;
++
++    assign mode         = mode_reg;
++    assign blc          = blc_reg;
++    assign awb          = awb_reg;
++    assign brightness   = brightness_reg;
++    assign saturation   = saturation_reg;
++    assign awb_en       = awb_en_reg;
++    assign binarization = binarization_reg;
++    assign cnn_level    = cnn_level_reg;
++    assign sobel        = sobel_reg;
++    assign isp_judge    = isp_judge_reg;
++    assign cb_min       = cb_min_reg;
++    assign cb_max       = cb_max_reg;
++    assign cr_min       = cr_min_reg;
++    assign cr_max       = cr_max_reg;
++
++    // ---- 状态机 ----
++    localparam S_PREAMBLE0 = 2'd0;   // 等待 0x30
++    localparam S_PREAMBLE1 = 2'd1;   // 等待 0x90
++    localparam S_SELECT    = 2'd2;   // 等待 sel
++    localparam S_DATA      = 2'd3;   // 等待 data
++
++    // ---- sel 字节编码 ----
++    localparam SEL_MODE      = 8'h01;
++    localparam SEL_BLC       = 8'h02;
++    localparam SEL_AWB       = 8'h03;
++    localparam SEL_CNN       = 8'h04;
++    localparam SEL_SAT       = 8'h05;
++    localparam SEL_BRI       = 8'h06;
++    localparam SEL_AWB_EN    = 8'h07;
++    localparam SEL_BIN       = 8'h08;
++    localparam SEL_SOBEL     = 8'h09;
++    localparam SEL_ISP_JUDGE = 8'h0A;
++    localparam SEL_CB_MIN    = 8'h0B;
++    localparam SEL_CB_MAX    = 8'h0C;
++    localparam SEL_CR_MIN    = 8'h0D;
++    localparam SEL_CR_MAX    = 8'h0E;
++
++    reg [1:0]   state;
++    reg [7:0]   sel_code;
++
++    // ---- FSM：每个字节（uart_rx_valid 脉冲）前进一个状态 ----
++    always @(posedge clk or negedge rst_n) begin
++        if (!rst_n) begin
++            state    <= S_PREAMBLE0;
++            sel_code <= 8'h00;
++        end
++        else if (uart_rx_valid) begin
++            case (state)
++                S_PREAMBLE0: begin
++                    if (uart_rx == 8'h30)
++                        state <= S_PREAMBLE1;
++                    // 否则保持 S_PREAMBLE0
++                end
++                S_PREAMBLE1: begin
++                    if (uart_rx == 8'h90)
++                        state <= S_SELECT;
++                    else
++                        state <= S_PREAMBLE0;   // 非 0x90，重新等前导
++                end
++                S_SELECT: begin
++                    sel_code <= uart_rx;
++                    case (uart_rx)
++                        SEL_MODE, SEL_BLC, SEL_AWB, SEL_CNN, SEL_SAT, SEL_BRI,
++                        SEL_AWB_EN, SEL_BIN, SEL_SOBEL, SEL_ISP_JUDGE,
++                        SEL_CB_MIN, SEL_CB_MAX, SEL_CR_MIN, SEL_CR_MAX:
++                            state <= S_DATA;
++                        default:
++                            state <= S_PREAMBLE0;
++                    endcase
++                end
++                S_DATA: begin
++                    state <= S_PREAMBLE0;
++                    case (sel_code)
++                        SEL_MODE:      mode_reg         <= uart_rx;
++                        SEL_BLC:       blc_reg          <= uart_rx;
++                        SEL_AWB:       awb_reg          <= uart_rx;
++                        SEL_CNN:       cnn_level_reg    <= uart_rx[3:0];
++                        SEL_SAT:       saturation_reg   <= uart_rx;
++                        SEL_BRI:       brightness_reg   <= uart_rx;
++                        SEL_AWB_EN:    awb_en_reg       <= uart_rx[0];
++                        SEL_BIN:       binarization_reg <= uart_rx;
++                        SEL_SOBEL:     sobel_reg        <= uart_rx;
++                        SEL_ISP_JUDGE: isp_judge_reg    <= uart_rx[0];
++                        SEL_CB_MIN:    cb_min_reg       <= uart_rx;
++                        SEL_CB_MAX:    cb_max_reg       <= uart_rx;
++                        SEL_CR_MIN:    cr_min_reg       <= uart_rx;
++                        SEL_CR_MAX:    cr_max_reg       <= uart_rx;
++                        default: ;   // 未知 sel 不写入
++                    endcase
++                end
++                default: state <= S_PREAMBLE0;
++            endcase
++        end
++    end
++
++    // ---- 复位初值（与旧版完全一致） ----
++    always @(posedge clk or negedge rst_n) begin
++        if (!rst_n) begin
++            mode_reg         <= 8'd8;
++            blc_reg          <= 8'd0;
++            awb_reg          <= 8'd127;
++            brightness_reg   <= 8'd64;
++            saturation_reg   <= 8'd80;
++            awb_en_reg       <= 1'b1;
++            binarization_reg <= 8'd127;
++            cnn_level_reg    <= 4'd0;
++            sobel_reg        <= 8'd40;
++            isp_judge_reg    <= 1'b0;
++            cb_min_reg       <= 8'd77;
++            cb_max_reg       <= 8'd127;
++            cr_min_reg       <= 8'd130;
++            cr_max_reg       <= 8'd180;
++        end
++    end
++
++endmodule
+diff --git a/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_rx.v b/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_rx.v
+index c7198da..f6fe9f3 100644
+--- a/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_rx.v
++++ b/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_rx.v
+@@ -1,137 +1,137 @@
+-
+-//======================================================================
+-// uart_rx.v �� UART ���գ���������·������Ա C �� ������ FPGA����
+-//
+-// 115200 8N1 ���գ��첽�ź� 3 ��ͬ�� + 16 ��������������λ�е��������
+-// �� uart_loopback.v ������Ϊ uart_lcd.v �ṩ�ֽ�����
+-//======================================================================
+-module uart_rx(
+-    input               clk         ,  //ϵͳʱ��
+-    input               rst_n       ,  //ϵͳ��λ������Ч
+-
+-    input               uart_rxd    ,  //UART���ն˿�
+-    output  reg         uart_rx_done,  //UART��������ź�
+-    output  reg  [7:0]  uart_rx_data   //UART���յ�������
+-    );
+-
+-//parameter define
+-parameter CLK_FREQ = 50000000;               //ϵͳʱ��Ƶ��
+-parameter UART_BPS = 115200  ;               //���ڲ�����
+-localparam BAUD_CNT_MAX = CLK_FREQ/UART_BPS; //Ϊ�õ�ָ�������ʣ���ϵͳʱ�Ӽ���BPS_CNT��
+-
+-//reg define
+-reg          uart_rxd_d0;
+-reg          uart_rxd_d1;
+-reg          uart_rxd_d2;
+-reg          rx_flag    ;  //���չ��̱�־�ź�
+-reg  [3:0 ]  rx_cnt     ;  //�������ݼ�����
+-reg  [15:0]  baud_cnt   ;  //�����ʼ�����
+-reg  [7:0 ]  rx_data_t  ;  //�������ݼĴ���
+-
+-//wire define
+-wire        start_en;
+-
+-//*****************************************************
+-//**                    main code
+-//*****************************************************
+-//������ն˿��½���(��ʼλ)���õ�һ��ʱ�����ڵ������ź�
+-assign start_en = uart_rxd_d2 & (~uart_rxd_d1) & (~rx_flag);
+-
+-//����첽�źŵ�ͬ������
+-always @(posedge clk or negedge rst_n) begin
+-    if(!rst_n) begin
+-        uart_rxd_d0 <= 1'b0;
+-        uart_rxd_d1 <= 1'b0;
+-        uart_rxd_d2 <= 1'b0;
+-    end
+-    else begin
+-        uart_rxd_d0 <= uart_rxd;
+-        uart_rxd_d1 <= uart_rxd_d0;
+-        uart_rxd_d2 <= uart_rxd_d1;
+-    end
+-end
+-
+-//�����ձ�־��ֵ
+-always @(posedge clk or negedge rst_n) begin
+-    if(!rst_n) 
+-        rx_flag <= 1'b0;
+-    else if(start_en)    //��⵽��ʼλ
+-        rx_flag <= 1'b1; //���չ����У���־�ź�rx_flag����
+-    //��ֹͣλһ���ʱ�򣬼����չ��̽�������־�ź�rx_flag����
+-    else if((rx_cnt == 4'd9) && (baud_cnt == BAUD_CNT_MAX/2 - 1'b1))
+-        rx_flag <= 1'b0;
+-    else
+-        rx_flag <= rx_flag;
+-end        
+-
+-//�����ʵļ�������ֵ
+-always @(posedge clk or negedge rst_n) begin
+-    if(!rst_n) 
+-        baud_cnt <= 16'd0;
+-    else if(rx_flag) begin     //���ڽ��չ���ʱ�������ʼ�������baud_cnt������ѭ������
+-        if(baud_cnt < BAUD_CNT_MAX - 1'b1)
+-            baud_cnt <= baud_cnt + 16'b1;
+-        else 
+-            baud_cnt <= 16'd0; //�����ﵽһ�����������ں�����
+-    end    
+-    else
+-        baud_cnt <= 16'd0;     //���չ��̽���ʱ����������
+-end
+-
+-//�Խ������ݼ�������rx_cnt�����и�ֵ
+-always @(posedge clk or negedge rst_n) begin
+-    if(!rst_n) 
+-        rx_cnt <= 4'd0;
+-    else if(rx_flag) begin                  //���ڽ��չ���ʱrx_cnt�Ž��м���
+-        if(baud_cnt == BAUD_CNT_MAX - 1'b1) //�������ʼ�����������һ������������ʱ
+-            rx_cnt <= rx_cnt + 1'b1;        //�������ݼ�������1
+-        else
+-            rx_cnt <= rx_cnt;
+-    end
+-    else
+-        rx_cnt <= 4'd0;                     //���չ��̽���ʱ����������
+-end        
+-
+-//����rx_cnt���Ĵ�rxd�˿ڵ�����
+-always @(posedge clk or negedge rst_n) begin
+-    if(!rst_n) 
+-        rx_data_t <= 8'b0;
+-    else if(rx_flag) begin                           //ϵͳ���ڽ��չ���ʱ
+-        if(baud_cnt == BAUD_CNT_MAX/2 - 1'b1) begin  //�ж�baud_cnt�Ƿ����������λ���м�
+-           case(rx_cnt)
+-               4'd1 : rx_data_t[0] <= uart_rxd_d2;   //�Ĵ����ݵ����λ
+-               4'd2 : rx_data_t[1] <= uart_rxd_d2;
+-               4'd3 : rx_data_t[2] <= uart_rxd_d2;
+-               4'd4 : rx_data_t[3] <= uart_rxd_d2;
+-               4'd5 : rx_data_t[4] <= uart_rxd_d2;
+-               4'd6 : rx_data_t[5] <= uart_rxd_d2;
+-               4'd7 : rx_data_t[6] <= uart_rxd_d2;
+-               4'd8 : rx_data_t[7] <= uart_rxd_d2;   //�Ĵ����ݵĸߵ�λ
+-               default : ;
+-            endcase  
+-        end
+-        else
+-            rx_data_t <= rx_data_t;
+-    end
+-    else
+-        rx_data_t <= 8'b0;
+-end        
+-
+-//����������źźͽ��յ������ݸ�ֵ
+-always @(posedge clk or negedge rst_n) begin
+-    if(!rst_n) begin
+-        uart_rx_done <= 1'b0;
+-        uart_rx_data <= 8'b0;
+-    end
+-    //���������ݼ�����������ֹͣλ����baud_cnt������ֹͣλ���м�ʱ
+-    else if(rx_cnt == 4'd9 && baud_cnt == BAUD_CNT_MAX/2 - 1'b1) begin
+-        uart_rx_done <= 1'b1     ;  //���߽�������ź�
+-        uart_rx_data <= rx_data_t;  //����UART���յ������ݽ��и�ֵ
+-    end    
+-    else begin
+-        uart_rx_done <= 1'b0;
+-        uart_rx_data <= uart_rx_data;
+-    end
+-end
+-
++
++//======================================================================
++// uart_rx.v �� UART ���գ���������·������Ա C �� ������ FPGA����
++//
++// 115200 8N1 ���գ��첽�ź� 3 ��ͬ�� + 16 ��������������λ�е��������
++// �� uart_loopback.v ������Ϊ uart_lcd.v �ṩ�ֽ�����
++//======================================================================
++module uart_rx(
++    input               clk         ,  //ϵͳʱ��
++    input               rst_n       ,  //ϵͳ��λ������Ч
++
++    input               uart_rxd    ,  //UART���ն˿�
++    output  reg         uart_rx_done,  //UART��������ź�
++    output  reg  [7:0]  uart_rx_data   //UART���յ�������
++    );
++
++//parameter define
++parameter CLK_FREQ = 50000000;               //ϵͳʱ��Ƶ��
++parameter UART_BPS = 115200  ;               //���ڲ�����
++localparam BAUD_CNT_MAX = CLK_FREQ/UART_BPS; //Ϊ�õ�ָ�������ʣ���ϵͳʱ�Ӽ���BPS_CNT��
++
++//reg define
++reg          uart_rxd_d0;
++reg          uart_rxd_d1;
++reg          uart_rxd_d2;
++reg          rx_flag    ;  //���չ��̱�־�ź�
++reg  [3:0 ]  rx_cnt     ;  //�������ݼ�����
++reg  [15:0]  baud_cnt   ;  //�����ʼ�����
++reg  [7:0 ]  rx_data_t  ;  //�������ݼĴ���
++
++//wire define
++wire        start_en;
++
++//*****************************************************
++//**                    main code
++//*****************************************************
++//������ն˿��½���(��ʼλ)���õ�һ��ʱ�����ڵ������ź�
++assign start_en = uart_rxd_d2 & (~uart_rxd_d1) & (~rx_flag);
++
++//����첽�źŵ�ͬ������
++always @(posedge clk or negedge rst_n) begin
++    if(!rst_n) begin
++        uart_rxd_d0 <= 1'b0;
++        uart_rxd_d1 <= 1'b0;
++        uart_rxd_d2 <= 1'b0;
++    end
++    else begin
++        uart_rxd_d0 <= uart_rxd;
++        uart_rxd_d1 <= uart_rxd_d0;
++        uart_rxd_d2 <= uart_rxd_d1;
++    end
++end
++
++//�����ձ�־��ֵ
++always @(posedge clk or negedge rst_n) begin
++    if(!rst_n) 
++        rx_flag <= 1'b0;
++    else if(start_en)    //��⵽��ʼλ
++        rx_flag <= 1'b1; //���չ����У���־�ź�rx_flag����
++    //��ֹͣλһ���ʱ�򣬼����չ��̽�������־�ź�rx_flag����
++    else if((rx_cnt == 4'd9) && (baud_cnt == BAUD_CNT_MAX/2 - 1'b1))
++        rx_flag <= 1'b0;
++    else
++        rx_flag <= rx_flag;
++end        
++
++//�����ʵļ�������ֵ
++always @(posedge clk or negedge rst_n) begin
++    if(!rst_n) 
++        baud_cnt <= 16'd0;
++    else if(rx_flag) begin     //���ڽ��չ���ʱ�������ʼ�������baud_cnt������ѭ������
++        if(baud_cnt < BAUD_CNT_MAX - 1'b1)
++            baud_cnt <= baud_cnt + 16'b1;
++        else 
++            baud_cnt <= 16'd0; //�����ﵽһ�����������ں�����
++    end    
++    else
++        baud_cnt <= 16'd0;     //���չ��̽���ʱ����������
++end
++
++//�Խ������ݼ�������rx_cnt�����и�ֵ
++always @(posedge clk or negedge rst_n) begin
++    if(!rst_n) 
++        rx_cnt <= 4'd0;
++    else if(rx_flag) begin                  //���ڽ��չ���ʱrx_cnt�Ž��м���
++        if(baud_cnt == BAUD_CNT_MAX - 1'b1) //�������ʼ�����������һ������������ʱ
++            rx_cnt <= rx_cnt + 1'b1;        //�������ݼ�������1
++        else
++            rx_cnt <= rx_cnt;
++    end
++    else
++        rx_cnt <= 4'd0;                     //���չ��̽���ʱ����������
++end        
++
++//����rx_cnt���Ĵ�rxd�˿ڵ�����
++always @(posedge clk or negedge rst_n) begin
++    if(!rst_n) 
++        rx_data_t <= 8'b0;
++    else if(rx_flag) begin                           //ϵͳ���ڽ��չ���ʱ
++        if(baud_cnt == BAUD_CNT_MAX/2 - 1'b1) begin  //�ж�baud_cnt�Ƿ����������λ���м�
++           case(rx_cnt)
++               4'd1 : rx_data_t[0] <= uart_rxd_d2;   //�Ĵ����ݵ����λ
++               4'd2 : rx_data_t[1] <= uart_rxd_d2;
++               4'd3 : rx_data_t[2] <= uart_rxd_d2;
++               4'd4 : rx_data_t[3] <= uart_rxd_d2;
++               4'd5 : rx_data_t[4] <= uart_rxd_d2;
++               4'd6 : rx_data_t[5] <= uart_rxd_d2;
++               4'd7 : rx_data_t[6] <= uart_rxd_d2;
++               4'd8 : rx_data_t[7] <= uart_rxd_d2;   //�Ĵ����ݵĸߵ�λ
++               default : ;
++            endcase  
++        end
++        else
++            rx_data_t <= rx_data_t;
++    end
++    else
++        rx_data_t <= 8'b0;
++end        
++
++//����������źźͽ��յ������ݸ�ֵ
++always @(posedge clk or negedge rst_n) begin
++    if(!rst_n) begin
++        uart_rx_done <= 1'b0;
++        uart_rx_data <= 8'b0;
++    end
++    //���������ݼ�����������ֹͣλ����baud_cnt������ֹͣλ���м�ʱ
++    else if(rx_cnt == 4'd9 && baud_cnt == BAUD_CNT_MAX/2 - 1'b1) begin
++        uart_rx_done <= 1'b1     ;  //���߽�������ź�
++        uart_rx_data <= rx_data_t;  //����UART���յ������ݽ��и�ֵ
++    end    
++    else begin
++        uart_rx_done <= 1'b0;
++        uart_rx_data <= uart_rx_data;
++    end
++end
++
+ endmodule
+\ No newline at end of file
+diff --git a/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_tx.v b/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_tx.v
+index 3af381f..16b0f23 100644
+--- a/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_tx.v
++++ b/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_tx.v
+@@ -1,105 +1,105 @@
+-
+-//======================================================================
+-// uart_tx.v �� UART ���ͣ���������·������Ա C �� ������ FPGA����
+-//
+-// 115200 8N1 ���͡������̴�������·�ԡ��ػ� + ������Ϊ�������Ͳ� txd
+-// �ڶ���δ���ⲿ���ţ����ػ����յ����ֽ�ԭ���ͻأ����˴�������������������
+-//======================================================================
+-module uart_tx(
+-    input               clk         , //ϵͳʱ��
+-    input               rst_n       , //ϵͳ��λ������Ч
+-    input               uart_tx_en  , //UART�ķ���ʹ��
+-    input     [7:0]     uart_tx_data, //UARTҪ���͵�����
+-    output  reg         uart_txd    , //UART���Ͷ˿�
+-    output  reg         uart_tx_busy  //����æ״̬�ź�
+-    );
+-
+-//parameter define
+-parameter CLK_FREQ = 50000000;               //ϵͳʱ��Ƶ��
+-parameter UART_BPS = 115200  ;               //���ڲ�����
+-localparam BAUD_CNT_MAX = CLK_FREQ/UART_BPS; //Ϊ�õ�ָ�������ʣ���ϵͳʱ�Ӽ���BPS_CNT��
+-
+-//reg define
+-reg  [7:0]  tx_data_t;  //�������ݼĴ���
+-reg  [3:0]  tx_cnt   ;  //�������ݼ�����
+-reg  [15:0] baud_cnt ;  //�����ʼ�����
+-
+-//*****************************************************
+-//**                    main code
+-//*****************************************************
+-
+-//��uart_tx_enΪ��ʱ���Ĵ�����Ĳ������ݣ�������BUSY�ź�
+-always @(posedge clk or negedge rst_n) begin
+-    if(!rst_n) begin
+-        tx_data_t <= 8'b0;
+-        uart_tx_busy <= 1'b0;
+-    end
+-    //����ʹ��ʱ���Ĵ�Ҫ���͵����ݣ�������BUSY�ź�
+-    else if(uart_tx_en) begin
+-        tx_data_t <= uart_tx_data;
+-        uart_tx_busy <= 1'b1;
+-    end
+-    //��������ֹͣλ����ʱ��ֹͣ���͹���
+-    else if(tx_cnt == 4'd9 && baud_cnt == BAUD_CNT_MAX - BAUD_CNT_MAX/16) begin
+-        tx_data_t <= 8'b0;     //��շ������ݼĴ���
+-        uart_tx_busy <= 1'b0;  //������BUSY�ź�
+-    end
+-    else begin
+-        tx_data_t <= tx_data_t;
+-        uart_tx_busy <= uart_tx_busy;
+-    end
+-end
+-
+-//�����ʵļ�������ֵ
+-always @(posedge clk or negedge rst_n) begin
+-    if(!rst_n) 
+-        baud_cnt <= 16'd0;
+-    //�����ڷ��͹���ʱ�������ʼ�������baud_cnt������ѭ������
+-    else if(uart_tx_busy) begin
+-        if(baud_cnt < BAUD_CNT_MAX - 1'b1)
+-            baud_cnt <= baud_cnt + 16'b1;
+-        else 
+-            baud_cnt <= 16'd0; //�����ﵽһ�����������ں�����
+-    end    
+-    else
+-        baud_cnt <= 16'd0;     //���͹��̽���ʱ����������
+-end
+-
+-//tx_cnt���и�ֵ
+-always @(posedge clk or negedge rst_n) begin
+-    if(!rst_n) 
+-        tx_cnt <= 4'd0;
+-    else if(uart_tx_busy) begin             //���ڷ��͹���ʱtx_cnt�Ž��м���
+-        if(baud_cnt == BAUD_CNT_MAX - 1'b1) //�������ʼ�����������һ������������ʱ
+-            tx_cnt <= tx_cnt + 1'b1;        //�������ݼ�������1
+-        else
+-            tx_cnt <= tx_cnt;
+-    end
+-    else
+-        tx_cnt <= 4'd0;                     //���͹��̽���ʱ����������
+-end
+-
+-//����tx_cnt����uart���Ͷ˿ڸ�ֵ
+-always @(posedge clk or negedge rst_n) begin
+-    if(!rst_n) 
+-        uart_txd <= 1'b1;
+-    else if(uart_tx_busy) begin
+-        case(tx_cnt) 
+-            4'd0 : uart_txd <= 1'b0        ; //��ʼλ
+-            4'd1 : uart_txd <= tx_data_t[0]; //����λ���λ
+-            4'd2 : uart_txd <= tx_data_t[1];
+-            4'd3 : uart_txd <= tx_data_t[2];
+-            4'd4 : uart_txd <= tx_data_t[3];
+-            4'd5 : uart_txd <= tx_data_t[4];
+-            4'd6 : uart_txd <= tx_data_t[5];
+-            4'd7 : uart_txd <= tx_data_t[6];
+-            4'd8 : uart_txd <= tx_data_t[7]; //����λ���λ
+-            4'd9 : uart_txd <= 1'b1        ; //ֹͣλ
+-            default : uart_txd <= 1'b1;
+-        endcase
+-    end
+-    else
+-        uart_txd <= 1'b1;                    //����ʱ���Ͷ˿�Ϊ�ߵ�ƽ
+-end
+-
++
++//======================================================================
++// uart_tx.v �� UART ���ͣ���������·������Ա C �� ������ FPGA����
++//
++// 115200 8N1 ���͡������̴�������·�ԡ��ػ� + ������Ϊ�������Ͳ� txd
++// �ڶ���δ���ⲿ���ţ����ػ����յ����ֽ�ԭ���ͻأ����˴�������������������
++//======================================================================
++module uart_tx(
++    input               clk         , //ϵͳʱ��
++    input               rst_n       , //ϵͳ��λ������Ч
++    input               uart_tx_en  , //UART�ķ���ʹ��
++    input     [7:0]     uart_tx_data, //UARTҪ���͵�����
++    output  reg         uart_txd    , //UART���Ͷ˿�
++    output  reg         uart_tx_busy  //����æ״̬�ź�
++    );
++
++//parameter define
++parameter CLK_FREQ = 50000000;               //ϵͳʱ��Ƶ��
++parameter UART_BPS = 115200  ;               //���ڲ�����
++localparam BAUD_CNT_MAX = CLK_FREQ/UART_BPS; //Ϊ�õ�ָ�������ʣ���ϵͳʱ�Ӽ���BPS_CNT��
++
++//reg define
++reg  [7:0]  tx_data_t;  //�������ݼĴ���
++reg  [3:0]  tx_cnt   ;  //�������ݼ�����
++reg  [15:0] baud_cnt ;  //�����ʼ�����
++
++//*****************************************************
++//**                    main code
++//*****************************************************
++
++//��uart_tx_enΪ��ʱ���Ĵ�����Ĳ������ݣ�������BUSY�ź�
++always @(posedge clk or negedge rst_n) begin
++    if(!rst_n) begin
++        tx_data_t <= 8'b0;
++        uart_tx_busy <= 1'b0;
++    end
++    //����ʹ��ʱ���Ĵ�Ҫ���͵����ݣ�������BUSY�ź�
++    else if(uart_tx_en) begin
++        tx_data_t <= uart_tx_data;
++        uart_tx_busy <= 1'b1;
++    end
++    //��������ֹͣλ����ʱ��ֹͣ���͹���
++    else if(tx_cnt == 4'd9 && baud_cnt == BAUD_CNT_MAX - BAUD_CNT_MAX/16) begin
++        tx_data_t <= 8'b0;     //��շ������ݼĴ���
++        uart_tx_busy <= 1'b0;  //������BUSY�ź�
++    end
++    else begin
++        tx_data_t <= tx_data_t;
++        uart_tx_busy <= uart_tx_busy;
++    end
++end
++
++//�����ʵļ�������ֵ
++always @(posedge clk or negedge rst_n) begin
++    if(!rst_n) 
++        baud_cnt <= 16'd0;
++    //�����ڷ��͹���ʱ�������ʼ�������baud_cnt������ѭ������
++    else if(uart_tx_busy) begin
++        if(baud_cnt < BAUD_CNT_MAX - 1'b1)
++            baud_cnt <= baud_cnt + 16'b1;
++        else 
++            baud_cnt <= 16'd0; //�����ﵽһ�����������ں�����
++    end    
++    else
++        baud_cnt <= 16'd0;     //���͹��̽���ʱ����������
++end
++
++//tx_cnt���и�ֵ
++always @(posedge clk or negedge rst_n) begin
++    if(!rst_n) 
++        tx_cnt <= 4'd0;
++    else if(uart_tx_busy) begin             //���ڷ��͹���ʱtx_cnt�Ž��м���
++        if(baud_cnt == BAUD_CNT_MAX - 1'b1) //�������ʼ�����������һ������������ʱ
++            tx_cnt <= tx_cnt + 1'b1;        //�������ݼ�������1
++        else
++            tx_cnt <= tx_cnt;
++    end
++    else
++        tx_cnt <= 4'd0;                     //���͹��̽���ʱ����������
++end
++
++//����tx_cnt����uart���Ͷ˿ڸ�ֵ
++always @(posedge clk or negedge rst_n) begin
++    if(!rst_n) 
++        uart_txd <= 1'b1;
++    else if(uart_tx_busy) begin
++        case(tx_cnt) 
++            4'd0 : uart_txd <= 1'b0        ; //��ʼλ
++            4'd1 : uart_txd <= tx_data_t[0]; //����λ���λ
++            4'd2 : uart_txd <= tx_data_t[1];
++            4'd3 : uart_txd <= tx_data_t[2];
++            4'd4 : uart_txd <= tx_data_t[3];
++            4'd5 : uart_txd <= tx_data_t[4];
++            4'd6 : uart_txd <= tx_data_t[5];
++            4'd7 : uart_txd <= tx_data_t[6];
++            4'd8 : uart_txd <= tx_data_t[7]; //����λ���λ
++            4'd9 : uart_txd <= 1'b1        ; //ֹͣλ
++            default : uart_txd <= 1'b1;
++        endcase
++    end
++    else
++        uart_txd <= 1'b1;                    //����ʱ���Ͷ˿�Ϊ�ߵ�ƽ
++end
++
+ endmodule
+\ No newline at end of file
+diff --git a/scripts/board/deploy_board.sh b/scripts/board/deploy_board.sh
+old mode 100644
+new mode 100755
+index 054cdb4..6129f16
+--- a/scripts/board/deploy_board.sh
++++ b/scripts/board/deploy_board.sh
+@@ -59,9 +59,9 @@ else
+     fi
+ fi
+ 
+-# 3) 配置网络
++# 3) 配置网络（用 bash 调起，不依赖脚本可执行位）
+ if [ -f "$REPO_ROOT/scripts/$NET" ]; then
+-    "$REPO_ROOT/scripts/$NET" || true
++    bash "$REPO_ROOT/scripts/$NET" || true
+ fi
+ 
+ echo ""
+diff --git a/scripts/check_system.sh b/scripts/check_system.sh
+old mode 100644
+new mode 100755
+diff --git a/scripts/setup_network_m.sh b/scripts/setup_network_m.sh
+old mode 100644
+new mode 100755
+diff --git a/scripts/setup_network_s.sh b/scripts/setup_network_s.sh
+old mode 100644
+new mode 100755
+diff --git a/scripts/start_m.sh b/scripts/start_m.sh
+old mode 100644
+new mode 100755
+index 38314ff..da33fe8
+--- a/scripts/start_m.sh
++++ b/scripts/start_m.sh
+@@ -34,13 +34,16 @@ else
+ fi
+ 
+ # 2) 配置网卡（独立脚本：自动探测 end0/end1 + ip 命令 + NetworkManager 规避）
++#    用 bash 显式调起：脚本若丢了可执行位（Windows 克隆/提交时常见），
++#    直接 exec 会报 "Permission denied"。
+ echo "[2] 配置网络"
+-"$SCRIPT_DIR/setup_network_m.sh" || true
++bash "$SCRIPT_DIR/setup_network_m.sh" || echo "警告：网络配置未成功（请检查网线是否插在 end0）"
+ 
+ # 3) 内核 UDP 缓冲调优（发送端突发写入；接收端 S 板更要调，见 start_s.sh）
++#    注意用 -f 而非 -x：可执行位缺失时 -x 会让调优被"静默跳过"
+ echo "[3] 内核 UDP 缓冲调优"
+-if [ -x "$SCRIPT_DIR/tune_net.sh" ]; then
+-    "$SCRIPT_DIR/tune_net.sh" || echo "警告：tune_net.sh 执行失败"
++if [ -f "$SCRIPT_DIR/tune_net.sh" ]; then
++    bash "$SCRIPT_DIR/tune_net.sh" || echo "警告：tune_net.sh 执行失败"
+ fi
+ 
+ # 4) 启动感知进程（A 交付；--stub 可在无硬件时联调）
+diff --git a/scripts/start_s.sh b/scripts/start_s.sh
+old mode 100644
+new mode 100755
+index 943e2ea..f588f0f
+--- a/scripts/start_s.sh
++++ b/scripts/start_s.sh
+@@ -1,17 +1,29 @@
+ #!/bin/bash
+ # start_s.sh — S 端板卡启动脚本（【人员 B】集成）
+ #
+-# 流程：配置网卡（调用 setup_network_s.sh）→ 启动决策+显示进程
++# 流程：配置网卡 → 内核 UDP 调优 → 以「桌面用户」身份启动决策+显示进程
+ #       （planning_main 内含 UDP 接收 / 行人检测 / 决策 / LCD）
+ #
+ # 用法（在 S 端 RK3568 上，需 root）：
+ #   sudo ./scripts/start_s.sh [--model 行人模型绝对路径] [--no-lcd]
++#   sudo bash ./scripts/start_s.sh        # 也可以（本脚本不依赖可执行位）
++#
++# 两个反复踩过的坑，本脚本已内置规避：
++#   1) 脚本可执行位：Windows 上克隆/提交时 git 容易丢 +x，板端 git pull 后
++#      直接 exec 子脚本会 "Permission denied"。故内部一律用 bash 调子脚本。
++#   2) X11 授权：网络/驱动要 root，但画面要「桌面会话用户的授权 cookie」。
++#      整个进程用 root 跑时，root 的 XAUTHORITY 指向 /root/.Xauthority
++#      （通常不存在）→ XOpenDisplay 失败 → 进程照常收帧/决策，屏幕上却什么都
++#      没有（"脚本说启动完成、就是没图像"的根因）。故这里自动降权到桌面用户。
+ set -e
+ 
+ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+ BIN_DIR="${BIN_DIR:-$REPO_ROOT/bin}"
+ 
++# 内部统一用 bash 调子脚本，不依赖文件的可执行位
++SH() { bash "$@"; }
++
+ # 行人检测模型（仓库实际文件为 model/yolov5s-640-640.rknn）
+ MODEL="$REPO_ROOT/model/yolov5s-640-640.rknn"
+ NO_LCD=0
+@@ -25,33 +37,120 @@ while [ $# -gt 0 ]; do
+ done
+ 
+ # RKNN 运行时库路径（librknnrt.so）
+-export LD_LIBRARY_PATH="$REPO_ROOT/lib:$LD_LIBRARY_PATH"
++export LD_LIBRARY_PATH="$REPO_ROOT/lib:${LD_LIBRARY_PATH:-}"
+ 
+ if [ "$(id -u)" -ne 0 ]; then
+-    echo "提示：网络配置需要 root 权限，建议用 sudo 运行"
++    echo "提示：网络配置与内核调优需要 root；图形进程会自动降权到桌面用户。"
++    echo "      建议：sudo ./scripts/start_s.sh"
+ fi
+ 
+ echo "==== S 端启动 ===="
+ 
+-# 1) 配置网卡（独立脚本：自动探测 end0/end1 + ip 命令 + NetworkManager 规避）
++# 0) 二进制存在性检查（比"启动成功却什么都没有"友好得多）
++if [ ! -f "$BIN_DIR/planning_main" ]; then
++    echo "错误：找不到 $BIN_DIR/planning_main"
++    echo "      板端构建： cd $REPO_ROOT && make -C planning bin"
++    echo "      交叉编译： 宿主机 make board 后把 bin/ 拷到板卡"
++    exit 1
++fi
++if [ ! -f "$MODEL" ]; then
++    echo "警告：找不到行人模型 $MODEL（将退化为无行人模式，决策仍可用）"
++fi
++
++# 1) 配置网卡（自动探测 end0/end1 + ip 命令 + NetworkManager 规避）
+ echo "[1] 配置网络"
+-"$SCRIPT_DIR/setup_network_s.sh" || true
++SH "$SCRIPT_DIR/setup_network_s.sh" || echo "警告：网络配置未成功（请检查网线是否插在 end0）"
+ 
+ # 2) 内核 UDP 缓冲调优：一帧 440 包突发到达，rmem_max 默认仅 ~208KB，会静默丢包
+-#    （不调优的症状：M 端发帧正常，S 端"收帧"恒为 0，LCD 帧却在涨）
++#    注意用 -f 而不是 -x：脚本若丢了可执行位，-x 会让调优被"静默跳过"。
+ echo "[2] 内核 UDP 缓冲调优"
+-if [ -x "$SCRIPT_DIR/tune_net.sh" ]; then
+-    "$SCRIPT_DIR/tune_net.sh" || echo "警告：tune_net.sh 执行失败，接收缓冲偏小可能丢包"
++if [ -f "$SCRIPT_DIR/tune_net.sh" ]; then
++    SH "$SCRIPT_DIR/tune_net.sh" || echo "警告：tune_net.sh 执行失败，接收缓冲偏小可能丢包"
++else
++    echo "警告：未找到 tune_net.sh，已跳过（接收缓冲偏小会静默丢包）"
++fi
++
++# 3) 确定图形进程的运行身份与 X11 环境
++#    探测顺序：RENDER_USER 环境变量 → sudo 调用者 → 登录会话 → who → /home 下首个用户
++detect_desktop_user() {
++    local u
++    if [ -n "${RENDER_USER:-}" ]; then echo "$RENDER_USER"; return; fi
++    if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then echo "$SUDO_USER"; return; fi
++    u="$(loginctl list-sessions --no-legend 2>/dev/null | awk '$3!="" && $3!="root" {print $3; exit}')"
++    if [ -n "$u" ]; then echo "$u"; return; fi
++    u="$(who 2>/dev/null | awk 'NR==1{print $1}')"
++    if [ -n "$u" ]; then echo "$u"; return; fi
++    for d in /home/*; do
++        [ -d "$d" ] || continue
++        echo "$(basename "$d")"; return
++    done
++    id -un
++}
++
++RUSER="$(detect_desktop_user)"
++
++# DISPLAY：优先沿用当前环境，否则按 /tmp/.X11-unix/X<n> 现存套接字推断
++if [ -z "${DISPLAY:-}" ]; then
++    for n in 0 1 2; do
++        if [ -e "/tmp/.X11-unix/X$n" ]; then DISPLAY=":$n"; break; fi
++    done
++fi
++DISPLAY="${DISPLAY:-:0}"
++
++# XAUTHORITY：桌面会话的 X 授权 cookie，缺了它 root 也画不出图
++XAUTH="${XAUTHORITY:-}"
++if [ -z "$XAUTH" ]; then
++    for p in "/home/$RUSER/.Xauthority" "${HOME:-/root}/.Xauthority"; do
++        [ -f "$p" ] && { XAUTH="$p"; break; }
++    done
+ fi
++XAUTH="${XAUTH:-/home/$RUSER/.Xauthority}"
+ 
+-# 3) 启动决策+显示进程
++if [ "$NO_LCD" = 1 ]; then
++    echo "[3] --no-lcd：跳过 X11（不开窗口）"
++else
++    echo "[3] 图形身份：用户=$RUSER  DISPLAY=$DISPLAY  XAUTHORITY=$XAUTH"
++fi
++
++# 4) 启动决策+显示进程
++#    关键：当以 root 运行时，用 sudo -u 把图形进程降权到桌面用户，
++#    否则 XOpenDisplay 会因缺少授权而失败（黑屏但进程正常）。
+ ARGS=(--model "$MODEL")
+ [ "$NO_LCD" = 1 ] && ARGS+=(--no-lcd)
+-echo "[3] 启动 planning_main ${ARGS[*]}"
+-nohup "$BIN_DIR/planning_main" "${ARGS[@]}" \
+-    > "$REPO_ROOT/planning.log" 2>&1 &
+ 
+-sleep 1
++LOG="$REPO_ROOT/planning.log"
++: > "$LOG"
++
++if [ "$NO_LCD" = 1 ]; then
++    RUN_ENV=(env LD_LIBRARY_PATH="$LD_LIBRARY_PATH")
++elif [ "$(id -u)" -eq 0 ] && [ "$RUSER" != "root" ]; then
++    RUN_ENV=(sudo -u "$RUSER" env HOME="/home/$RUSER" DISPLAY="$DISPLAY" \
++             XAUTHORITY="$XAUTH" LD_LIBRARY_PATH="$LD_LIBRARY_PATH")
++else
++    RUN_ENV=(env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTH" LD_LIBRARY_PATH="$LD_LIBRARY_PATH")
++fi
++
++echo "[4] 启动 planning_main ${ARGS[*]}"
++nohup "${RUN_ENV[@]}" "$BIN_DIR/planning_main" "${ARGS[@]}" > "$LOG" 2>&1 &
++PID=$!
++sleep 2
++
++# 5) 启动后自检：把"启动成功但其实没画面"变成看得见的告警
++if ! kill -0 "$PID" 2>/dev/null; then
++    echo "⚠ planning_main 启动后立即退出，日志末尾："
++    tail -8 "$LOG" | sed 's/^/    /'
++    echo "  常见原因：模型路径错、共享内存段损坏（./scripts/stop_all.sh 后重试）、端口 8888 被占用。"
++    exit 1
++fi
++
++if [ "$NO_LCD" = 0 ] && grep -q "XOpenDisplay 失败" "$LOG" 2>/dev/null; then
++    echo
++    echo "⚠ 图形上屏失败：进程在跑（收帧/决策正常），但屏幕上不会有画面。"
++    grep -m1 -A6 "XOpenDisplay 失败" "$LOG" | sed 's/^/    /'
++    echo "    临时规避： 加 --no-lcd 只跑数据链路"
++    echo "    彻底解决： RENDER_USER=<桌面用户> sudo -E ./scripts/start_s.sh"
++fi
++
+ echo "==== S 端启动完成 ===="
+-echo "日志: planning.log"
++echo "日志: $LOG"
+ echo "全部停止请用: ./scripts/stop_all.sh"
+diff --git a/scripts/stop_all.sh b/scripts/stop_all.sh
+old mode 100644
+new mode 100755
+diff --git a/scripts/tune_net.sh b/scripts/tune_net.sh
+old mode 100644
+new mode 100755
+diff --git a/udp_rk_rk_yolo/M/check_system.sh b/udp_rk_rk_yolo/M/check_system.sh
+old mode 100644
+new mode 100755
+diff --git a/udp_rk_rk_yolo/M/setup_network.sh b/udp_rk_rk_yolo/M/setup_network.sh
+old mode 100644
+new mode 100755
+diff --git a/udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c b/udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c
+index 8d2d249..f7b4838 100644
+--- a/udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c
++++ b/udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c
+@@ -1,565 +1,565 @@
+-#define _DEFAULT_SOURCE
+-#define _BSD_SOURCE
+-
+-#include "fspi_module.h"
+-#include <stdio.h>
+-#include <stdbool.h>
+-#include <getopt.h>
+-#include <string.h>
+-#include <libgen.h>
+-#include <stdlib.h>
+-#include <stdint.h>
+-#include <sys/types.h>
+-#include <sys/stat.h>
+-#include <unistd.h>
+-#include <fcntl.h>
+-#include <linux/spi/spidev.h>
+-#include <sys/ioctl.h>
+-#include <sys/time.h>
+-#include <time.h>
+-
+-// SPI配置宏定义 - 对应原来的参数 -d /dev/spidev4.0 -s 100000000 -OH -m 3 -S 1 -c 1 (修改为3字节传输)
+-#define SPI_DEVICE "/dev/spidev4.0"
+-#define SPI_SPEED 100000000
+-#define SPI_MODE_FLAGS (SPI_CPOL | SPI_CPHA) // 对应 -OH 参数，即 SPI_MODE_3
+-#define SPI_TRANSFER_SIZE 3
+-#define SPI_CYCLE_COUNT 1
+-#define SPI_BITS_PER_WORD 8
+-#define SPI_DELAY_US 0
+-#define SPI_PROTOCOL_MODE SPI_MODE_QUAD // 对应 -m 3 参数
+-
+-#define TOOL_VERSION "2.0"
+-#define DEFAULT_DEVICE "/dev/spidev4.0"
+-#define MAX_DEVICE_PATH 64
+-#define MAX_BUFFER_SIZE (1024 * 1024) // 1MB
+-
+-// 读写重试次数宏定义
+-#define WRITE_RETRY_COUNT 15    // 写入重试次数
+-#define READ_RETRY_COUNT 10     // 读取重试次数
+-
+-typedef enum
+-{
+-    SPI_MODE_SINGLE = 1,
+-    SPI_MODE_DUAL,
+-    SPI_MODE_QUAD
+-} SpiTransferMode;
+-
+-typedef struct
+-{
+-    char device[MAX_DEVICE_PATH];
+-    uint32_t speed_hz;
+-    uint32_t transfer_size;
+-    uint32_t cycle_count;
+-    uint32_t spi_mode;
+-    uint8_t bits_per_word;
+-    uint16_t delay_us;
+-    SpiTransferMode protocol_mode;
+-} SpiTestConfig;
+-
+-typedef struct
+-{
+-    double tx_rate_mbs;
+-    double rx_rate_mbs;
+-    float error_percent;
+-    uint64_t tx_bytes;
+-    uint64_t rx_bytes;
+-    struct timeval time_cost;
+-} TestResult;
+-
+-// 全局配置变量
+-static SpiTestConfig g_config;
+-static int g_spi_fd = -1;
+-
+-// 内部函数声明
+-static int configure_spi_interface(int fd, SpiTestConfig *config);
+-static int perform_transfer(int fd, uint8_t *tx_buf, uint8_t *rx_buf, SpiTestConfig *config);
+-static int spi_write_3bytes(int fd, uint16_t addr, uint8_t data);
+-static int spi_read_addr_data(int fd, uint16_t addr, uint8_t *data);
+-static int spi_read_direct(int fd, uint8_t *data);
+-static int spi_write_reliable(int fd, uint16_t addr, uint8_t data);
+-static int spi_read_reliable(int fd, uint16_t addr, uint8_t *data);
+-static int spi_read_direct_reliable(int fd, uint8_t *data);
+-
+-// 内部函数实现
+-static int configure_spi_interface(int fd, SpiTestConfig *config)
+-{
+-    // Set SPI mode
+-    if (ioctl(fd, SPI_IOC_WR_MODE32, &config->spi_mode) == -1)
+-    {
+-        perror("Failed to set SPI mode");
+-        return -1;
+-    }
+-
+-    // Set bits per word
+-    if (ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &config->bits_per_word) == -1)
+-    {
+-        perror("Failed to set bits per word");
+-        return -1;
+-    }
+-
+-    // Set max speed
+-    if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &config->speed_hz) == -1)
+-    {
+-        perror("Failed to set SPI speed");
+-        return -1;
+-    }
+-
+-    return 0;
+-}
+-
+-static int perform_transfer(int fd, uint8_t *tx_buf, uint8_t *rx_buf, SpiTestConfig *config)
+-{
+-    struct spi_ioc_transfer tr = {
+-        .tx_buf = (unsigned long)tx_buf,
+-        .rx_buf = (unsigned long)rx_buf,
+-        .len = config->transfer_size,
+-        .delay_usecs = config->delay_us,
+-        .speed_hz = config->speed_hz,
+-        .bits_per_word = config->bits_per_word,
+-    };
+-
+-    // Configure transfer mode
+-    switch (config->protocol_mode)
+-    {
+-    case SPI_MODE_DUAL:
+-        tr.tx_nbits = tr.rx_nbits = 2;
+-        break;
+-    case SPI_MODE_QUAD:
+-        tr.tx_nbits = tr.rx_nbits = 4;
+-        break;
+-    default:
+-        tr.tx_nbits = tr.rx_nbits = 1;
+-    }
+-
+-    return ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
+-}
+-
+-// 写3个字节函数: [地址高8位] [地址低8位] [数据]
+-static int spi_write_3bytes(int fd, uint16_t addr, uint8_t data)
+-{
+-    uint8_t tx_buffer[3];
+-    
+-    // 组装3字节数据包
+-    tx_buffer[0] = (addr >> 8) & 0xFF;   // 地址高8位
+-    tx_buffer[1] = addr & 0xFF;          // 地址低8位
+-    tx_buffer[2] = data;                 // 数据
+-    
+-
+-    
+-    // 设置QUAD发送模式
+-    g_config.spi_mode |= SPI_TX_QUAD;
+-    g_config.spi_mode &= ~SPI_RX_QUAD;
+-    
+-    if (configure_spi_interface(fd, &g_config) != 0)
+-    {
+-        return -1;
+-    }
+-
+-    // 执行3字节传输
+-    if (perform_transfer(fd, tx_buffer, NULL, &g_config) < 0)
+-    {
+-        perror("Write 3 bytes failed");
+-        return -1;
+-    }
+-
+-    return 0;
+-}
+-
+-// 读地址数据函数: 先发送[地址高8位] [地址低8位]，然后读取数据
+-static int spi_read_addr_data(int fd, uint16_t addr, uint8_t *data)
+-{
+-    uint8_t tx_buffer[2];
+-    uint8_t rx_data = 0;
+-    
+-    // 第1步: 发送地址 (TX模式)
+-    // 组装2字节地址包
+-    tx_buffer[0] = (addr >> 8) & 0xFF;   // 地址高8位
+-    tx_buffer[1] = addr & 0xFF;          // 地址低8位
+-    
+-
+-    
+-    // 设置QUAD发送模式
+-    g_config.spi_mode |= SPI_TX_QUAD;
+-    g_config.spi_mode &= ~SPI_RX_QUAD;
+-    
+-    if (configure_spi_interface(fd, &g_config) != 0)
+-    {
+-        return -1;
+-    }
+-
+-    // 临时修改传输大小为2字节发送地址
+-    uint32_t original_size = g_config.transfer_size;
+-    g_config.transfer_size = 2;
+-
+-    // 执行2字节地址传输
+-    if (perform_transfer(fd, tx_buffer, NULL, &g_config) < 0)
+-    {
+-        perror("Send address failed");
+-        g_config.transfer_size = original_size;
+-        return -1;
+-    }
+-
+-    // 第2步: 读取数据 (切换到RX模式)
+-    g_config.spi_mode = (g_config.spi_mode & ~SPI_TX_QUAD) | SPI_RX_QUAD;
+-    g_config.transfer_size = 1;  // 读取1字节数据
+-    
+-    if (configure_spi_interface(fd, &g_config) != 0)
+-    {
+-        g_config.transfer_size = original_size;
+-        return -1;
+-    }
+-
+-    // 执行1字节数据接收
+-    if (perform_transfer(fd, NULL, &rx_data, &g_config) < 0)
+-    {
+-        perror("Read data failed");
+-        g_config.transfer_size = original_size;
+-        return -1;
+-    }
+-
+-    // 恢复原始传输大小
+-    g_config.transfer_size = original_size;
+-
+-    *data = rx_data;
+-    return 0;
+-}
+-
+-// 直接读取数据函数: 不需要先发送地址，直接读取
+-static int spi_read_direct(int fd, uint8_t *data)
+-{
+-    uint8_t rx_data = 0;
+-    
+-
+-    
+-    // 设置QUAD接收模式
+-    g_config.spi_mode = (g_config.spi_mode & ~SPI_TX_QUAD) | SPI_RX_QUAD;
+-    
+-    if (configure_spi_interface(fd, &g_config) != 0)
+-    {
+-        return -1;
+-    }
+-
+-    // 临时修改传输大小为1字节
+-    uint32_t original_size = g_config.transfer_size;
+-    g_config.transfer_size = 1;
+-
+-    // 执行1字节数据接收
+-    if (perform_transfer(fd, NULL, &rx_data, &g_config) < 0)
+-    {
+-        perror("Direct read failed");
+-        g_config.transfer_size = original_size;
+-        return -1;
+-    }
+-
+-    // 恢复原始传输大小
+-    g_config.transfer_size = original_size;
+-
+-    *data = rx_data;
+-    return 0;
+-}
+-
+-// 封装的可靠写入函数 - 多次重试写入
+-static int spi_write_reliable(int fd, uint16_t addr, uint8_t data)
+-{
+-    int retry_count = 0;
+-    int ret;
+-    
+-
+-    
+-    for (retry_count = 0; retry_count < WRITE_RETRY_COUNT; retry_count++)
+-    {
+-        ret = spi_write_3bytes(fd, addr, data);
+-        
+-        if (ret == 0)
+-        {
+-            return 0; // 写入成功，直接返回
+-        }
+-        
+-        // 如果不是最后一次尝试，继续重试
+-        if (retry_count < WRITE_RETRY_COUNT - 1)
+-        {
+-            usleep(1000); // 延时1ms后重试
+-        }
+-    }
+-    
+-    return -1; // 所有尝试都失败
+-}
+-
+-// 封装的可靠读取函数 - 多次读取返回出现次数最多的值
+-// 专用于读取小车功能状态寄存器，如视镜模式状态等
+-static int spi_read_reliable(int fd, uint16_t addr, uint8_t *data)
+-{
+-    int retry_count = 0;
+-    int ret;
+-    uint8_t read_data = 0;
+-    
+-    // 用于统计每个数据值的出现次数 (0-255)
+-    // 这样可以过滤掉偶发的错误读取值，提高可靠性
+-    int data_count[256] = {0};
+-    int successful_reads = 0;
+-    
+-
+-    
+-    // 进行多次读取尝试，以提高数据可靠性
+-    for (retry_count = 0; retry_count < READ_RETRY_COUNT; retry_count++)
+-    {
+-        ret = spi_read_addr_data(fd, addr, &read_data);
+-        
+-        if (ret == 0)  // 读取成功
+-        {
+-            data_count[read_data]++;  // 统计该数据值的出现次数
+-            successful_reads++;       // 成功读取次数加1
+-        }
+-        
+-        // 每次读取之间稍微延时，避免过于频繁的访问
+-        usleep(500); // 延时0.5ms
+-    }
+-    
+-    if (successful_reads > 0)
+-    {
+-        // 找出出现次数最多的数据值 - 这是最可能正确的值
+-        uint8_t most_frequent_data = 0;
+-        int max_count = 0;
+-        
+-        for (int i = 0; i < 256; i++)
+-        {
+-            if (data_count[i] > max_count)
+-            {
+-                max_count = data_count[i];
+-                most_frequent_data = (uint8_t)i;
+-            }
+-        }
+-        
+-
+-        
+-        *data = most_frequent_data;
+-        return 0;
+-    }
+-    else
+-    {
+-        return -1;  // 所有读取都失败
+-    }
+-}
+-
+-// 封装的可靠直接读取函数 - 多次读取返回出现次数最多的值
+-static int spi_read_direct_reliable(int fd, uint8_t *data)
+-{
+-    int retry_count = 0;
+-    int ret;
+-    uint8_t read_data = 0;
+-    
+-    // 用于统计每个数据值的出现次数 (0-255)
+-    int data_count[256] = {0};
+-    int successful_reads = 0;
+-    
+-
+-    
+-    for (retry_count = 0; retry_count < READ_RETRY_COUNT; retry_count++)
+-    {
+-        ret = spi_read_direct(fd, &read_data);
+-        
+-        if (ret == 0)  // 读取成功
+-        {
+-            data_count[read_data]++;  // 统计该数据值的出现次数
+-            successful_reads++;       // 成功读取次数加1
+-        }
+-        
+-        // 每次读取之间稍微延时
+-        usleep(500); // 延时0.5ms
+-    }
+-    
+-    if (successful_reads > 0)
+-    {
+-        // 找出出现次数最多的数据值
+-        uint8_t most_frequent_data = 0;
+-        int max_count = 0;
+-        
+-        for (int i = 0; i < 256; i++)
+-        {
+-            if (data_count[i] > max_count)
+-            {
+-                max_count = data_count[i];
+-                most_frequent_data = (uint8_t)i;
+-            }
+-        }
+-        
+-
+-        
+-        *data = most_frequent_data;
+-        return 0;
+-    }
+-    else
+-    {
+-        return -1;  // 所有读取都失败
+-    }
+-}
+-
+-//=========================================================================
+-// 外部接口函数实现
+-//=========================================================================
+-
+-// FSPI初始化函数
+-int fspi_init(void)
+-{
+-
+-    
+-    // 使用宏定义配置
+-    g_config.speed_hz = SPI_SPEED;
+-    g_config.transfer_size = SPI_TRANSFER_SIZE;
+-    g_config.cycle_count = SPI_CYCLE_COUNT;
+-    g_config.spi_mode = SPI_MODE_FLAGS;
+-    g_config.bits_per_word = SPI_BITS_PER_WORD;
+-    g_config.delay_us = SPI_DELAY_US;
+-    g_config.protocol_mode = SPI_PROTOCOL_MODE;
+-    strcpy(g_config.device, SPI_DEVICE);
+-
+-    // 打开SPI设备
+-    g_spi_fd = open(g_config.device, O_RDWR);
+-    if (g_spi_fd < 0)
+-    {
+-        perror("FSPI Device open failed");
+-        return -1;
+-    }
+-
+-    // 配置SPI接口
+-    if (configure_spi_interface(g_spi_fd, &g_config) != 0)
+-    {
+-        close(g_spi_fd);
+-        g_spi_fd = -1;
+-        return -1;
+-    }
+-
+-    // 保留关键的初始化配置信息
+-    printf("FSPI Configuration:\n");
+-    printf("  Device: %s\n", g_config.device);
+-    printf("  Speed: %u Hz (%u KHz)\n", g_config.speed_hz, g_config.speed_hz / 1000);
+-    printf("FSPI initialized successfully\n");
+-    return 0;
+-}
+-
+-// FSPI写数据函数
+-int fspi_write_data(uint16_t addr, uint8_t data)
+-{
+-    if (g_spi_fd < 0) {
+-        return -1;
+-    }
+-    
+-    return spi_write_reliable(g_spi_fd, addr, data);
+-}
+-
+-// FSPI读数据函数 - 主要用于读取小车功能状态
+-// 特别适用于读取视镜功能状态等小车配置参数
+-// 0x00表示前视镜模式，0x11表示后视镜模式
+-int fspi_read_data(uint16_t addr, uint8_t *data)
+-{
+-    if (g_spi_fd < 0) {
+-        return -1;
+-    }
+-    
+-    // 调用可靠读取函数，该函数会进行多次读取并返回最可靠的结果
+-    // 对于小车视镜功能检测等关键状态读取，这种方式能提供更高的可靠性
+-    return spi_read_reliable(g_spi_fd, addr, data);
+-}
+-
+-// FSPI直接读数据函数 - 不需要先写地址
+-int fspi_read_direct(uint8_t *data)
+-{
+-    if (g_spi_fd < 0) {
+-        return -1;
+-    }
+-    
+-    return spi_read_direct_reliable(g_spi_fd, data);
+-}
+-
+-// 车辆控制函数 - 控制前进、后退、左转、右转（不需要读回验证）
+-int vehicle_control(int command, int enable)
+-{
+-    if (g_spi_fd < 0) {
+-        return -1;
+-    }
+-    
+-    // 参数检查：命令必须在0-3范围内，enable必须是0或1
+-    if (command < 0 || command > 3) {
+-        printf("错误：车辆控制命令必须在0-3范围内，当前值: %d\n", command);
+-        printf("0=前进, 1=后退, 2=左转, 3=右转\n");
+-        return -1;
+-    }
+-    
+-    if (enable != 0 && enable != 1) {
+-        printf("错误：enable值必须是0或1，当前值: %d\n", enable);
+-        return -1;
+-    }
+-    
+-    uint16_t addr = (uint16_t)command;    // 地址0-3分别对应前进、后退、左转、右转
+-    uint8_t control_value = (uint8_t)(enable ? 0 : 1);  // 逻辑：enable=1时发送0(运动)，enable=0时发送1(停止)
+-    
+-    const char* command_names[] = {"前进", "后退", "左转", "右转"};
+-    const char* enable_text = enable ? "运动" : "停止";
+-    
+-    printf("正在%s %s...\n", enable_text, command_names[command]);
+-    printf("调试信息: 命令=%d, enable=%d, 地址=0x%04X, 发送值=%d\n", 
+-           command, enable, addr, control_value);
+-    
+-    // 直接写入车辆控制命令，不需要读回验证
+-    int write_ret = fspi_write_data(addr, control_value);
+-    
+-    if (write_ret == 0) {
+-        printf("车辆控制成功: %s %s (地址=0x%04X, 值=%d)\n", 
+-               command_names[command], enable_text, addr, control_value);
+-        return 0;
+-    } else {
+-        printf("车辆控制失败: %s %s (写入失败)\n", 
+-               command_names[command], enable_text);
+-        return -1;
+-    }
+-}
+-
+-// 便捷的车辆控制函数
+-int vehicle_forward(int enable) {
+-    return vehicle_control(0, enable);
+-}
+-
+-int vehicle_backward(int enable) {
+-    return vehicle_control(1, enable);
+-}
+-
+-int vehicle_turn_left(int enable) {
+-    return vehicle_control(2, enable);
+-}
+-
+-int vehicle_turn_right(int enable) {
+-    return vehicle_control(3, enable);
+-}
+-
+-// 立即主动停止功能 - 地址4
+-int vehicle_emergency_stop(void) {
+-    if (g_spi_fd < 0) {
+-        return -1;
+-    }
+-    
+-    uint16_t addr = 4;        // 立即主动停止地址
+-    uint8_t stop_value = 1;   // 写1表示立即停止
+-    
+-    printf("正在执行立即主动停止...\n");
+-    
+-    // 直接写入立即停止命令
+-    int write_ret = fspi_write_data(addr, stop_value);
+-    
+-    if (write_ret == 0) {
+-        printf("立即主动停止成功 (地址=0x%04X, 值=%d)\n", addr, stop_value);
+-        return 0;
+-    } else {
+-        printf("立即主动停止失败 (写入失败)\n");
+-        return -1;
+-    }
+-}
+-
+-// FSPI清理函数
+-void fspi_cleanup(void)
+-{
+-    if (g_spi_fd >= 0) {
+-        close(g_spi_fd);
+-        g_spi_fd = -1;
+-        printf("FSPI resources cleaned up\n");
+-    }
++#define _DEFAULT_SOURCE
++#define _BSD_SOURCE
++
++#include "fspi_module.h"
++#include <stdio.h>
++#include <stdbool.h>
++#include <getopt.h>
++#include <string.h>
++#include <libgen.h>
++#include <stdlib.h>
++#include <stdint.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <unistd.h>
++#include <fcntl.h>
++#include <linux/spi/spidev.h>
++#include <sys/ioctl.h>
++#include <sys/time.h>
++#include <time.h>
++
++// SPI配置宏定义 - 对应原来的参数 -d /dev/spidev4.0 -s 100000000 -OH -m 3 -S 1 -c 1 (修改为3字节传输)
++#define SPI_DEVICE "/dev/spidev4.0"
++#define SPI_SPEED 100000000
++#define SPI_MODE_FLAGS (SPI_CPOL | SPI_CPHA) // 对应 -OH 参数，即 SPI_MODE_3
++#define SPI_TRANSFER_SIZE 3
++#define SPI_CYCLE_COUNT 1
++#define SPI_BITS_PER_WORD 8
++#define SPI_DELAY_US 0
++#define SPI_PROTOCOL_MODE SPI_MODE_QUAD // 对应 -m 3 参数
++
++#define TOOL_VERSION "2.0"
++#define DEFAULT_DEVICE "/dev/spidev4.0"
++#define MAX_DEVICE_PATH 64
++#define MAX_BUFFER_SIZE (1024 * 1024) // 1MB
++
++// 读写重试次数宏定义
++#define WRITE_RETRY_COUNT 15    // 写入重试次数
++#define READ_RETRY_COUNT 10     // 读取重试次数
++
++typedef enum
++{
++    SPI_MODE_SINGLE = 1,
++    SPI_MODE_DUAL,
++    SPI_MODE_QUAD
++} SpiTransferMode;
++
++typedef struct
++{
++    char device[MAX_DEVICE_PATH];
++    uint32_t speed_hz;
++    uint32_t transfer_size;
++    uint32_t cycle_count;
++    uint32_t spi_mode;
++    uint8_t bits_per_word;
++    uint16_t delay_us;
++    SpiTransferMode protocol_mode;
++} SpiTestConfig;
++
++typedef struct
++{
++    double tx_rate_mbs;
++    double rx_rate_mbs;
++    float error_percent;
++    uint64_t tx_bytes;
++    uint64_t rx_bytes;
++    struct timeval time_cost;
++} TestResult;
++
++// 全局配置变量
++static SpiTestConfig g_config;
++static int g_spi_fd = -1;
++
++// 内部函数声明
++static int configure_spi_interface(int fd, SpiTestConfig *config);
++static int perform_transfer(int fd, uint8_t *tx_buf, uint8_t *rx_buf, SpiTestConfig *config);
++static int spi_write_3bytes(int fd, uint16_t addr, uint8_t data);
++static int spi_read_addr_data(int fd, uint16_t addr, uint8_t *data);
++static int spi_read_direct(int fd, uint8_t *data);
++static int spi_write_reliable(int fd, uint16_t addr, uint8_t data);
++static int spi_read_reliable(int fd, uint16_t addr, uint8_t *data);
++static int spi_read_direct_reliable(int fd, uint8_t *data);
++
++// 内部函数实现
++static int configure_spi_interface(int fd, SpiTestConfig *config)
++{
++    // Set SPI mode
++    if (ioctl(fd, SPI_IOC_WR_MODE32, &config->spi_mode) == -1)
++    {
++        perror("Failed to set SPI mode");
++        return -1;
++    }
++
++    // Set bits per word
++    if (ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &config->bits_per_word) == -1)
++    {
++        perror("Failed to set bits per word");
++        return -1;
++    }
++
++    // Set max speed
++    if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &config->speed_hz) == -1)
++    {
++        perror("Failed to set SPI speed");
++        return -1;
++    }
++
++    return 0;
++}
++
++static int perform_transfer(int fd, uint8_t *tx_buf, uint8_t *rx_buf, SpiTestConfig *config)
++{
++    struct spi_ioc_transfer tr = {
++        .tx_buf = (unsigned long)tx_buf,
++        .rx_buf = (unsigned long)rx_buf,
++        .len = config->transfer_size,
++        .delay_usecs = config->delay_us,
++        .speed_hz = config->speed_hz,
++        .bits_per_word = config->bits_per_word,
++    };
++
++    // Configure transfer mode
++    switch (config->protocol_mode)
++    {
++    case SPI_MODE_DUAL:
++        tr.tx_nbits = tr.rx_nbits = 2;
++        break;
++    case SPI_MODE_QUAD:
++        tr.tx_nbits = tr.rx_nbits = 4;
++        break;
++    default:
++        tr.tx_nbits = tr.rx_nbits = 1;
++    }
++
++    return ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
++}
++
++// 写3个字节函数: [地址高8位] [地址低8位] [数据]
++static int spi_write_3bytes(int fd, uint16_t addr, uint8_t data)
++{
++    uint8_t tx_buffer[3];
++    
++    // 组装3字节数据包
++    tx_buffer[0] = (addr >> 8) & 0xFF;   // 地址高8位
++    tx_buffer[1] = addr & 0xFF;          // 地址低8位
++    tx_buffer[2] = data;                 // 数据
++    
++
++    
++    // 设置QUAD发送模式
++    g_config.spi_mode |= SPI_TX_QUAD;
++    g_config.spi_mode &= ~SPI_RX_QUAD;
++    
++    if (configure_spi_interface(fd, &g_config) != 0)
++    {
++        return -1;
++    }
++
++    // 执行3字节传输
++    if (perform_transfer(fd, tx_buffer, NULL, &g_config) < 0)
++    {
++        perror("Write 3 bytes failed");
++        return -1;
++    }
++
++    return 0;
++}
++
++// 读地址数据函数: 先发送[地址高8位] [地址低8位]，然后读取数据
++static int spi_read_addr_data(int fd, uint16_t addr, uint8_t *data)
++{
++    uint8_t tx_buffer[2];
++    uint8_t rx_data = 0;
++    
++    // 第1步: 发送地址 (TX模式)
++    // 组装2字节地址包
++    tx_buffer[0] = (addr >> 8) & 0xFF;   // 地址高8位
++    tx_buffer[1] = addr & 0xFF;          // 地址低8位
++    
++
++    
++    // 设置QUAD发送模式
++    g_config.spi_mode |= SPI_TX_QUAD;
++    g_config.spi_mode &= ~SPI_RX_QUAD;
++    
++    if (configure_spi_interface(fd, &g_config) != 0)
++    {
++        return -1;
++    }
++
++    // 临时修改传输大小为2字节发送地址
++    uint32_t original_size = g_config.transfer_size;
++    g_config.transfer_size = 2;
++
++    // 执行2字节地址传输
++    if (perform_transfer(fd, tx_buffer, NULL, &g_config) < 0)
++    {
++        perror("Send address failed");
++        g_config.transfer_size = original_size;
++        return -1;
++    }
++
++    // 第2步: 读取数据 (切换到RX模式)
++    g_config.spi_mode = (g_config.spi_mode & ~SPI_TX_QUAD) | SPI_RX_QUAD;
++    g_config.transfer_size = 1;  // 读取1字节数据
++    
++    if (configure_spi_interface(fd, &g_config) != 0)
++    {
++        g_config.transfer_size = original_size;
++        return -1;
++    }
++
++    // 执行1字节数据接收
++    if (perform_transfer(fd, NULL, &rx_data, &g_config) < 0)
++    {
++        perror("Read data failed");
++        g_config.transfer_size = original_size;
++        return -1;
++    }
++
++    // 恢复原始传输大小
++    g_config.transfer_size = original_size;
++
++    *data = rx_data;
++    return 0;
++}
++
++// 直接读取数据函数: 不需要先发送地址，直接读取
++static int spi_read_direct(int fd, uint8_t *data)
++{
++    uint8_t rx_data = 0;
++    
++
++    
++    // 设置QUAD接收模式
++    g_config.spi_mode = (g_config.spi_mode & ~SPI_TX_QUAD) | SPI_RX_QUAD;
++    
++    if (configure_spi_interface(fd, &g_config) != 0)
++    {
++        return -1;
++    }
++
++    // 临时修改传输大小为1字节
++    uint32_t original_size = g_config.transfer_size;
++    g_config.transfer_size = 1;
++
++    // 执行1字节数据接收
++    if (perform_transfer(fd, NULL, &rx_data, &g_config) < 0)
++    {
++        perror("Direct read failed");
++        g_config.transfer_size = original_size;
++        return -1;
++    }
++
++    // 恢复原始传输大小
++    g_config.transfer_size = original_size;
++
++    *data = rx_data;
++    return 0;
++}
++
++// 封装的可靠写入函数 - 多次重试写入
++static int spi_write_reliable(int fd, uint16_t addr, uint8_t data)
++{
++    int retry_count = 0;
++    int ret;
++    
++
++    
++    for (retry_count = 0; retry_count < WRITE_RETRY_COUNT; retry_count++)
++    {
++        ret = spi_write_3bytes(fd, addr, data);
++        
++        if (ret == 0)
++        {
++            return 0; // 写入成功，直接返回
++        }
++        
++        // 如果不是最后一次尝试，继续重试
++        if (retry_count < WRITE_RETRY_COUNT - 1)
++        {
++            usleep(1000); // 延时1ms后重试
++        }
++    }
++    
++    return -1; // 所有尝试都失败
++}
++
++// 封装的可靠读取函数 - 多次读取返回出现次数最多的值
++// 专用于读取小车功能状态寄存器，如视镜模式状态等
++static int spi_read_reliable(int fd, uint16_t addr, uint8_t *data)
++{
++    int retry_count = 0;
++    int ret;
++    uint8_t read_data = 0;
++    
++    // 用于统计每个数据值的出现次数 (0-255)
++    // 这样可以过滤掉偶发的错误读取值，提高可靠性
++    int data_count[256] = {0};
++    int successful_reads = 0;
++    
++
++    
++    // 进行多次读取尝试，以提高数据可靠性
++    for (retry_count = 0; retry_count < READ_RETRY_COUNT; retry_count++)
++    {
++        ret = spi_read_addr_data(fd, addr, &read_data);
++        
++        if (ret == 0)  // 读取成功
++        {
++            data_count[read_data]++;  // 统计该数据值的出现次数
++            successful_reads++;       // 成功读取次数加1
++        }
++        
++        // 每次读取之间稍微延时，避免过于频繁的访问
++        usleep(500); // 延时0.5ms
++    }
++    
++    if (successful_reads > 0)
++    {
++        // 找出出现次数最多的数据值 - 这是最可能正确的值
++        uint8_t most_frequent_data = 0;
++        int max_count = 0;
++        
++        for (int i = 0; i < 256; i++)
++        {
++            if (data_count[i] > max_count)
++            {
++                max_count = data_count[i];
++                most_frequent_data = (uint8_t)i;
++            }
++        }
++        
++
++        
++        *data = most_frequent_data;
++        return 0;
++    }
++    else
++    {
++        return -1;  // 所有读取都失败
++    }
++}
++
++// 封装的可靠直接读取函数 - 多次读取返回出现次数最多的值
++static int spi_read_direct_reliable(int fd, uint8_t *data)
++{
++    int retry_count = 0;
++    int ret;
++    uint8_t read_data = 0;
++    
++    // 用于统计每个数据值的出现次数 (0-255)
++    int data_count[256] = {0};
++    int successful_reads = 0;
++    
++
++    
++    for (retry_count = 0; retry_count < READ_RETRY_COUNT; retry_count++)
++    {
++        ret = spi_read_direct(fd, &read_data);
++        
++        if (ret == 0)  // 读取成功
++        {
++            data_count[read_data]++;  // 统计该数据值的出现次数
++            successful_reads++;       // 成功读取次数加1
++        }
++        
++        // 每次读取之间稍微延时
++        usleep(500); // 延时0.5ms
++    }
++    
++    if (successful_reads > 0)
++    {
++        // 找出出现次数最多的数据值
++        uint8_t most_frequent_data = 0;
++        int max_count = 0;
++        
++        for (int i = 0; i < 256; i++)
++        {
++            if (data_count[i] > max_count)
++            {
++                max_count = data_count[i];
++                most_frequent_data = (uint8_t)i;
++            }
++        }
++        
++
++        
++        *data = most_frequent_data;
++        return 0;
++    }
++    else
++    {
++        return -1;  // 所有读取都失败
++    }
++}
++
++//=========================================================================
++// 外部接口函数实现
++//=========================================================================
++
++// FSPI初始化函数
++int fspi_init(void)
++{
++
++    
++    // 使用宏定义配置
++    g_config.speed_hz = SPI_SPEED;
++    g_config.transfer_size = SPI_TRANSFER_SIZE;
++    g_config.cycle_count = SPI_CYCLE_COUNT;
++    g_config.spi_mode = SPI_MODE_FLAGS;
++    g_config.bits_per_word = SPI_BITS_PER_WORD;
++    g_config.delay_us = SPI_DELAY_US;
++    g_config.protocol_mode = SPI_PROTOCOL_MODE;
++    strcpy(g_config.device, SPI_DEVICE);
++
++    // 打开SPI设备
++    g_spi_fd = open(g_config.device, O_RDWR);
++    if (g_spi_fd < 0)
++    {
++        perror("FSPI Device open failed");
++        return -1;
++    }
++
++    // 配置SPI接口
++    if (configure_spi_interface(g_spi_fd, &g_config) != 0)
++    {
++        close(g_spi_fd);
++        g_spi_fd = -1;
++        return -1;
++    }
++
++    // 保留关键的初始化配置信息
++    printf("FSPI Configuration:\n");
++    printf("  Device: %s\n", g_config.device);
++    printf("  Speed: %u Hz (%u KHz)\n", g_config.speed_hz, g_config.speed_hz / 1000);
++    printf("FSPI initialized successfully\n");
++    return 0;
++}
++
++// FSPI写数据函数
++int fspi_write_data(uint16_t addr, uint8_t data)
++{
++    if (g_spi_fd < 0) {
++        return -1;
++    }
++    
++    return spi_write_reliable(g_spi_fd, addr, data);
++}
++
++// FSPI读数据函数 - 主要用于读取小车功能状态
++// 特别适用于读取视镜功能状态等小车配置参数
++// 0x00表示前视镜模式，0x11表示后视镜模式
++int fspi_read_data(uint16_t addr, uint8_t *data)
++{
++    if (g_spi_fd < 0) {
++        return -1;
++    }
++    
++    // 调用可靠读取函数，该函数会进行多次读取并返回最可靠的结果
++    // 对于小车视镜功能检测等关键状态读取，这种方式能提供更高的可靠性
++    return spi_read_reliable(g_spi_fd, addr, data);
++}
++
++// FSPI直接读数据函数 - 不需要先写地址
++int fspi_read_direct(uint8_t *data)
++{
++    if (g_spi_fd < 0) {
++        return -1;
++    }
++    
++    return spi_read_direct_reliable(g_spi_fd, data);
++}
++
++// 车辆控制函数 - 控制前进、后退、左转、右转（不需要读回验证）
++int vehicle_control(int command, int enable)
++{
++    if (g_spi_fd < 0) {
++        return -1;
++    }
++    
++    // 参数检查：命令必须在0-3范围内，enable必须是0或1
++    if (command < 0 || command > 3) {
++        printf("错误：车辆控制命令必须在0-3范围内，当前值: %d\n", command);
++        printf("0=前进, 1=后退, 2=左转, 3=右转\n");
++        return -1;
++    }
++    
++    if (enable != 0 && enable != 1) {
++        printf("错误：enable值必须是0或1，当前值: %d\n", enable);
++        return -1;
++    }
++    
++    uint16_t addr = (uint16_t)command;    // 地址0-3分别对应前进、后退、左转、右转
++    uint8_t control_value = (uint8_t)(enable ? 0 : 1);  // 逻辑：enable=1时发送0(运动)，enable=0时发送1(停止)
++    
++    const char* command_names[] = {"前进", "后退", "左转", "右转"};
++    const char* enable_text = enable ? "运动" : "停止";
++    
++    printf("正在%s %s...\n", enable_text, command_names[command]);
++    printf("调试信息: 命令=%d, enable=%d, 地址=0x%04X, 发送值=%d\n", 
++           command, enable, addr, control_value);
++    
++    // 直接写入车辆控制命令，不需要读回验证
++    int write_ret = fspi_write_data(addr, control_value);
++    
++    if (write_ret == 0) {
++        printf("车辆控制成功: %s %s (地址=0x%04X, 值=%d)\n", 
++               command_names[command], enable_text, addr, control_value);
++        return 0;
++    } else {
++        printf("车辆控制失败: %s %s (写入失败)\n", 
++               command_names[command], enable_text);
++        return -1;
++    }
++}
++
++// 便捷的车辆控制函数
++int vehicle_forward(int enable) {
++    return vehicle_control(0, enable);
++}
++
++int vehicle_backward(int enable) {
++    return vehicle_control(1, enable);
++}
++
++int vehicle_turn_left(int enable) {
++    return vehicle_control(2, enable);
++}
++
++int vehicle_turn_right(int enable) {
++    return vehicle_control(3, enable);
++}
++
++// 立即主动停止功能 - 地址4
++int vehicle_emergency_stop(void) {
++    if (g_spi_fd < 0) {
++        return -1;
++    }
++    
++    uint16_t addr = 4;        // 立即主动停止地址
++    uint8_t stop_value = 1;   // 写1表示立即停止
++    
++    printf("正在执行立即主动停止...\n");
++    
++    // 直接写入立即停止命令
++    int write_ret = fspi_write_data(addr, stop_value);
++    
++    if (write_ret == 0) {
++        printf("立即主动停止成功 (地址=0x%04X, 值=%d)\n", addr, stop_value);
++        return 0;
++    } else {
++        printf("立即主动停止失败 (写入失败)\n");
++        return -1;
++    }
++}
++
++// FSPI清理函数
++void fspi_cleanup(void)
++{
++    if (g_spi_fd >= 0) {
++        close(g_spi_fd);
++        g_spi_fd = -1;
++        printf("FSPI resources cleaned up\n");
++    }
+ }
+\ No newline at end of file
+diff --git a/udp_rk_rk_yolo/S/fspi/csrc/main.c b/udp_rk_rk_yolo/S/fspi/csrc/main.c
+index f0873b8..07c1183 100644
+--- a/udp_rk_rk_yolo/S/fspi/csrc/main.c
++++ b/udp_rk_rk_yolo/S/fspi/csrc/main.c
+@@ -1,641 +1,641 @@
+-/*
+- * 车辆控制程序 (弯道检测自动转向)
+- * 作者：辉哥大盗
+- * 功能：弯道检测自动左右转 + 人员检测紧急制动 + 显示控制
+- *
+- * 控制逻辑：
+- *   - 左右转向: 完全由弯道检测自动控制
+- *   - 弯道检测: 从UDP共享内存读取路况信息
+- *   - 自动转向: 左弯→左转1秒，右弯→右转1秒，直道→停止转向
+- *   - 人员检测: PCIe检测到人员时自动紧急制动
+- *   - 显示切换: 0x11-0x88对应8个摄像头，0x99对应所有摄像头
+- *
+- * 创建时间：2025年10月20日
+- * 修改时间：2025年11月18日 - 删除前进后退控制，只保留转向和制动
+- */
+-
+-#define _POSIX_C_SOURCE 200809L
+-#define _DEFAULT_SOURCE
+-#define _BSD_SOURCE
+-#include "fspi_module.h"
+-#include "../include/shared_memory.h"
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <string.h>
+-#include <unistd.h>
+-#include <signal.h>
+-#include <time.h>
+-#include <sys/time.h>
+-
+-// 方向盘转向时间参数(微秒)
+-#define TIME_NEUTRAL_TO_LEFT   500000   // 中间→左 (0.8秒)
+-#define TIME_NEUTRAL_TO_RIGHT  600000   // 中间→右 (0.8秒)
+-#define TIME_LEFT_TO_NEUTRAL   400000   // 左→中间 (0.4秒)
+-#define TIME_RIGHT_TO_NEUTRAL  400000   // 右→中间 (0.4秒)
+-#define TIME_LEFT_TO_RIGHT     1500000  // 左→右 (1.5秒)
+-
+-// 方向盘位置状态
+-typedef enum {
+-    WHEEL_LEFT,
+-    WHEEL_NEUTRAL,
+-    WHEEL_RIGHT
+-} WheelPosition;
+-
+-// 全局变量
+-static volatile int g_running = 1;
+-static DisplayControlSharedMemory* display_control_shm = NULL;
+-static EmergencyBrakeSharedMemory* emergency_brake_shm = NULL;
+-static WheelPosition wheel_position = WHEEL_NEUTRAL;
+-
+-// 人员检测停车功能控制
+-static int person_detection_brake_enabled = 0;  // 人员检测停车功能开关：1=开启，0=关闭
+-static uint8_t last_toggle_command = 0x00;      // 上次处理的切换指令值，避免重复处理
+-
+-// 获取当前时间戳（秒，支持小数）
+-double get_current_time() {
+-    struct timeval tv;
+-    gettimeofday(&tv, NULL);
+-    return tv.tv_sec + tv.tv_usec / 1000000.0;
+-}
+-
+-
+-// 信号处理函数
+-void signal_handler(int sig) {
+-    if (sig == SIGINT) {
+-        printf("\n收到Ctrl+C信号，正在退出...\n");
+-        g_running = 0;
+-    } else if (sig == SIGTERM) {
+-        printf("\n收到SIGTERM信号，正在退出...\n");
+-        g_running = 0;
+-    }
+-}
+-
+-// 转到左边
+-void turn_to_left() {
+-    if (wheel_position == WHEEL_LEFT) return;
+-
+-    if (wheel_position == WHEEL_RIGHT) {
+-        vehicle_control(2, 1);
+-        usleep(TIME_LEFT_TO_RIGHT);
+-        wheel_position = WHEEL_LEFT;
+-    } else {
+-        vehicle_control(2, 1);
+-        usleep(TIME_NEUTRAL_TO_LEFT);
+-        wheel_position = WHEEL_LEFT;
+-    }
+-    vehicle_control(2, 0);
+-}
+-
+-// 转到右边
+-void turn_to_right() {
+-    if (wheel_position == WHEEL_RIGHT) return;
+-
+-    if (wheel_position == WHEEL_LEFT) {
+-        vehicle_control(3, 1);
+-        usleep(TIME_LEFT_TO_RIGHT);
+-        wheel_position = WHEEL_RIGHT;
+-    } else {
+-        vehicle_control(3, 1);
+-        usleep(TIME_NEUTRAL_TO_RIGHT);
+-        wheel_position = WHEEL_RIGHT;
+-    }
+-    vehicle_control(3, 0);
+-}
+-
+-// 回中
+-void turn_to_neutral() {
+-    if (wheel_position == WHEEL_NEUTRAL) return;
+-
+-    if (wheel_position == WHEEL_LEFT) {
+-        vehicle_control(3, 1);
+-        usleep(TIME_LEFT_TO_NEUTRAL);
+-    } else {
+-        vehicle_control(2, 1);
+-        usleep(TIME_RIGHT_TO_NEUTRAL);
+-    }
+-    vehicle_control(2, 0);
+-    vehicle_control(3, 0);
+-    wheel_position = WHEEL_NEUTRAL;
+-}
+-
+-// 停止所有车辆运动
+-void stop_all_vehicle_movement() {
+-    printf("停止所有转向运动...\n");
+-    vehicle_control(2, 0);
+-    vehicle_control(3, 0);
+-    wheel_position = WHEEL_NEUTRAL;
+-    printf("所有转向运动已停止\n");
+-}
+-
+-int main(int argc, char *argv[]) {
+-    printf("=== 车辆控制程序 (弯道检测自动转向) ===\n");
+-    printf("版本: 8.0 (弯道检测自动转向 + 紧急制动)\n");
+-    printf("作者: 辉哥大盗\n");
+-    printf("功能: 弯道检测自动左右转 + 人员检测紧急制动 + 显示控制\n");
+-    printf("工作模式说明:\n");
+-    printf("- 实时读取: 从FSPI寄存器0读取实际模式值\n");
+-    printf("- 显示控制: 0x11-0x88对应8个摄像头，0x99对应所有摄像头\n");
+-    printf("- 左右转向: 完全由弯道检测自动控制\n");
+-    printf("- 紧急制动: PCIe检测到人员时写0到寄存器4，无人时写1\n");
+-    printf("- 制动控制: 0xff开启人员检测停车功能，0xee关闭该功能\n");
+-    printf("- 弯道检测: 自动读取UDP传来的弯道信息，智能控制车辆转向\n");
+-    printf("  * 智能转向: 左弯→左转，右弯→右转，直道→回中\n");
+-    printf("- 检测间隔: 每100ms检测一次模式变化\n");
+-    printf("- 实时响应: 检测到指令时立即执行对应操作\n\n");
+-    
+-
+-// 转到左边
+-void turn_to_left() {
+-    if (wheel_position == WHEEL_LEFT) return;
+-
+-    if (wheel_position == WHEEL_RIGHT) {
+-        vehicle_control(2, 1);
+-        usleep(TIME_LEFT_TO_RIGHT);
+-        wheel_position = WHEEL_LEFT;
+-    } else {
+-        vehicle_control(2, 1);
+-        usleep(TIME_NEUTRAL_TO_LEFT);
+-        wheel_position = WHEEL_LEFT;
+-    }
+-    vehicle_control(2, 0);
+-}
+-
+-// 转到右边
+-// void turn_to_right() {
+-//     if (wheel_position == WHEEL_RIGHT) return;
+-
+-//     if (wheel_position == WHEEL_LEFT) {
+-//         vehicle_control(3, 1);
+-//         usleep(TIME_LEFT_TO_RIGHT);
+-//         wheel_position = WHEEL_RIGHT;
+-//     } else {
+-//         vehicle_control(3, 1);
+-//         usleep(TIME_NEUTRAL_TO_RIGHT);
+-//         wheel_position = WHEEL_RIGHT;
+-//     }
+-//     vehicle_control(3, 0);
+-// }
+-
+-// // 回中
+-// void turn_to_neutral() {
+-//     if (wheel_position == WHEEL_NEUTRAL) return;
+-
+-//     if (wheel_position == WHEEL_LEFT) {
+-//         vehicle_control(3, 1);
+-//         usleep(TIME_LEFT_TO_NEUTRAL);
+-//     } else {
+-//         vehicle_control(2, 1);
+-//         usleep(TIME_RIGHT_TO_NEUTRAL);
+-//     }
+-//     vehicle_control(2, 0);
+-//     vehicle_control(3, 0);
+-//     wheel_position = WHEEL_NEUTRAL;
+-// }
+-    // 注册信号处理函数
+-    signal(SIGINT, signal_handler);
+-    signal(SIGTERM, signal_handler);
+-    
+-    // 初始化FSPI模块
+-    printf("=== FSPI模块初始化 ===\n");
+-    if (fspi_init() != 0) {
+-        printf("FSPI初始化失败！请检查:\n");
+-        printf("1. SPI设备文件是否存在: /dev/spidev4.0\n");
+-        printf("2. 是否有权限访问SPI设备 (可能需要sudo)\n");
+-        printf("3. 硬件连接是否正常\n");
+-        return -1;
+-    }
+-    printf("FSPI初始化成功！\n");
+-
+-    // 初始化所有控制寄存器为1
+-    printf("初始化所有控制寄存器: 写1到寄存器0-4\n");
+-    for (int i = 0; i <= 4; i++) {
+-        if (fspi_write_data(i, 1) == 0) {
+-            printf("✓ 寄存器%d初始化成功\n", i);
+-        } else {
+-            printf("✗ 寄存器%d初始化失败\n", i);
+-        }
+-    }
+-    printf("\n");
+-    
+-    // 初始化显示控制共享内存（写入者）
+-    printf("=== 显示控制共享内存初始化 ===\n");
+-    if (display_control_shm_init(&display_control_shm, 1) != 0) {
+-        printf("显示控制共享内存初始化失败！\n");
+-        fspi_cleanup();
+-        return -1;
+-    }
+-    printf("显示控制共享内存初始化成功\n\n");
+-    
+-    // 初始化紧急制动共享内存（读取者）
+-    printf("=== 紧急制动共享内存初始化 ===\n");
+-    if (emergency_brake_shm_init(&emergency_brake_shm, 0) != 0) {
+-        printf("紧急制动共享内存初始化失败！请先启动PCIe检测程序\n");
+-        printf("提示: 紧急制动功能需要PCIe程序先启动创建共享内存\n");
+-        emergency_brake_shm = NULL;  // 设为NULL，程序继续运行但没有紧急制动功能
+-    } else {
+-        printf("紧急制动共享内存初始化成功\n");
+-    }
+-    printf("\n");
+-    
+-    // 初始化紧急制动共享内存（读取者）
+-    printf("=== 紧急制动共享内存初始化 ===\n");
+-    if (emergency_brake_shm_init(&emergency_brake_shm, 0) != 0) {
+-        printf("紧急制动共享内存初始化失败！\n");
+-        printf("注意: 这可能是因为PCIe程序尚未启动或已退出\n");
+-        printf("紧急制动功能将被禁用，但其他功能正常\n");
+-        emergency_brake_shm = NULL;  // 设置为NULL表示不可用
+-    } else {
+-        printf("紧急制动共享内存初始化成功\n");
+-    }
+-    printf("\n");
+-
+-    // 初始化弯道检测共享内存（读取者）
+-    printf("=== 弯道检测共享内存初始化 ===\n");
+-    if (curve_detection_shm_init(0) != 0) {  // 0表示读取者
+-        printf("弯道检测共享内存初始化失败！\n");
+-        printf("注意: 这可能是因为UDP程序尚未启动\n");
+-        printf("弯道检测功能将被禁用，但其他功能正常\n");
+-    } else {
+-        printf("弯道检测共享内存初始化成功，FSPI将读取UDP传来的弯道信息\n");
+-    }
+-    printf("\n");
+-    
+-    printf("=== 开始实际模式读取 ===\n");
+-    printf("将持续监控FSPI寄存器0的模式值变化...\n");
+-    printf("按 Ctrl+C 退出程序\n\n");
+-    
+-    // 模式检测变量
+-    uint8_t last_read_value = 0xee;  // 上次读取的值
+-    uint8_t current_valid_mode = 0x00;  // 当前有效的模式值（非0x00）
+-    uint8_t mode_update_count = 0;
+-
+-    printf("=== 开始监控FSPI寄存器0 ===\n");
+-    printf("按钮逻辑: 按下时产生指令值，松开时回到0x00\n");
+-    printf("支持的指令值:\n");
+-    printf("  显示控制: 0x11-0x88(单摄像头), 0x99(全部摄像头)\n");
+-    printf("  左右转向: 完全由弯道检测自动控制\n");
+-    printf("  制动功能控制: 0xff(开启人员检测停车功能), 0xee(关闭人员检测停车功能)\n");
+-    printf("  紧急制动: 自动检测人员控制寄存器4 [有人:写0, 无人:写1]\n");
+-    printf("  弯道检测: 自动读取UDP传来的弯道信息并控制车辆转向 [置信度≥60%%时执行]\n");
+-    if (emergency_brake_shm) {
+-        printf("  紧急制动状态: 已启用，正在监控PCIe人员检测\n");
+-    } else {
+-        printf("  紧急制动状态: 未启用（PCIe程序未运行）\n");
+-    }
+-    printf("  人员检测停车功能: %s (0xff开启，0xee关闭)\n",
+-           person_detection_brake_enabled ? "已开启" : "已关闭");
+-    printf("  弯道检测功能: 已启用，自动控制车辆转向\n");
+-    printf("\n");
+-    
+-    // 弯道检测状态变量（在循环外定义，供循环内多个地方使用）
+-    uint32_t current_curve_frame_id = 0;
+-    CurveType current_curve_type = CURVE_NONE;
+-    uint32_t current_curve_confidence = 0;
+-    uint32_t current_curve_angle = 0;
+-    int curve_data_valid = 0;  // 标记当前周期的弯道数据是否有效
+-
+-    while (g_running) {
+-        printf("test\n");
+-
+-        // 重置弯道数据有效标志
+-        curve_data_valid = 0;
+-
+-        // 1. 读取弯道检测信息（只读取，不控制）
+-        {
+-            // 静态变量跟踪状态
+-            static uint32_t curve_check_count = 0;
+-            static int read_fail_count = 0;
+-            static int first_read = 1;  // 首次读取标志
+-
+-            curve_check_count++;
+-
+-            // 尝试读取弯道检测结果
+-            int read_result = curve_detection_read(&current_curve_frame_id, &current_curve_type,
+-                                     &current_curve_confidence, &current_curve_angle);
+-
+-            // 首次读取时立即显示状态
+-            if (first_read) {
+-                if (read_result != 0) {
+-                    printf("[Road Detection] WARNING: Shared memory read failed - UDP program may not be running\n");
+-                } else {
+-                    printf("[Road Detection] Initialized successfully\n");
+-                }
+-                first_read = 0;
+-            }
+-
+-            // 读取失败时的处理
+-            if (read_result != 0) {
+-                read_fail_count++;
+-                // 前10次失败立即打印，之后每5秒打印一次
+-                if (read_fail_count <= 10 || read_fail_count % 50 == 1) {
+-                    printf("[Road Detection] Shared memory read failed (count: %d) - Check if UDP is running\n", read_fail_count);
+-                }
+-            } else {
+-                // 读取成功，重置失败计数
+-                if (read_fail_count > 0) {
+-                    printf("[Road Detection] Shared memory read recovered\n");
+-                    read_fail_count = 0;
+-                }
+-
+-                // 标记数据有效
+-                curve_data_valid = 1;
+-
+-                // 每次读取成功都打印读到的路况信息
+-                const char* curve_name = "";
+-                switch(current_curve_type) {
+-                    case CURVE_NONE:
+-                        curve_name = "STRAIGHT";
+-                        break;
+-                    case CURVE_LEFT:
+-                        curve_name = "LEFT";
+-                        break;
+-                    case CURVE_RIGHT:
+-                        curve_name = "RIGHT";
+-                        break;
+-                    case CURVE_BOTH:
+-                        curve_name = "S-CURVE";
+-                        break;
+-                }
+-                const char* pos_name = wheel_position == WHEEL_LEFT ? "LEFT" :
+-                                       wheel_position == WHEEL_RIGHT ? "RIGHT" : "NEUTRAL";
+-                printf("[SHM Read] Frame%u: %s | Conf:%u%% | Angle:%u | Wheel:%s\n",
+-                       current_curve_frame_id, curve_name, current_curve_confidence, current_curve_angle, pos_name);
+-            }
+-        }
+-
+-        // 2. 检查紧急制动状态
+-        if (emergency_brake_shm) {
+-            int person_detected = 0;
+-            int brake_enable = 1;
+-
+-            if (emergency_brake_read_status(emergency_brake_shm, &person_detected, &brake_enable) == 0) {
+-                static int last_person_detected = -1;  // 记录上次人员检测状态
+-                static int last_written_value = -1;    // 记录上次写入寄存器4的值
+-
+-                // 记录人员检测状态变化
+-                if (person_detected != last_person_detected) {
+-                    printf("📡 人员检测状态: %s → %s\n",
+-                           last_person_detected == -1 ? "初始化" : (last_person_detected ? "有人员" : "无人员"),
+-                           person_detected ? "有人员" : "无人员");
+-                    last_person_detected = person_detected;
+-                }
+-
+-                // 计算需要写入的值
+-                int value_to_write;
+-                if (!person_detection_brake_enabled) {
+-                    // 功能已关闭，保持寄存器4为1（正常运行）
+-                    value_to_write = 1;
+-                } else {
+-                    // 功能已开启，根据人员检测状态控制
+-                    value_to_write = person_detected ? 0 : 1;
+-                }
+-
+-                // 只在值需要改变时才写入
+-                if (value_to_write != last_written_value) {
+-                    fspi_write_data(4, value_to_write);
+-                    last_written_value = value_to_write;
+-
+-                    // 打印状态变化信息
+-                    if (person_detection_brake_enabled) {
+-                        if (value_to_write == 0) {
+-                            printf("\n🚨 紧急制动: 检测到人员，写0到寄存器4\n");
+-                        } else {
+-                            printf("\n✅ 正常运行: 无人员，写1到寄存器4\n");
+-                        }
+-                    } else {
+-                        printf("\n📊 制动功能已关闭: 写1到寄存器4保持正常运行\n");
+-                    }
+-                }
+-            } else {
+-                // 如果读取失败，可能PCIe程序已退出
+-                static int shm_error_count = 0;
+-                if (++shm_error_count >= 50) {  // 5秒后报告一次
+-                    printf("警告: 紧急制动共享内存读取失败，PCIe程序可能已退出\n");
+-                    shm_error_count = 0;
+-                }
+-            }
+-        }
+-
+-        // 3. 根据弯道检测结果执行自动转向控制（在读取FSPI指令之前）
+-        if (curve_data_valid) {
+-            // 静态变量跟踪上次的弯道类型，用于避免重复执行
+-            static CurveType last_applied_curve_type = CURVE_NONE;
+-            static uint32_t last_applied_confidence = 0;
+-
+-            // 检测弯道类型变化用于日志输出
+-            int should_log = (current_curve_type != last_applied_curve_type) ||
+-                            (abs((int)current_curve_confidence - (int)last_applied_confidence) > 20);
+-
+-            // 根据当前弯道类型执行转向控制（每次都检查）
+-            if (current_curve_confidence >= 60) {  // 只有置信度足够高时才执行
+-                switch(current_curve_type) {
+-                    case CURVE_NONE:
+-                        if (should_log) {
+-                            printf("\n========================================\n");
+-                            printf("Road: STRAIGHT (Frame %u, Conf:%u%%)\n", current_curve_frame_id, current_curve_confidence);
+-                            printf("========================================\n\n");
+-                        }
+-                        turn_to_neutral();
+-                        break;
+-
+-                    case CURVE_LEFT:
+-                        if (should_log) {
+-                            printf("\n========================================\n");
+-                            printf("Road: LEFT (Frame %u, Conf:%u%%, Angle:%u)\n",
+-                                   current_curve_frame_id, current_curve_confidence, current_curve_angle);
+-                            printf("========================================\n\n");
+-                        }
+-                        turn_to_left();
+-                        break;
+-
+-                    case CURVE_RIGHT:
+-                        if (should_log) {
+-                            printf("\n========================================\n");
+-                            printf("Road: RIGHT (Frame %u, Conf:%u%%, Angle:%u)\n",
+-                                   current_curve_frame_id, current_curve_confidence, current_curve_angle);
+-                            printf("========================================\n\n");
+-                        }
+-                        turn_to_right();
+-                        break;
+-
+-                    case CURVE_BOTH:
+-                        if (should_log) {
+-                            printf("\n========================================\n");
+-                            printf("Road: S-CURVE (Frame %u, Conf:%u%%)\n", current_curve_frame_id, current_curve_confidence);
+-                            printf("   Action: Maintain current turn state\n");
+-                            printf("========================================\n\n");
+-                        }
+-                        break;
+-                }
+-            }
+-
+-            // 更新记录值用于下次日志判断
+-            last_applied_curve_type = current_curve_type;
+-            last_applied_confidence = current_curve_confidence;
+-        }
+-
+-        // 4. 实际从FSPI寄存器0读取模式值
+-        uint8_t current_mode_value = 0;
+-        if (fspi_read_data(0, &current_mode_value) != 0) {
+-            usleep(100000);  // 失败时等待100ms再重试
+-            continue;
+-        }
+-
+-        // 只在值发生变化时记录
+-        if (current_mode_value != last_read_value) {
+-            last_read_value = current_mode_value;
+-        }
+-
+-        // 5. 检查是否是人员检测停车功能控制指令
+-        if ((current_mode_value == 0xff || current_mode_value == 0xee) && 
+-            current_mode_value != last_toggle_command) {
+-            
+-            printf("\n=== 人员检测停车功能控制 ===\n");
+-            printf("接收到指令: 0x%02X", current_mode_value);
+-            
+-            // 根据不同指令设置功能状态：0xff=开启，0xee=关闭
+-            if (current_mode_value == 0xff) {
+-                if (!person_detection_brake_enabled) {
+-                    person_detection_brake_enabled = 1;
+-                    printf(" (开启功能)\n");
+-                    printf("✅ 人员检测停车功能已开启\n");
+-                    printf("🛡️  提示: 检测到人员时将自动触发紧急制动\n");
+-                } else {
+-                    printf(" (已经开启)\n");
+-                    printf("✅ 人员检测停车功能保持开启状态\n");
+-                    printf("🛡️  提示: 功能已经处于开启状态\n");
+-                }
+-            } else if (current_mode_value == 0xee) {
+-                if (person_detection_brake_enabled) {
+-                    person_detection_brake_enabled = 0;
+-                    printf(" (关闭功能)\n");
+-                    printf("🚫 人员检测停车功能已关闭\n");
+-                    printf("⚠️  注意: 即使检测到人员，车辆也不会自动停车\n");
+-                } else {
+-                    printf(" (已经关闭)\n");
+-                    printf("🚫 人员检测停车功能保持关闭状态\n");
+-                    printf("⚠️  提示: 功能已经处于关闭状态\n");
+-                }
+-            }
+-            
+-            last_toggle_command = current_mode_value;  // 记录当前指令，避免重复处理
+-            
+-            printf("🔄 当前状态: %s\n", person_detection_brake_enabled ? "已开启" : "已关闭");
+-            printf("💡 说明: 发送0xff开启功能，发送0xee关闭功能\n");
+-            printf("=== 继续监控指令 ===\n\n");
+-            usleep(100000);
+-            continue;
+-        }
+-        
+-        // 检查是否是有效的显示模式值（非0x00且非车辆控制指令）
+-        DisplayMode new_mode = DISPLAY_MODE_ALL_CAMERAS;  // 默认值
+-        const char* mode_name = "未知模式";
+-        int valid_mode = 1;
+-        
+-        switch (current_mode_value) {
+-            case 0x11:
+-                new_mode = DISPLAY_MODE_PCIE_TOP_LEFT;
+-                mode_name = "PCIe左上角摄像头";
+-                break;
+-            case 0x22:
+-                new_mode = DISPLAY_MODE_PCIE_BOTTOM_LEFT;
+-                mode_name = "后左摄像头";
+-                break;
+-            case 0x33:
+-                new_mode = DISPLAY_MODE_PCIE_TOP_RIGHT;
+-                mode_name = "后右摄像头";
+-                break;
+-            case 0x44:
+-                new_mode = DISPLAY_MODE_PCIE_BOTTOM_RIGHT;
+-                mode_name = "PCIe右下角摄像头";
+-                break;
+-            case 0x55:
+-                new_mode = DISPLAY_MODE_UDP_TOP_LEFT;
+-                mode_name = "UDP左上角摄像头";
+-                break;
+-            case 0x66:
+-                new_mode = DISPLAY_MODE_UDP_TOP_RIGHT;
+-                mode_name = "UDP右上角摄像头";
+-                break;
+-            case 0x77:
+-                new_mode = DISPLAY_MODE_UDP_BOTTOM_LEFT;
+-                mode_name = "UDP左下角摄像头";
+-                break;
+-            case 0x88:
+-                new_mode = DISPLAY_MODE_UDP_BOTTOM_RIGHT;
+-                mode_name = "UDP右下角摄像头";
+-                break;
+-            case 0x99:
+-                new_mode = DISPLAY_MODE_ALL_CAMERAS;
+-                mode_name = "所有8个摄像头";
+-                break;
+-            default:
+-                valid_mode = 0;  // 无效模式，跳过处理
+-                break;
+-        }
+-        
+-        // 只在有效模式且与当前有效模式不同时更新
+-        if (valid_mode && current_mode_value != current_valid_mode) {
+-            time_t current_time = time(NULL);
+-            mode_update_count++;
+-            current_valid_mode = current_mode_value;  // 更新当前有效模式值
+-            
+-            printf("\n=== 检测到按钮按下 ===\n");
+-            printf("按下按钮值: 0x%02X\n", current_mode_value);
+-            printf("切换到模式: %s (0x%02X)\n", mode_name, new_mode);
+-            printf("累计切换次数: %d\n", mode_update_count);
+-            
+-            // 更新显示控制共享内存
+-            if (display_control_shm && display_control_shm->valid) {
+-                __sync_lock_test_and_set(&display_control_shm->mode, new_mode);
+-                __sync_lock_test_and_set(&display_control_shm->button_count, mode_update_count);
+-                __sync_lock_test_and_set(&display_control_shm->last_update, (uint32_t)current_time);
+-                
+-                printf("✓ 显示模式已切换到: %s\n", mode_name);
+-                printf("✓ 共享内存已更新 (模式=0x%02X, 时间戳=%ld)\n", new_mode, current_time);
+-                printf("✓ 当前有效模式值保存为: 0x%02X\n", current_valid_mode);
+-            } else {
+-                printf("✗ 警告: 显示控制共享内存无效，无法更新模式\n");
+-            }
+-            
+-            printf("=== 继续监控按钮状态 ===\n\n");
+-        } else if (valid_mode && current_mode_value == current_valid_mode) {
+-            // 相同的有效值，不需要更新，静默处理
+-        } else if (!valid_mode) {
+-            // 静默忽略无效值
+-        }
+-        
+-        // 每100ms检测一次，响应更快
+-        usleep(100000);
+-    }
+-    
+-    // 程序退出前的清理工作
+-    printf("\n=== 程序退出清理 ===\n");
+-
+-    // 停止所有车辆运动
+-    stop_all_vehicle_movement();
+-
+-    // 清理弯道检测共享内存
+-    printf("清理弯道检测共享内存...\n");
+-    curve_detection_shm_cleanup();
+-
+-    // 清理紧急制动共享内存
+-    if (emergency_brake_shm) {
+-        printf("清理紧急制动共享内存...\n");
+-        emergency_brake_shm_cleanup(emergency_brake_shm, 0);
+-        emergency_brake_shm = NULL;
+-    }
+-    
+-    // 清理显示控制共享内存
+-    if (display_control_shm) {
+-        printf("清理显示控制共享内存...\n");
+-        display_control_shm_cleanup(display_control_shm, 1);
+-    }
+-    
+-    // 清理FSPI资源
+-    printf("清理FSPI资源...\n");
+-    fspi_cleanup();
+-    
+-    printf("所有资源清理完成，程序退出\n");
+-    return 0;
++/*
++ * 车辆控制程序 (弯道检测自动转向)
++ * 作者：辉哥大盗
++ * 功能：弯道检测自动左右转 + 人员检测紧急制动 + 显示控制
++ *
++ * 控制逻辑：
++ *   - 左右转向: 完全由弯道检测自动控制
++ *   - 弯道检测: 从UDP共享内存读取路况信息
++ *   - 自动转向: 左弯→左转1秒，右弯→右转1秒，直道→停止转向
++ *   - 人员检测: PCIe检测到人员时自动紧急制动
++ *   - 显示切换: 0x11-0x88对应8个摄像头，0x99对应所有摄像头
++ *
++ * 创建时间：2025年10月20日
++ * 修改时间：2025年11月18日 - 删除前进后退控制，只保留转向和制动
++ */
++
++#define _POSIX_C_SOURCE 200809L
++#define _DEFAULT_SOURCE
++#define _BSD_SOURCE
++#include "fspi_module.h"
++#include "../include/shared_memory.h"
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++#include <signal.h>
++#include <time.h>
++#include <sys/time.h>
++
++// 方向盘转向时间参数(微秒)
++#define TIME_NEUTRAL_TO_LEFT   500000   // 中间→左 (0.8秒)
++#define TIME_NEUTRAL_TO_RIGHT  600000   // 中间→右 (0.8秒)
++#define TIME_LEFT_TO_NEUTRAL   400000   // 左→中间 (0.4秒)
++#define TIME_RIGHT_TO_NEUTRAL  400000   // 右→中间 (0.4秒)
++#define TIME_LEFT_TO_RIGHT     1500000  // 左→右 (1.5秒)
++
++// 方向盘位置状态
++typedef enum {
++    WHEEL_LEFT,
++    WHEEL_NEUTRAL,
++    WHEEL_RIGHT
++} WheelPosition;
++
++// 全局变量
++static volatile int g_running = 1;
++static DisplayControlSharedMemory* display_control_shm = NULL;
++static EmergencyBrakeSharedMemory* emergency_brake_shm = NULL;
++static WheelPosition wheel_position = WHEEL_NEUTRAL;
++
++// 人员检测停车功能控制
++static int person_detection_brake_enabled = 0;  // 人员检测停车功能开关：1=开启，0=关闭
++static uint8_t last_toggle_command = 0x00;      // 上次处理的切换指令值，避免重复处理
++
++// 获取当前时间戳（秒，支持小数）
++double get_current_time() {
++    struct timeval tv;
++    gettimeofday(&tv, NULL);
++    return tv.tv_sec + tv.tv_usec / 1000000.0;
++}
++
++
++// 信号处理函数
++void signal_handler(int sig) {
++    if (sig == SIGINT) {
++        printf("\n收到Ctrl+C信号，正在退出...\n");
++        g_running = 0;
++    } else if (sig == SIGTERM) {
++        printf("\n收到SIGTERM信号，正在退出...\n");
++        g_running = 0;
++    }
++}
++
++// 转到左边
++void turn_to_left() {
++    if (wheel_position == WHEEL_LEFT) return;
++
++    if (wheel_position == WHEEL_RIGHT) {
++        vehicle_control(2, 1);
++        usleep(TIME_LEFT_TO_RIGHT);
++        wheel_position = WHEEL_LEFT;
++    } else {
++        vehicle_control(2, 1);
++        usleep(TIME_NEUTRAL_TO_LEFT);
++        wheel_position = WHEEL_LEFT;
++    }
++    vehicle_control(2, 0);
++}
++
++// 转到右边
++void turn_to_right() {
++    if (wheel_position == WHEEL_RIGHT) return;
++
++    if (wheel_position == WHEEL_LEFT) {
++        vehicle_control(3, 1);
++        usleep(TIME_LEFT_TO_RIGHT);
++        wheel_position = WHEEL_RIGHT;
++    } else {
++        vehicle_control(3, 1);
++        usleep(TIME_NEUTRAL_TO_RIGHT);
++        wheel_position = WHEEL_RIGHT;
++    }
++    vehicle_control(3, 0);
++}
++
++// 回中
++void turn_to_neutral() {
++    if (wheel_position == WHEEL_NEUTRAL) return;
++
++    if (wheel_position == WHEEL_LEFT) {
++        vehicle_control(3, 1);
++        usleep(TIME_LEFT_TO_NEUTRAL);
++    } else {
++        vehicle_control(2, 1);
++        usleep(TIME_RIGHT_TO_NEUTRAL);
++    }
++    vehicle_control(2, 0);
++    vehicle_control(3, 0);
++    wheel_position = WHEEL_NEUTRAL;
++}
++
++// 停止所有车辆运动
++void stop_all_vehicle_movement() {
++    printf("停止所有转向运动...\n");
++    vehicle_control(2, 0);
++    vehicle_control(3, 0);
++    wheel_position = WHEEL_NEUTRAL;
++    printf("所有转向运动已停止\n");
++}
++
++int main(int argc, char *argv[]) {
++    printf("=== 车辆控制程序 (弯道检测自动转向) ===\n");
++    printf("版本: 8.0 (弯道检测自动转向 + 紧急制动)\n");
++    printf("作者: 辉哥大盗\n");
++    printf("功能: 弯道检测自动左右转 + 人员检测紧急制动 + 显示控制\n");
++    printf("工作模式说明:\n");
++    printf("- 实时读取: 从FSPI寄存器0读取实际模式值\n");
++    printf("- 显示控制: 0x11-0x88对应8个摄像头，0x99对应所有摄像头\n");
++    printf("- 左右转向: 完全由弯道检测自动控制\n");
++    printf("- 紧急制动: PCIe检测到人员时写0到寄存器4，无人时写1\n");
++    printf("- 制动控制: 0xff开启人员检测停车功能，0xee关闭该功能\n");
++    printf("- 弯道检测: 自动读取UDP传来的弯道信息，智能控制车辆转向\n");
++    printf("  * 智能转向: 左弯→左转，右弯→右转，直道→回中\n");
++    printf("- 检测间隔: 每100ms检测一次模式变化\n");
++    printf("- 实时响应: 检测到指令时立即执行对应操作\n\n");
++    
++
++// 转到左边
++void turn_to_left() {
++    if (wheel_position == WHEEL_LEFT) return;
++
++    if (wheel_position == WHEEL_RIGHT) {
++        vehicle_control(2, 1);
++        usleep(TIME_LEFT_TO_RIGHT);
++        wheel_position = WHEEL_LEFT;
++    } else {
++        vehicle_control(2, 1);
++        usleep(TIME_NEUTRAL_TO_LEFT);
++        wheel_position = WHEEL_LEFT;
++    }
++    vehicle_control(2, 0);
++}
++
++// 转到右边
++// void turn_to_right() {
++//     if (wheel_position == WHEEL_RIGHT) return;
++
++//     if (wheel_position == WHEEL_LEFT) {
++//         vehicle_control(3, 1);
++//         usleep(TIME_LEFT_TO_RIGHT);
++//         wheel_position = WHEEL_RIGHT;
++//     } else {
++//         vehicle_control(3, 1);
++//         usleep(TIME_NEUTRAL_TO_RIGHT);
++//         wheel_position = WHEEL_RIGHT;
++//     }
++//     vehicle_control(3, 0);
++// }
++
++// // 回中
++// void turn_to_neutral() {
++//     if (wheel_position == WHEEL_NEUTRAL) return;
++
++//     if (wheel_position == WHEEL_LEFT) {
++//         vehicle_control(3, 1);
++//         usleep(TIME_LEFT_TO_NEUTRAL);
++//     } else {
++//         vehicle_control(2, 1);
++//         usleep(TIME_RIGHT_TO_NEUTRAL);
++//     }
++//     vehicle_control(2, 0);
++//     vehicle_control(3, 0);
++//     wheel_position = WHEEL_NEUTRAL;
++// }
++    // 注册信号处理函数
++    signal(SIGINT, signal_handler);
++    signal(SIGTERM, signal_handler);
++    
++    // 初始化FSPI模块
++    printf("=== FSPI模块初始化 ===\n");
++    if (fspi_init() != 0) {
++        printf("FSPI初始化失败！请检查:\n");
++        printf("1. SPI设备文件是否存在: /dev/spidev4.0\n");
++        printf("2. 是否有权限访问SPI设备 (可能需要sudo)\n");
++        printf("3. 硬件连接是否正常\n");
++        return -1;
++    }
++    printf("FSPI初始化成功！\n");
++
++    // 初始化所有控制寄存器为1
++    printf("初始化所有控制寄存器: 写1到寄存器0-4\n");
++    for (int i = 0; i <= 4; i++) {
++        if (fspi_write_data(i, 1) == 0) {
++            printf("✓ 寄存器%d初始化成功\n", i);
++        } else {
++            printf("✗ 寄存器%d初始化失败\n", i);
++        }
++    }
++    printf("\n");
++    
++    // 初始化显示控制共享内存（写入者）
++    printf("=== 显示控制共享内存初始化 ===\n");
++    if (display_control_shm_init(&display_control_shm, 1) != 0) {
++        printf("显示控制共享内存初始化失败！\n");
++        fspi_cleanup();
++        return -1;
++    }
++    printf("显示控制共享内存初始化成功\n\n");
++    
++    // 初始化紧急制动共享内存（读取者）
++    printf("=== 紧急制动共享内存初始化 ===\n");
++    if (emergency_brake_shm_init(&emergency_brake_shm, 0) != 0) {
++        printf("紧急制动共享内存初始化失败！请先启动PCIe检测程序\n");
++        printf("提示: 紧急制动功能需要PCIe程序先启动创建共享内存\n");
++        emergency_brake_shm = NULL;  // 设为NULL，程序继续运行但没有紧急制动功能
++    } else {
++        printf("紧急制动共享内存初始化成功\n");
++    }
++    printf("\n");
++    
++    // 初始化紧急制动共享内存（读取者）
++    printf("=== 紧急制动共享内存初始化 ===\n");
++    if (emergency_brake_shm_init(&emergency_brake_shm, 0) != 0) {
++        printf("紧急制动共享内存初始化失败！\n");
++        printf("注意: 这可能是因为PCIe程序尚未启动或已退出\n");
++        printf("紧急制动功能将被禁用，但其他功能正常\n");
++        emergency_brake_shm = NULL;  // 设置为NULL表示不可用
++    } else {
++        printf("紧急制动共享内存初始化成功\n");
++    }
++    printf("\n");
++
++    // 初始化弯道检测共享内存（读取者）
++    printf("=== 弯道检测共享内存初始化 ===\n");
++    if (curve_detection_shm_init(0) != 0) {  // 0表示读取者
++        printf("弯道检测共享内存初始化失败！\n");
++        printf("注意: 这可能是因为UDP程序尚未启动\n");
++        printf("弯道检测功能将被禁用，但其他功能正常\n");
++    } else {
++        printf("弯道检测共享内存初始化成功，FSPI将读取UDP传来的弯道信息\n");
++    }
++    printf("\n");
++    
++    printf("=== 开始实际模式读取 ===\n");
++    printf("将持续监控FSPI寄存器0的模式值变化...\n");
++    printf("按 Ctrl+C 退出程序\n\n");
++    
++    // 模式检测变量
++    uint8_t last_read_value = 0xee;  // 上次读取的值
++    uint8_t current_valid_mode = 0x00;  // 当前有效的模式值（非0x00）
++    uint8_t mode_update_count = 0;
++
++    printf("=== 开始监控FSPI寄存器0 ===\n");
++    printf("按钮逻辑: 按下时产生指令值，松开时回到0x00\n");
++    printf("支持的指令值:\n");
++    printf("  显示控制: 0x11-0x88(单摄像头), 0x99(全部摄像头)\n");
++    printf("  左右转向: 完全由弯道检测自动控制\n");
++    printf("  制动功能控制: 0xff(开启人员检测停车功能), 0xee(关闭人员检测停车功能)\n");
++    printf("  紧急制动: 自动检测人员控制寄存器4 [有人:写0, 无人:写1]\n");
++    printf("  弯道检测: 自动读取UDP传来的弯道信息并控制车辆转向 [置信度≥60%%时执行]\n");
++    if (emergency_brake_shm) {
++        printf("  紧急制动状态: 已启用，正在监控PCIe人员检测\n");
++    } else {
++        printf("  紧急制动状态: 未启用（PCIe程序未运行）\n");
++    }
++    printf("  人员检测停车功能: %s (0xff开启，0xee关闭)\n",
++           person_detection_brake_enabled ? "已开启" : "已关闭");
++    printf("  弯道检测功能: 已启用，自动控制车辆转向\n");
++    printf("\n");
++    
++    // 弯道检测状态变量（在循环外定义，供循环内多个地方使用）
++    uint32_t current_curve_frame_id = 0;
++    CurveType current_curve_type = CURVE_NONE;
++    uint32_t current_curve_confidence = 0;
++    uint32_t current_curve_angle = 0;
++    int curve_data_valid = 0;  // 标记当前周期的弯道数据是否有效
++
++    while (g_running) {
++        printf("test\n");
++
++        // 重置弯道数据有效标志
++        curve_data_valid = 0;
++
++        // 1. 读取弯道检测信息（只读取，不控制）
++        {
++            // 静态变量跟踪状态
++            static uint32_t curve_check_count = 0;
++            static int read_fail_count = 0;
++            static int first_read = 1;  // 首次读取标志
++
++            curve_check_count++;
++
++            // 尝试读取弯道检测结果
++            int read_result = curve_detection_read(&current_curve_frame_id, &current_curve_type,
++                                     &current_curve_confidence, &current_curve_angle);
++
++            // 首次读取时立即显示状态
++            if (first_read) {
++                if (read_result != 0) {
++                    printf("[Road Detection] WARNING: Shared memory read failed - UDP program may not be running\n");
++                } else {
++                    printf("[Road Detection] Initialized successfully\n");
++                }
++                first_read = 0;
++            }
++
++            // 读取失败时的处理
++            if (read_result != 0) {
++                read_fail_count++;
++                // 前10次失败立即打印，之后每5秒打印一次
++                if (read_fail_count <= 10 || read_fail_count % 50 == 1) {
++                    printf("[Road Detection] Shared memory read failed (count: %d) - Check if UDP is running\n", read_fail_count);
++                }
++            } else {
++                // 读取成功，重置失败计数
++                if (read_fail_count > 0) {
++                    printf("[Road Detection] Shared memory read recovered\n");
++                    read_fail_count = 0;
++                }
++
++                // 标记数据有效
++                curve_data_valid = 1;
++
++                // 每次读取成功都打印读到的路况信息
++                const char* curve_name = "";
++                switch(current_curve_type) {
++                    case CURVE_NONE:
++                        curve_name = "STRAIGHT";
++                        break;
++                    case CURVE_LEFT:
++                        curve_name = "LEFT";
++                        break;
++                    case CURVE_RIGHT:
++                        curve_name = "RIGHT";
++                        break;
++                    case CURVE_BOTH:
++                        curve_name = "S-CURVE";
++                        break;
++                }
++                const char* pos_name = wheel_position == WHEEL_LEFT ? "LEFT" :
++                                       wheel_position == WHEEL_RIGHT ? "RIGHT" : "NEUTRAL";
++                printf("[SHM Read] Frame%u: %s | Conf:%u%% | Angle:%u | Wheel:%s\n",
++                       current_curve_frame_id, curve_name, current_curve_confidence, current_curve_angle, pos_name);
++            }
++        }
++
++        // 2. 检查紧急制动状态
++        if (emergency_brake_shm) {
++            int person_detected = 0;
++            int brake_enable = 1;
++
++            if (emergency_brake_read_status(emergency_brake_shm, &person_detected, &brake_enable) == 0) {
++                static int last_person_detected = -1;  // 记录上次人员检测状态
++                static int last_written_value = -1;    // 记录上次写入寄存器4的值
++
++                // 记录人员检测状态变化
++                if (person_detected != last_person_detected) {
++                    printf("📡 人员检测状态: %s → %s\n",
++                           last_person_detected == -1 ? "初始化" : (last_person_detected ? "有人员" : "无人员"),
++                           person_detected ? "有人员" : "无人员");
++                    last_person_detected = person_detected;
++                }
++
++                // 计算需要写入的值
++                int value_to_write;
++                if (!person_detection_brake_enabled) {
++                    // 功能已关闭，保持寄存器4为1（正常运行）
++                    value_to_write = 1;
++                } else {
++                    // 功能已开启，根据人员检测状态控制
++                    value_to_write = person_detected ? 0 : 1;
++                }
++
++                // 只在值需要改变时才写入
++                if (value_to_write != last_written_value) {
++                    fspi_write_data(4, value_to_write);
++                    last_written_value = value_to_write;
++
++                    // 打印状态变化信息
++                    if (person_detection_brake_enabled) {
++                        if (value_to_write == 0) {
++                            printf("\n🚨 紧急制动: 检测到人员，写0到寄存器4\n");
++                        } else {
++                            printf("\n✅ 正常运行: 无人员，写1到寄存器4\n");
++                        }
++                    } else {
++                        printf("\n📊 制动功能已关闭: 写1到寄存器4保持正常运行\n");
++                    }
++                }
++            } else {
++                // 如果读取失败，可能PCIe程序已退出
++                static int shm_error_count = 0;
++                if (++shm_error_count >= 50) {  // 5秒后报告一次
++                    printf("警告: 紧急制动共享内存读取失败，PCIe程序可能已退出\n");
++                    shm_error_count = 0;
++                }
++            }
++        }
++
++        // 3. 根据弯道检测结果执行自动转向控制（在读取FSPI指令之前）
++        if (curve_data_valid) {
++            // 静态变量跟踪上次的弯道类型，用于避免重复执行
++            static CurveType last_applied_curve_type = CURVE_NONE;
++            static uint32_t last_applied_confidence = 0;
++
++            // 检测弯道类型变化用于日志输出
++            int should_log = (current_curve_type != last_applied_curve_type) ||
++                            (abs((int)current_curve_confidence - (int)last_applied_confidence) > 20);
++
++            // 根据当前弯道类型执行转向控制（每次都检查）
++            if (current_curve_confidence >= 60) {  // 只有置信度足够高时才执行
++                switch(current_curve_type) {
++                    case CURVE_NONE:
++                        if (should_log) {
++                            printf("\n========================================\n");
++                            printf("Road: STRAIGHT (Frame %u, Conf:%u%%)\n", current_curve_frame_id, current_curve_confidence);
++                            printf("========================================\n\n");
++                        }
++                        turn_to_neutral();
++                        break;
++
++                    case CURVE_LEFT:
++                        if (should_log) {
++                            printf("\n========================================\n");
++                            printf("Road: LEFT (Frame %u, Conf:%u%%, Angle:%u)\n",
++                                   current_curve_frame_id, current_curve_confidence, current_curve_angle);
++                            printf("========================================\n\n");
++                        }
++                        turn_to_left();
++                        break;
++
++                    case CURVE_RIGHT:
++                        if (should_log) {
++                            printf("\n========================================\n");
++                            printf("Road: RIGHT (Frame %u, Conf:%u%%, Angle:%u)\n",
++                                   current_curve_frame_id, current_curve_confidence, current_curve_angle);
++                            printf("========================================\n\n");
++                        }
++                        turn_to_right();
++                        break;
++
++                    case CURVE_BOTH:
++                        if (should_log) {
++                            printf("\n========================================\n");
++                            printf("Road: S-CURVE (Frame %u, Conf:%u%%)\n", current_curve_frame_id, current_curve_confidence);
++                            printf("   Action: Maintain current turn state\n");
++                            printf("========================================\n\n");
++                        }
++                        break;
++                }
++            }
++
++            // 更新记录值用于下次日志判断
++            last_applied_curve_type = current_curve_type;
++            last_applied_confidence = current_curve_confidence;
++        }
++
++        // 4. 实际从FSPI寄存器0读取模式值
++        uint8_t current_mode_value = 0;
++        if (fspi_read_data(0, &current_mode_value) != 0) {
++            usleep(100000);  // 失败时等待100ms再重试
++            continue;
++        }
++
++        // 只在值发生变化时记录
++        if (current_mode_value != last_read_value) {
++            last_read_value = current_mode_value;
++        }
++
++        // 5. 检查是否是人员检测停车功能控制指令
++        if ((current_mode_value == 0xff || current_mode_value == 0xee) && 
++            current_mode_value != last_toggle_command) {
++            
++            printf("\n=== 人员检测停车功能控制 ===\n");
++            printf("接收到指令: 0x%02X", current_mode_value);
++            
++            // 根据不同指令设置功能状态：0xff=开启，0xee=关闭
++            if (current_mode_value == 0xff) {
++                if (!person_detection_brake_enabled) {
++                    person_detection_brake_enabled = 1;
++                    printf(" (开启功能)\n");
++                    printf("✅ 人员检测停车功能已开启\n");
++                    printf("🛡️  提示: 检测到人员时将自动触发紧急制动\n");
++                } else {
++                    printf(" (已经开启)\n");
++                    printf("✅ 人员检测停车功能保持开启状态\n");
++                    printf("🛡️  提示: 功能已经处于开启状态\n");
++                }
++            } else if (current_mode_value == 0xee) {
++                if (person_detection_brake_enabled) {
++                    person_detection_brake_enabled = 0;
++                    printf(" (关闭功能)\n");
++                    printf("🚫 人员检测停车功能已关闭\n");
++                    printf("⚠️  注意: 即使检测到人员，车辆也不会自动停车\n");
++                } else {
++                    printf(" (已经关闭)\n");
++                    printf("🚫 人员检测停车功能保持关闭状态\n");
++                    printf("⚠️  提示: 功能已经处于关闭状态\n");
++                }
++            }
++            
++            last_toggle_command = current_mode_value;  // 记录当前指令，避免重复处理
++            
++            printf("🔄 当前状态: %s\n", person_detection_brake_enabled ? "已开启" : "已关闭");
++            printf("💡 说明: 发送0xff开启功能，发送0xee关闭功能\n");
++            printf("=== 继续监控指令 ===\n\n");
++            usleep(100000);
++            continue;
++        }
++        
++        // 检查是否是有效的显示模式值（非0x00且非车辆控制指令）
++        DisplayMode new_mode = DISPLAY_MODE_ALL_CAMERAS;  // 默认值
++        const char* mode_name = "未知模式";
++        int valid_mode = 1;
++        
++        switch (current_mode_value) {
++            case 0x11:
++                new_mode = DISPLAY_MODE_PCIE_TOP_LEFT;
++                mode_name = "PCIe左上角摄像头";
++                break;
++            case 0x22:
++                new_mode = DISPLAY_MODE_PCIE_BOTTOM_LEFT;
++                mode_name = "后左摄像头";
++                break;
++            case 0x33:
++                new_mode = DISPLAY_MODE_PCIE_TOP_RIGHT;
++                mode_name = "后右摄像头";
++                break;
++            case 0x44:
++                new_mode = DISPLAY_MODE_PCIE_BOTTOM_RIGHT;
++                mode_name = "PCIe右下角摄像头";
++                break;
++            case 0x55:
++                new_mode = DISPLAY_MODE_UDP_TOP_LEFT;
++                mode_name = "UDP左上角摄像头";
++                break;
++            case 0x66:
++                new_mode = DISPLAY_MODE_UDP_TOP_RIGHT;
++                mode_name = "UDP右上角摄像头";
++                break;
++            case 0x77:
++                new_mode = DISPLAY_MODE_UDP_BOTTOM_LEFT;
++                mode_name = "UDP左下角摄像头";
++                break;
++            case 0x88:
++                new_mode = DISPLAY_MODE_UDP_BOTTOM_RIGHT;
++                mode_name = "UDP右下角摄像头";
++                break;
++            case 0x99:
++                new_mode = DISPLAY_MODE_ALL_CAMERAS;
++                mode_name = "所有8个摄像头";
++                break;
++            default:
++                valid_mode = 0;  // 无效模式，跳过处理
++                break;
++        }
++        
++        // 只在有效模式且与当前有效模式不同时更新
++        if (valid_mode && current_mode_value != current_valid_mode) {
++            time_t current_time = time(NULL);
++            mode_update_count++;
++            current_valid_mode = current_mode_value;  // 更新当前有效模式值
++            
++            printf("\n=== 检测到按钮按下 ===\n");
++            printf("按下按钮值: 0x%02X\n", current_mode_value);
++            printf("切换到模式: %s (0x%02X)\n", mode_name, new_mode);
++            printf("累计切换次数: %d\n", mode_update_count);
++            
++            // 更新显示控制共享内存
++            if (display_control_shm && display_control_shm->valid) {
++                __sync_lock_test_and_set(&display_control_shm->mode, new_mode);
++                __sync_lock_test_and_set(&display_control_shm->button_count, mode_update_count);
++                __sync_lock_test_and_set(&display_control_shm->last_update, (uint32_t)current_time);
++                
++                printf("✓ 显示模式已切换到: %s\n", mode_name);
++                printf("✓ 共享内存已更新 (模式=0x%02X, 时间戳=%ld)\n", new_mode, current_time);
++                printf("✓ 当前有效模式值保存为: 0x%02X\n", current_valid_mode);
++            } else {
++                printf("✗ 警告: 显示控制共享内存无效，无法更新模式\n");
++            }
++            
++            printf("=== 继续监控按钮状态 ===\n\n");
++        } else if (valid_mode && current_mode_value == current_valid_mode) {
++            // 相同的有效值，不需要更新，静默处理
++        } else if (!valid_mode) {
++            // 静默忽略无效值
++        }
++        
++        // 每100ms检测一次，响应更快
++        usleep(100000);
++    }
++    
++    // 程序退出前的清理工作
++    printf("\n=== 程序退出清理 ===\n");
++
++    // 停止所有车辆运动
++    stop_all_vehicle_movement();
++
++    // 清理弯道检测共享内存
++    printf("清理弯道检测共享内存...\n");
++    curve_detection_shm_cleanup();
++
++    // 清理紧急制动共享内存
++    if (emergency_brake_shm) {
++        printf("清理紧急制动共享内存...\n");
++        emergency_brake_shm_cleanup(emergency_brake_shm, 0);
++        emergency_brake_shm = NULL;
++    }
++    
++    // 清理显示控制共享内存
++    if (display_control_shm) {
++        printf("清理显示控制共享内存...\n");
++        display_control_shm_cleanup(display_control_shm, 1);
++    }
++    
++    // 清理FSPI资源
++    printf("清理FSPI资源...\n");
++    fspi_cleanup();
++    
++    printf("所有资源清理完成，程序退出\n");
++    return 0;
+ }
+\ No newline at end of file
+diff --git a/udp_rk_rk_yolo/S/fspi/include/fspi_module.h b/udp_rk_rk_yolo/S/fspi/include/fspi_module.h
+index 32b8924..00635e2 100644
+--- a/udp_rk_rk_yolo/S/fspi/include/fspi_module.h
++++ b/udp_rk_rk_yolo/S/fspi/include/fspi_module.h
+@@ -1,96 +1,96 @@
+-#ifndef FSPI_MODULE_H
+-#define FSPI_MODULE_H
+-
+-#include <stdint.h>
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-/**
+- * @brief FSPI模块初始化
+- * @return 0表示成功，-1表示失败
+- */
+-int fspi_init(void);
+-
+-/**
+- * @brief FSPI写数据
+- * @param addr 写入地址 (16位)
+- * @param data 写入数据 (8位)
+- * @return 0表示成功，-1表示失败
+- */
+-int fspi_write_data(uint16_t addr, uint8_t data);
+-
+-/**
+- * @brief FSPI读数据 - 用于读取指定地址的寄存器值
+- * @param addr 读取地址 (16位)
+- *             地址0: 小车视镜功能状态寄存器
+- *                   0x00 = 前视镜模式
+- *                   0x11 = 后视镜模式
+- *                   其他值 = 异常状态
+- *             地址1-4: 其他功能寄存器
+- * @param data 读取数据指针 (8位) - 用于存储读取到的寄存器值
+- * @return 0表示成功，-1表示失败
+- * @note 此函数会进行多次读取重试，返回出现频率最高的值以提高可靠性
+- */
+-int fspi_read_data(uint16_t addr, uint8_t *data);
+-
+-/**
+- * @brief FSPI直接读数据 - 不需要先写地址
+- * @param data 读取数据指针 (8位)
+- * @return 0表示成功，-1表示失败
+- */
+-int fspi_read_direct(uint8_t *data);
+-
+-/**
+- * @brief 车辆控制函数（无读回验证）
+- * @param command 控制命令 (0=前进, 1=后退, 2=左转, 3=右转)
+- * @param enable 运动/停止 (1=运动, 0=停止) -> 实际发送值：运动=0, 停止=1
+- * @return 0表示成功，-1表示失败
+- */
+-int vehicle_control(int command, int enable);
+-
+-/**
+- * @brief 车辆前进控制
+- * @param enable 运动/停止 (1=运动, 0=停止) -> 实际发送值：运动=0, 停止=1
+- * @return 0表示成功，-1表示失败
+- */
+-int vehicle_forward(int enable);
+-
+-/**
+- * @brief 车辆后退控制
+- * @param enable 运动/停止 (1=运动, 0=停止) -> 实际发送值：运动=0, 停止=1
+- * @return 0表示成功，-1表示失败
+- */
+-int vehicle_backward(int enable);
+-
+-/**
+- * @brief 车辆左转控制
+- * @param enable 运动/停止 (1=运动, 0=停止) -> 实际发送值：运动=0, 停止=1
+- * @return 0表示成功，-1表示失败
+- */
+-int vehicle_turn_left(int enable);
+-
+-/**
+- * @brief 车辆右转控制
+- * @param enable 运动/停止 (1=运动, 0=停止) -> 实际发送值：运动=0, 停止=1
+- * @return 0表示成功，-1表示失败
+- */
+-int vehicle_turn_right(int enable);
+-
+-/**
+- * @brief 立即主动停止 - 地址4
+- * @return 0表示成功，-1表示失败
+- */
+-int vehicle_emergency_stop(void);
+-
+-/**
+- * @brief FSPI清理资源
+- */
+-void fspi_cleanup(void);
+-
+-#ifdef __cplusplus
+-}
+-#endif
+-
++#ifndef FSPI_MODULE_H
++#define FSPI_MODULE_H
++
++#include <stdint.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++/**
++ * @brief FSPI模块初始化
++ * @return 0表示成功，-1表示失败
++ */
++int fspi_init(void);
++
++/**
++ * @brief FSPI写数据
++ * @param addr 写入地址 (16位)
++ * @param data 写入数据 (8位)
++ * @return 0表示成功，-1表示失败
++ */
++int fspi_write_data(uint16_t addr, uint8_t data);
++
++/**
++ * @brief FSPI读数据 - 用于读取指定地址的寄存器值
++ * @param addr 读取地址 (16位)
++ *             地址0: 小车视镜功能状态寄存器
++ *                   0x00 = 前视镜模式
++ *                   0x11 = 后视镜模式
++ *                   其他值 = 异常状态
++ *             地址1-4: 其他功能寄存器
++ * @param data 读取数据指针 (8位) - 用于存储读取到的寄存器值
++ * @return 0表示成功，-1表示失败
++ * @note 此函数会进行多次读取重试，返回出现频率最高的值以提高可靠性
++ */
++int fspi_read_data(uint16_t addr, uint8_t *data);
++
++/**
++ * @brief FSPI直接读数据 - 不需要先写地址
++ * @param data 读取数据指针 (8位)
++ * @return 0表示成功，-1表示失败
++ */
++int fspi_read_direct(uint8_t *data);
++
++/**
++ * @brief 车辆控制函数（无读回验证）
++ * @param command 控制命令 (0=前进, 1=后退, 2=左转, 3=右转)
++ * @param enable 运动/停止 (1=运动, 0=停止) -> 实际发送值：运动=0, 停止=1
++ * @return 0表示成功，-1表示失败
++ */
++int vehicle_control(int command, int enable);
++
++/**
++ * @brief 车辆前进控制
++ * @param enable 运动/停止 (1=运动, 0=停止) -> 实际发送值：运动=0, 停止=1
++ * @return 0表示成功，-1表示失败
++ */
++int vehicle_forward(int enable);
++
++/**
++ * @brief 车辆后退控制
++ * @param enable 运动/停止 (1=运动, 0=停止) -> 实际发送值：运动=0, 停止=1
++ * @return 0表示成功，-1表示失败
++ */
++int vehicle_backward(int enable);
++
++/**
++ * @brief 车辆左转控制
++ * @param enable 运动/停止 (1=运动, 0=停止) -> 实际发送值：运动=0, 停止=1
++ * @return 0表示成功，-1表示失败
++ */
++int vehicle_turn_left(int enable);
++
++/**
++ * @brief 车辆右转控制
++ * @param enable 运动/停止 (1=运动, 0=停止) -> 实际发送值：运动=0, 停止=1
++ * @return 0表示成功，-1表示失败
++ */
++int vehicle_turn_right(int enable);
++
++/**
++ * @brief 立即主动停止 - 地址4
++ * @return 0表示成功，-1表示失败
++ */
++int vehicle_emergency_stop(void);
++
++/**
++ * @brief FSPI清理资源
++ */
++void fspi_cleanup(void);
++
++#ifdef __cplusplus
++}
++#endif
++
+ #endif // FSPI_MODULE_H
+\ No newline at end of file
+diff --git a/udp_rk_rk_yolo/S/setup_network.sh b/udp_rk_rk_yolo/S/setup_network.sh
+old mode 100644
+new mode 100755
+-- 
+2.55.0.windows.3
+

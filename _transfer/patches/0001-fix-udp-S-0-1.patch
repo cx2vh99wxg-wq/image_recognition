@@ -1,0 +1,697 @@
+From c5f757504bdcd21cda778815c495ac3a5751fbbc Mon Sep 17 00:00:00 2001
+From: WorkBuddy <wb@local>
+Date: Wed, 7 Oct 2026 19:52:34 +0800
+Subject: [PATCH 1/2] =?UTF-8?q?fix(udp):=20=E4=BF=AE=E5=A4=8D=20S=20?=
+ =?UTF-8?q?=E7=AB=AF=E6=94=B6=E5=B8=A7=E6=81=92=200=20=E2=80=94=E2=80=94?=
+ =?UTF-8?q?=20=E6=B6=88=E8=B4=B9=E8=80=85=E6=AF=8F=E8=BD=AE=E5=8F=AA?=
+ =?UTF-8?q?=E5=8F=96=201=20=E5=8C=85=E5=AF=BC=E8=87=B4=E5=86=85=E6=A0=B8?=
+ =?UTF-8?q?=E9=98=9F=E5=88=97=E6=BA=A2=E5=87=BA=E4=B8=A2=E5=8C=85?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+根因（联调实测）：
+  一帧 = 1 帧头 + 439 块 = 440 个 UDP 包，M 端毫秒级突发发完
+  （桩模式 5 帧/s ≈ 2200 包/s）。main_planning 旧循环每轮只 recv 一个包，
+  且每轮还要渲染 LCD（数十 ms），消费能力约 20~50 包/s，比产出低两个数量级；
+  叠加 SO_RCVBUF 被 net.core.rmem_max(默认 ~208KB ≈100 包) 静默截断，
+  内核 UDP 接收队列反复溢出丢包 → 439 块永远凑不齐 → 收帧恒 0（LCD 帧照常增长）。
+
+修复：
+  1) udp_receiver: 新增 udp_receiver_wait / udp_receiver_recv_nb(MSG_DONTWAIT)
+     + udp_receiver_stats（含 /proc/net/snmp 的 RcvbufErrors），并记录 SO_RCVBUF 实际生效值；
+  2) main_planning: 每轮把内核队列收干（UDP_RECV_DRAIN_MAX），多帧只落地最后一帧；
+  3) 统计日志分层打印：socket收包 / 重组接受块 / 丢块分解 / 内核溢出 → 一眼定位故障层；
+  4) udp_sender: 轻度整形（每 64 块 200us），拉平微突发；
+  5) driving_config: UDP_RECV_BUF_BYTES 4MB→8MB，新增 drain/wait/pace/rmem 目标常量；
+  6) 新增 scripts/tune_net.sh（提高 rmem_max，可 --persist），已接入 start_m/start_s；
+  7) README 补充「收帧恒 0」排障表。
+
+验证：本机 make 全量构建 + 全部单测 PASS；udp_receiver/udp_sender 的 __linux__
+分支用最小 POSIX 桩头文件以 -Werror 编译通过。
+---
+ README.md                       |  28 ++++++-
+ common/include/driving_config.h |  26 +++++-
+ planning/csrc/main_planning.c   |  94 ++++++++++++++++-----
+ planning/csrc/udp_receiver.c    | 141 ++++++++++++++++++++++++++++----
+ planning/csrc/udp_sender.c      |   9 ++
+ planning/include/udp_receiver.h |  31 +++++++
+ scripts/start_m.sh              |  16 ++--
+ scripts/start_s.sh              |  13 ++-
+ scripts/tune_net.sh             |  66 +++++++++++++++
+ 9 files changed, 376 insertions(+), 48 deletions(-)
+ create mode 100644 scripts/tune_net.sh
+
+diff --git a/README.md b/README.md
+index b3fb530..4e3ddef 100644
+--- a/README.md
++++ b/README.md
+@@ -19,9 +19,10 @@ image_recognition/
+ ├── control/       # 执行层（C，待交付）：FSPI 主机驱动 + 100ms 控制循环 + 安全
+ ├── fpga/          # FPGA RTL（C）：PCIe 封包 / FSPI 从机 / 串口屏 UART
+ ├── HMI/           # 陶晶驰串口屏工程（C）
+-├── scripts/       # 启动/停止/网络/诊断脚本（B）
++├── scripts/       # 启动/停止/网络/调优/诊断脚本（B）
+ │   ├── start_m.sh start_s.sh stop_all.sh
+ │   ├── setup_network_m.sh setup_network_s.sh check_system.sh
++│   ├── tune_net.sh   # 放大内核 UDP 缓冲（rmem_max）——"收帧恒 0"必查项
+ │   └── board/     # 板卡部署：bashrc.m/s 自启模板 + deploy_board.sh
+ ├── drivers/       # 板端 PCIe 驱动（二进制，来自参考工程）pango_pci_driver.ko
+ ├── lib/           # 板端 RKNN 运行时（二进制，来自参考工程）librknnrt.so
+@@ -64,18 +65,39 @@ sudo ./scripts/board/deploy_board.sh s    # S 板：同上
+ ### 启动 / 停止
+ 
+ ```bash
+-# M 板：insmod 驱动 → 配 IP 192.168.100.10(end1) → 感知 + UDP 发送
++# M 板：insmod 驱动 → 配 IP 192.168.100.10(end0/end1 自动探测) → 感知 + UDP 发送
+ sudo ./scripts/start_m.sh [模型绝对路径] [驱动ko绝对路径]
+-# S 板：配 IP 192.168.100.20(end1) → 决策 + UDP 接收 + LCD（--no-lcd 无屏跑）
++# S 板：配 IP 192.168.100.20 → 内核 UDP 缓冲调优 → 决策 + UDP 接收 + LCD（--no-lcd 无屏跑）
+ sudo ./scripts/start_s.sh --model /path/to/yolov5s-640-640.rknn
+ 
+ # 或顶层 Makefile 等价命令（板卡上）：make run-m / run-s / stop / status
+ # 网络单独配置：sudo ./scripts/setup_network_m.sh / setup_network_s.sh
++# 内核 UDP 缓冲调优：sudo ./scripts/tune_net.sh [--persist]
+ # 诊断：./scripts/check_system.sh
+ # 清理
+ ./scripts/stop_all.sh
+ ```
+ 
++### 排障：S 端"收帧"恒为 0（LCD 帧却在涨）
++
++一帧 = 1 帧头 + 439 个数据块 = 440 个 UDP 包（614400B / 1400B），M 端在毫秒级
++突发里发完（桩模式 5 帧/s ≈ 2200 包/s）。S 端若消费跟不上，内核接收队列会
++**静默丢包**，439 块永远凑不齐 → 收帧恒 0（LCD 帧不受影响，照常增长）。
++
++必查三项（planning_main 每 2s 打印一行统计，已内置分层诊断）：
++
++| 现象 | 结论 |
++|---|---|
++| `socket收包=0` 不涨 | 包没进进程：IP/网线/端口（先用 Python 在 8888 计数验证） |
++| `socket收包` 涨、`重组接受块` 不涨 | 包到了但被丢：看"内核队列溢出"计数 |
++| `重组接受块` 涨、`收帧=0` | 块收不齐（丢包）→ 按下面两步修 |
++| `收帧` 增长 | 链路正常 |
++
++```bash
++sudo ./scripts/tune_net.sh          # ① 提高 net.core.rmem_max（默认仅 ~208KB，装不下一帧）
++# ② 确认 planning_main 启动日志 SO_RCVBUF ≥ 16MB，且每轮把内核队列收干（代码已内置）
++```
++
+ PC 联调（M2 验收）：`python3 planning/test/udp_mock.py 192.168.100.20 8888 100 left`
+ 
+ ## 数据流（重构后）
+diff --git a/common/include/driving_config.h b/common/include/driving_config.h
+index 85b1763..6de5bd0 100644
+--- a/common/include/driving_config.h
++++ b/common/include/driving_config.h
+@@ -91,11 +91,35 @@
+ #define UDP_IP_S            "192.168.100.20"   /* S 端板卡 IP（接收方目标地址） */
+ #define UDP_BLOCK_SIZE      1400               /* 每数据块 payload 上限（≤MTU 安全） */
+ #define UDP_SEND_BUF_BYTES  (2 * 1024 * 1024)  /* socket 发送缓冲（2MB） */
+-#define UDP_RECV_BUF_BYTES  (4 * 1024 * 1024)  /* socket 接收缓冲（4MB） */
++#define UDP_RECV_BUF_BYTES  (8 * 1024 * 1024)  /* socket 接收缓冲（8MB，见下） */
+ #define UDP_HEARTBEAT_MS    200                /* 心跳周期：>200ms 无心跳看门狗自停 */
+ #define UDP_WATCHDOG_TIMEOUT_MS 1000           /* 看门狗超时（C 端落地 FPGA 兜底） */
+ #define UDP_FRAME_TIMEOUT_MS   200             /* 接收端整帧重组超时（丢弃残帧） */
+ 
++/* ----------------------------------------------------------------------
++ * UDP 吞吐/缓冲调优（B，2026-10-07 联调修复）
++ *
++ * 背景：一帧 614400B → 1 帧头 + 439 个数据块 = 440 包，M 端在一个突发里
++ * 连续发出（无间隔），桩模式 5 帧/s ≈ 2200 包/s。S 端若"每轮只 recv 一个包"
++ * 且一轮里还要渲染 LCD（数十 ms），消费速度比产出低两个数量级 → 内核 UDP
++ * 接收队列反复溢出丢包 → 439 块永远凑不齐 → 收帧恒 0（LCD 帧却照常增长）。
++ *
++ * 修复必须"两手抓"：
++ *   1) 消费端每轮把内核队列收干（UDP_RECV_DRAIN_MAX），见 main_planning.c；
++ *   2) 内核缓冲要能吞下"一轮没收包期间"到达的整帧（≈440 包 ≈ 0.9MB 内存账），
++ *      SO_RCVBUF 会被 net.core.rmem_max 静默截断（默认仅 ~208KB！），
++ *      故需 scripts/tune_net.sh 把 rmem_max 提到 ≥ UDP_KERNEL_RMEM_TARGET。
++ * -------------------------------------------------------------------- */
++#define UDP_RECV_DRAIN_MAX     4096            /* 单轮最多从 socket 取走的包数（防死循环空转） */
++#define UDP_RECV_WAIT_MS       10              /* 无包时的 poll 等待（ms），避免空转烧 CPU */
++#define UDP_KERNEL_RMEM_TARGET (16 * 1024 * 1024)  /* 要求 net.core.rmem_max ≥ 该值（16MB） */
++
++/* 发送端轻度整形：每发 UDP_SEND_PACE_EVERY 个块插入 UDP_SEND_PACE_US 微秒间隔，
++ * 把"440 包一次性糊上去"的微突发拉平，降低对端内核队列瞬时压力。
++ * 置 UDP_SEND_PACE_EVERY = 0 可关闭（关闭后帧发送耗时 ≈ 网络时延，最快）。 */
++#define UDP_SEND_PACE_EVERY 64
++#define UDP_SEND_PACE_US    200
++
+ /* ======================================================================
+  * 七、B 侧契约结构（暂存本文件，待三人 review 后并入 driving_types.h）
+  * ==================================================================== */
+diff --git a/planning/csrc/main_planning.c b/planning/csrc/main_planning.c
+index ff0c952..5d2e4cd 100644
+--- a/planning/csrc/main_planning.c
++++ b/planning/csrc/main_planning.c
+@@ -83,10 +83,21 @@ int main(int argc, char **argv)
+     /* ---- UDP 接收器 ---- */
+     udp_receiver_t *recv = NULL;
+     if (udp_receiver_init(&recv, UDP_PORT) != 0) {
+-        LOGE("UDP 接收器初始化失败: %d\n", UDP_PORT);
++        LOGE("UDP 接收器初始化失败: %d（端口被占用？先 pkill -f planning_main）\n", UDP_PORT);
+         return -1;
+     }
+-    LOGI("UDP 监听 :%d\n", UDP_PORT);
++    {
++        /* 打印"实际生效"的接收缓冲：SO_RCVBUF 会被内核按 net.core.rmem_max 静默截断，
++         * 若这里远小于 2MB，就说明 tune_net.sh 还没执行，突发丢包风险很高。 */
++        udp_recv_stats_t st;
++        memset(&st, 0, sizeof(st));
++        if (udp_receiver_stats(recv, &st) == 0) {
++            LOGI("UDP 监听 :%d  SO_RCVBUF=%d 字节\n", UDP_PORT, st.rcvbuf_eff);
++            if (st.rcvbuf_eff > 0 && st.rcvbuf_eff < (int)(2 * 1024 * 1024))
++                LOGW("接收缓冲偏小！一帧=440 包(≈0.9MB)会突发到达，容易溢出丢包。"
++                     "请先执行 sudo ./scripts/tune_net.sh（提高 net.core.rmem_max）\n");
++        }
++    }
+ 
+     /* ---- 整帧重组 ---- */
+     static uint8_t s_frame[IMG_FRAME_BYTES];
+@@ -128,25 +139,49 @@ int main(int argc, char **argv)
+     while (g_keep_running) {
+         uint64_t now = now_us_mono();
+ 
+-        /* ---- 1. UDP 收包并重组 ---- */
+-        int n = udp_receiver_recv(recv, s_pkt, sizeof(s_pkt), 10);
+-        if (n > 0) {
+-            last_pkt_us = now;
+-            udp_frame_hdr_t hdr;
+-            uint8_t *frame = NULL;
+-            size_t frame_len = 0;
+-            int done = udp_reassembly_feed(&reass, s_pkt, (size_t)n, &hdr, &frame, &frame_len);
+-            if (done == 1) {
+-                frames_recv++;
+-                /* 写远端图 + 转发车道结果到 S 板 shm_lane */
+-                if (shm_write_udp_img(frame, frame_len) != 0) LOGW("写 shm_udp_img 失败\n");
+-                if (udp_hdr_to_lane(&hdr, &cur_lane) == 0) {
+-                    if (shm_write_lane(&cur_lane) != 0) LOGW("转发 shm_lane 失败\n");
+-                    lane_fresh = 1;   /* 仅在真正收到新帧时置位，供决策做超龄判断 */
++        /* ---- 1. UDP 收包并重组（每轮把内核队列收干！） ----
++         * 关键：一帧 = 1 帧头 + 439 个数据块（614400B / 1400B）= 440 包，M 端在一个
++         * 突发里连续发出（桩模式 5 帧/s ≈ 2200 包/s）。旧实现每轮只 recv "一个"
++         * 数据报，而一轮还要渲染 LCD（数十 ms），消费能力 ≈ 20~50 包/s，比产出低
++         * 两个数量级 → 内核 UDP 接收队列反复溢出、静默丢包 → 439 块永远凑不齐 →
++         * "收帧"恒为 0（而 LCD 帧照常增长，因为它不依赖收包）。
++         * 修复：poll 到可读后，用非阻塞 recv 把队列里已有的包一次收干再走后续流程。 */
++        int any_pkt = 0;                 /* 本轮是否收到过包（用于超时判定/日志） */
++        int any_frame = 0;               /* 本轮是否重组出完整帧 */
++        udp_frame_hdr_t last_hdr;        /* 本轮最后一个完整帧的帧头 */
++        uint8_t *last_frame = NULL;
++        size_t   last_frame_len = 0;
++
++        if (udp_receiver_wait(recv, UDP_RECV_WAIT_MS) > 0) {
++            for (int k = 0; k < UDP_RECV_DRAIN_MAX; k++) {
++                int n = udp_receiver_recv_nb(recv, s_pkt, sizeof(s_pkt));
++                if (n <= 0) break;               /* 队列已取干（或出错） */
++                any_pkt = 1;
++
++                uint8_t *frame = NULL;
++                size_t frame_len = 0;
++                int done = udp_reassembly_feed(&reass, s_pkt, (size_t)n,
++                                               &last_hdr, &frame, &frame_len);
++                if (done == 1) {
++                    frames_recv++;
++                    any_frame = 1;
++                    last_frame = frame;          /* 本轮可能重组出多帧，只落地最后一帧 */
++                    last_frame_len = frame_len;
+                 }
+             }
+         }
+-        /* 重组超时：丢弃残帧 */
++
++        if (any_frame) {
++            /* 写远端图（LCD 右半屏数据源）+ 转发车道结果到 S 板 shm_lane */
++            if (shm_write_udp_img(last_frame, last_frame_len) != 0) LOGW("写 shm_udp_img 失败\n");
++            if (udp_hdr_to_lane(&last_hdr, &cur_lane) == 0) {
++                if (shm_write_lane(&cur_lane) != 0) LOGW("转发 shm_lane 失败\n");
++                lane_fresh = 1;   /* 仅在真正收到新帧时置位，供决策做超龄判断 */
++            }
++        }
++
++        /* 重组超时：丢弃残帧（有包进来就不算超时，避免正常收块期间误清） */
++        if (any_pkt) last_pkt_us = now;
+         if (reass.have_hdr && (now - last_pkt_us) > (uint64_t)UDP_FRAME_TIMEOUT_MS * 1000u)
+             udp_reassembly_reset(&reass);
+ 
+@@ -190,11 +225,30 @@ int main(int argc, char **argv)
+                 frames_lcd++;
+         }
+ 
+-        /* ---- 统计（每 2s） ---- */
++        /* ---- 统计（每 2s） ----
++         * 分层打印，便于一眼定位故障层：
++         *   socket收包=0                       → 包没进进程（网络/IP/端口）
++         *   socket收包增长但 重组接受块 不涨    → 丢块（内核溢出/校验/乱序）
++         *   接受块增长但 收帧=0                → 块收不齐（丢包导致）→ 看内核溢出计数
++         *   收帧增长                           → 链路正常 */
+         if (now - last_stat_us >= 2000000u) {
+             last_stat_us = now;
+-            LOGI("收帧=%u LCD帧=%u | 最近命令=%d enable=%u pri=%u conf=%u\n",
++
++            udp_recv_stats_t st;
++            memset(&st, 0, sizeof(st));
++            udp_receiver_stats(recv, &st);
++
++            LOGI("收帧=%u LCD帧=%u | socket收包=%llu 重组接受块=%u\n",
+                  frames_recv, frames_lcd,
++                 (unsigned long long)st.pkts, reass.stat_block_ok);
++            LOGI("  丢块[校验=%u 重复=%u 无帧头=%u 旧帧=%u 异常=%u 帧头失败=%u] "
++                 "内核[rcvbuf=%d 队列溢出=%llu InErrors=%llu]\n",
++                 reass.stat_drop_checksum, reass.stat_drop_dup, reass.stat_drop_nohdr,
++                 reass.stat_drop_fid, reass.stat_drop_other, reass.stat_begin_fail,
++                 st.rcvbuf_eff,
++                 (unsigned long long)st.kern_rcvbuferr,
++                 (unsigned long long)st.kern_inerr);
++            LOGI("  最近命令=%d enable=%u pri=%u conf=%u\n",
+                  (int)cmd.command, (unsigned)cmd.enable,
+                  (unsigned)cmd.priority, (unsigned)cmd.confidence);
+         }
+diff --git a/planning/csrc/udp_receiver.c b/planning/csrc/udp_receiver.c
+index 596168b..28eb170 100644
+--- a/planning/csrc/udp_receiver.c
++++ b/planning/csrc/udp_receiver.c
+@@ -67,31 +67,38 @@ int udp_reassembly_feed(udp_reassembly_t *r, const uint8_t *pkt, size_t len,
+     if (t == UDP_PKT_FRAME_HDR) {
+         udp_frame_hdr_t hdr;
+         if (udp_unpack_frame_hdr(pkt, len, &hdr) != 0) return -1;
+-        if (begin_frame(r, &hdr) != 0) return -1;
++        if (begin_frame(r, &hdr) != 0) { r->stat_begin_fail++; return -1; }
++        r->stat_hdr_rx++;
+         return 0;   /* 帧头本身不构成"完整帧" */
+     }
+ 
+     if (t == UDP_PKT_DATA) {
+-        if (!r->have_hdr) return 0;   /* 无帧头先来，丢弃 */
++        if (!r->have_hdr) { r->stat_drop_nohdr++; return 0; }   /* 无帧头先来，丢弃 */
+ 
+         const udp_data_hdr_t *dh = (const udp_data_hdr_t *)pkt;
+-        if (dh->frame_id != r->cur_frame_id) return 0;   /* 旧帧残块，丢弃 */
+-        if (dh->block_idx >= r->block_count) return 0;
++        if (dh->frame_id != r->cur_frame_id) { r->stat_drop_fid++; return 0; }  /* 旧帧残块，丢弃 */
++        if (dh->block_idx >= r->block_count) { r->stat_drop_other++; return 0; }
+ 
+         const size_t payload_len = len - sizeof(udp_data_hdr_t);
+-        if (payload_len > r->block_size) return 0;
++        if (payload_len > r->block_size) { r->stat_drop_other++; return 0; }
+         /* 非最后一块必须满长；最后一块允许小于 block_size */
+-        if (dh->block_idx < r->block_count - 1u && payload_len != r->block_size) return 0;
++        if (dh->block_idx < r->block_count - 1u && payload_len != r->block_size) {
++            r->stat_drop_other++;
++            return 0;
++        }
+ 
+-        if (r->got[dh->block_idx]) return 0;   /* 重复块，丢弃 */
++        if (r->got[dh->block_idx]) { r->stat_drop_dup++; return 0; }   /* 重复块，丢弃 */
+ 
+-        if (udp_block_checksum(pkt + sizeof(udp_data_hdr_t), payload_len) != dh->checksum)
++        if (udp_block_checksum(pkt + sizeof(udp_data_hdr_t), payload_len) != dh->checksum) {
++            r->stat_drop_checksum++;
+             return 0;   /* 校验失败，丢弃该块 */
++        }
+ 
+         size_t off = (size_t)dh->block_idx * r->block_size;
+         memcpy(r->frame_buf + off, pkt + sizeof(udp_data_hdr_t), payload_len);
+         r->got[dh->block_idx] = 1;
+         r->received_blocks++;
++        r->stat_block_ok++;
+ 
+         if (r->received_blocks == r->block_count) {
+             *out_hdr   = r->hdr;
+@@ -116,9 +123,13 @@ int udp_reassembly_feed(udp_reassembly_t *r, const uint8_t *pkt, size_t len,
+ #include <arpa/inet.h>
+ #include <unistd.h>
+ #include <poll.h>
++#include <errno.h>
+ 
+ struct udp_receiver {
+-    int fd;
++    int      fd;
++    uint64_t pkts;        /* 应用层已取出的数据报数 */
++    uint64_t bytes;
++    int      rcvbuf_eff;  /* SO_RCVBUF 实际生效值（内核可能翻倍后按 rmem_max 截断） */
+ };
+ 
+ int udp_receiver_init(udp_receiver_t **r, uint16_t port)
+@@ -130,8 +141,17 @@ int udp_receiver_init(udp_receiver_t **r, uint16_t port)
+     u->fd = socket(AF_INET, SOCK_DGRAM, 0);
+     if (u->fd < 0) { free(u); return -1; }
+ 
++    /* 请求大接收缓冲：一帧 440 包会在毫秒级突发到达，若缓冲只能装 ~100 包，
++     * 而接收线程正忙于渲染 LCD，多出来的包会被内核静默丢弃（RcvbufErrors）。
++     * 注意：内核会把请求值翻倍后按 net.core.rmem_max 截断，所以必须配合
++     * scripts/tune_net.sh 提高 rmem_max，否则这里设置的值是无效的。 */
+     int rcv = UDP_RECV_BUF_BYTES;
+-    setsockopt(u->fd, SOL_SOCKET, SO_RCVBUF, &rcv, sizeof(rcv));
++    if (setsockopt(u->fd, SOL_SOCKET, SO_RCVBUF, &rcv, sizeof(rcv)) != 0)
++        fprintf(stderr, "[UDP-RECV] 设置 SO_RCVBUF 失败: %s\n", strerror(errno));
++
++    socklen_t olen = (socklen_t)sizeof(u->rcvbuf_eff);
++    if (getsockopt(u->fd, SOL_SOCKET, SO_RCVBUF, &u->rcvbuf_eff, &olen) != 0)
++        u->rcvbuf_eff = -1;
+ 
+     struct sockaddr_in addr;
+     memset(&addr, 0, sizeof(addr));
+@@ -139,6 +159,7 @@ int udp_receiver_init(udp_receiver_t **r, uint16_t port)
+     addr.sin_addr.s_addr = htonl(INADDR_ANY);
+     addr.sin_port = htons(port);
+     if (bind(u->fd, (struct sockaddr *)&addr, sizeof(addr)) != 0) {
++        fprintf(stderr, "[UDP-RECV] bind :%u 失败: %s\n", (unsigned)port, strerror(errno));
+         close(u->fd);
+         free(u);
+         return -1;
+@@ -147,23 +168,93 @@ int udp_receiver_init(udp_receiver_t **r, uint16_t port)
+     return 0;
+ }
+ 
+-int udp_receiver_recv(udp_receiver_t *r, uint8_t *buf, size_t cap,
+-                      uint64_t timeout_ms)
++/* 等待可读（不取包）：>0 可读，0 超时，-1 出错 */
++int udp_receiver_wait(udp_receiver_t *r, uint64_t timeout_ms)
+ {
+-    if (!r || !buf || cap == 0) return -1;
+-
++    if (!r) return -1;
+     struct pollfd pfd;
+     pfd.fd = r->fd;
+     pfd.events = POLLIN;
++    pfd.revents = 0;
+     int pr = poll(&pfd, 1, (int)timeout_ms);
+-    if (pr == 0) return 0;                  /* 超时 */
+-    if (pr < 0) return -1;
++    if (pr == 0) return 0;
++    if (pr < 0) return (errno == EINTR) ? 0 : -1;
++    return 1;
++}
++
++/* 非阻塞取一个包：>0 字节数，0 当前无数据，-1 出错 */
++int udp_receiver_recv_nb(udp_receiver_t *r, uint8_t *buf, size_t cap)
++{
++    if (!r || !buf || cap == 0) return -1;
++    ssize_t n = recv(r->fd, buf, cap, MSG_DONTWAIT);
++    if (n < 0) {
++        if (errno == EAGAIN || errno == EWOULDBLOCK) return 0;   /* 队列已取干 */
++        if (errno == EINTR) return 0;
++        return -1;
++    }
++    r->pkts++;
++    r->bytes += (uint64_t)n;
++    return (int)n;
++}
++
++/* 阻塞式取一个包（保留原语义：返回字节数；超时 0；失败 -1） */
++int udp_receiver_recv(udp_receiver_t *r, uint8_t *buf, size_t cap,
++                      uint64_t timeout_ms)
++{
++    if (!r || !buf || cap == 0) return -1;
++
++    int w = udp_receiver_wait(r, timeout_ms);
++    if (w <= 0) return w;      /* 0=超时；-1=错误 */
+ 
+     ssize_t n = recv(r->fd, buf, cap, 0);
+     if (n < 0) return -1;
++    r->pkts++;
++    r->bytes += (uint64_t)n;
+     return (int)n;
+ }
+ 
++/* 解析 /proc/net/snmp 的 Udp 行（第二行是数值行，第一行是字段名） */
++static int read_udp_snmp(udp_recv_stats_t *out)
++{
++    FILE *fp = fopen("/proc/net/snmp", "r");
++    if (!fp) return -1;
++
++    char line[512];
++    int seen_hdr = 0, got = 0;
++    while (fgets(line, sizeof(line), fp)) {
++        if (strncmp(line, "Udp:", 4) != 0) continue;
++        if (!seen_hdr) { seen_hdr = 1; continue; }   /* 跳过字段名行 */
++        unsigned long long in_dg = 0, no_ports = 0, in_err = 0;
++        unsigned long long out_dg = 0, rcvbuf_err = 0, sndbuf_err = 0;
++        /* 字段顺序：InDatagrams NoPorts InErrors OutDatagrams RcvbufErrors SndbufErrors ... */
++        if (sscanf(line + 4, " %llu %llu %llu %llu %llu %llu",
++                   &in_dg, &no_ports, &in_err, &out_dg, &rcvbuf_err, &sndbuf_err) >= 5) {
++            out->kern_indatagrams = (uint64_t)in_dg;
++            out->kern_noports     = (uint64_t)no_ports;
++            out->kern_inerr       = (uint64_t)in_err;
++            out->kern_rcvbuferr   = (uint64_t)rcvbuf_err;
++            got = 1;
++        }
++        break;
++    }
++    fclose(fp);
++    return got ? 0 : -1;
++}
++
++int udp_receiver_stats(udp_receiver_t *r, udp_recv_stats_t *out)
++{
++    if (!r || !out) return -1;
++    out->pkts        = r->pkts;
++    out->bytes       = r->bytes;
++    out->rcvbuf_eff  = r->rcvbuf_eff;
++    out->kern_indatagrams = 0;
++    out->kern_rcvbuferr   = 0;
++    out->kern_inerr       = 0;
++    out->kern_noports     = 0;
++    read_udp_snmp(out);        /* 读不到就保留 0，不影响主流程 */
++    return 0;
++}
++
+ void udp_receiver_close(udp_receiver_t *r)
+ {
+     if (!r) return;
+@@ -188,6 +279,24 @@ int udp_receiver_recv(udp_receiver_t *r, uint8_t *buf, size_t cap, uint64_t time
+     return -1;
+ }
+ 
++int udp_receiver_wait(udp_receiver_t *r, uint64_t timeout_ms)
++{
++    (void)r; (void)timeout_ms;
++    return -1;
++}
++
++int udp_receiver_recv_nb(udp_receiver_t *r, uint8_t *buf, size_t cap)
++{
++    (void)r; (void)buf; (void)cap;
++    return -1;
++}
++
++int udp_receiver_stats(udp_receiver_t *r, udp_recv_stats_t *out)
++{
++    (void)r; (void)out;
++    return -1;
++}
++
+ void udp_receiver_close(udp_receiver_t *r) { (void)r; }
+ 
+ #endif /* __linux__ */
+diff --git a/planning/csrc/udp_sender.c b/planning/csrc/udp_sender.c
+index 37006d9..0850bbe 100644
+--- a/planning/csrc/udp_sender.c
++++ b/planning/csrc/udp_sender.c
+@@ -90,6 +90,15 @@ int udp_sender_send_frame(udp_sender_t *s, const void *rgb565, size_t bytes,
+                             (struct sockaddr *)&s->peer, alen);
+         if (sn != (ssize_t)(sizeof(udp_data_hdr_t) + len)) return -1;
+         total += sn;
++
++        /* 轻度整形：440 包一次性糊上去会在对端内核队列形成微突发，对端缓冲不够
++         * 就会静默丢包（收帧恒 0 的根因之一）。每 UDP_SEND_PACE_EVERY 块让出
++         * 一下 CPU，把突发拉平；对整帧耗时影响约 1~2ms，可忽略。
++         * 置 UDP_SEND_PACE_EVERY=0 可关闭。 */
++#if defined(__linux__)
++        if (UDP_SEND_PACE_EVERY > 0 && (i % UDP_SEND_PACE_EVERY) == (UDP_SEND_PACE_EVERY - 1))
++            usleep((useconds_t)UDP_SEND_PACE_US);
++#endif
+     }
+     return (int)total;
+ }
+diff --git a/planning/include/udp_receiver.h b/planning/include/udp_receiver.h
+index a4cced3..8f80959 100644
+--- a/planning/include/udp_receiver.h
++++ b/planning/include/udp_receiver.h
+@@ -31,6 +31,19 @@ typedef struct {
+     uint8_t  *got;              /* 位图 got[block_count] */
+     int       have_hdr;         /* 已收到帧头 */
+     udp_frame_hdr_t hdr;        /* 最近帧头 */
++
++    /* ---- 诊断统计（累积计数，不参与重组逻辑；reset 不清零） ----
++     * 用途：区分"根本没收到包"与"收到包但凑不齐帧"这两类完全不同的故障。
++     * 若 stat_drop_* 全为 0 且 stat_block_ok 增长 → 收到块但收不齐整帧；
++     * 若各计数都不动 → 包没进到本进程（网络/端口/缓冲区问题，看内核统计）。 */
++    uint32_t  stat_hdr_rx;      /* 收到的帧头包数 */
++    uint32_t  stat_block_ok;    /* 接受（写入缓冲）的数据块数 */
++    uint32_t  stat_drop_checksum; /* 校验和不符丢弃 */
++    uint32_t  stat_drop_dup;    /* 重复块丢弃 */
++    uint32_t  stat_drop_nohdr;  /* 帧头未到先来块 */
++    uint32_t  stat_drop_fid;    /* 旧帧残块（frame_id 不匹配） */
++    uint32_t  stat_drop_other;  /* 块号越界/长度异常等 */
++    uint32_t  stat_begin_fail;  /* 帧头无法开始新帧（缓冲不足/块数非法） */
+ } udp_reassembly_t;
+ 
+ int  udp_reassembly_init(udp_reassembly_t *r, uint8_t *frame_buf, size_t cap);
+@@ -46,9 +59,27 @@ int  udp_reassembly_feed(udp_reassembly_t *r, const uint8_t *pkt, size_t len,
+ /* ---- Linux socket 接收层（仅板端） ---- */
+ typedef struct udp_receiver udp_receiver_t;
+ 
++/* 接收统计（诊断用）：把"应用层看到的包"与"内核丢掉的包"区分开 */
++typedef struct {
++    uint64_t pkts;              /* 本进程已从 socket 取出的数据报数 */
++    uint64_t bytes;             /* 对应字节数 */
++    int      rcvbuf_eff;        /* getsockopt(SO_RCVBUF) 实际生效值(字节，内核可能翻倍并截断) */
++    uint64_t kern_indatagrams;  /* /proc/net/snmp Udp:InDatagrams（系统累计收到） */
++    uint64_t kern_rcvbuferr;    /* /proc/net/snmp Udp:RcvbufErrors（内核队列溢出丢失！） */
++    uint64_t kern_inerr;        /* /proc/net/snmp Udp:InErrors */
++    uint64_t kern_noports;      /* /proc/net/snmp Udp:NoPorts（无监听者时的 ICMP 计数） */
++} udp_recv_stats_t;
++
+ int  udp_receiver_init(udp_receiver_t **r, uint16_t port);        /* 非 Linux 返回 -1 */
+ int  udp_receiver_recv(udp_receiver_t *r, uint8_t *buf, size_t cap,
+                        uint64_t timeout_ms);                       /* 返回接收字节数；超时 0；失败 -1 */
++/* 等待可读：>0 有数据可读，0 超时，-1 出错（非 Linux 返回 -1） */
++int  udp_receiver_wait(udp_receiver_t *r, uint64_t timeout_ms);
++/* 非阻塞取一个包：>0 字节数，0 当前无数据，-1 出错。
++ * 配合 udp_receiver_wait 使用可"一次收干内核队列"，避免每轮只收一包导致溢出。 */
++int  udp_receiver_recv_nb(udp_receiver_t *r, uint8_t *buf, size_t cap);
++/* 读取接收统计（含内核 Udp 计数）；成功 0，失败 -1 */
++int  udp_receiver_stats(udp_receiver_t *r, udp_recv_stats_t *out);
+ void udp_receiver_close(udp_receiver_t *r);
+ 
+ #ifdef __cplusplus
+diff --git a/scripts/start_m.sh b/scripts/start_m.sh
+index 3c85533..38314ff 100644
+--- a/scripts/start_m.sh
++++ b/scripts/start_m.sh
+@@ -33,17 +33,23 @@ else
+     insmod "$KO_PATH"
+ fi
+ 
+-# 2) 配置网卡（独立脚本：end1 + ip 命令 + NetworkManager 规避）
++# 2) 配置网卡（独立脚本：自动探测 end0/end1 + ip 命令 + NetworkManager 规避）
+ echo "[2] 配置网络"
+ "$SCRIPT_DIR/setup_network_m.sh" || true
+ 
+-# 3) 启动感知进程（A 交付；--stub 可在无硬件时联调）
+-echo "[3] 启动 perception_main (stub 模式请加 --stub)"
++# 3) 内核 UDP 缓冲调优（发送端突发写入；接收端 S 板更要调，见 start_s.sh）
++echo "[3] 内核 UDP 缓冲调优"
++if [ -x "$SCRIPT_DIR/tune_net.sh" ]; then
++    "$SCRIPT_DIR/tune_net.sh" || echo "警告：tune_net.sh 执行失败"
++fi
++
++# 4) 启动感知进程（A 交付；--stub 可在无硬件时联调）
++echo "[4] 启动 perception_main (stub 模式请加 --stub)"
+ nohup "$BIN_DIR/perception_main" --model "$MODEL_PATH" \
+     > "$REPO_ROOT/perception.log" 2>&1 &
+ 
+-# 4) 启动 UDP 发送器（B 交付）
+-echo "[4] 启动 udp_m_send_main"
++# 5) 启动 UDP 发送器（B 交付）
++echo "[5] 启动 udp_m_send_main"
+ nohup "$BIN_DIR/udp_m_send_main" \
+     > "$REPO_ROOT/udp_send.log" 2>&1 &
+ 
+diff --git a/scripts/start_s.sh b/scripts/start_s.sh
+index 836ccec..943e2ea 100644
+--- a/scripts/start_s.sh
++++ b/scripts/start_s.sh
+@@ -33,14 +33,21 @@ fi
+ 
+ echo "==== S 端启动 ===="
+ 
+-# 1) 配置网卡（独立脚本：end1 + ip 命令 + NetworkManager 规避）
++# 1) 配置网卡（独立脚本：自动探测 end0/end1 + ip 命令 + NetworkManager 规避）
+ echo "[1] 配置网络"
+ "$SCRIPT_DIR/setup_network_s.sh" || true
+ 
+-# 2) 启动决策+显示进程
++# 2) 内核 UDP 缓冲调优：一帧 440 包突发到达，rmem_max 默认仅 ~208KB，会静默丢包
++#    （不调优的症状：M 端发帧正常，S 端"收帧"恒为 0，LCD 帧却在涨）
++echo "[2] 内核 UDP 缓冲调优"
++if [ -x "$SCRIPT_DIR/tune_net.sh" ]; then
++    "$SCRIPT_DIR/tune_net.sh" || echo "警告：tune_net.sh 执行失败，接收缓冲偏小可能丢包"
++fi
++
++# 3) 启动决策+显示进程
+ ARGS=(--model "$MODEL")
+ [ "$NO_LCD" = 1 ] && ARGS+=(--no-lcd)
+-echo "[2] 启动 planning_main ${ARGS[*]}"
++echo "[3] 启动 planning_main ${ARGS[*]}"
+ nohup "$BIN_DIR/planning_main" "${ARGS[@]}" \
+     > "$REPO_ROOT/planning.log" 2>&1 &
+ 
+diff --git a/scripts/tune_net.sh b/scripts/tune_net.sh
+new file mode 100644
+index 0000000..f7c8bae
+--- /dev/null
++++ b/scripts/tune_net.sh
+@@ -0,0 +1,66 @@
++#!/bin/bash
++# tune_net.sh — 放大内核 UDP socket 缓冲上限（【人员 B】UDP 链路调优，必需）
++#
++# 为什么需要它（"收帧恒 0"的根因之一）：
++#   一帧图像 = 614400B = 1 帧头 + 439 个数据块 = 440 个 UDP 包，M 端在一个突发里
++#   连续发出（桩模式 5 帧/s ≈ 2200 包/s）。S 端 socket 请求了 UDP_RECV_BUF_BYTES，
++#   但 Linux 内核会先把请求值翻倍、再按 net.core.rmem_max **静默截断**；
++#   rmem_max 出厂默认只有 212992 字节（≈208KB，约 100 个包），连一帧都装不下。
++#   → S 端稍微晚一点去取包，多出来的包就被内核丢掉（RcvbufErrors），
++#     439 块永远凑不齐，于是"收帧"一直是 0，而 LCD 帧照常增长。
++#
++# 用法（S 端必须、M 端建议，需 root）：
++#   sudo ./scripts/tune_net.sh            # 立即生效（重启后失效）
++#   sudo ./scripts/tune_net.sh --persist  # 立即生效 + 写入 /etc/sysctl.d 永久生效
++#
++# 验证：
++#   sysctl net.core.rmem_max
++#   # 然后启动 planning_main，日志里 SO_RCVBUF 应显示 >= 16MB
++set -e
++
++RMEM_MAX="${RMEM_MAX:-16777216}"   # 16MB
++WMEM_MAX="${WMEM_MAX:-16777216}"   # 16MB（发送端突发写入用）
++RMEM_DEF="${RMEM_DEF:-1048576}"    # 1MB
++PERSIST=0
++[ "$1" = "--persist" ] && PERSIST=1
++
++if [ "$(id -u)" -ne 0 ]; then
++    echo "错误：需要 root 权限（sudo $0）"
++    exit 1
++fi
++
++read_kern() { cat "/proc/sys/net/core/$1" 2>/dev/null || echo "?"; }
++
++echo "==== 内核 UDP 缓冲调优 ===="
++echo "调整前: rmem_max=$(read_kern rmem_max)  wmem_max=$(read_kern wmem_max)  rmem_default=$(read_kern rmem_default)"
++
++# 优先用 sysctl；没有 sysctl（精简 rootfs）就直接写 /proc/sys
++if command -v sysctl >/dev/null 2>&1; then
++    sysctl -w net.core.rmem_max="$RMEM_MAX"      >/dev/null
++    sysctl -w net.core.wmem_max="$WMEM_MAX"      >/dev/null
++    sysctl -w net.core.rmem_default="$RMEM_DEF"  >/dev/null
++else
++    echo "$RMEM_MAX"      > /proc/sys/net/core/rmem_max
++    echo "$WMEM_MAX"      > /proc/sys/net/core/wmem_max
++    echo "$RMEM_DEF"      > /proc/sys/net/core/rmem_default
++fi
++
++echo "调整后: rmem_max=$(read_kern rmem_max)  wmem_max=$(read_kern wmem_max)  rmem_default=$(read_kern rmem_default)"
++
++# 参考量：一帧 440 包，按每包内核记账 ~2KB 估算约需 0.9MB，留几帧余量 → 16MB 足够
++if [ "$PERSIST" = 1 ]; then
++    PERSIST_FILE="/etc/sysctl.d/99-adas-udp.conf"
++    mkdir -p /etc/sysctl.d
++    cat > "$PERSIST_FILE" <<EOF
++# ADAS 小车 UDP 链路调优（由 scripts/tune_net.sh 生成）
++# 一帧图像 440 个 UDP 包突发到达，接收缓冲必须能吞下整帧，否则内核静默丢包。
++net.core.rmem_max = $RMEM_MAX
++net.core.wmem_max = $WMEM_MAX
++net.core.rmem_default = $RMEM_DEF
++EOF
++    echo "已写入 $PERSIST_FILE（重启后自动生效）"
++else
++    echo "提示：当前仅本次开机有效；要重启不丢请加 --persist"
++fi
++
++echo "==== 完成：现在重启 planning_main 再看日志里的 SO_RCVBUF ===="
+-- 
+2.55.0.windows.3
+
