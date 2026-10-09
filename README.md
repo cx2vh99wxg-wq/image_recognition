@@ -1,5 +1,9 @@
 # image_recognition — 辅助驾驶小车（三人从零重写）
 
+> 2026-10-09 核查：[论文复现缺口、三路引脚表、六宫格验证步骤](docs/partC-paper-reproduction-audit.md)。当前仍不是论文完整复现版本。
+> 六路模拟：S 用 `sudo bash scripts/start_s.sh --local-stub`，M 用 `sudo bash scripts/start_m.sh --stub`；上排 M、下排 S，窗口 960×480。
+> `start_s.sh` 默认也是本地模拟。真实 S 相机请显式用 `--local-pcie --no-person --no-overlay` 先验证采集显示；行人后处理尚未完成。
+
 M/S 双 RK3568 + FPGA 三级流水线：感知（M 板）→ 决策（S 板）→ 执行（S 板 FSPI → 电机）。
 本仓库为**从零重写版本**，旧实现仅作学习参考（`udp_rk_rk_yolo/`，见文末）。
 
@@ -68,7 +72,7 @@ sudo ./scripts/board/deploy_board.sh s    # S 板：同上
 # M 板：insmod 驱动 → 配 IP 192.168.100.10(end0/end1 自动探测) → 感知 + UDP 发送
 sudo ./scripts/start_m.sh [模型绝对路径] [驱动ko绝对路径]
 # S 板：配 IP 192.168.100.20 → 内核 UDP 缓冲调优 → 决策 + UDP 接收 + LCD（--no-lcd 无屏跑）
-sudo ./scripts/start_s.sh --model /path/to/yolov5s-640-640.rknn
+sudo bash ./scripts/start_s.sh --local-pcie --no-person --no-overlay
 
 # 或顶层 Makefile 等价命令（板卡上）：make run-m / run-s / stop / status
 # 网络单独配置：sudo ./scripts/setup_network_m.sh / setup_network_s.sh

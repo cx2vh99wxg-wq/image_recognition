@@ -21,7 +21,7 @@ CFLAGS  := -std=gnu11 -D_DEFAULT_SOURCE -Wall -Wextra -Werror -O2 $(INCLUDE)
 
 COMMON_SRCS := ../common/csrc/udp_proto.c ../common/csrc/log.c
 NATIVE_SRCS := csrc/decision.c csrc/person_detect.c csrc/render_lcd_x11.c \
-               csrc/udp_sender.c csrc/udp_receiver.c csrc/stub_pattern.c
+               csrc/udp_sender.c csrc/udp_receiver.c csrc/stub_pattern.c csrc/frame_compose.c
 TEST_SRCS   := test/test_decision.c test/test_udp.c
 
 .PHONY: all native_objs tests bin clean
@@ -36,15 +36,19 @@ native_objs: $(NATIVE_SRCS:.c=.o)
 test/%.o: test/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-tests: test/test_decision test/test_udp
+tests: test/test_decision test/test_udp test/test_compose
 	@echo "---- 运行 planning 单元测试 ----"
 	./test/test_decision
 	./test/test_udp
+	./test/test_compose
 
 test/test_decision: test/test_decision.o csrc/decision.o
 	$(CC) -o $@ $^
 
 test/test_udp: test/test_udp.o csrc/udp_receiver.o ../common/csrc/udp_proto.o
+	$(CC) -o $@ $^
+
+test/test_compose: test/test_compose.o csrc/frame_compose.o csrc/stub_pattern.o csrc/udp_receiver.o ../common/csrc/udp_proto.o
 	$(CC) -o $@ $^
 
 # ---- 板端构建（S 端决策进程 + M 端 UDP 发送器） ----
@@ -57,7 +61,7 @@ bin:
 	@mkdir -p obj
 	$(ARCHCC) $(CFLAGS) -L../lib -o planning_main csrc/main_planning.c csrc/decision.c \
 	    csrc/person_detect.c csrc/render_lcd_x11.c csrc/udp_sender.c \
-	    csrc/udp_receiver.c csrc/stub_pattern.c ../common/csrc/shm_ipc.c \
+	    csrc/udp_receiver.c csrc/stub_pattern.c csrc/frame_compose.c ../perception/csrc/pcie_capture.c ../common/csrc/shm_ipc.c \
 	    ../common/csrc/udp_proto.c \
 	    ../common/csrc/log.c -lm -lrt -lX11 -lrknnrt
 	$(ARCHCC) $(CFLAGS) -o udp_m_send_main csrc/udp_m_send_main.c csrc/udp_sender.c \
@@ -68,4 +72,4 @@ bin:
 
 clean:
 	rm -f csrc/*.o test/*.o obj/*.o test/test_decision test/test_udp \
-	      planning_main udp_m_send_main
+	      test/test_compose planning_main udp_m_send_main

@@ -29,6 +29,8 @@ test/test_isp_params
 common/test/test_udp_proto
 planning/test/test_decision
 planning/test/test_udp
+planning/test/test_compose
+tmp/
 
 
 # Python 缓存

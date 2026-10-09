@@ -5,6 +5,8 @@
 # 注意：IPC_RMID 会立即删除段，其他仍映射该段的进程将失去数据——请在停止场景使用。
 
 echo "==== 停止进程 ===="
+sudo pkill -f '(^|/)control_main([[:space:]]|$)' 2>/dev/null || true
+sleep 2   # 控制进程有阻塞转向时序，先给它时间执行退出清理
 sudo pkill -f perception_main 2>/dev/null || true
 sudo pkill -f udp_m_send_main 2>/dev/null || true
 sudo pkill -f planning_main    2>/dev/null || true

@@ -12,6 +12,7 @@
  * 信号：SIGINT/SIGTERM 优雅退出。
  */
 #include "shm_ipc.h"
+#include "build_info.h"
 #include "udp_proto.h"
 #include "driving_config.h"
 #include "time_util.h"
@@ -41,7 +42,7 @@ static uint8_t *g_img565 = NULL;   /* 图像缓冲 */
 
 /* 桩模式：构造"每板 3 路摄像头经 FPGA 2×2 拼接后的 640×480"模拟图。
  * 由 stub_pattern.c 生成（M 端 board_id=0）：左上/右上/左下为三路摄像头
- * 的渐变（方向各不相同），右下为"预留空槽"棋盘格 —— 与 FPGA 侧
+ * 的渐变（方向各不相同），右下为"预留空槽"（不上屏） —— 与 FPGA 侧
  * axi4_ctrl_3ch.v 的写地址映射（3 路有效 + 1 格预留）保持同构，
  * 于是这条 UDP 链路上跑的就是真实拼接图的数据形态，而非一张纯渐变。 */
 static void fill_stub_image(void)
@@ -53,8 +54,14 @@ static void fill_stub_image(void)
 int main(int argc, char **argv)
 {
     int use_stub = 0;
-    for (int i = 1; i < argc; i++)
+    const char *target_ip = UDP_IP_S;
+    for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--stub") == 0) use_stub = 1;
+        else if (strcmp(argv[i], "--build-info") == 0) { planning_build_info("udp_m_send_main"); return 0; }
+        else if (strcmp(argv[i], "--ip") == 0 && i + 1 < argc) target_ip = argv[++i];
+        else { fprintf(stderr, "Usage: %s [--stub] [--ip address] [--build-info]\n", argv[0]); return 2; }
+    }
+    planning_build_info("udp_m_send_main");
 
     signal(SIGINT, on_signal);
     signal(SIGTERM, on_signal);
@@ -80,12 +87,12 @@ int main(int argc, char **argv)
     }
 
     udp_sender_t *sender = NULL;
-    if (udp_sender_init(&sender, UDP_IP_S, UDP_PORT) != 0) {
+    if (udp_sender_init(&sender, target_ip, UDP_PORT) != 0) {
         LOGE("UDP 发送器初始化失败（本机无 socket，请上板运行）\n");
         free(g_img565);
         return -1;
     }
-    LOGI("目标: %s:%d\n", UDP_IP_S, UDP_PORT);
+    LOGI("目标: %s:%d\n", target_ip, UDP_PORT);
 
     LaneResult lane;
     memset(&lane, 0, sizeof(lane));
@@ -137,9 +144,9 @@ int main(int argc, char **argv)
              * 帧头 flags 会如实反映本帧携带了哪几项（见 udp_proto.h 摘要布局）。
              * shm_read_* 内部即 shm_open（带退避/限流日志），A 未启动时开销可忽略。 */
             TrafficLightResult tl;  LaneMarkResult lm;  ZebraResult zb;
-            const int has_tl = (shm_read_traffic_light(&tl) == 0 && tl.version == TL_VERSION);
-            const int has_lm = (shm_read_lane_mark(&lm)   == 0 && lm.version == LANEMARK_VERSION);
-            const int has_zb = (shm_read_zebra(&zb)       == 0 && zb.version == ZEBRA_VERSION);
+            const int has_tl = (!use_stub && shm_read_traffic_light(&tl) == 0 && tl.version == TL_VERSION);
+            const int has_lm = (!use_stub && shm_read_lane_mark(&lm)   == 0 && lm.version == LANEMARK_VERSION);
+            const int has_zb = (!use_stub && shm_read_zebra(&zb)       == 0 && zb.version == ZEBRA_VERSION);
             aux_tl = has_tl; aux_lm = has_lm; aux_zb = has_zb;
 
             int n = udp_sender_send_frame_ex(sender, g_img565, IMG_FRAME_BYTES, &lane,

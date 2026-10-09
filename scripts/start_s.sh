@@ -8,15 +8,13 @@
 #   sudo ./scripts/start_s.sh [--model 行人模型绝对路径] [--no-lcd] [--with-stub] [--no-build]
 #   sudo bash ./scripts/start_s.sh        # 也可以（本脚本不依赖可执行位）
 #
-# 本地图（屏幕左半屏）来源自动判定 —— 判据是「shm_pcie_img 段有没有写者」：
-#   · ipcs 里存在 0x12345679 段 → 有采集进程在写，用真实图；
-#   · 不存在（S 板当前尚无本地采集进程）→ 自动加 --local-stub，用合成拼接图案顶上，
-#     保证「每板 3 路 × 2 板 = 6 路拼接 + 渲染」这条通路始终可见、可验证。
-#   加 --no-local-stub 可强制走真实采集（不兜底）。
+# 默认 --local-stub：S 端使用确定的灰度模拟图；不以共享内存存在推断摄像头在线。
+# --local-pcie：直接读取 S 板自己的 PCIe；--no-local-stub：兼容外部共享内存采集。
+# 模拟模式自动关闭行人推理与彩色叠加；真实采集验证可加 --no-person --no-overlay。
 #
 # --with-stub：单板自测模式。除 S 端决策+显示外，本机再起一个
 #   udp_m_send_main --stub（B 交付的 M 端发送器桩），把 2×2 拼接模拟图发往
-#   UDP_IP_S（=本机 192.168.100.20），接收端 bind INADDR_ANY:8888 直接收到。
+#   127.0.0.1，接收端 bind INADDR_ANY:8888 直接收到。
 #   于是无需 M 板 / 摄像头，仅凭本脚本即可复现完整链路。
 #
 # 三个反复踩过的坑，本脚本已内置规避：
@@ -28,7 +26,7 @@
 #      没有（"脚本说启动完成、就是没图像"的根因）。故这里自动降权到桌面用户。
 #   3) pull 后忘重编译：二进制还在但比源码旧，画面/行为仍是旧版
 #      （"改动明明提交了，屏幕上却没变"）。resolve_bin 会检测源码是否比
-#      二进制新，过期就自动重新编译；不成功则大声警告。
+#      二进制新，过期就自动重新编译；失败则停止，不回退旧程序。
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -38,80 +36,38 @@ BIN_DIR="${BIN_DIR:-$REPO_ROOT/bin}"
 # 内部统一用 bash 调子脚本，不依赖文件的可执行位
 SH() { bash "$@"; }
 
-# ---- 可执行文件定位 ----
-# 优先 $BIN_DIR（宿主交叉编译后 make board 的部署布局），其次模块目录
-# （板端原生 make -C <模块> bin 的默认产物位置）；两处都没有则就地编译。
-#
-# ★ 防呆（2026-10-09 加）：光"文件存在"不够——git pull 后忘了重编译时，旧二进制
-#   会被静默沿用，症状是"改动明明提交了，屏幕/行为却没变"（实际踩过：3×2 六宫格
-#   已推送，板端仍显示旧版 8 格布局）。故先做"新鲜度"判定：模块自身 + common 的
-#   .c/.h/Makefile 只要有比二进制新的，就视为过期 → 自动重新编译；编译失败或
-#   --no-build 时回退旧二进制，但打印"使用可能过期的二进制"警告（绝不再静默）。
-build_module() {              # $1=模块目录名
-    [ -d "$REPO_ROOT/$1" ] || return 0
-    echo "  · 编译 $1： make -C $1 bin" >&2
-    ( cd "$REPO_ROOT" && make -C "$1" bin ) 1>&2 \
-        || echo "    ⚠ $1 编译失败（改用已有二进制）" >&2
-}
-bin_fresh() {                 # $1=二进制路径 $2=模块目录名；0=存在且不比源码旧
-    local bin="$1" mod="$2" newer=""
-    [ -f "$bin" ] || return 1
-    [ -n "$mod" ] || return 0
-    newer="$(find "$REPO_ROOT/$mod/csrc" "$REPO_ROOT/$mod/include" \
-                  "$REPO_ROOT/common/csrc" "$REPO_ROOT/common/include" \
-                  -type f \( -name '*.c' -o -name '*.h' -o -name 'Makefile' \) \
-                  -newer "$bin" 2>/dev/null | head -n 1)"
-    [ -z "$newer" ]
-}
-resolve_bin() {               # $1=文件名  $2=模块目录名
-    local name="$1" mod="$2" cand have_old=0
-    # 1) 存在且不比源码旧 → 直接用（宿主部署 / 刚编译过的正常路径）
-    for cand in "$BIN_DIR/$name" "$REPO_ROOT/$mod/$name"; do
-        [ -f "$cand" ] || continue
-        have_old=1
-        if bin_fresh "$cand" "$mod"; then
-            printf '%s\n' "$cand"; return 0
-        fi
-    done
-    # 2) 缺失或已过期 → 重新编译（--no-build 可跳过）
-    if [ "$NO_BUILD" = 0 ] && [ -n "$mod" ]; then
-        if [ "$have_old" = 1 ]; then
-            echo "  ⚠ $name 比源码旧（git pull 后忘了重编译？）→ 自动重新编译 $mod" >&2
-        fi
-        build_module "$mod"
-        for cand in "$REPO_ROOT/$mod/$name" "$BIN_DIR/$name"; do
-            [ -f "$cand" ] || continue
-            if bin_fresh "$cand" "$mod"; then
-                printf '%s\n' "$cand"; return 0
-            fi
-        done
-    fi
-    # 3) 兜底：仍用过期的（编译失败或 --no-build），但把风险讲清楚
-    for cand in "$BIN_DIR/$name" "$REPO_ROOT/$mod/$name"; do
-        [ -f "$cand" ] || continue
-        echo "  ⚠ 警告：使用可能过期的二进制（编译未成功或已 --no-build）： $cand" >&2
-        printf '%s\n' "$cand"; return 0
-    done
-    return 1
-}
+source "$SCRIPT_DIR/resolve_bin.sh"
 
 # 行人检测模型（仓库实际文件为 model/yolov5s-640-640.rknn）
 MODEL="$REPO_ROOT/model/yolov5s-640-640.rknn"
 NO_LCD=0
 WITH_STUB=0
 NO_BUILD=0
-NO_LOCAL_STUB=0        # 1=强制用真实本地采集（不自动兜底合成图案）
+LOCAL_SOURCE=stub
+NO_PERSON=0
+NO_OVERLAY=0
 
 while [ $# -gt 0 ]; do
     case "$1" in
-        --model)         MODEL="$2"; shift 2 ;;
+        --model)         [ $# -ge 2 ] || { echo "--model 需要路径"; exit 2; }; MODEL="$2"; shift 2 ;;
         --no-lcd)        NO_LCD=1; shift ;;
         --with-stub)     WITH_STUB=1; shift ;;
         --no-build)      NO_BUILD=1; shift ;;
-        --no-local-stub) NO_LOCAL_STUB=1; shift ;;
-        *)               shift ;;
+        --local-stub)    LOCAL_SOURCE=stub; shift ;;
+        --local-pcie)    LOCAL_SOURCE=pcie; shift ;;
+        --no-local-stub) LOCAL_SOURCE=shm; shift ;;
+        --no-person)     NO_PERSON=1; shift ;;
+        --no-overlay)    NO_OVERLAY=1; shift ;;
+        --help|-h) echo "Usage: $0 [--local-stub|--local-pcie|--no-local-stub] [--no-person] [--no-overlay] [--no-lcd] [--with-stub] [--no-build] [--model path]"; exit 0 ;;
+        *)               echo "未知参数：$1"; exit 2 ;;
     esac
 done
+
+# Prevent an old window/process from hiding the newly built result.
+if pgrep -f '(^|/)planning_main([[:space:]]|$)' >/dev/null; then
+    echo "planning_main 已在运行；请先 bash scripts/stop_all.sh，再重新启动。"
+    exit 1
+fi
 
 # RKNN 运行时库路径（librknnrt.so）
 export LD_LIBRARY_PATH="$REPO_ROOT/lib:${LD_LIBRARY_PATH:-}"
@@ -123,7 +79,7 @@ fi
 
 echo "==== S 端启动 ===="
 
-# 0) 定位可执行文件：bin/ → planning/ → 现场编译（--no-build 可跳过编译）
+# 0) 定位可执行文件：planning/ → bin/ → 现场编译（校验六路版本标识）
 PLANNING_BIN="$(resolve_bin planning_main planning)" || {
     echo "错误：找不到也无法编译 planning_main"
     echo "      板端构建： cd $REPO_ROOT && make -C planning bin"
@@ -131,7 +87,8 @@ PLANNING_BIN="$(resolve_bin planning_main planning)" || {
     exit 1
 }
 echo "  可执行文件: $PLANNING_BIN"
-if [ ! -f "$MODEL" ]; then
+"$PLANNING_BIN" --build-info
+if [ "$LOCAL_SOURCE" != stub ] && [ "$NO_PERSON" = 0 ] && [ ! -f "$MODEL" ]; then
     echo "警告：找不到行人模型 $MODEL（将退化为无行人模式，决策仍可用）"
 fi
 
@@ -190,31 +147,27 @@ else
     echo "[3] 图形身份：用户=$RUSER  DISPLAY=$DISPLAY  XAUTHORITY=$XAUTH"
 fi
 
-# 4) 启动决策+显示进程
-#    关键：当以 root 运行时，用 sudo -u 把图形进程降权到桌面用户，
-#    否则 XOpenDisplay 会因缺少授权而失败（黑屏但进程正常）。
-#
-#    本地图来源判定：S 板的本地图由「本板 FPGA 经 PCIe 送图 → 采集进程写 shm_pcie_img」
-#    提供。注意**判据是"共享段有没有写者"而不是"设备节点在不在"** —— 设备节点在只说明
-#    PCIe 链路通了，不代表有进程在写图（当前代码库里 S 板还没有本地采集进程）。
-#    故这里查 ipcs 里有没有 0x12345679 段：
-#      · 有   → 有采集进程在写，用真实图；
-#      · 没有 → 自动加 --local-stub，用合成拼接图案顶上，保证 6 路拼接通路可见可验证。
-#    ipcs 不存在或查询失败时按"没有"处理（保守兜底）。--no-local-stub 可强制走真实。
+# 4) Explicit S-board source. No silent fallback in PCIe mode.
 ARGS=(--model "$MODEL")
 [ "$NO_LCD" = 1 ] && ARGS+=(--no-lcd)
-
-LOCAL_STUB=0
-if [ "$NO_LOCAL_STUB" = 1 ]; then
-    LOCAL_SRC="真实采集（--no-local-stub 强制）"
-elif ipcs -m 2>/dev/null | grep -qi '0x12345679'; then
-    LOCAL_SRC="真实采集（检测到 shm_pcie_img 段，已有采集进程在写）"
-else
-    LOCAL_STUB=1
-    LOCAL_SRC="合成拼接图案（未检测到 shm_pcie_img 段 → S 板暂无本地采集进程）"
-    ARGS+=(--local-stub)
-fi
-echo "[3b] 本地图来源：$LOCAL_SRC"
+case "$LOCAL_SOURCE" in
+    stub) ARGS+=(--local-stub --no-person --no-overlay) ;;
+    pcie)
+        if [ ! -e /dev/pango_pci_driver ]; then
+            insmod "$REPO_ROOT/drivers/pango_pci_driver.ko"
+        fi
+        # planning_main runs as the desktop user. Grant only this user access
+        # to the capture device for this boot; do not make /dev/mem world-writable.
+        if [ "$(id -u)" -eq 0 ] && [ "$RUSER" != root ]; then
+            chown "$RUSER" /dev/pango_pci_driver
+            chmod u+rw /dev/pango_pci_driver
+        fi
+        ARGS+=(--local-pcie) ;;
+    shm) echo "外部共享内存模式：必须另有 S 本地采集进程写图，段存在不代表实时帧。" ;;
+esac
+[ "$NO_PERSON" = 1 ] && ARGS+=(--no-person)
+[ "$NO_OVERLAY" = 1 ] && ARGS+=(--no-overlay)
+echo "[3b] S 本地图来源：$LOCAL_SOURCE；布局 960x480（M 上三路 / S 下三路）"
 
 LOG="$REPO_ROOT/planning.log"
 : > "$LOG"
@@ -251,16 +204,16 @@ fi
 
 # 5) 可选：本机自环桩发帧（--with-stub）
 #    无 M 板 / 无 FPGA / 无摄像头时，单板即可验证全链路：在本机再起一个
-#    udp_m_send_main --stub，把 2×2 拼接模拟图发往 UDP_IP_S（=本机 192.168.100.20），
+#    udp_m_send_main --stub，把每板拼接模拟图发往 127.0.0.1，
 #    接收端 bind INADDR_ANY:8888 直接收到，等价于「M 板在持续发帧」。
-#    屏幕右半出现灰度渐变、左半为 S 板本地摄像头（未接则黑），与双板联调观感一致。
+#    上排 M 三路、下排 S 三路，与双板联调布局一致。
 if [ "$WITH_STUB" = 1 ]; then
     SEND_BIN="$(resolve_bin udp_m_send_main planning)" || SEND_BIN=""
     if [ -z "$SEND_BIN" ]; then
         echo "⚠ --with-stub 需要 udp_m_send_main（先 cd $REPO_ROOT && make -C planning bin）"
     else
-        echo "[5] 本机桩发帧：$SEND_BIN --stub（目标 192.168.100.20:8888，本机回环）"
-        nohup "$SEND_BIN" --stub \
+        echo "[5] 本机桩发帧：$SEND_BIN --stub（目标 127.0.0.1:8888，本机回环）"
+        nohup "$SEND_BIN" --stub --ip 127.0.0.1 \
             > "$REPO_ROOT/udp_send.log" 2>&1 &
         echo "    日志: $REPO_ROOT/udp_send.log"
     fi

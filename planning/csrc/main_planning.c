@@ -3,18 +3,21 @@
  *
  * 流程（单进程内完成，决策与 C 的控制循环通过 shm_cmd 解耦）：
  *   1. UDP 接收（M 端图像+车道结果）→ 写 shm_udp_img + 转发 shm_lane
- *   2. 读本地 shm_pcie_img（S 板本地图，缺失则降级只显示远端）
+ *   2. S 本地图：直接 PCIe / 强制模拟 / 外部 shm 三选一
  *   3. 本地 YOLOv5s 行人检测 → shm_person
  *   4. 决策状态机（车道 + 行人 → ControlCommandMsg）→ shm_cmd
- *   5. LCD(X11) 双路拼接渲染（左本地 / 右远端）
+ *   5. LCD(X11) 六路拼接渲染（上 M 三路 / 下 S 三路）
  *
  * 用法：
- *   ./planning_main [--model <person模型路径>] [--no-lcd] [--local-stub]
+ *   ./planning_main [--model path] [--no-lcd] [--local-stub|--local-pcie]
+ *                   [--no-person] [--no-overlay] [--build-info]
  *
- * 注意：S 板是否具备"本地 PCIe 采集"需团队按硬件确认（部署拓扑见分工方案
- * 第二节）；本程序对本地图缺失做了降级（只显示远端图），不影响联调。
+ * --local-pcie 直接读取 S 板自己的 FPGA；--local-stub 强制模拟图。
+ * 两者均未指定时，兼容读取外部采集进程的 shm_pcie_img。
  */
 #include "shm_ipc.h"
+#include "build_info.h"
+#include "pcie_capture.h"
 #include "udp_proto.h"
 #include "udp_receiver.h"
 #include "decision.h"
@@ -61,13 +64,22 @@ int main(int argc, char **argv)
 {
     const char *model_path = NULL;
     int use_lcd = 1;
+    int local_pcie = 0, use_overlay = 1, use_person = 1, exit_status = 0;
     int local_stub = 0;      /* --local-stub：本地 PCIe 图缺失时用合成拼接图顶上 */
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--model") == 0 && i + 1 < argc) model_path = argv[++i];
         else if (strcmp(argv[i], "--no-lcd") == 0) use_lcd = 0;
         else if (strcmp(argv[i], "--local-stub") == 0) local_stub = 1;
+        else if (strcmp(argv[i], "--local-pcie") == 0) local_pcie = 1;
+        else if (strcmp(argv[i], "--no-overlay") == 0) use_overlay = 0;
+        else if (strcmp(argv[i], "--no-person") == 0) use_person = 0;
+        else if (strcmp(argv[i], "--build-info") == 0) { planning_build_info("planning_main"); return 0; }
+        else { fprintf(stderr, "Usage: %s [--model path] [--no-lcd] [--local-stub|--local-pcie] [--no-overlay] [--no-person] [--build-info]\n", argv[0]); return 2; }
     }
 
+    if (local_stub && local_pcie) { fprintf(stderr, "Select only one local source\n"); return 2; }
+    if (local_stub) use_person = 0; /* Synthetic pixels must not trigger inference. */
+    planning_build_info("planning_main");
     signal(SIGINT, on_signal);
     signal(SIGTERM, on_signal);
 
@@ -135,7 +147,7 @@ int main(int argc, char **argv)
 
     /* ---- 行人检测（失败不致命，退化为无行人） ---- */
     person_detect_ctx_t *person = NULL;
-    if (person_detect_init(&person, model_path, IMG_WIDTH, IMG_HEIGHT) != 0)
+    if (use_person && person_detect_init(&person, model_path, IMG_WIDTH, IMG_HEIGHT) != 0)
         LOGW("行人检测初始化失败（无行人模式继续）\n");
 
     /* ---- LCD 渲染（失败不致命） ----
@@ -144,6 +156,23 @@ int main(int argc, char **argv)
     render_lcd_ctx_t *lcd = NULL;
     if (use_lcd && render_lcd_init(&lcd, DISP_WIN_W, DISP_WIN_H) != 0)
         LOGW("LCD 初始化失败（无显示模式继续）\n");
+
+    /* S board owns a separate FPGA + PCIe endpoint; no M-board shared memory crosses the cable. */
+    frame_grabber_t grabber;
+    memset(&grabber, 0, sizeof(grabber));
+    grabber.fd = -1;
+    if (local_pcie && (pcie_capture_open(&grabber, IMG_WIDTH, IMG_HEIGHT, PCIE_LEAD_PIXELS) != 0 ||
+                       pcie_capture_start(&grabber) != 0)) {
+        LOGE("S 本地 PCIe 初始化失败；真实模式不会自动替换为模拟图\n");
+        pcie_capture_close(&grabber);
+        render_lcd_deinit(lcd);
+        if (person) person_detect_deinit(person);
+        udp_receiver_close(recv);
+        return 1;
+    }
+    LOGI("布局=%dx%d，上排 M 三路，下排 S 三路；S来源=%s 叠加=%d 行人推理=%d\n",
+         DISP_WIN_W, DISP_WIN_H, local_stub ? "stub" : local_pcie ? "pcie" : "external-shm",
+         use_overlay, use_person);
 
     /* ---- 决策 ---- */
     decision_ctx_t dec;
@@ -156,7 +185,7 @@ int main(int argc, char **argv)
     /* --local-stub：预生成 S 端"3 路摄像头经 FPGA 2×2 拼接后的 640×480"。
      * 当 shm_pcie_img 无人写入（S 端 PCIe 采集进程未跑 / 码流未烧）时顶上，
      * 使「每板 3 路 × 2 板 = 6 路拼接 + 渲染」这条通路在没有摄像头的条件下
-     * 也能端到端验证。真实采集可用时优先用真实图（见主循环第 2 步）。 */
+     * 也能端到端验证。显式桩模式不读取残留共享内存。 */
     if (local_stub) {
         stub_pattern_fill(s_local565, IMG_WIDTH, IMG_HEIGHT, 1);
         LOGI("--local-stub：本地图用合成拼接图案（模拟 S 端 3 路摄像头 → 2×2 拼 640×480）\n");
@@ -165,7 +194,7 @@ int main(int argc, char **argv)
     DisplayMode mode = DISPLAY_MODE_SPLIT;
     ControlCommandMsg cmd;
     uint32_t frames_recv = 0, frames_lcd = 0;
-    uint64_t last_pkt_us = 0;
+    uint64_t last_pkt_us = 0, last_draw_us = 0;
     int local_ok = 0;
 
     /* 统计窗口（每 2s）：用"窗口内取出的包数 / 窗口时长"直接量化消费速率，
@@ -212,7 +241,6 @@ int main(int argc, char **argv)
         int any_pkt = 0;                 /* 本轮是否收到过包（用于超时判定/日志） */
         int any_frame = 0;               /* 本轮是否重组出完整帧 */
         udp_frame_hdr_t last_hdr;        /* 本轮最后一个完整帧的帧头 */
-        uint8_t *last_frame = NULL;
         size_t   last_frame_len = 0;
 
         if (udp_receiver_wait(recv, UDP_RECV_WAIT_MS) > 0) {
@@ -224,20 +252,28 @@ int main(int argc, char **argv)
 
                 uint8_t *frame = NULL;
                 size_t frame_len = 0;
+                udp_frame_hdr_t packet_hdr;
                 int done = udp_reassembly_feed(&reass, s_pkt, (size_t)n,
-                                               &last_hdr, &frame, &frame_len);
+                                               &packet_hdr, &frame, &frame_len);
                 if (done == 1) {
+                    if (packet_hdr.width != IMG_WIDTH || packet_hdr.height != IMG_HEIGHT ||
+                        frame_len != IMG_FRAME_BYTES) {
+                        LOGW("忽略非 640x480 RGB565 的远端帧\n");
+                        continue;
+                    }
                     frames_recv++;
                     any_frame = 1;
-                    last_frame = frame;          /* 本轮可能重组出多帧，只落地最后一帧 */
+                    last_hdr = packet_hdr;
+                    /* Snapshot before the next datagram reuses the reassembly buffer. */
+                    memcpy(s_remote565, frame, frame_len);
                     last_frame_len = frame_len;
                 }
             }
         }
 
         if (any_frame) {
-            /* 写远端图（LCD 右半屏数据源）+ 转发车道结果到 S 板 shm_lane */
-            if (shm_write_udp_img(last_frame, last_frame_len) != 0) LOGW("写 shm_udp_img 失败\n");
+            /* 写远端图（LCD 上排数据源）+ 转发车道结果到 S 板 shm_lane */
+            if (shm_write_udp_img(s_remote565, last_frame_len) != 0) LOGW("写 shm_udp_img 失败\n");
             if (udp_hdr_to_lane(&last_hdr, &cur_lane) == 0) {
                 if (shm_write_lane(&cur_lane) != 0) LOGW("转发 shm_lane 失败\n");
                 lane_fresh = 1;   /* 仅在真正收到新帧时置位，供决策做超龄判断 */
@@ -256,13 +292,12 @@ int main(int argc, char **argv)
         if (reass.have_hdr && (now - last_pkt_us) > (uint64_t)UDP_FRAME_TIMEOUT_MS * 1000u)
             udp_reassembly_reset(&reass);
 
-        /* ---- 2. 读本地图（S 板本地 PCIe，缺失降级） ----
-         * 真实采集可用（S 板 FPGA → PCIe → 写 shm_pcie_img）时用真实图；
-         * 否则若开了 --local-stub，用预生成的合成拼接图，通路照常跑完。 */
-        if (shm_read_pcie_img(s_local565, IMG_FRAME_BYTES) == 0)
-            local_ok = 1;
-        else if (local_stub)
-            local_ok = 1;
+        /* ---- 2. Explicit local source; never allow stale shm to replace a stub. ---- */
+        if (local_stub) local_ok = 1;
+        else if (local_pcie) {
+            local_ok = (pcie_capture_grab(&grabber, s_local565) == 0);
+            if (!local_ok) { LOGE("S PCIe 抓帧失败，停止真实采集\n"); g_keep_running = 0; exit_status = 1; }
+        } else local_ok = (shm_read_pcie_img(s_local565, IMG_FRAME_BYTES) == 0);
 
         /* ---- 3. 行人检测（本地图 RGB565→888 后送 YOLOv5s） ---- */
         PersonState pstate;
@@ -297,7 +332,8 @@ int main(int argc, char **argv)
          *   ←/→ 切到左/右车道   ↑ 行驶   空格 急停
          *   c   强制变道（当该侧是实线时触发报警）   a 交还自动 */
         if (lcd) {
-            switch (render_lcd_poll_key(lcd)) {
+            const int key = render_lcd_poll_key(lcd); /* Also drain X events during preview. */
+            switch (local_stub ? RENDER_KEY_NONE : key) {
                 case RENDER_KEY_LANE_LEFT:
                     man_on = 1; man_cmd = CMD_LEFT;  LOGI("按键：模拟左车道/左转\n"); break;
                 case RENDER_KEY_LANE_RIGHT:
@@ -322,15 +358,18 @@ int main(int argc, char **argv)
             cmd.confidence = 100;
         }
 
+        /* Preview pixels are not evidence for driving. Also overwrite any old GO. */
+        if (local_stub || (local_pcie && !local_ok)) {
+            cmd.command = CMD_STOP;
+            cmd.enable = 1;
+            cmd.priority = CMD_PRI_EMERGENCY;
+            cmd.confidence = 100;
+        }
         if (cmd.command != CMD_NONE) {
             if (shm_write_cmd(&cmd) != 0) LOGW("写 shm_cmd 失败\n");
         }
 
-        /* ---- 5. LCD 渲染（按需：本轮重组出完整帧才重绘，首轮除外） ----
-         * 一次渲染 = memset 2.46MB + 61 万像素 RGB565→BGRX 转换 + XPutImage
-         * 2.46MB，实测把单轮周期拉到 ≈171ms；而 M 端 5 帧/s 时多数轮次根本
-         * 收不到完整帧，无条件重绘纯属浪费，还会挤占下一轮的收包窗口。
-         * 决策不需要每帧落地（状态机用最新帧即可），跳帧只影响画面流畅度。 */
+        /* ---- 5. LCD 渲染：上限 10Hz，M 断流时仍刷新 S 图和叠加层。 ---- */
 
         /* 报警判定（赛题三测评的两个报警场景）：
          *   ① 实线变道：正在变道/压线（或按键"强制变道"），且该侧车道线是实线；
@@ -363,12 +402,12 @@ int main(int argc, char **argv)
                 alarm = 1;
         }
 
-        if (lcd && (any_frame || frames_lcd == 0)) {
-            if (shm_read_udp_img(s_remote565, IMG_FRAME_BYTES) != 0 && frames_recv > 0)
-                LOGW("读 shm_udp_img 失败\n");
+        /* Refresh local video and overlays even while M is disconnected. Limit to 10 Hz. */
+        if (lcd && (frames_lcd == 0 || now - last_draw_us >= 100000u)) {
+            last_draw_us = now;
             /* 先登记叠加层状态，再绘制（render_lcd_draw 内部上屏前应用）：
              * 箭头指示行驶行为 + 红绿灯三色指示灯 + 报警红框。 */
-            render_lcd_overlay(lcd, (int)cmd.command, (int)cur_tl.state,
+            if (use_overlay) render_lcd_overlay(lcd, (int)cmd.command, (int)cur_tl.state,
                                alarm, frames_lcd);
             if (render_lcd_draw(lcd,
                                 local_ok ? s_local565 : NULL,
@@ -434,9 +473,10 @@ int main(int argc, char **argv)
     }
 
     LOGI("S端决策进程退出（共收 %u 帧）\n", frames_recv);
+    if (local_pcie) { pcie_capture_stop(&grabber); pcie_capture_close(&grabber); }
     render_lcd_deinit(lcd);
     if (person) person_detect_deinit(person);
     udp_reassembly_reset(&reass);
     udp_receiver_close(recv);
-    return 0;
+    return exit_status;
 }

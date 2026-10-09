@@ -12,7 +12,7 @@
  *      └────────┴────────┴────────┘
  * 每路是源图 640×480 里的一个 320×240 子块（单板 3 路有效 + 1 格硬件预留，
  * 预留格不上屏；子块位置与 axi4_ctrl_3ch.v 的写地址映射一致）。
- * 合成模式由 shm_display（DisplayMode）控制。
+ * 合成模式由调用者传入（当前主循环固定 SPLIT，尚未接入 HMI 视角切换）。
  */
 #ifndef RENDER_LCD_H
 #define RENDER_LCD_H
