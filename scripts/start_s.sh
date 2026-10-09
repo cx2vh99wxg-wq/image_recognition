@@ -8,9 +8,9 @@
 #   sudo ./scripts/start_s.sh [--model 行人模型绝对路径] [--no-lcd] [--with-stub] [--no-build]
 #   sudo bash ./scripts/start_s.sh        # 也可以（本脚本不依赖可执行位）
 #
-# 本地图（屏幕左半屏）来源自动判定：
-#   · 有 /dev/pango_pci_driver（S 板自带 FPGA 经 PCIe 送图）→ 真实采集；
-#   · 没有（码流未烧 / 采集进程未跑）→ 自动加 --local-stub，用合成拼接图案顶上，
+# 本地图（屏幕左半屏）来源自动判定 —— 判据是「shm_pcie_img 段有没有写者」：
+#   · ipcs 里存在 0x12345679 段 → 有采集进程在写，用真实图；
+#   · 不存在（S 板当前尚无本地采集进程）→ 自动加 --local-stub，用合成拼接图案顶上，
 #     保证「每板 3 路 × 2 板 = 6 路拼接 + 渲染」这条通路始终可见、可验证。
 #   加 --no-local-stub 可强制走真实采集（不兜底）。
 #
@@ -155,23 +155,27 @@ fi
 #    关键：当以 root 运行时，用 sudo -u 把图形进程降权到桌面用户，
 #    否则 XOpenDisplay 会因缺少授权而失败（黑屏但进程正常）。
 #
-#    本地图来源：S 板自带 FPGA，经 PCIe 把"本板 3 路摄像头 2×2 拼接成的 640×480"
-#    送来（写 shm_pcie_img）。有设备节点 → 用真实图；没有（码流未烧/采集进程未跑）
-#    → 加 --local-stub 用合成拼接图案顶上，保证「每板 3 路 × 2 板 = 6 路拼接 + 渲染」
-#    这条通路始终可见、可验证。判据与 start_m.sh 保持一致（看 /dev/pango_pci_driver）。
+#    本地图来源判定：S 板的本地图由「本板 FPGA 经 PCIe 送图 → 采集进程写 shm_pcie_img」
+#    提供。注意**判据是"共享段有没有写者"而不是"设备节点在不在"** —— 设备节点在只说明
+#    PCIe 链路通了，不代表有进程在写图（当前代码库里 S 板还没有本地采集进程）。
+#    故这里查 ipcs 里有没有 0x12345679 段：
+#      · 有   → 有采集进程在写，用真实图；
+#      · 没有 → 自动加 --local-stub，用合成拼接图案顶上，保证 6 路拼接通路可见可验证。
+#    ipcs 不存在或查询失败时按"没有"处理（保守兜底）。--no-local-stub 可强制走真实。
 ARGS=(--model "$MODEL")
 [ "$NO_LCD" = 1 ] && ARGS+=(--no-lcd)
 
 LOCAL_STUB=0
-if [ "$NO_LOCAL_STUB" = 0 ] && [ ! -e /dev/pango_pci_driver ]; then
+if [ "$NO_LOCAL_STUB" = 1 ]; then
+    LOCAL_SRC="真实采集（--no-local-stub 强制）"
+elif ipcs -m 2>/dev/null | grep -qi '0x12345679'; then
+    LOCAL_SRC="真实采集（检测到 shm_pcie_img 段，已有采集进程在写）"
+else
     LOCAL_STUB=1
+    LOCAL_SRC="合成拼接图案（未检测到 shm_pcie_img 段 → S 板暂无本地采集进程）"
     ARGS+=(--local-stub)
 fi
-if [ "$LOCAL_STUB" = 1 ]; then
-    echo "[3b] 未检测到 /dev/pango_pci_driver → 本地图用合成拼接图案（模拟本板 3 路摄像头经 FPGA 2×2 拼接）"
-else
-    echo "[3b] /dev/pango_pci_driver 可用（或 --no-local-stub）→ 本地图用真实采集"
-fi
+echo "[3b] 本地图来源：$LOCAL_SRC"
 
 LOG="$REPO_ROOT/planning.log"
 : > "$LOG"
