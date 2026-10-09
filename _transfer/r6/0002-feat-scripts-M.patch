@@ -1,0 +1,309 @@
+From 1a59d6a8ae4cc74f487444ebea2c3d82fe2288c0 Mon Sep 17 00:00:00 2001
+From: gyy <SUAT25000186@stu.suat-sz.edu.cn>
+Date: Fri, 9 Oct 2026 11:11:25 +0800
+Subject: [PATCH 2/2] =?UTF-8?q?feat(scripts):=20=E4=B8=80=E9=94=AE?=
+ =?UTF-8?q?=E5=90=AF=E5=81=9C=E4=B8=A4=E5=9D=97=E6=9D=BF=E2=80=94=E2=80=94?=
+ =?UTF-8?q?=E4=BA=8C=E8=BF=9B=E5=88=B6=E5=AE=9A=E4=BD=8D/=E6=8C=89?=
+ =?UTF-8?q?=E9=9C=80=E7=BC=96=E8=AF=91=20+=20M=20=E7=AB=AF=E8=87=AA?=
+ =?UTF-8?q?=E5=8A=A8=E7=9C=9F=E5=AE=9E/=E6=A1=A9=E6=A8=A1=E5=BC=8F?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+目标：S 端只跑 start_s.sh、M 端只跑 start_m.sh，即完成配网 → 跑各自主程序
+→ M 发帧 / S 收帧并 X11 渲染，替代此前手敲的一长串 LD_LIBRARY_PATH=...
+./planning/planning_main --model ... 指令。
+
+1) 二进制定位（两脚本共有 resolve_bin/build_module）：
+   此前脚本只在 $REPO_ROOT/bin/ 找可执行文件，而板端 `make -C <模块> bin`
+   的产物其实落在模块目录（planning/planning_main、perception/perception_main），
+   导致脚本报"找不到 bin/planning_main"。现按 bin/ → 模块目录 → 现场编译
+   （make -C <模块> bin）顺序解析，两种布局都能跑；--no-build 可跳过编译。
+   → S 端得 planning_main；M 端得 udp_m_send_main(+真实模式下的 perception_main)。
+
+2) M 端运行模式自动判定（start_m.sh）：
+   显式 --stub/--real 优先；否则看 /dev/pango_pci_driver 是否存在。
+     · 有设备 → 真实模式：insmod + perception_main(加载 yolopv2.rknn) + 发送器
+     · 无设备 → 桩模式：只起 udp_m_send_main --stub（发灰亮渐变图）
+   桩模式下**不启动 perception_main**：perception 的 RKNN 加载与 PCIe 采集
+   同分支（perception_pipeline.c:perception_init），无设备无法初始化模型；
+   且其主循环无 sleep，空转吃满一核。故桩模式明确跳过并发色亮渐变图。
+   脚本会打印"运行模式：stub/real（原因）"，绝不静默。
+
+3) S 端（start_s.sh）沿用既有：配网 + tune_net + 以桌面用户身份跑
+   planning_main（X11 授权正确，不再 sudo 黑屏），模型默认 yolov5s-640-640.rknn。
+   --with-stub（单板自环）保留但非本流程所需。
+
+验证：bash -n 两脚本通过；以假二进制干跑，确认
+   · start_s.sh 能定位 planning_main 并启动；
+   · start_m.sh 自动判为 stub、跳过感知、正确以 --stub 拉起发送器；
+   · 二进制缺失时给出明确报错而非静默。
+另用板端同款 -O2 -Wall -Wextra -Werror 编译体检 partC 的 B 侧+common+C 侧
+共 12 个 .c，全部零警告零错误（确认 C 未破坏 B 的编译链）。
+---
+ scripts/start_m.sh | 111 ++++++++++++++++++++++++++++++++++-----------
+ scripts/start_s.sh |  45 ++++++++++++++----
+ 2 files changed, 119 insertions(+), 37 deletions(-)
+
+diff --git a/scripts/start_m.sh b/scripts/start_m.sh
+index c779b24..75f1b58 100755
+--- a/scripts/start_m.sh
++++ b/scripts/start_m.sh
+@@ -1,33 +1,63 @@
+ #!/bin/bash
+ # start_m.sh — M 端板卡启动脚本（【人员 B】集成）
+ #
+-# 流程：加载 PCIe 驱动 → 配置网卡（调用 setup_network_m.sh）→ 启动感知进程 → 启动 UDP 发送器
++# 流程：配置网卡 → 内核 UDP 调优 → 启动感知进程 → 启动 UDP 发送器
++#   · 真实模式（检测到 /dev/pango_pci_driver）：perception_main 加载
++#     yolopv2.rknn 走 PCIe 采集真实图像；udp_m_send_main 读共享内存发帧。
++#   · 桩模式（无 FPGA / 无摄像头）：只起 udp_m_send_main --stub，发送
++#     灰亮渐变图，供 S 端联调。★ 桩模式不加载 yolopv2.rknn —— RKNN 的
++#     加载与 PCIe 采集在 perception 里是同一分支（perception_pipeline.c），
++#     没有设备就无法初始化模型，这是硬件约束不是脚本限制。
+ #
+ # 用法（在 M 端 RK3568 上，需 root）：
+-#   sudo ./scripts/start_m.sh [--stub] [模型绝对路径] [驱动ko绝对路径]
+-#   --stub：无 FPGA / 无 A 硬件时联调用，只起 UDP 发送桩（发灰色渐变图）
+-# 默认模型：model/yolopv2_Nx3x480x640_rk3568.rknn（仓库根下）
+-# 默认驱动：drivers/pango_pci_driver.ko
++#   sudo ./scripts/start_m.sh [--stub|--real] [--no-build] [模型绝对路径] [驱动ko绝对路径]
++#   sudo bash ./scripts/start_m.sh        # 也可以（本脚本不依赖可执行位）
++#
++# 无参数时自动判定模式：有 /dev/pango_pci_driver → 真实，否则 → 桩。
+ set -e
+ 
+ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+ BIN_DIR="${BIN_DIR:-$REPO_ROOT/bin}"
+ 
+-# 参数：支持 --stub（跳过驱动/感知，只跑发送桩）；其余位置参数保持兼容
+-STUB=0
++# ---- 参数 ----
++NO_BUILD=0
++FORCE_MODE=""                 # "" | stub | real
+ POS=()
+ for a in "$@"; do
+     case "$a" in
+-        --stub) STUB=1 ;;
+-        *)      POS+=("$a") ;;
++        --stub)     FORCE_MODE=stub ;;
++        --real)     FORCE_MODE=real ;;
++        --no-build) NO_BUILD=1 ;;
++        *)          POS+=("$a") ;;
+     esac
+ done
+ MODEL_PATH="${POS[0]:-$REPO_ROOT/model/yolopv2_Nx3x480x640_rk3568.rknn}"
+ KO_PATH="${POS[1]:-$REPO_ROOT/drivers/pango_pci_driver.ko}"
+ 
++# ---- 可执行文件定位 ----
++# 优先 $BIN_DIR（宿主交叉编译后 make board 的部署布局），其次模块目录
++# （板端原生 make -C <模块> bin 的默认产物位置）；两处都没有则就地编译。
++build_module() {              # $1=模块目录名
++    [ -d "$REPO_ROOT/$1" ] || return 0
++    echo "  · 编译 $1： make -C $1 bin" >&2
++    ( cd "$REPO_ROOT" && make -C "$1" bin ) 1>&2 \
++        || echo "    ⚠ $1 编译失败（改用已有二进制）" >&2
++}
++resolve_bin() {               # $1=文件名  $2=模块目录名
++    local name="$1" mod="$2"
++    [ -f "$BIN_DIR/$name" ] && { printf '%s\n' "$BIN_DIR/$name"; return 0; }
++    [ -n "$mod" ] && [ -f "$REPO_ROOT/$mod/$name" ] && { printf '%s\n' "$REPO_ROOT/$mod/$name"; return 0; }
++    if [ "$NO_BUILD" = 0 ] && [ -n "$mod" ]; then
++        build_module "$mod"
++        [ -f "$REPO_ROOT/$mod/$name" ] && { printf '%s\n' "$REPO_ROOT/$mod/$name"; return 0; }
++        [ -f "$BIN_DIR/$name" ] && { printf '%s\n' "$BIN_DIR/$name"; return 0; }
++    fi
++    return 1
++}
++
+ # RKNN 运行时库路径（librknnrt.so）
+-export LD_LIBRARY_PATH="$REPO_ROOT/lib:$LD_LIBRARY_PATH"
++export LD_LIBRARY_PATH="$REPO_ROOT/lib:${LD_LIBRARY_PATH:-}"
+ 
+ if [ "$(id -u)" -ne 0 ]; then
+     echo "提示：驱动加载/网络配置需要 root 权限，建议用 sudo 运行"
+@@ -35,14 +65,31 @@ fi
+ 
+ echo "==== M 端启动 ===="
+ 
+-# 1) 加载 PCIe 驱动（桩模式不需要；若已加载则跳过）
+-if [ "$STUB" = 1 ]; then
+-    echo "[1] --stub：跳过 PCIe 驱动加载（无 FPGA 采集，发送器直接造图）"
+-elif lsmod 2>/dev/null | grep -q pango_pci_driver; then
+-    echo "[1] pango_pci_driver 已加载"
++# ---- 运行模式判定：显式 --stub/--real 优先，否则看 PCIe 设备节点 ----
++if [ "$FORCE_MODE" = stub ]; then
++    MODE=stub;  WHY="（--stub 指定）"
++elif [ "$FORCE_MODE" = real ]; then
++    MODE=real;  WHY="（--real 指定）"
++elif [ -e /dev/pango_pci_driver ]; then
++    MODE=real;  WHY="（检测到 /dev/pango_pci_driver）"
++else
++    MODE=stub;  WHY="（未检测到 /dev/pango_pci_driver，无 FPGA/摄像头）"
++fi
++echo "  运行模式：$MODE $WHY"
++if [ "$MODE" = stub ]; then
++    echo "  注：桩模式只发灰亮渐变图，不加载 yolopv2.rknn（无 PCIe 采集则无法初始化模型）"
++fi
++
++# 1) 加载 PCIe 驱动（仅真实模式；若已加载则跳过）
++if [ "$MODE" = real ]; then
++    if lsmod 2>/dev/null | grep -q pango_pci_driver; then
++        echo "[1] pango_pci_driver 已加载"
++    else
++        echo "[1] 加载驱动: $KO_PATH"
++        insmod "$KO_PATH"
++    fi
+ else
+-    echo "[1] 加载驱动: $KO_PATH"
+-    insmod "$KO_PATH"
++    echo "[1] 桩模式：跳过 PCIe 驱动加载"
+ fi
+ 
+ # 2) 配置网卡（独立脚本：自动探测 end0/end1 + ip 命令 + NetworkManager 规避）
+@@ -58,23 +105,33 @@ if [ -f "$SCRIPT_DIR/tune_net.sh" ]; then
+     bash "$SCRIPT_DIR/tune_net.sh" || echo "警告：tune_net.sh 执行失败"
+ fi
+ 
+-# 4) 启动感知进程（A 交付）；--stub 时不需要（无 FPGA 采集，跳过 A 的模型）
+-if [ "$STUB" = 1 ]; then
+-    echo "[4] --stub：跳过 perception_main（不依赖 A 的模型/FPGA）"
++# 4) 启动感知进程（A 交付）——仅真实模式。桩模式下 perception 无 PCIe 采集，
++#    且其主循环是无 sleep 的紧循环（会空转吃满一核），故桩模式不起它。
++if [ "$MODE" = real ]; then
++    PERC_BIN="$(resolve_bin perception_main perception)" || PERC_BIN=""
++    if [ -z "$PERC_BIN" ]; then
++        echo "[4] 警告：未找到 perception_main，跳过感知进程"
++    else
++        echo "[4] 启动 perception_main（真实模式，模型 $MODEL_PATH）"
++        nohup "$PERC_BIN" --model "$MODEL_PATH" \
++            > "$REPO_ROOT/perception.log" 2>&1 &
++    fi
+ else
+-    echo "[4] 启动 perception_main"
+-    nohup "$BIN_DIR/perception_main" --model "$MODEL_PATH" \
+-        > "$REPO_ROOT/perception.log" 2>&1 &
++    echo "[4] 桩模式：跳过 perception_main（不发真实图像，改由发送器造图）"
+ fi
+ 
+-# 5) 启动 UDP 发送器（B 交付）；--stub 时发灰色渐变桩图，无需摄像头
++# 5) 启动 UDP 发送器（B 交付）；桩模式发灰亮渐变图，无需摄像头
++SEND_BIN="$(resolve_bin udp_m_send_main planning)" || {
++    echo "错误：找不到也无法编译 udp_m_send_main"
++    exit 1
++}
+ SEND_ARGS=()
+-[ "$STUB" = 1 ] && SEND_ARGS+=(--stub)
++[ "$MODE" = stub ] && SEND_ARGS+=(--stub)
+ echo "[5] 启动 udp_m_send_main ${SEND_ARGS[*]}"
+-nohup "$BIN_DIR/udp_m_send_main" "${SEND_ARGS[@]}" \
++nohup "$SEND_BIN" "${SEND_ARGS[@]}" \
+     > "$REPO_ROOT/udp_send.log" 2>&1 &
+ 
+ sleep 1
+-echo "==== M 端启动完成 ===="
++echo "==== M 端启动完成（模式=$MODE）===="
+ echo "日志: perception.log / udp_send.log"
+ echo "全部停止请用: ./scripts/stop_all.sh"
+diff --git a/scripts/start_s.sh b/scripts/start_s.sh
+index 6d48bd8..69ae3af 100755
+--- a/scripts/start_s.sh
++++ b/scripts/start_s.sh
+@@ -5,7 +5,7 @@
+ #       （planning_main 内含 UDP 接收 / 行人检测 / 决策 / LCD）
+ #
+ # 用法（在 S 端 RK3568 上，需 root）：
+-#   sudo ./scripts/start_s.sh [--model 行人模型绝对路径] [--no-lcd] [--with-stub]
++#   sudo ./scripts/start_s.sh [--model 行人模型绝对路径] [--no-lcd] [--with-stub] [--no-build]
+ #   sudo bash ./scripts/start_s.sh        # 也可以（本脚本不依赖可执行位）
+ #
+ # --with-stub：单板自测模式。除 S 端决策+显示外，本机再起一个
+@@ -30,16 +30,39 @@ BIN_DIR="${BIN_DIR:-$REPO_ROOT/bin}"
+ # 内部统一用 bash 调子脚本，不依赖文件的可执行位
+ SH() { bash "$@"; }
+ 
++# ---- 可执行文件定位 ----
++# 优先 $BIN_DIR（宿主交叉编译后 make board 的部署布局），其次模块目录
++# （板端原生 make -C <模块> bin 的默认产物位置）；两处都没有则就地编译。
++build_module() {              # $1=模块目录名
++    [ -d "$REPO_ROOT/$1" ] || return 0
++    echo "  · 编译 $1： make -C $1 bin" >&2
++    ( cd "$REPO_ROOT" && make -C "$1" bin ) 1>&2 \
++        || echo "    ⚠ $1 编译失败（改用已有二进制）" >&2
++}
++resolve_bin() {               # $1=文件名  $2=模块目录名
++    local name="$1" mod="$2"
++    [ -f "$BIN_DIR/$name" ] && { printf '%s\n' "$BIN_DIR/$name"; return 0; }
++    [ -n "$mod" ] && [ -f "$REPO_ROOT/$mod/$name" ] && { printf '%s\n' "$REPO_ROOT/$mod/$name"; return 0; }
++    if [ "$NO_BUILD" = 0 ] && [ -n "$mod" ]; then
++        build_module "$mod"
++        [ -f "$REPO_ROOT/$mod/$name" ] && { printf '%s\n' "$REPO_ROOT/$mod/$name"; return 0; }
++        [ -f "$BIN_DIR/$name" ] && { printf '%s\n' "$BIN_DIR/$name"; return 0; }
++    fi
++    return 1
++}
++
+ # 行人检测模型（仓库实际文件为 model/yolov5s-640-640.rknn）
+ MODEL="$REPO_ROOT/model/yolov5s-640-640.rknn"
+ NO_LCD=0
+ WITH_STUB=0
++NO_BUILD=0
+ 
+ while [ $# -gt 0 ]; do
+     case "$1" in
+         --model)     MODEL="$2"; shift 2 ;;
+         --no-lcd)    NO_LCD=1; shift ;;
+         --with-stub) WITH_STUB=1; shift ;;
++        --no-build)  NO_BUILD=1; shift ;;
+         *)           shift ;;
+     esac
+ done
+@@ -54,13 +77,14 @@ fi
+ 
+ echo "==== S 端启动 ===="
+ 
+-# 0) 二进制存在性检查（比"启动成功却什么都没有"友好得多）
+-if [ ! -f "$BIN_DIR/planning_main" ]; then
+-    echo "错误：找不到 $BIN_DIR/planning_main"
++# 0) 定位可执行文件：bin/ → planning/ → 现场编译（--no-build 可跳过编译）
++PLANNING_BIN="$(resolve_bin planning_main planning)" || {
++    echo "错误：找不到也无法编译 planning_main"
+     echo "      板端构建： cd $REPO_ROOT && make -C planning bin"
+     echo "      交叉编译： 宿主机 make board 后把 bin/ 拷到板卡"
+     exit 1
+-fi
++}
++echo "  可执行文件: $PLANNING_BIN"
+ if [ ! -f "$MODEL" ]; then
+     echo "警告：找不到行人模型 $MODEL（将退化为无行人模式，决策仍可用）"
+ fi
+@@ -139,7 +163,7 @@ else
+ fi
+ 
+ echo "[4] 启动 planning_main ${ARGS[*]}"
+-nohup "${RUN_ENV[@]}" "$BIN_DIR/planning_main" "${ARGS[@]}" > "$LOG" 2>&1 &
++nohup "${RUN_ENV[@]}" "$PLANNING_BIN" "${ARGS[@]}" > "$LOG" 2>&1 &
+ PID=$!
+ sleep 2
+ 
+@@ -165,11 +189,12 @@ fi
+ #    接收端 bind INADDR_ANY:8888 直接收到，等价于「M 板在持续发帧」。
+ #    屏幕右半出现灰度渐变、左半为 S 板本地摄像头（未接则黑），与双板联调观感一致。
+ if [ "$WITH_STUB" = 1 ]; then
+-    if [ ! -f "$BIN_DIR/udp_m_send_main" ]; then
+-        echo "⚠ --with-stub 需要 $BIN_DIR/udp_m_send_main（先 cd $REPO_ROOT && make -C planning bin）"
++    SEND_BIN="$(resolve_bin udp_m_send_main planning)" || SEND_BIN=""
++    if [ -z "$SEND_BIN" ]; then
++        echo "⚠ --with-stub 需要 udp_m_send_main（先 cd $REPO_ROOT && make -C planning bin）"
+     else
+-        echo "[5] 本机桩发帧：udp_m_send_main --stub（目标 192.168.100.20:8888，本机回环）"
+-        nohup "$BIN_DIR/udp_m_send_main" --stub \
++        echo "[5] 本机桩发帧：$SEND_BIN --stub（目标 192.168.100.20:8888，本机回环）"
++        nohup "$SEND_BIN" --stub \
+             > "$REPO_ROOT/udp_send.log" 2>&1 &
+         echo "    日志: $REPO_ROOT/udp_send.log"
+     fi
+-- 
+2.55.0.windows.3
+
