@@ -1,33 +1,63 @@
 #!/bin/bash
 # start_m.sh — M 端板卡启动脚本（【人员 B】集成）
 #
-# 流程：加载 PCIe 驱动 → 配置网卡（调用 setup_network_m.sh）→ 启动感知进程 → 启动 UDP 发送器
+# 流程：配置网卡 → 内核 UDP 调优 → 启动感知进程 → 启动 UDP 发送器
+#   · 真实模式（检测到 /dev/pango_pci_driver）：perception_main 加载
+#     yolopv2.rknn 走 PCIe 采集真实图像；udp_m_send_main 读共享内存发帧。
+#   · 桩模式（无 FPGA / 无摄像头）：只起 udp_m_send_main --stub，发送
+#     灰亮渐变图，供 S 端联调。★ 桩模式不加载 yolopv2.rknn —— RKNN 的
+#     加载与 PCIe 采集在 perception 里是同一分支（perception_pipeline.c），
+#     没有设备就无法初始化模型，这是硬件约束不是脚本限制。
 #
 # 用法（在 M 端 RK3568 上，需 root）：
-#   sudo ./scripts/start_m.sh [--stub] [模型绝对路径] [驱动ko绝对路径]
-#   --stub：无 FPGA / 无 A 硬件时联调用，只起 UDP 发送桩（发灰色渐变图）
-# 默认模型：model/yolopv2_Nx3x480x640_rk3568.rknn（仓库根下）
-# 默认驱动：drivers/pango_pci_driver.ko
+#   sudo ./scripts/start_m.sh [--stub|--real] [--no-build] [模型绝对路径] [驱动ko绝对路径]
+#   sudo bash ./scripts/start_m.sh        # 也可以（本脚本不依赖可执行位）
+#
+# 无参数时自动判定模式：有 /dev/pango_pci_driver → 真实，否则 → 桩。
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 BIN_DIR="${BIN_DIR:-$REPO_ROOT/bin}"
 
-# 参数：支持 --stub（跳过驱动/感知，只跑发送桩）；其余位置参数保持兼容
-STUB=0
+# ---- 参数 ----
+NO_BUILD=0
+FORCE_MODE=""                 # "" | stub | real
 POS=()
 for a in "$@"; do
     case "$a" in
-        --stub) STUB=1 ;;
-        *)      POS+=("$a") ;;
+        --stub)     FORCE_MODE=stub ;;
+        --real)     FORCE_MODE=real ;;
+        --no-build) NO_BUILD=1 ;;
+        *)          POS+=("$a") ;;
     esac
 done
 MODEL_PATH="${POS[0]:-$REPO_ROOT/model/yolopv2_Nx3x480x640_rk3568.rknn}"
 KO_PATH="${POS[1]:-$REPO_ROOT/drivers/pango_pci_driver.ko}"
 
+# ---- 可执行文件定位 ----
+# 优先 $BIN_DIR（宿主交叉编译后 make board 的部署布局），其次模块目录
+# （板端原生 make -C <模块> bin 的默认产物位置）；两处都没有则就地编译。
+build_module() {              # $1=模块目录名
+    [ -d "$REPO_ROOT/$1" ] || return 0
+    echo "  · 编译 $1： make -C $1 bin" >&2
+    ( cd "$REPO_ROOT" && make -C "$1" bin ) 1>&2 \
+        || echo "    ⚠ $1 编译失败（改用已有二进制）" >&2
+}
+resolve_bin() {               # $1=文件名  $2=模块目录名
+    local name="$1" mod="$2"
+    [ -f "$BIN_DIR/$name" ] && { printf '%s\n' "$BIN_DIR/$name"; return 0; }
+    [ -n "$mod" ] && [ -f "$REPO_ROOT/$mod/$name" ] && { printf '%s\n' "$REPO_ROOT/$mod/$name"; return 0; }
+    if [ "$NO_BUILD" = 0 ] && [ -n "$mod" ]; then
+        build_module "$mod"
+        [ -f "$REPO_ROOT/$mod/$name" ] && { printf '%s\n' "$REPO_ROOT/$mod/$name"; return 0; }
+        [ -f "$BIN_DIR/$name" ] && { printf '%s\n' "$BIN_DIR/$name"; return 0; }
+    fi
+    return 1
+}
+
 # RKNN 运行时库路径（librknnrt.so）
-export LD_LIBRARY_PATH="$REPO_ROOT/lib:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$REPO_ROOT/lib:${LD_LIBRARY_PATH:-}"
 
 if [ "$(id -u)" -ne 0 ]; then
     echo "提示：驱动加载/网络配置需要 root 权限，建议用 sudo 运行"
@@ -35,14 +65,31 @@ fi
 
 echo "==== M 端启动 ===="
 
-# 1) 加载 PCIe 驱动（桩模式不需要；若已加载则跳过）
-if [ "$STUB" = 1 ]; then
-    echo "[1] --stub：跳过 PCIe 驱动加载（无 FPGA 采集，发送器直接造图）"
-elif lsmod 2>/dev/null | grep -q pango_pci_driver; then
-    echo "[1] pango_pci_driver 已加载"
+# ---- 运行模式判定：显式 --stub/--real 优先，否则看 PCIe 设备节点 ----
+if [ "$FORCE_MODE" = stub ]; then
+    MODE=stub;  WHY="（--stub 指定）"
+elif [ "$FORCE_MODE" = real ]; then
+    MODE=real;  WHY="（--real 指定）"
+elif [ -e /dev/pango_pci_driver ]; then
+    MODE=real;  WHY="（检测到 /dev/pango_pci_driver）"
 else
-    echo "[1] 加载驱动: $KO_PATH"
-    insmod "$KO_PATH"
+    MODE=stub;  WHY="（未检测到 /dev/pango_pci_driver，无 FPGA/摄像头）"
+fi
+echo "  运行模式：$MODE $WHY"
+if [ "$MODE" = stub ]; then
+    echo "  注：桩模式只发灰亮渐变图，不加载 yolopv2.rknn（无 PCIe 采集则无法初始化模型）"
+fi
+
+# 1) 加载 PCIe 驱动（仅真实模式；若已加载则跳过）
+if [ "$MODE" = real ]; then
+    if lsmod 2>/dev/null | grep -q pango_pci_driver; then
+        echo "[1] pango_pci_driver 已加载"
+    else
+        echo "[1] 加载驱动: $KO_PATH"
+        insmod "$KO_PATH"
+    fi
+else
+    echo "[1] 桩模式：跳过 PCIe 驱动加载"
 fi
 
 # 2) 配置网卡（独立脚本：自动探测 end0/end1 + ip 命令 + NetworkManager 规避）
@@ -58,23 +105,33 @@ if [ -f "$SCRIPT_DIR/tune_net.sh" ]; then
     bash "$SCRIPT_DIR/tune_net.sh" || echo "警告：tune_net.sh 执行失败"
 fi
 
-# 4) 启动感知进程（A 交付）；--stub 时不需要（无 FPGA 采集，跳过 A 的模型）
-if [ "$STUB" = 1 ]; then
-    echo "[4] --stub：跳过 perception_main（不依赖 A 的模型/FPGA）"
+# 4) 启动感知进程（A 交付）——仅真实模式。桩模式下 perception 无 PCIe 采集，
+#    且其主循环是无 sleep 的紧循环（会空转吃满一核），故桩模式不起它。
+if [ "$MODE" = real ]; then
+    PERC_BIN="$(resolve_bin perception_main perception)" || PERC_BIN=""
+    if [ -z "$PERC_BIN" ]; then
+        echo "[4] 警告：未找到 perception_main，跳过感知进程"
+    else
+        echo "[4] 启动 perception_main（真实模式，模型 $MODEL_PATH）"
+        nohup "$PERC_BIN" --model "$MODEL_PATH" \
+            > "$REPO_ROOT/perception.log" 2>&1 &
+    fi
 else
-    echo "[4] 启动 perception_main"
-    nohup "$BIN_DIR/perception_main" --model "$MODEL_PATH" \
-        > "$REPO_ROOT/perception.log" 2>&1 &
+    echo "[4] 桩模式：跳过 perception_main（不发真实图像，改由发送器造图）"
 fi
 
-# 5) 启动 UDP 发送器（B 交付）；--stub 时发灰色渐变桩图，无需摄像头
+# 5) 启动 UDP 发送器（B 交付）；桩模式发灰亮渐变图，无需摄像头
+SEND_BIN="$(resolve_bin udp_m_send_main planning)" || {
+    echo "错误：找不到也无法编译 udp_m_send_main"
+    exit 1
+}
 SEND_ARGS=()
-[ "$STUB" = 1 ] && SEND_ARGS+=(--stub)
+[ "$MODE" = stub ] && SEND_ARGS+=(--stub)
 echo "[5] 启动 udp_m_send_main ${SEND_ARGS[*]}"
-nohup "$BIN_DIR/udp_m_send_main" "${SEND_ARGS[@]}" \
+nohup "$SEND_BIN" "${SEND_ARGS[@]}" \
     > "$REPO_ROOT/udp_send.log" 2>&1 &
 
 sleep 1
-echo "==== M 端启动完成 ===="
+echo "==== M 端启动完成（模式=$MODE）===="
 echo "日志: perception.log / udp_send.log"
 echo "全部停止请用: ./scripts/stop_all.sh"

@@ -5,7 +5,7 @@
 #       （planning_main 内含 UDP 接收 / 行人检测 / 决策 / LCD）
 #
 # 用法（在 S 端 RK3568 上，需 root）：
-#   sudo ./scripts/start_s.sh [--model 行人模型绝对路径] [--no-lcd] [--with-stub]
+#   sudo ./scripts/start_s.sh [--model 行人模型绝对路径] [--no-lcd] [--with-stub] [--no-build]
 #   sudo bash ./scripts/start_s.sh        # 也可以（本脚本不依赖可执行位）
 #
 # --with-stub：单板自测模式。除 S 端决策+显示外，本机再起一个
@@ -30,16 +30,39 @@ BIN_DIR="${BIN_DIR:-$REPO_ROOT/bin}"
 # 内部统一用 bash 调子脚本，不依赖文件的可执行位
 SH() { bash "$@"; }
 
+# ---- 可执行文件定位 ----
+# 优先 $BIN_DIR（宿主交叉编译后 make board 的部署布局），其次模块目录
+# （板端原生 make -C <模块> bin 的默认产物位置）；两处都没有则就地编译。
+build_module() {              # $1=模块目录名
+    [ -d "$REPO_ROOT/$1" ] || return 0
+    echo "  · 编译 $1： make -C $1 bin" >&2
+    ( cd "$REPO_ROOT" && make -C "$1" bin ) 1>&2 \
+        || echo "    ⚠ $1 编译失败（改用已有二进制）" >&2
+}
+resolve_bin() {               # $1=文件名  $2=模块目录名
+    local name="$1" mod="$2"
+    [ -f "$BIN_DIR/$name" ] && { printf '%s\n' "$BIN_DIR/$name"; return 0; }
+    [ -n "$mod" ] && [ -f "$REPO_ROOT/$mod/$name" ] && { printf '%s\n' "$REPO_ROOT/$mod/$name"; return 0; }
+    if [ "$NO_BUILD" = 0 ] && [ -n "$mod" ]; then
+        build_module "$mod"
+        [ -f "$REPO_ROOT/$mod/$name" ] && { printf '%s\n' "$REPO_ROOT/$mod/$name"; return 0; }
+        [ -f "$BIN_DIR/$name" ] && { printf '%s\n' "$BIN_DIR/$name"; return 0; }
+    fi
+    return 1
+}
+
 # 行人检测模型（仓库实际文件为 model/yolov5s-640-640.rknn）
 MODEL="$REPO_ROOT/model/yolov5s-640-640.rknn"
 NO_LCD=0
 WITH_STUB=0
+NO_BUILD=0
 
 while [ $# -gt 0 ]; do
     case "$1" in
         --model)     MODEL="$2"; shift 2 ;;
         --no-lcd)    NO_LCD=1; shift ;;
         --with-stub) WITH_STUB=1; shift ;;
+        --no-build)  NO_BUILD=1; shift ;;
         *)           shift ;;
     esac
 done
@@ -54,13 +77,14 @@ fi
 
 echo "==== S 端启动 ===="
 
-# 0) 二进制存在性检查（比"启动成功却什么都没有"友好得多）
-if [ ! -f "$BIN_DIR/planning_main" ]; then
-    echo "错误：找不到 $BIN_DIR/planning_main"
+# 0) 定位可执行文件：bin/ → planning/ → 现场编译（--no-build 可跳过编译）
+PLANNING_BIN="$(resolve_bin planning_main planning)" || {
+    echo "错误：找不到也无法编译 planning_main"
     echo "      板端构建： cd $REPO_ROOT && make -C planning bin"
     echo "      交叉编译： 宿主机 make board 后把 bin/ 拷到板卡"
     exit 1
-fi
+}
+echo "  可执行文件: $PLANNING_BIN"
 if [ ! -f "$MODEL" ]; then
     echo "警告：找不到行人模型 $MODEL（将退化为无行人模式，决策仍可用）"
 fi
@@ -139,7 +163,7 @@ else
 fi
 
 echo "[4] 启动 planning_main ${ARGS[*]}"
-nohup "${RUN_ENV[@]}" "$BIN_DIR/planning_main" "${ARGS[@]}" > "$LOG" 2>&1 &
+nohup "${RUN_ENV[@]}" "$PLANNING_BIN" "${ARGS[@]}" > "$LOG" 2>&1 &
 PID=$!
 sleep 2
 
@@ -165,11 +189,12 @@ fi
 #    接收端 bind INADDR_ANY:8888 直接收到，等价于「M 板在持续发帧」。
 #    屏幕右半出现灰度渐变、左半为 S 板本地摄像头（未接则黑），与双板联调观感一致。
 if [ "$WITH_STUB" = 1 ]; then
-    if [ ! -f "$BIN_DIR/udp_m_send_main" ]; then
-        echo "⚠ --with-stub 需要 $BIN_DIR/udp_m_send_main（先 cd $REPO_ROOT && make -C planning bin）"
+    SEND_BIN="$(resolve_bin udp_m_send_main planning)" || SEND_BIN=""
+    if [ -z "$SEND_BIN" ]; then
+        echo "⚠ --with-stub 需要 udp_m_send_main（先 cd $REPO_ROOT && make -C planning bin）"
     else
-        echo "[5] 本机桩发帧：udp_m_send_main --stub（目标 192.168.100.20:8888，本机回环）"
-        nohup "$BIN_DIR/udp_m_send_main" --stub \
+        echo "[5] 本机桩发帧：$SEND_BIN --stub（目标 192.168.100.20:8888，本机回环）"
+        nohup "$SEND_BIN" --stub \
             > "$REPO_ROOT/udp_send.log" 2>&1 &
         echo "    日志: $REPO_ROOT/udp_send.log"
     fi
