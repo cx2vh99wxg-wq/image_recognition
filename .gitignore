@@ -34,3 +34,9 @@ planning/test/test_udp
 # Python 缓存
 __pycache__/
 *.pyc
+
+# ---- B 追加（2026-10-09）----
+# 离线兜底包（git bundle / format-patch 补丁）：仅作"本机推不上远程时"把提交
+# 带到板卡的运输工具，不是源码。推送正常时纯属冗余（bundle 会让仓库重复携带
+# 一份历史）。文件保留在本地磁盘供救急拷贝，但不进版本库。
+_transfer/
