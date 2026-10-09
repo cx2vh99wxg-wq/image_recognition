@@ -5,8 +5,14 @@
 #       （planning_main 内含 UDP 接收 / 行人检测 / 决策 / LCD）
 #
 # 用法（在 S 端 RK3568 上，需 root）：
-#   sudo ./scripts/start_s.sh [--model 行人模型绝对路径] [--no-lcd]
+#   sudo ./scripts/start_s.sh [--model 行人模型绝对路径] [--no-lcd] [--with-stub]
 #   sudo bash ./scripts/start_s.sh        # 也可以（本脚本不依赖可执行位）
+#
+# --with-stub：单板自测模式。除 S 端决策+显示外，本机再起一个
+#   udp_m_send_main --stub（B 交付的 M 端发送器桩），把灰色渐变图发往
+#   UDP_IP_S（=本机 192.168.100.20），接收端 bind INADDR_ANY:8888 直接收到。
+#   于是无需 M 板 / FPGA / 摄像头，仅凭本脚本即可复现完整链路：
+#   配网 → 决策 → M 端发帧 → S 端收帧 → LCD 灰度渐变图。
 #
 # 两个反复踩过的坑，本脚本已内置规避：
 #   1) 脚本可执行位：Windows 上克隆/提交时 git 容易丢 +x，板端 git pull 后
@@ -27,12 +33,14 @@ SH() { bash "$@"; }
 # 行人检测模型（仓库实际文件为 model/yolov5s-640-640.rknn）
 MODEL="$REPO_ROOT/model/yolov5s-640-640.rknn"
 NO_LCD=0
+WITH_STUB=0
 
 while [ $# -gt 0 ]; do
     case "$1" in
-        --model)  MODEL="$2"; shift 2 ;;
-        --no-lcd) NO_LCD=1; shift ;;
-        *)        shift ;;
+        --model)     MODEL="$2"; shift 2 ;;
+        --no-lcd)    NO_LCD=1; shift ;;
+        --with-stub) WITH_STUB=1; shift ;;
+        *)           shift ;;
     esac
 done
 
@@ -135,7 +143,7 @@ nohup "${RUN_ENV[@]}" "$BIN_DIR/planning_main" "${ARGS[@]}" > "$LOG" 2>&1 &
 PID=$!
 sleep 2
 
-# 5) 启动后自检：把"启动成功但其实没画面"变成看得见的告警
+# 4b) 启动后自检：把"启动成功但其实没画面"变成看得见的告警
 if ! kill -0 "$PID" 2>/dev/null; then
     echo "⚠ planning_main 启动后立即退出，日志末尾："
     tail -8 "$LOG" | sed 's/^/    /'
@@ -151,6 +159,23 @@ if [ "$NO_LCD" = 0 ] && grep -q "XOpenDisplay 失败" "$LOG" 2>/dev/null; then
     echo "    彻底解决： RENDER_USER=<桌面用户> sudo -E ./scripts/start_s.sh"
 fi
 
+# 5) 可选：本机自环桩发帧（--with-stub）
+#    无 M 板 / 无 FPGA / 无摄像头时，单板即可验证全链路：在本机再起一个
+#    udp_m_send_main --stub，把灰色渐变图发往 UDP_IP_S（=本机 192.168.100.20），
+#    接收端 bind INADDR_ANY:8888 直接收到，等价于「M 板在持续发帧」。
+#    屏幕右半出现灰度渐变、左半为 S 板本地摄像头（未接则黑），与双板联调观感一致。
+if [ "$WITH_STUB" = 1 ]; then
+    if [ ! -f "$BIN_DIR/udp_m_send_main" ]; then
+        echo "⚠ --with-stub 需要 $BIN_DIR/udp_m_send_main（先 cd $REPO_ROOT && make -C planning bin）"
+    else
+        echo "[5] 本机桩发帧：udp_m_send_main --stub（目标 192.168.100.20:8888，本机回环）"
+        nohup "$BIN_DIR/udp_m_send_main" --stub \
+            > "$REPO_ROOT/udp_send.log" 2>&1 &
+        echo "    日志: $REPO_ROOT/udp_send.log"
+    fi
+fi
+
 echo "==== S 端启动完成 ===="
 echo "日志: $LOG"
+[ "$WITH_STUB" = 1 ] && echo "桩发帧日志: $REPO_ROOT/udp_send.log"
 echo "全部停止请用: ./scripts/stop_all.sh"

@@ -4,7 +4,8 @@
 # 流程：加载 PCIe 驱动 → 配置网卡（调用 setup_network_m.sh）→ 启动感知进程 → 启动 UDP 发送器
 #
 # 用法（在 M 端 RK3568 上，需 root）：
-#   sudo ./scripts/start_m.sh [模型绝对路径] [驱动ko绝对路径]
+#   sudo ./scripts/start_m.sh [--stub] [模型绝对路径] [驱动ko绝对路径]
+#   --stub：无 FPGA / 无 A 硬件时联调用，只起 UDP 发送桩（发灰色渐变图）
 # 默认模型：model/yolopv2_Nx3x480x640_rk3568.rknn（仓库根下）
 # 默认驱动：drivers/pango_pci_driver.ko
 set -e
@@ -13,8 +14,17 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 BIN_DIR="${BIN_DIR:-$REPO_ROOT/bin}"
 
-MODEL_PATH="${1:-$REPO_ROOT/model/yolopv2_Nx3x480x640_rk3568.rknn}"
-KO_PATH="${2:-$REPO_ROOT/drivers/pango_pci_driver.ko}"
+# 参数：支持 --stub（跳过驱动/感知，只跑发送桩）；其余位置参数保持兼容
+STUB=0
+POS=()
+for a in "$@"; do
+    case "$a" in
+        --stub) STUB=1 ;;
+        *)      POS+=("$a") ;;
+    esac
+done
+MODEL_PATH="${POS[0]:-$REPO_ROOT/model/yolopv2_Nx3x480x640_rk3568.rknn}"
+KO_PATH="${POS[1]:-$REPO_ROOT/drivers/pango_pci_driver.ko}"
 
 # RKNN 运行时库路径（librknnrt.so）
 export LD_LIBRARY_PATH="$REPO_ROOT/lib:$LD_LIBRARY_PATH"
@@ -25,8 +35,10 @@ fi
 
 echo "==== M 端启动 ===="
 
-# 1) 加载 PCIe 驱动（若已加载则跳过）
-if lsmod 2>/dev/null | grep -q pango_pci_driver; then
+# 1) 加载 PCIe 驱动（桩模式不需要；若已加载则跳过）
+if [ "$STUB" = 1 ]; then
+    echo "[1] --stub：跳过 PCIe 驱动加载（无 FPGA 采集，发送器直接造图）"
+elif lsmod 2>/dev/null | grep -q pango_pci_driver; then
     echo "[1] pango_pci_driver 已加载"
 else
     echo "[1] 加载驱动: $KO_PATH"
@@ -46,14 +58,20 @@ if [ -f "$SCRIPT_DIR/tune_net.sh" ]; then
     bash "$SCRIPT_DIR/tune_net.sh" || echo "警告：tune_net.sh 执行失败"
 fi
 
-# 4) 启动感知进程（A 交付；--stub 可在无硬件时联调）
-echo "[4] 启动 perception_main (stub 模式请加 --stub)"
-nohup "$BIN_DIR/perception_main" --model "$MODEL_PATH" \
-    > "$REPO_ROOT/perception.log" 2>&1 &
+# 4) 启动感知进程（A 交付）；--stub 时不需要（无 FPGA 采集，跳过 A 的模型）
+if [ "$STUB" = 1 ]; then
+    echo "[4] --stub：跳过 perception_main（不依赖 A 的模型/FPGA）"
+else
+    echo "[4] 启动 perception_main"
+    nohup "$BIN_DIR/perception_main" --model "$MODEL_PATH" \
+        > "$REPO_ROOT/perception.log" 2>&1 &
+fi
 
-# 5) 启动 UDP 发送器（B 交付）
-echo "[5] 启动 udp_m_send_main"
-nohup "$BIN_DIR/udp_m_send_main" \
+# 5) 启动 UDP 发送器（B 交付）；--stub 时发灰色渐变桩图，无需摄像头
+SEND_ARGS=()
+[ "$STUB" = 1 ] && SEND_ARGS+=(--stub)
+echo "[5] 启动 udp_m_send_main ${SEND_ARGS[*]}"
+nohup "$BIN_DIR/udp_m_send_main" "${SEND_ARGS[@]}" \
     > "$REPO_ROOT/udp_send.log" 2>&1 &
 
 sleep 1
