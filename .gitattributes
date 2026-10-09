@@ -1,0 +1,37 @@
+# .gitattributes — 统一行尾与二进制处理（【人员 B】集成维护）
+#
+# 背景（2026-10-08 partC 提交踩坑）：Windows 上提交时把 10 个源文件整文件
+# 转成了 CRLF，git diff 显示"全部行都改了"但实质内容零变化，既污染历史，
+# 又让 shell 脚本带上 \r 后在板端报 "bad interpreter: No such file or directory"。
+# 这里显式声明：源码/脚本一律 LF，二进制禁止任何转换。
+#
+# 注意：作用域刻意收窄到具体后缀，没有用 `* text=auto`——
+# 仓库里 fpga/ 下有 13 个 PDS 工具生成的 *.adf 报告本身就是 CRLF，
+# 用通配会让他们在每次 checkout 后显示为"已修改"，制造无意义 diff。
+
+# ---- 源码 / 脚本：一律 LF ----
+*.c        text eol=lf
+*.h        text eol=lf
+*.cpp      text eol=lf
+*.cc       text eol=lf
+*.py       text eol=lf
+*.sh       text eol=lf
+*.v        text eol=lf
+*.vh       text eol=lf
+*.fdc      text eol=lf
+*.md       text eol=lf
+*.json     text eol=lf
+Makefile   text eol=lf
+
+# ---- 二进制：禁止行尾/编码转换（转换即损坏）----
+*.ko       binary
+*.so       binary
+*.rknn     binary
+*.sbit     binary
+*.sfc      binary
+*.bundle   binary
+*.HMI      binary
+*.pdf      binary
+
+# ---- PDS 工具生成物：不参与行尾规范化 ----
+*.adf      -text

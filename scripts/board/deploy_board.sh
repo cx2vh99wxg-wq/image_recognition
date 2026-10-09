@@ -59,9 +59,9 @@ else
     fi
 fi
 
-# 3) 配置网络
+# 3) 配置网络（用 bash 调起，不依赖脚本可执行位）
 if [ -f "$REPO_ROOT/scripts/$NET" ]; then
-    "$REPO_ROOT/scripts/$NET" || true
+    bash "$REPO_ROOT/scripts/$NET" || true
 fi
 
 echo ""

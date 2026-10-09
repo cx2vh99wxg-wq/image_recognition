@@ -34,13 +34,16 @@ else
 fi
 
 # 2) 配置网卡（独立脚本：自动探测 end0/end1 + ip 命令 + NetworkManager 规避）
+#    用 bash 显式调起：脚本若丢了可执行位（Windows 克隆/提交时常见），
+#    直接 exec 会报 "Permission denied"。
 echo "[2] 配置网络"
-"$SCRIPT_DIR/setup_network_m.sh" || true
+bash "$SCRIPT_DIR/setup_network_m.sh" || echo "警告：网络配置未成功（请检查网线是否插在 end0）"
 
 # 3) 内核 UDP 缓冲调优（发送端突发写入；接收端 S 板更要调，见 start_s.sh）
+#    注意用 -f 而非 -x：可执行位缺失时 -x 会让调优被"静默跳过"
 echo "[3] 内核 UDP 缓冲调优"
-if [ -x "$SCRIPT_DIR/tune_net.sh" ]; then
-    "$SCRIPT_DIR/tune_net.sh" || echo "警告：tune_net.sh 执行失败"
+if [ -f "$SCRIPT_DIR/tune_net.sh" ]; then
+    bash "$SCRIPT_DIR/tune_net.sh" || echo "警告：tune_net.sh 执行失败"
 fi
 
 # 4) 启动感知进程（A 交付；--stub 可在无硬件时联调）
