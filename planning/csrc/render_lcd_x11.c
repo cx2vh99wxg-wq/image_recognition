@@ -62,6 +62,7 @@ static void blit_565(const uint8_t *src565, uint8_t *canvas,
 /* ---------- X11 真实现 ---------- */
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <unistd.h>   /* getuid()：用于在报错里点明"是不是 root 跑的" */
 
 int render_lcd_init(render_lcd_ctx_t **ctx, int win_w, int win_h)
 {
@@ -73,7 +74,27 @@ int render_lcd_init(render_lcd_ctx_t **ctx, int win_w, int win_h)
     c->is_stub = 0;
 
     Display *d = XOpenDisplay(NULL);
-    if (!d) { free(c); return -1; }
+    if (!d) {
+        /* "进程明明在跑、就是没有画面"的头号原因：X11 连不上。
+         * 典型场景：sudo 启动 → root 拿不到桌面会话的 X 授权 cookie
+         * （XAUTHORITY 落到 /root/.Xauthority，通常不存在）。
+         * 这里把真实环境值打出来，避免"启动成功但黑屏"无从下手。 */
+        const char *disp = getenv("DISPLAY");
+        const char *xaut = getenv("XAUTHORITY");
+        const char *user = getenv("USER");
+        fprintf(stderr,
+            "[LCD] XOpenDisplay 失败：连不上 X 服务器，画面无法上屏（收帧/决策不受影响）。\n"
+            "      DISPLAY=%s  XAUTHORITY=%s  当前用户=%s(uid=%d)\n"
+            "      若 uid=0 说明是用 sudo 启动的——root 默认没有桌面会话的 X 授权。\n"
+            "      正确做法：网络/驱动用 root，图形进程用「桌面用户」身份起，例如\n"
+            "        sudo -u <桌面用户> env DISPLAY=:0 XAUTHORITY=/home/<桌面用户>/.Xauthority \\\n"
+            "             LD_LIBRARY_PATH=<仓库>/lib ./bin/planning_main --model model/yolov5s-640-640.rknn\n"
+            "      （scripts/start_s.sh 已自动完成这一步，无需手敲）\n",
+            disp ? disp : "(未设置)", xaut ? xaut : "(未设置)",
+            user ? user : "?", (int)getuid());
+        free(c);
+        return -1;
+    }
     int scr = DefaultScreen(d);
     Window w = XCreateSimpleWindow(d, RootWindow(d, scr), 0, 0,
                                    (unsigned)c->win_w, (unsigned)c->win_h, 1,

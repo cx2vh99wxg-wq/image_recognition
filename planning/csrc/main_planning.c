@@ -70,12 +70,18 @@ int main(int argc, char **argv)
 
     LOGI("S端决策进程启动 (lcd=%d)\n", use_lcd);
 
-    /* ---- 创建 B 的共享段 ---- */
+    /* ---- 创建 B 的共享段 ----
+     * 注意 lane 这一项不能漏：shm_write_lane() 内部走的是 shm_open()（"只打开
+     * 已存在段"的读者语义），而 driving_config.h 的契约是「A 写(M板) / B 转发写
+     * (S板) / B、C 读」——S 端自己就是写者，必须先建段。少了它，每收到一帧就会
+     * 打一行"转发 shm_lane 失败"，且 C 的控制进程永远读不到车道状态。
+     * （shm_create 用 IPC_CREAT|0666、不含 IPC_EXCL，复用重启后的残留段不会失败。） */
     void *dummy = NULL;
     if (shm_create("udp_img",   SHM_KEY_UDP_IMG,   SHM_IMG_SIZE,    &dummy) != 0 ||
         shm_create("cmd",       SHM_KEY_CMD,       SHM_CMD_SIZE,    &dummy) != 0 ||
         shm_create("display",   SHM_KEY_DISPLAY,   SHM_DISPLAY_SIZE,&dummy) != 0 ||
-        shm_create("person",    SHM_KEY_PERSON,    SHM_PERSON_SIZE, &dummy) != 0) {
+        shm_create("person",    SHM_KEY_PERSON,    SHM_PERSON_SIZE, &dummy) != 0 ||
+        shm_create("lane",      SHM_KEY_LANE,      SHM_LANE_SIZE,   &dummy) != 0) {
         LOGE("创建共享段失败（请先运行 scripts/start_s.sh 清理残留）\n");
         return -1;
     }
@@ -96,6 +102,21 @@ int main(int argc, char **argv)
             if (st.rcvbuf_eff > 0 && st.rcvbuf_eff < (int)(2 * 1024 * 1024))
                 LOGW("接收缓冲偏小！一帧=440 包(≈0.9MB)会突发到达，容易溢出丢包。"
                      "请先执行 sudo ./scripts/tune_net.sh（提高 net.core.rmem_max）\n");
+        }
+    }
+
+    /* ---- 内核 UDP 计数基线 ----
+     * /proc/net/snmp 的 Udp 计数是"系统开机以来"的累计值，直接打印出来会是
+     * 十几万的存量（联调早期旧代码攒下的），一眼看去像"现在还在疯狂丢包"，
+     * 极易误导排查方向。这里记下启动时刻的快照，日志里只报"本段时间的增量"。 */
+    uint64_t kern_rcvbuferr_base = 0, kern_inerr_base = 0, kern_indatagram_base = 0;
+    {
+        udp_recv_stats_t st0;
+        memset(&st0, 0, sizeof(st0));
+        if (udp_receiver_stats(recv, &st0) == 0) {
+            kern_rcvbuferr_base   = st0.kern_rcvbuferr;
+            kern_inerr_base       = st0.kern_inerr;
+            kern_indatagram_base  = st0.kern_indatagrams;
         }
     }
 
@@ -140,13 +161,15 @@ int main(int argc, char **argv)
      * dt 会等于整机开机时长（几十万秒），算出的速率会失真成 ~0。 */
     uint64_t last_stat_us = now_us_mono();
     uint64_t win_pkts = 0;        /* 本窗口内从 socket 取出的包数 */
-    uint32_t last_lcd = 0;        /* 上次统计时的 LCD 帧数（用于反推单轮周期） */
+    uint64_t win_loops = 0;       /* 本窗口内跑过的主循环轮数（用于算真实轮周期） */
+    uint64_t win_lcd_seen = 0;    /* 上次统计时的 LCD 帧数（只用于报"本期新增"） */
 
     LaneResult cur_lane;        /* 本周期最新收到的车道结果（仅 lane_fresh=1 时有效） */
     int lane_fresh = 0;         /* 本周期是否收到“新的一帧”车道结果 */
 
     while (g_keep_running) {
         uint64_t now = now_us_mono();
+        win_loops++;
 
         /* ---- 1. UDP 收包并重组（每轮把内核队列收干！） ----
          * 关键：一帧 = 1 帧头 + 439 个数据块（614400B / 1400B）= 440 包，M 端在一个
@@ -224,8 +247,12 @@ int main(int argc, char **argv)
         }
         lane_fresh = 0;   /* 复位，等待下一帧 */
 
-        /* ---- 5. LCD 渲染 ---- */
-        if (lcd) {
+        /* ---- 5. LCD 渲染（按需：本轮重组出完整帧才重绘，首轮除外） ----
+         * 一次渲染 = memset 2.46MB + 61 万像素 RGB565→BGRX 转换 + XPutImage
+         * 2.46MB，实测把单轮周期拉到 ≈171ms；而 M 端 5 帧/s 时多数轮次根本
+         * 收不到完整帧，无条件重绘纯属浪费，还会挤占下一轮的收包窗口。
+         * 决策不需要每帧落地（状态机用最新帧即可），跳帧只影响画面流畅度。 */
+        if (lcd && (any_frame || frames_lcd == 0)) {
             if (shm_read_udp_img(s_remote565, IMG_FRAME_BYTES) != 0 && frames_recv > 0)
                 LOGW("读 shm_udp_img 失败\n");
             if (render_lcd_draw(lcd,
@@ -256,9 +283,11 @@ int main(int argc, char **argv)
              *                              softnet backlog（socket 缓冲之前），
              *                              要看 ip -s link、/proc/net/softnet_stat */
             double pkt_rate = dt_us ? (double)win_pkts * 1000000.0 / (double)dt_us : 0.0;
-            uint32_t lcd_delta = frames_lcd - last_lcd;
-            double loop_ms = lcd_delta ? ((double)dt_us / 1000.0) / (double)lcd_delta : 0.0;
-            last_lcd = frames_lcd;
+            /* 轮周期用"独立轮数计数器"算，不能用 LCD 帧数反推：渲染改成按需触发后，
+             * LCD 帧数不再等于轮数，拿它相除得到的是"渲染间隔"而不是主循环周期。 */
+            double loop_ms = win_loops ? ((double)dt_us / 1000.0) / (double)win_loops : 0.0;
+            uint32_t lcd_delta = frames_lcd - (uint32_t)win_lcd_seen;
+            win_lcd_seen = frames_lcd;
 
             LOGI("收帧=%u LCD帧=%u(+%u) | socket收包=%llu 重组接受块=%u\n",
                  frames_recv, frames_lcd, lcd_delta,
@@ -266,16 +295,18 @@ int main(int argc, char **argv)
             LOGI("  消费速率=%.0f 包/s（M端产出≈2200）主循环周期≈%.1fms\n",
                  pkt_rate, loop_ms);
             LOGI("  丢块[校验=%u 重复=%u 无帧头=%u 旧帧=%u 异常=%u 帧头失败=%u] "
-                 "内核[rcvbuf=%d 队列溢出=%llu InErrors=%llu]\n",
+                 "内核增量[队列溢出=+%llu InErrors=+%llu InDatagrams=+%llu] rcvbuf=%d\n",
                  reass.stat_drop_checksum, reass.stat_drop_dup, reass.stat_drop_nohdr,
                  reass.stat_drop_fid, reass.stat_drop_other, reass.stat_begin_fail,
-                 st.rcvbuf_eff,
-                 (unsigned long long)st.kern_rcvbuferr,
-                 (unsigned long long)st.kern_inerr);
+                 (unsigned long long)(st.kern_rcvbuferr  - kern_rcvbuferr_base),
+                 (unsigned long long)(st.kern_inerr      - kern_inerr_base),
+                 (unsigned long long)(st.kern_indatagrams- kern_indatagram_base),
+                 st.rcvbuf_eff);
             LOGI("  最近命令=%d enable=%u pri=%u conf=%u\n",
                  (int)cmd.command, (unsigned)cmd.enable,
                  (unsigned)cmd.priority, (unsigned)cmd.confidence);
             win_pkts = 0;
+            win_loops = 0;
         }
 
         SLEEP_MS(5);
