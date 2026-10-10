@@ -38,7 +38,7 @@ board:
 	$(MAKE) -C control CROSS=aarch64-linux-gnu- bin
 	@mkdir -p bin
 	@cp -f perception/perception_main bin/ 2>/dev/null || true
-	@cp -f planning/planning_main planning/udp_m_send_main bin/ 2>/dev/null || true
+	@cp -f planning/planning_main planning/udp_m_send_main planning/adas_main bin/ 2>/dev/null || true
 	@cp -f control/control_main bin/ 2>/dev/null || true
 	@echo "==== 板端构建完成，部署布局在 bin/ ===="
 	@echo "板卡部署：拷贝 bin/ drivers/ lib/ model/ scripts/ 到板卡后运行"
@@ -83,3 +83,7 @@ clean:
 	$(MAKE) -C planning clean
 	$(MAKE) -C control clean
 	@rm -rf bin
+
+.PHONY: adas-tests
+adas-tests:
+	python3 scripts/test_adas.py --cc "$(CC)"

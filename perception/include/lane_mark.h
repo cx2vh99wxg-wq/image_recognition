@@ -41,7 +41,7 @@ extern "C" {
 #define LM_MIN_PRESENCE    0.30f   /* 该侧行出现率低于此 → 视为无车道线 */
 #define LM_SOLID_MAX_GAP   0.15f   /* 断空率 ≤ 此 → 实线 */
 #define LM_DASH_MIN_GAP    0.35f   /* 断空率 ≥ 此 → 虚线 */
-#define LM_CROSS_MARGIN    20      /* 车道线 x 与车辆中心距离 ≤ 此(像素) → 压线 */
+#define LM_CROSS_MARGIN    20      /* 640 宽参考尺度；实际按图宽缩放 → 压线 */
 #define LM_OFFSET_MAX      200     /* ego_offset_px 饱和上限（像素） */
 
 /* 便捷判定：当帧是否发生「跨越实线」（强制实线变道报警信号） */

@@ -75,6 +75,19 @@ int main(void)
     CHECK(zebra_detect(img, TW, TH, &z4) == 0, "detect single band returns 0");
     CHECK(z4.detected == 0, "single band not detected (need >=3 stripes)");
 
+    /* Actual subimage, dark scene: markings must use the same adaptive
+     * threshold as detection, not a separate fixed brightness of 170. */
+    memset(img,20,320*240*3);
+    for(int k=0;k<5;k++)for(int y=120+k*12;y<125+k*12;y++)for(int x=0;x<320;x++)
+        memset(img+(y*320+x)*3,100,3);
+    uint16_t stripe_rows[16]={0};uint32_t stripe_count=0;
+    CHECK(zebra_detect_rows(img,320,240,&z4,stripe_rows,&stripe_count)==0 && z4.detected,
+          "dim 320x240 zebra detected below fixed brightness threshold");
+    CHECK(stripe_count==5,"same five stripes exported for green annotation");
+    for(unsigned k=0;k<stripe_count;k++)CHECK(stripe_rows[k]==122+k*12,"green line is at stripe centre");
+    memset(img,20,320*240*3);
+    CHECK(zebra_detect_rows(img,320,240,&z4,stripe_rows,&stripe_count)==0 && !z4.detected && stripe_count==0,
+          "old stripe annotations cleared when zebra disappears");
     free(img);
     printf(g_fail == 0 ? "test_zebra: PASS\n" : "test_zebra: FAIL (%d)\n", g_fail);
     return g_fail == 0 ? 0 : 1;

@@ -45,6 +45,7 @@ extern "C" {
 #define UDP_FLAG_TL_VALID    0x00000002u  /* 本帧携带红绿灯结果（见下方摘要布局） */
 #define UDP_FLAG_LM_VALID    0x00000004u  /* 本帧携带虚实线结果 */
 #define UDP_FLAG_ZEBRA_VALID 0x00000008u  /* 本帧携带斑马线结果 */
+#define UDP_FLAG_VISION 0x00000010u /* RGB565 followed by VisionResult; both ends must support it */
 
 /* ---- 「三感知摘要」：复用帧头 reserved[4]（16B）承载（B 集成，2026-10-09） ----
  *

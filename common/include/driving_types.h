@@ -19,7 +19,7 @@ extern "C" {
 
 /* 契约版本：任何字段增删都须自增，便于三端兼容判断 */
 #define LANERESULT_VERSION 1u
-#define CMDMSG_VERSION     1u
+#define CMDMSG_VERSION     2u
 #ifndef TL_VERSION
 #define TL_VERSION         1u   /* 红绿灯识别结果（A→B 新增契约） */
 #endif
@@ -64,7 +64,8 @@ typedef enum {
     CMD_LEFT   = 3,   /* 左转 */
     CMD_RIGHT  = 4,   /* 右转 */
     CMD_BRAKE  = 5,   /* 刹车 */
-    CMD_STOP   = 6    /* 急停 */
+    CMD_STOP   = 6,   /* 急停 */
+    CMD_COAST  = 7    /* 松开驱动，不触发急刹；斑马线短时减速 */
 } ControlCommand;
 
 typedef struct {

@@ -115,6 +115,8 @@ define_attribute {p:cmos5_data[0]} {PAP_IO_STANDARD} {LVCMOS33}
 
 本机原工程和IP由 PDS 2022.2-SP6.4 生成。优先使用兼容该工程的完整 PDS 安装及有效许可证。若使用别的版本，保留原IP副本后检查迁移结果，不要直接用新IP默认参数替换DDR/PCIe。软件来源：[紫光同创PDS下载页](https://www.pangomicro.com/resources/software/pds/)。
 
+**2026-10-10补充：队友安装的是2022.2-SP1-Lite / build 132640，不能用于本工程的PG2L100H。** 官方Lite下载页列出的支持范围为Logos的PGL50H及以下器件，以及Compa的PGC10KD及以下器件，不包含本板的Logos2 PG2L100H。请先按第9节更换支持该器件的完整PDS，再继续新建工程。PGL50H不能代替PG2L100H。[官方Lite支持范围](https://www.pangomicro.com/resources/software/pdslite/)
+
 ### 4.1 文件准备
 
 1. 在电脑保留整个更新后的仓库，尤其是 `source`、`project/ipcore`、`stereo_j8` 三个相邻目录。不要只复制新顶层和FDC。
@@ -146,6 +148,8 @@ python scripts/check_stereo_j8.py
 ```tcl
 source {D:/vmshare/image_recognition/fpga/fpga_pcie_ov5640/stereo_j8/add_sources.tcl}
 ```
+
+上面的盘符和仓库目录只是本机示例，必须换成队友电脑上的实际路径；保留大括号，使用正斜杠。不要修改脚本内部的相对路径或器件参数。新版脚本会先检查34个设计入口及FDC是否存在，再设置器件；缺文件、不是PDS控制台或器件设置报错时会停止，并显示原始错误。IP内部依赖的完整检查仍由 `check_stereo_j8.py` 完成。
 
 此脚本设置器件、导入29个HDL文件、5个IP描述文件和1个完整FDC。它不下载板卡、不改Flash，也不运行漫长的综合。**在空工程中执行一次**；重新导入前先检查是否已有这些源，避免重复。
 
@@ -354,3 +358,126 @@ sudo bash scripts/start_m.sh --stereo-pcie --swap-eyes
 未完成：PDS整机实现与时序验收、RK3568 Linux实际链接/运行、摄像头电气/图像质量、板上DMA/UDP测试。独立读银行也不等于双目硬件同步或无撕裂保证；两个视角的同步曝光、立体标定和深度计算均不属于此次测试。
 
 当前更新为工作区改动，未替你们提交、推送或刷板。
+
+## 9 换电脑操作与PDS Lite问题
+
+本节检查范围是本次双目测试实际调用的Tcl、Python、板端启动与辅助脚本，以及29个HDL和5个IDF递归列出的128条IP源路径。另列出仓库旧部署脚本和旧PDS生成脚本的环境差异，避免误用。Windows电脑运行PDS；M/S板上的Linux运行采集、UDP与显示。两边的路径和环境分别配置。
+
+### 9.1 先更换PDS版本
+
+队友提供的版本为 `Pango Design Suite 2022.2-SP1-Lite`、`Release build 132640`，构建日期2023-08-15。官方对应的Lite下载页明确写有“支持Logos系列PGL50H及以下规模所有器件”；因此缺少Logos2/PG2L100H与该版本的支持范围一致，不能通过改Tcl中的器件名称解决。[PDS Lite官方页面](https://www.pangomicro.com/resources/software/pdslite/)
+
+`Unexpiring license`不代表包含所有器件支持。PGL50H属于Logos，PG2L100H属于Logos-2；即使封装都能选FBG484，也不能共用目标器件、引脚数据库和位流。[Logos器件表](https://www.pangomicro.com/product/logos_family/1797.html)、[Logos-2器件表](https://www.pangomicro.com/product/logos_family/195.html)
+
+1. 关闭当前Lite工程，保留源码。若已经按PGL50H建了工程，换完整版后重新建空测试工程，不沿用其实现结果。
+2. 优先从板卡厂家配套资料获得与原工程一致的完整 `2022.2-SP6.4`；原 `project.pds` 和DDR/PCIe IDF记录的是build 146967。官网下载页也提供完整PDS的SP6.4 Patch1/Patch2、SP6.7.1等包；这些是可核对的来源，不表示本测试已逐个版本验证。选择厂家支持PG2L100H的Windows完整安装包，按该包说明安装。[完整PDS下载与License入口](https://www.pangomicro.com/resources/software/pds/)
+3. 安装到新目录，保留原安装便于核对。从新安装目录的入口启动，避免桌面快捷方式仍指向Lite。Help → About重新核对版本；使用完整版要求的有效许可证，不能假设Lite授权可直接复用。官网License申请需要MAC地址；机器绑定许可证按队友电脑申请，浮动许可证按学校/团队服务器配置。
+4. 新建工程必须能选择：`Logos2 / PG2L100H / FBG484 / -6`。这些参数来自实际板卡，不随电脑改变。若仍缺失，先检查是否打开了Lite、完整安装是否完成及该版本的器件支持说明，再让厂家协助确认安装包。
+5. 工程建立后再执行新版 `add_sources.tcl`。`set_arch`只选择已支持的目标器件，不会下载或安装器件支持。
+6. 电脑上的USB-JTAG驱动、下载器选择和板上供电影响Configuration里的Scan Device；不连接板卡也应该能在New Project选器件。不要用重插JTAG解决新建工程器件列表缺失。
+
+### 9.2 Windows电脑上逐项核对
+
+下表中的文件路径均相对仓库根；命令里的 `E:/team/adas` 只是说明用的假设目录。
+
+| 位置 | 随电脑变化的内容 | 实际处理 |
+| --- | --- | --- |
+| 手册4.2的新工程目录 | `D:/pds_work/stereo_j8_test` | 换成队友电脑有写权限的新空目录；建议短英文路径，不覆盖原工程 |
+| 手册4.3的 `source {...}` | `D:/vmshare/image_recognition` | 换成队友仓库实际根目录，例如下面的命令 |
+| `stereo_j8/add_sources.tcl` | `stereo_src_root` | 已用 `[info script]` 自动定位，通常不用改；必须以 `source` 执行文件，不能逐行粘贴整个文件导致脚本路径丢失 |
+| `design_files.txt`、Tcl内的源文件清单 | `../source/...`、`../project/ipcore/...` | 不是盘符占位符；保留相邻目录结构，不逐条改绝对路径。若主动重组目录，要同步修改生成器、清单和导入脚本 |
+| 5个IP的 `.idf` 与其子目录 | 相对RTL、加密文件和初始化参数文件 | 整目录保留；不能只复制5个IDF，不能混入其他器件的IP |
+| `prepare_stereo_j8.py`、`check_stereo_j8.py` | Python命令及运行位置 | 两者均按 `__file__` 找仓库，没有本机盘符。Windows可用 `py -3`，Linux用 `python3`；已生成工程无需执行prepare，也无需安装本机使用的其他仿真工具 |
+| PDS安装目录、快捷方式、License | 安装盘符/版本、机器MAC或服务器 | 在队友电脑安装配置；当前测试脚本没有硬编码PDS可执行文件或许可证路径 |
+| Configuration中的下载器 | 驱动、连接到的下载器/USB设备 | 使用队友电脑实际枚举的兼容下载器，核对FPGA JTAG链与PG2L100H |
+| 生成位流/Flash配置文件的选择路径 | 新工程输出目录 | 从本次新工程选择新生成的 `.sbit`；若后续生成 `.sfc`，同样选本次产物。文件名相同不代表内容相同 |
+| `project/impl.tcl`及IP内的旧pnr、example_design、仿真脚本 | 历史D/F/G盘路径、PDS/仿真工具安装路径 | 不属于本次导入流程，不运行、不全局替换。本次从空工程+新Tcl生成新的流程记录 |
+| `test_stereo_*.sv`、本机Vivado/XSim验证命令 | 仿真工具路径与库 | 只是之前的单元验证环境，不是队友执行PDS综合的前提；测试文件不能加进Designs |
+| Windows拷贝到Linux的脚本 | CRLF行尾、可执行位 | 保持LF；在板上用 `bash scripts/start_*.sh` 启动。出现 `$'\r'` 或 `bad interpreter` 时修正文本行尾，不能对ko/so/位流等二进制转换 |
+
+例如仓库放在 `E:/team/adas`，只需在PDS控制台执行：
+
+```tcl
+source {E:/team/adas/fpga/fpga_pcie_ov5640/stereo_j8/add_sources.tcl}
+```
+
+必须保留的结构：
+
+```text
+adas/
+  scripts/
+  fpga/fpga_pcie_ov5640/
+    stereo_j8/        add_sources.tcl、design_files.txt、5个测试HDL、FDC
+    source/           本次所需PCIe和DVP公共源文件
+    project/ipcore/   ddr3、clk_1080p_gen、pcie_test、两个FIFO完整目录
+```
+
+Tcl中的以下参数不改，FDC中的球位、电压、时钟也不能因为电脑不同而改：
+
+```tcl
+set_arch -family Logos2 -device PG2L100H -speedgrade -6 -package FBG484
+```
+
+还查到4处旧机器绝对路径，位于实际导入的RAM包装文件中，而非当前导入脚本：
+
+| 文件（相对于 `fpga/fpga_pcie_ov5640`） | 原路径元数据 |
+| --- | --- |
+| `project/ipcore/pcie_test/rtl/external_ram/rcv_data_ram/rcv_data_ram.v:74` | `C:/Users/yaorui/Desktop/PCIE ram/rcv_data_dp_66_addrh_dat.dat` |
+| `project/ipcore/pcie_test/rtl/external_ram/rcv_header_ram/rcv_header_ram.v:74` | 同目录的 `rcv_header_dp_138_addrh_dat.dat` |
+| `project/ipcore/pcie_test/rtl/external_ram/retry_data_ram/retry_data_ram.v:59` | 同目录的 `retry_sp_addrh_dat_cns.dat` |
+| `source/pcie/pcie_dma_ctrl/ips2l_pcie_dma_ram/ips2l_pcie_dma_ram.v:78` | `E:/platform_ip/system_ip/ips2l_pcie_gen2/ips2l_pcie_gen2_source/src/example_design/rtl/ips2l_pcie_dma_ram/rc_ram_init.dat` |
+
+四处都是 `localparam INIT_FILE` 生成元数据；当前实例传给下层的均是 `.c_INIT_FILE("NONE")`，初始化内容由各自RTL里的 `*_init_param.v` 引入。因此直接使用现有生成RTL时，不需要在队友电脑伪造这些旧目录，也不应把初始化关闭。保留这些参数文件。若主动重新打开IP生成器并重新生成，必须核对它是否回读旧INIT_FILE；如要求原始DAT，应先获得对应原始数据并指定实际位置，不能填一个空文件或任意DAT蒙混通过。本次没有重新生成这些IP。
+
+### 9.3 M和S板上逐项核对
+
+只换Windows开发电脑、仍用原来两块板和系统时，下面大多数参数无需改变。板上不能执行Windows的PDS路径；Windows编译出的EXE也不能直接当RK3568 Linux程序使用。
+
+| 位置 | 可能变化的内容 | 按实际情况修改 |
+| --- | --- | --- |
+| `start_m.sh`、`start_s.sh` | 板端仓库位置、`BIN_DIR` | `REPO_ROOT`自动定位，无需写死 `/home/linaro`。先cd到实际仓库；若用额外二进制目录，通过 `sudo env BIN_DIR=/实际目录 ...` 传入。启动器优先检查模块目录内的二进制，并检查版本/源码新旧 |
+| `start_m.sh` | 第2个位置参数 `driver_path` | 默认 `drivers/pango_pci_driver.ko`。双目模式指定另一驱动可用 `--stereo-pcie /unused/model /实际路径/pango_pci_driver.ko`；第1个模型参数在该模式不使用 |
+| `start_s.sh --local-pcie` | 固定的仓库内驱动位置 | 本测试用 `--local-stub`，不加载S侧采集驱动；以后启用S实采，使用对应内核驱动，放默认目录或修改该insmod路径 |
+| `pango_pcie_abi.h`、`driving_config.h`、启动脚本 | `/dev/pango_pci_driver`、模块名称 | 与当前驱动配套，不是WindowsCOM号。换内核需重建匹配的ko；仅改文件名不能修复 `invalid module format`。若换驱动接口，还必须核对ioctl、mmap、DMA ABI，不能仅替换设备节点字符串 |
+| `setup_network_m.sh`、`setup_network_s.sh` | `NET_IF`、`M_IP`、`S_IP` | 用 `ip -br link` 找实际直连网口，显式传变量。自动探测只按存在顺序选end0/end1/eth0，并不证明网线插在那里。脚本会清空所选口旧IP，使用板端本地终端配置 |
+| `tune_net.sh` | `IFACE`及缓冲参数 | 网卡调优变量名是 `IFACE`，不是NET_IF；应同时传两者且指同一个直连网口。RMEM_MAX、WMEM_MAX、RMEM_DEF、BACKLOG、BUDGET、BUDGET_US可按板内核能力调整，通常保持默认 |
+| `driving_config.h`、M发送器 | `UDP_IP_S`、`UDP_IP_M`、`UDP_PORT` | 默认M=.10、S=.20、8888。当前start_m没有转发S_IP给发送器，仅设置网络环境变量不会改UDP目的地址；改网段按下文同步修改并重编译 |
+| `start_s.sh` | `RENDER_USER`、`DISPLAY`、`XAUTHORITY` | 在S板图形桌面终端获取实际值，用sudo env显式传入；不是队友Windows的登录名。X11窗口需要有效的桌面会话 |
+| `start_s.sh` | `/home/$RUSER`的HOME假设 | 常规linaro系统不用改；若账户家目录在别处，按下文用getent查到的目录替换该脚本3处家目录假设 |
+| `start_m.sh`、`start_s.sh`、`planning/Makefile` | 模型路径、`lib/librknnrt.so`、X11库 | 双目M不运行模型，S本地模拟关闭推理；S的现有bin目标仍链接X11/RKNN库，需板端匹配架构的库。实际感知模式才需传真实模型路径 |
+| `planning/Makefile`、`resolve_bin.sh` | `CC`、`CROSS`、构建工具 | 最简单是在各板原生编译，M用 `make -C planning sender`，S用 `make -C planning bin`。交叉编译才设置ARM64 Linux工具链/匹配sysroot，不用MinGW产物上板；显式交叉构建可用 `make -C planning CROSS=aarch64-linux-gnu- CC=gcc bin` |
+| `stop_all.sh` | 进程名和共享内存key | 不因PC变化而改；仅在目标板停止本项目进程，启动脚本不会替你停止其他名字的PCIe读取程序 |
+| `check_system.sh` | 当前工作目录、角色识别 | 从仓库根运行，可传 `ROLE=m` 或 `ROLE=s`；它的bin目录/感知检查不等于本次仅摄像头模式的验收 |
+| `run_s_board.py` | 文件头S_IP、M_IP、PORT、NETIF_PREF | 旧的一键无窗口决策验证工具，本次不用它启动；若独立使用需同步修改这些常量。不能和start_s重复启动接收器 |
+| `board/deploy_board.sh`、`board/bashrc.m/s` | `@REPO_ROOT@`、写入哪位用户的.bashrc | 本次手动测试不需要安装。部署时替换为板端实际目录；仓库搬家后已写入.bashrc的绝对路径不会自动变化。sudo下HOME可能是root，应先核对目标账户；显式选择m/s，避免由bin目录误判 |
+| `check_linux_branch.sh`、`test_resolve_bin.sh` | Bash/GCC等本机检查工具 | 属于开发验证，不是上板启动步骤。前者可传CC；模拟头文件检查不等于真实ARM64链接和硬件测试 |
+
+例如两块板的直连网口都为end1、IP保持原默认值：
+
+```bash
+# S板，在图形桌面终端、实际仓库根目录运行
+make -C planning bin
+sudo env NET_IF=end1 IFACE=end1 RENDER_USER="$(id -un)" DISPLAY="$DISPLAY" \
+  XAUTHORITY="${XAUTHORITY:-$HOME/.Xauthority}" bash scripts/start_s.sh --local-stub
+
+# M板，在实际仓库根目录运行
+make -C planning sender
+sudo env NET_IF=end1 IFACE=end1 bash scripts/start_m.sh --stereo-pcie
+```
+
+两块板网口名字可以不同，分别填各自真实名字。若必须更改网段，例如M=`192.168.50.10`、S=`192.168.50.20`：在两份仓库的 `common/include/driving_config.h` 同步改 `UDP_IP_M`、`UDP_IP_S`，保持相同UDP_PORT，分别重编译；启动两边时都加 `M_IP=192.168.50.10 S_IP=192.168.50.20` 环境变量，否则网络脚本仍配旧地址。发送器二进制自身支持 `--ip`，但当前 `start_m.sh` 不接受该选项；不要直接给启动脚本添加 `--ip`。改端口还需两端重编译，网络脚本打印的8888只是提示文本。
+
+若S桌面用户家目录不在 `/home/用户名`，在 `RUSER=...` 后增加：
+
+```bash
+RUSER_HOME="$(getent passwd "$RUSER" | cut -d: -f6)"
+[ -n "$RUSER_HOME" ] || { echo "找不到桌面用户家目录"; exit 1; }
+```
+
+将XAUTHORITY候选、默认回退和 `sudo -u ... env HOME=...` 这3处 `/home/$RUSER` 改为 `$RUSER_HOME`。实际cookie也可能位于 `/run/user/...`，此时直接传桌面会话的XAUTHORITY，不能通过伪造空cookie或 `xhost +` 解决。默认用户探测仍可能选错，显式传RENDER_USER更准确。
+
+### 9.4 本次迁移检查的修改和验证
+
+本次修改了生成器 `scripts/prepare_stereo_j8.py`、其生成的 `stereo_j8/add_sources.tcl` 和本手册：增加文件齐全检查、PDS命令检查、目标器件设置失败提示，以及迁移清单。没有把PG2L100H换成PGL50H，也没有改动已核对的FDC或摄像头RTL；本节板端特殊环境的改法是按需配置说明，不表示已经改写板端启动脚本。
+
+验证通过：Tcl模拟PDS命令的4项检查（搬迁至含空格路径、器件拒绝、非PDS控制台、缺文件时不导入）；引脚与依赖检查仍为28条摄像头映射、89个无重复显式球位和128条IP源路径；`git diff --check`通过。该验证不代替完整版PDS的实际器件库、综合、布局布线和下载测试。

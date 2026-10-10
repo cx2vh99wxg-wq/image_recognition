@@ -41,11 +41,13 @@ void udp_reassembly_reset(udp_reassembly_t *r)
 static int begin_frame(udp_reassembly_t *r, const udp_frame_hdr_t *hdr)
 {
     if (hdr->data_size > r->frame_cap) return -1;   /* 缓冲不够 */
-    if (hdr->block_count == 0 || hdr->block_size == 0) return -1;
+    if (hdr->data_size == 0 || hdr->block_size == 0 || hdr->block_size > UDP_BLOCK_SIZE ||
+        hdr->block_count != (hdr->data_size+hdr->block_size-1u)/hdr->block_size) return -1;
 
+    uint8_t *next_got = (uint8_t *)calloc(hdr->block_count, 1);
+    if (!next_got) return -1;
     free(r->got);
-    r->got = (uint8_t *)calloc(hdr->block_count, 1);
-    if (!r->got) return -1;
+    r->got = next_got;
 
     r->cur_frame_id    = hdr->frame_id;
     r->block_size      = hdr->block_size;
@@ -81,8 +83,12 @@ int udp_reassembly_feed(udp_reassembly_t *r, const uint8_t *pkt, size_t len,
 
         const size_t payload_len = len - sizeof(udp_data_hdr_t);
         if (payload_len > r->block_size) { r->stat_drop_other++; return 0; }
-        /* 非最后一块必须满长；最后一块允许小于 block_size */
-        if (dh->block_idx < r->block_count - 1u && payload_len != r->block_size) {
+        /* Exact length on EVERY block, including the last. Otherwise a short
+         * tail reuses old metadata, or a long tail writes past frame_cap. */
+        size_t offset=(size_t)dh->block_idx*r->block_size;
+        size_t expected=r->hdr.data_size-offset;
+        if(expected>r->block_size)expected=r->block_size;
+        if (payload_len != expected) {
             r->stat_drop_other++;
             return 0;
         }
@@ -152,6 +158,9 @@ int udp_receiver_init(udp_receiver_t **r, uint16_t port)
     socklen_t olen = (socklen_t)sizeof(u->rcvbuf_eff);
     if (getsockopt(u->fd, SOL_SOCKET, SO_RCVBUF, &u->rcvbuf_eff, &olen) != 0)
         u->rcvbuf_eff = -1;
+    fprintf(stderr,"[UDP-RECV] effective SO_RCVBUF=%d bytes\n",u->rcvbuf_eff);
+    if(u->rcvbuf_eff<UDP_RECV_BUF_BYTES)
+        fprintf(stderr,"[UDP-RECV] Buffer capped: run sudo bash scripts/tune_net.sh before launch if frames drop.\n");
 
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));

@@ -42,6 +42,9 @@ extern "C" {
  * detected=0（未检出）亦为成功。
  */
 int zebra_detect(const uint8_t *rgb888, int w, int h, ZebraResult *out);
+/* Same adaptive threshold for detection and green stripe annotations, max 16. */
+int zebra_detect_rows(const uint8_t *rgb888,int w,int h,ZebraResult *out,
+                      uint16_t *stripe_rows,uint32_t *stripe_count);
 
 #ifdef __cplusplus
 }

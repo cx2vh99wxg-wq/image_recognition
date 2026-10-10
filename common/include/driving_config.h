@@ -17,6 +17,7 @@
  */
 #ifndef DRIVING_CONFIG_H
 #define DRIVING_CONFIG_H
+#include <stddef.h>
 
 /* ======================================================================
  * 一、图像规格
@@ -80,6 +81,7 @@
 /* ======================================================================
  * 四、共享内存尺寸（取自结构体，保证契约一致，禁止手填数字）
  * ==================================================================== */
+#include <stddef.h>
 #include "driving_types.h"
 #define SHM_LANE_SIZE      sizeof(LaneResult)
 #define SHM_CMD_SIZE       sizeof(ControlCommandMsg)
@@ -151,7 +153,9 @@ typedef enum {
     DISPLAY_MODE_SPLIT       = 0,  /* 3×2 六宫格：上排 = M 板 3 路，下排 = S 板 3 路 */
     DISPLAY_MODE_LOCAL_ONLY  = 1,  /* 仅 S 板（本地 PCIe）3 路，摆在下排 */
     DISPLAY_MODE_REMOTE_ONLY = 2,  /* 仅 M 板（远端 UDP）3 路，摆在上排 */
-    DISPLAY_MODE_BLANK       = 3   /* 黑屏 */
+    DISPLAY_MODE_BLANK       = 3,  /* 黑屏 */
+    DISPLAY_MODE_M0 = 4, DISPLAY_MODE_M1 = 5, DISPLAY_MODE_M2 = 6,
+    DISPLAY_MODE_S0 = 7, DISPLAY_MODE_S1 = 8, DISPLAY_MODE_S2 = 9
 } DisplayMode;
 
 /* ---- 行人状态（B 写 shm_person，C 可读用于安全兜底） ---- */

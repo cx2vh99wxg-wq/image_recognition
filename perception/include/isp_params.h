@@ -8,7 +8,7 @@
  * 选择字节（sel）与串口屏 UART 协议一一对应（屏发 0x30 0x90 + sel + data）：
  *   0x01=mode 0x02=blc 0x03=awb 0x04=cnn_level 0x05=saturation
  *   0x06=brightness 0x07=awb_en 0x08=binarization 0x09=sobel
- *   0x0A=isp_judge(0=cnn/1=gamma) 0x0B=cb_min 0x0C=cb_max
+ *   0x0A=isp_judge(0=gain/1=curve) 0x0B=cb_min 0x0C=cb_max
  *   0x0D=cr_min 0x0E=cr_max
  */
 #ifndef ISP_PARAMS_H
@@ -36,7 +36,8 @@ typedef enum {
     ISP_PARAM_CB_MAX      = 0x0C,
     ISP_PARAM_CR_MIN      = 0x0D,
     ISP_PARAM_CR_MAX      = 0x0E,
-    ISP_PARAM_COUNT       = 0x0F   /* 数组上界（id 最大 0x0E，索引 0..14） */
+    ISP_PARAM_VIEW        = 0x0F,  /* 0=six-way, 1..3=M, 4..6=S */
+    ISP_PARAM_COUNT       = 0x10   /* 数组上界（id 最大 0x0F） */
 } isp_param_id_t;
 
 /* 单个参数描述：语义 + 合法取值范围 + 出厂默认 */

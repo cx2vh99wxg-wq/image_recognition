@@ -57,10 +57,10 @@ BOARD_SRCS := csrc/main_planning.c csrc/decision.c csrc/person_detect.c \
               ../common/csrc/shm_ipc.c ../common/csrc/udp_proto.c ../common/csrc/log.c
 
 # bin: -L../lib 指向仓库根 lib/librknnrt.so（RKNN 运行时，板端链接用）
-bin: sender
+bin: sender adas
 	@mkdir -p obj
 	$(ARCHCC) $(CFLAGS) -L../lib -o planning_main csrc/main_planning.c csrc/decision.c \
-	    csrc/person_detect.c csrc/render_lcd_x11.c csrc/udp_sender.c \
+	    csrc/person_detect.c ../perception/csrc/rknn_vision.c ../perception/csrc/yolo_decode.c ../common/csrc/vision_frame.c csrc/render_lcd_x11.c csrc/udp_sender.c \
 	    csrc/udp_receiver.c csrc/stub_pattern.c csrc/frame_compose.c ../perception/csrc/pcie_capture.c ../common/csrc/shm_ipc.c \
 	    ../common/csrc/udp_proto.c \
 	    ../common/csrc/log.c -lm -lrt -lX11 -lrknnrt
@@ -69,10 +69,20 @@ bin: sender
 # Camera-only M board does not need X11 or RKNN development libraries.
 sender:
 	$(ARCHCC) $(CFLAGS) -o udp_m_send_main csrc/udp_m_send_main.c csrc/udp_sender.c \
-	    csrc/stub_pattern.c csrc/stereo_test_frame.c ../perception/csrc/pcie_capture.c ../common/csrc/shm_ipc.c ../common/csrc/udp_proto.c \
+	    ../common/csrc/vision_frame.c csrc/stub_pattern.c csrc/stereo_test_frame.c ../perception/csrc/pcie_capture.c ../common/csrc/shm_ipc.c ../common/csrc/udp_proto.c \
 	    ../common/csrc/log.c \
 	    -lrt
 
 clean:
 	rm -f csrc/*.o test/*.o obj/*.o test/test_decision test/test_udp \
-	      test/test_compose planning_main udp_m_send_main
+	      test/test_compose planning_main udp_m_send_main adas_main
+
+ADAS_SRCS := csrc/adas_main.c csrc/drive_policy.c csrc/person_detect.c \
+ csrc/udp_sender.c csrc/udp_receiver.c csrc/render_lcd_x11.c csrc/frame_compose.c \
+ ../perception/csrc/vision_worker.c ../perception/csrc/rknn_vision.c ../perception/csrc/yolo_decode.c \
+ ../perception/csrc/lane_detect.c ../perception/csrc/turn_decide.c ../perception/csrc/lane_mark.c \
+ ../perception/csrc/zebra_detect.c ../perception/csrc/traffic_light.c ../perception/csrc/pcie_capture.c \
+ ../common/csrc/vision_frame.c ../common/csrc/shm_ipc.c ../common/csrc/udp_proto.c ../common/csrc/log.c
+.PHONY: adas
+adas:
+	$(ARCHCC) $(CFLAGS) -L../lib -o adas_main $(ADAS_SRCS) -pthread -lm -lrt -lX11 -lrknnrt

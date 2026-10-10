@@ -61,13 +61,13 @@ tests: test/test_capture test/test_lane test/test_turn \
 test/test_capture: test/test_capture.o csrc/pcie_capture.o test/rknn_dummy.o
 	$(CC) -o $@ $^ -lm
 
-test/test_lane: test/test_lane.o csrc/lane_detect.o test/rknn_dummy.o
+test/test_lane: test/test_lane.o csrc/lane_detect.o csrc/rknn_vision.o csrc/yolo_decode.o test/rknn_dummy.o
 	$(CC) -o $@ $^ -lm
 
-test/test_turn: test/test_turn.o csrc/turn_decide.o csrc/lane_detect.o test/rknn_dummy.o
+test/test_turn: test/test_turn.o csrc/turn_decide.o csrc/lane_detect.o csrc/rknn_vision.o csrc/yolo_decode.o test/rknn_dummy.o
 	$(CC) -o $@ $^ -lm
 
-test/test_lane_mark: test/test_lane_mark.o csrc/lane_mark.o csrc/lane_detect.o test/rknn_dummy.o
+test/test_lane_mark: test/test_lane_mark.o csrc/lane_mark.o csrc/lane_detect.o csrc/rknn_vision.o csrc/yolo_decode.o test/rknn_dummy.o
 	$(CC) -o $@ $^ -lm
 
 test/test_zebra: test/test_zebra.o csrc/zebra_detect.o
@@ -82,11 +82,11 @@ test/test_isp_params: test/test_isp_params.o csrc/isp_params.o
 test/test_stub: test/test_stub.o csrc/perception_pipeline.o csrc/lane_stub.o \
                 csrc/lane_detect.o csrc/turn_decide.o csrc/lane_mark.o \
                 csrc/zebra_detect.o csrc/traffic_light.o csrc/pcie_capture.o \
-                test/rknn_dummy.o
+                csrc/rknn_vision.o csrc/yolo_decode.o test/rknn_dummy.o
 	$(CC) -o $@ $^ -lm
 
 # ---- 板端构建：交叉编译到 obj/，与本地对象完全隔离 ----
-BOARD_OBJS := obj/main_perception.o obj/pcie_capture.o obj/lane_detect.o \
+BOARD_OBJS := obj/main_perception.o obj/pcie_capture.o obj/lane_detect.o obj/rknn_vision.o obj/yolo_decode.o \
               obj/turn_decide.o obj/lane_mark.o obj/zebra_detect.o \
               obj/traffic_light.o obj/isp_params.o obj/perception_pipeline.o \
               obj/lane_stub.o \

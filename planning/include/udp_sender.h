@@ -11,6 +11,9 @@
 #define UDP_SENDER_H
 
 #include <stdint.h>
+#include "vision_frame.h"
+struct udp_sender;
+int udp_sender_send_vision(struct udp_sender *s, const VisionFrame *frame);
 #include <stddef.h>
 #include "driving_types.h"
 

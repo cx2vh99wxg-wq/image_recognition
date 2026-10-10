@@ -98,6 +98,23 @@ int main(void)
     CHECK(geo.valid_bands >= 2, "valid bands >= 2");
     lane_seg_free(&geo_seg);
 
+    /* Production uses 320x240 tiles. Equivalent scenes at half resolution must
+     * retain all eight sampling bands and the same turn classification. */
+    for (int bend=-1;bend<=1;bend++) {
+        lane_seg_t small={0};lane_seg_alloc(&small,320,240);
+        for(int y=108;y<228;y++) {
+            int x=160+(y<168?60:-60)*bend;
+            for(int dx=-1;dx<=1;dx++)small.lane_prob[y*320+x+dx]=1;
+        }
+        LaneResult r={0};lane_geometry_t g={0};
+        CHECK(lane_geometry_analyze(&small,320,240,108,&g)==0 && g.valid_bands==8,
+              "320x240 uses all eight ROI bands");
+        CHECK(turn_decide(&small,320,240,&r)==0 && r.confidence>=DEC_GO_CONF_MIN,
+              "320x240 confidence does not lose missing bands");
+        CHECK(r.direction==(bend<0?LANE_LEFT:bend>0?LANE_RIGHT:LANE_STRAIGHT),
+              "320x240 turn agrees with full-resolution geometry");
+        lane_seg_free(&small);
+    }
     printf(g_fail == 0 ? "test_turn: PASS\n" : "test_turn: FAIL (%d)\n", g_fail);
     return g_fail == 0 ? 0 : 1;
 }

@@ -17,6 +17,7 @@
 #
 # 无参数时自动判定模式：有 /dev/pango_pci_driver → 真实，否则 → 桩。
 set -e
+if [ "${1:-}" = --adas ]; then shift; exec bash "$(dirname "$0")/start_adas.sh" m "$@"; fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"

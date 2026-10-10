@@ -50,11 +50,11 @@ int udp_sender_init(udp_sender_t **s, const char *remote_ip, uint16_t port)
     return 0;
 }
 
-int udp_sender_send_frame_ex(udp_sender_t *s, const void *rgb565, size_t bytes,
+static int send_frame(udp_sender_t *s, const void *rgb565, size_t bytes,
                              const LaneResult         *lane,
                              const TrafficLightResult *tl,
                              const LaneMarkResult     *lm,
-                             const ZebraResult        *zebra)
+                             const ZebraResult        *zebra, int vision)
 {
     if (!s || !rgb565 || bytes == 0) return -1;
 
@@ -64,13 +64,18 @@ int udp_sender_send_frame_ex(udp_sender_t *s, const void *rgb565, size_t bytes,
     /* 三感知摘要走帧头 reserved[4]（16B 已存在字段，不改包尺寸）：
      * 必须在 pack_frame_hdr 之后调用——后者 memset 清零整帧头。 */
     udp_hdr_set_aux(&hdr, tl, lm, zebra);
+    if (vision) {
+        hdr.flags |= UDP_FLAG_VISION;
+        hdr.data_size=(uint32_t)sizeof(VisionFrame);
+        hdr.block_count=(hdr.data_size+hdr.block_size-1)/hdr.block_size;
+    }
     if (bytes != hdr.data_size) return -1;
 
     const socklen_t alen = (socklen_t)sizeof(s->peer);
     ssize_t total = 0;
 
     /* 1. 帧头包 */
-    ssize_t n = sendto(s->fd, &hdr, sizeof(hdr), 0,
+    ssize_t n = sendto(s->fd, &hdr, sizeof(hdr), MSG_DONTWAIT,
                        (struct sockaddr *)&s->peer, alen);
     if (n != (ssize_t)sizeof(hdr)) return -1;
     total += n;
@@ -92,7 +97,7 @@ int udp_sender_send_frame_ex(udp_sender_t *s, const void *rgb565, size_t bytes,
         dh->checksum = udp_block_checksum(p + off, len);
         memcpy(pkt + sizeof(udp_data_hdr_t), p + off, len);
 
-        ssize_t sn = sendto(s->fd, pkt, sizeof(udp_data_hdr_t) + len, 0,
+        ssize_t sn = sendto(s->fd, pkt, sizeof(udp_data_hdr_t) + len, MSG_DONTWAIT,
                             (struct sockaddr *)&s->peer, alen);
         if (sn != (ssize_t)(sizeof(udp_data_hdr_t) + len)) return -1;
         total += sn;
@@ -109,6 +114,18 @@ int udp_sender_send_frame_ex(udp_sender_t *s, const void *rgb565, size_t bytes,
     return (int)total;
 }
 
+int udp_sender_send_vision(udp_sender_t *s,const VisionFrame *f)
+{
+    if (!f || vision_validate(&f->result)<0) return -1;
+    LaneResult lane=f->result.lane; lane.frame_id=f->result.frame_id;
+    return send_frame(s,f,sizeof(*f),&lane,NULL,NULL,NULL,1);
+}
+int udp_sender_send_frame_ex(udp_sender_t *s,const void *p,size_t bytes,
+                            const LaneResult *lane,const TrafficLightResult *tl,
+                            const LaneMarkResult *lm,const ZebraResult *zebra)
+{
+    return send_frame(s,p,bytes,lane,tl,lm,zebra,0);
+}
 /* 基础版 = 扩展版不带三感知（保持既有调用点与单测不变） */
 int udp_sender_send_frame(udp_sender_t *s, const void *rgb565, size_t bytes,
                           const LaneResult *lane)
@@ -121,7 +138,7 @@ int udp_sender_send_heartbeat(udp_sender_t *s, uint32_t seq)
     if (!s) return -1;
     udp_heartbeat_t hb;
     if (udp_pack_heartbeat(&hb, seq) != 0) return -1;
-    ssize_t n = sendto(s->fd, &hb, sizeof(hb), 0,
+    ssize_t n = sendto(s->fd, &hb, sizeof(hb), MSG_DONTWAIT,
                        (struct sockaddr *)&s->peer, (socklen_t)sizeof(s->peer));
     return (n == (ssize_t)sizeof(hb)) ? 0 : -1;
 }
@@ -136,6 +153,7 @@ void udp_sender_close(udp_sender_t *s)
 #else  /* 非 Linux：桩 */
 
 struct udp_sender { int fd; };
+int udp_sender_send_vision(udp_sender_t *s,const VisionFrame *f){(void)s;(void)f;return -1;}
 
 int udp_sender_init(udp_sender_t **s, const char *remote_ip, uint16_t port)
 {

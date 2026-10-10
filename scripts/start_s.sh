@@ -28,6 +28,7 @@
 #      （"改动明明提交了，屏幕上却没变"）。resolve_bin 会检测源码是否比
 #      二进制新，过期就自动重新编译；失败则停止，不回退旧程序。
 set -e
+if [ "${1:-}" = --adas ]; then shift; exec bash "$(dirname "$0")/start_adas.sh" s "$@"; fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"

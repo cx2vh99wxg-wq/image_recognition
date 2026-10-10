@@ -27,10 +27,13 @@ int lane_geometry_analyze(const lane_seg_t *seg, int img_w, int img_h,
     if (roi_top >= img_h) return -1;
 
     memset(geo, 0, sizeof(*geo));
-    geo->total_bands = TURN_BAND_COUNT;
-
-    const int band_h = TURN_BAND_HEIGHT;
-    const int roi_bottom = img_h;
+    /* Preserve the original 640x480 ROI (216..456), while using all eight
+     * bands on the actual 320x240 tiles too. Fixed 30-row bands gave only
+     * five valid bands there, yet divided confidence by eight. */
+    const int roi_bottom = img_h * 95 / 100;
+    const int roi_rows = roi_bottom - roi_top;
+    if (roi_rows < 2) return -1;
+    geo->total_bands = roi_rows < TURN_BAND_COUNT ? roi_rows : TURN_BAND_COUNT;
 
     int *proj = (int *)calloc((size_t)img_w, sizeof(int));
     if (!proj) return -1;
@@ -42,10 +45,9 @@ int lane_geometry_analyze(const lane_seg_t *seg, int img_w, int img_h,
     uint32_t total_lane = 0;
     long long roi_area = 0;
 
-    int band_idx = 0;
-    for (int y = roi_top; y < roi_bottom && band_idx < TURN_BAND_COUNT; y += band_h) {
-        int y_end = y + band_h;
-        if (y_end > roi_bottom) y_end = roi_bottom;
+    for (int band_idx = 0; band_idx < geo->total_bands; band_idx++) {
+        int y = roi_top + roi_rows * band_idx / geo->total_bands;
+        int y_end = roi_top + roi_rows * (band_idx + 1) / geo->total_bands;
         memset(proj, 0, (size_t)img_w * sizeof(int));
 
         for (int yy = y; yy < y_end; yy++) {
@@ -66,7 +68,6 @@ int lane_geometry_analyze(const lane_seg_t *seg, int img_w, int img_h,
             centroids[band_idx] = (float)((double)sumx / totals[band_idx]);
             geo->valid_bands++;
         }
-        band_idx++;
     }
 
     geo->lane_pixels = total_lane;
@@ -126,12 +127,13 @@ int turn_decide(const lane_seg_t *seg, int img_w, int img_h, LaneResult *out)
     if (conf < 0.0f)   conf = 0.0f;
     out->confidence = (uint32_t)(conf + 0.5f);
 
-    /* 方向判定（阈值取 B 冻结的配置：LANE_STRAIGHT_TH） */
+    /* LANE_STRAIGHT_TH is calibrated in 640-wide pixels. */
+    float straight_threshold = LANE_STRAIGHT_TH * ((float)img_w / 640.0f);
     if (geo.coverage < TURN_MIN_COVERAGE || geo.valid_bands < 2) {
         out->direction = LANE_UNKNOWN;
-    } else if (off > (int32_t)LANE_STRAIGHT_TH) {
+    } else if (geo.weighted_offset > straight_threshold) {
         out->direction = LANE_RIGHT;
-    } else if (off < -(int32_t)LANE_STRAIGHT_TH) {
+    } else if (geo.weighted_offset < -straight_threshold) {
         out->direction = LANE_LEFT;
     } else {
         out->direction = LANE_STRAIGHT;

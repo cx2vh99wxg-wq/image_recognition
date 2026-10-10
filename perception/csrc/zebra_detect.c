@@ -15,8 +15,10 @@ static int zb_gray(const uint8_t *rgb, int w, int x, int y)
     return ((int)p[0] * 77 + (int)p[1] * 150 + (int)p[2] * 29) >> 8;
 }
 
-int zebra_detect(const uint8_t *rgb888, int w, int h, ZebraResult *out)
+int zebra_detect_rows(const uint8_t *rgb888, int w, int h, ZebraResult *out,
+                      uint16_t *stripe_rows,uint32_t *stripe_count)
 {
+    if(stripe_count)*stripe_count=0;
     if (!rgb888 || !out || w <= 0 || h <= 0) return -1;
 
     memset(out, 0, sizeof(*out));
@@ -86,6 +88,21 @@ int zebra_detect(const uint8_t *rgb888, int w, int h, ZebraResult *out)
         out->confidence = (uint32_t)(conf + 0.5f);
     }
 
+    if(out->detected && stripe_rows && stripe_count) {
+        int begin=-1;
+        for(int i=0;i<=rows;i++) {
+            int on=i<rows&&prof[i]>thr;
+            if(on&&begin<0)begin=i;
+            if(!on&&begin>=0){
+                if(*stripe_count<16)stripe_rows[(*stripe_count)++]=(uint16_t)(y0+(begin+i-1)/2);
+                begin=-1;
+            }
+        }
+    }
     free(prof);
     return 0;
+}
+int zebra_detect(const uint8_t *rgb,int w,int h,ZebraResult *out)
+{
+    return zebra_detect_rows(rgb,w,h,out,NULL,NULL);
 }

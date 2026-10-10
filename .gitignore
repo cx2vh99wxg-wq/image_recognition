@@ -42,3 +42,8 @@ __pycache__/
 # 带到板卡的运输工具，不是源码。推送正常时纯属冗余（bundle 会让仓库重复携带
 # 一份历史）。文件保留在本地磁盘供救急拷贝，但不进版本库。
 _transfer/
+
+# Full ADAS runtime
+adas_main
+control_main
+logs/

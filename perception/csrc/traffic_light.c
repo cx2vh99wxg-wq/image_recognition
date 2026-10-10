@@ -48,7 +48,7 @@ static int max_blob(const uint8_t *mask, int rw, int rh,
     const int n = rw * rh;
     uint8_t *vis = (uint8_t *)calloc((size_t)n, 1);
     int *stack = (int *)malloc((size_t)n * sizeof(int));
-    if (!vis || !stack) { free(vis); free(stack); return 0; }
+    if (!vis || !stack) { free(vis); free(stack); return -1; }
 
     int best = 0, bbx = 0, bby = 0, bbw = 0, bbh = 0;
 
@@ -133,6 +133,7 @@ int traffic_light_detect(const uint8_t *rgb888, int w, int h,
         areas[c] = max_blob(masks[c], rw, rh,
                             &boxes[c][0], &boxes[c][1], &boxes[c][2], &boxes[c][3]);
     }
+    for(int c=0;c<3;c++)if(areas[c]<0){for(int j=0;j<3;j++)free(masks[j]);return -1;}
     out->red_area    = (uint32_t)areas[0];
     out->yellow_area = (uint32_t)areas[1];
     out->green_area  = (uint32_t)areas[2];

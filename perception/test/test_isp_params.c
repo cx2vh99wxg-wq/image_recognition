@@ -24,19 +24,20 @@ static struct {
     int min_val, max_val, def_val;
 } EXPECT[] = {
     { ISP_PARAM_MODE,        "mode",          0,   3,   1   },
-    { ISP_PARAM_BLC,         "blc",           0,   255, 16  },
+    { ISP_PARAM_BLC,         "blc",           0,   255, 0  },
     { ISP_PARAM_AWB,         "awb",           0,   255, 128 },
-    { ISP_PARAM_CNN_LEVEL,   "cnn_level",     0,   4,   2   },
+    { ISP_PARAM_CNN_LEVEL,   "cnn_level",     0,   8,   2   },
     { ISP_PARAM_SATURATION,  "saturation",    0,   255, 128 },
     { ISP_PARAM_BRIGHTNESS,  "brightness",    0,   255, 128 },
-    { ISP_PARAM_AWB_EN,      "awb_en",        0,   1,   1   },
+    { ISP_PARAM_AWB_EN,      "awb_en",        0,   1,   0   },
     { ISP_PARAM_BINARIZATION,"binarization",  0,   255, 128 },
     { ISP_PARAM_SOBEL,       "sobel",         0,   255, 64  },
-    { ISP_PARAM_ISP_JUDGE,   "isp_judge",     0,   1,   0   },
+    { ISP_PARAM_ISP_JUDGE,   "isp_judge",     0,   1,   1   },
     { ISP_PARAM_CB_MIN,      "cb_min",        0,   255, 16  },
     { ISP_PARAM_CB_MAX,      "cb_max",        0,   255, 240 },
     { ISP_PARAM_CR_MIN,      "cr_min",        0,   255, 16  },
     { ISP_PARAM_CR_MAX,      "cr_max",        0,   255, 240 },
+    { ISP_PARAM_VIEW,        "view",          0,   6,   0 },
 };
 
 int main(void)
@@ -60,7 +61,7 @@ int main(void)
 
     /* 2) 非法 id 必须返回 NULL */
     CHECK(isp_param_lookup((isp_param_id_t)0) == NULL,     "id=0x00 返回 NULL");
-    CHECK(isp_param_lookup((isp_param_id_t)ISP_PARAM_COUNT) == NULL, "id=0x0F 返回 NULL");
+    CHECK(isp_param_lookup((isp_param_id_t)ISP_PARAM_COUNT) == NULL, "id=0x10 返回 NULL");
 
     /* 3) clamp：合法值保持，越界值裁剪到边界，非法 id 返回 0 */
     int v;

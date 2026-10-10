@@ -32,9 +32,9 @@ typedef struct {
     uint32_t lane_pixels;   /* ROI 内超过阈值的车道线像素数 */
 } lane_geometry_t;
 
-/* 采样参数：8 带 × 30 行 = 240 行，从 ROI 起点（LANE_ROI_TOP_FRAC）向下
- * 覆盖图像主体；与旧版"仅分析顶部 64 行"相比，近处车道线也参与判定。
- * 图像最底部约 24 行通常为车头/保险杠区域，不参与。 */
+/* ROI 从 LANE_ROI_TOP_FRAC 到图高的 95%，等分为 8 带。
+ * 640x480 时每带 30 行，320x240 时 15 行；底部 5% 不参与。
+ * TURN_BAND_HEIGHT 仅保留为旧 640x480 测试的参考尺度。 */
 #define TURN_BAND_COUNT    8
 #define TURN_BAND_HEIGHT   30
 #define TURN_LANE_THRESH   0.30f   /* 车道线概率阈值（与绘制阈值一致） */

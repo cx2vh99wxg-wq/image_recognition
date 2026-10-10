@@ -1,8 +1,9 @@
 # image_recognition — 辅助驾驶小车（三人从零重写）
 
-> 2026-10-09 核查：[论文复现缺口、三路引脚表、六宫格验证步骤](docs/partC-paper-reproduction-audit.md)。当前仍不是论文完整复现版本。
+> 2026-10-10 新闭环：[六路感知、串口屏、UDP/FSPI、PDS 工程、修改清单与验收步骤](docs/partC-adas-closed-loop.md)。主前视为上排 M 中间 cmos5；使用 `drive_6ch` 位流和 `start_m.sh --adas` / `start_s.sh --adas`，默认预览停车。真实 RKNN、PDS 时序和电机动作仍待实板验证，论文 CNN 等效增强尚未完成。
+> 2026-10-09 历史核查：[论文复现缺口、三路引脚表、六宫格验证步骤](docs/partC-paper-reproduction-audit.md)。当前状态以 10-10 说明为准。
 > 六路模拟：S 用 `sudo bash scripts/start_s.sh --local-stub`，M 用 `sudo bash scripts/start_m.sh --stub`；上排 M、下排 S，窗口 960×480。
-> `start_s.sh` 默认也是本地模拟。真实 S 相机请显式用 `--local-pcie --no-person --no-overlay` 先验证采集显示；行人后处理尚未完成。
+> 旧 `start_s.sh` 默认仍是本地模拟。仅验证真实 S 采集可用 `--local-pcie --no-person --no-overlay`；完整感知与控制请切换上述 `--adas` 入口。
 > J8 双目实拍测试：[完整 PDS 新建工程、28 根摄像头引脚、下载及双板操作指南](docs/partC-stereo-j8-guide.md)。M 使用独立 `stereo_j8` 位流后运行 `start_m.sh --stereo-pcie`，S 使用 `start_s.sh --local-stub`；上排为左实拍/黑色/右实拍。
 
 M/S 双 RK3568 + FPGA 三级流水线：感知（M 板）→ 决策（S 板）→ 执行（S 板 FSPI → 电机）。

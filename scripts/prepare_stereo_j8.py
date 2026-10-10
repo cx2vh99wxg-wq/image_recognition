@@ -135,12 +135,39 @@ ips = [f"../project/ipcore/{n}/{n}.idf" for n in ["ddr3", "clk_1080p_gen", "pcie
 write("design_files.txt", "\n".join(files + ips) + "\n")
 tcl = """# Run in the PDS Tcl console AFTER creating an empty PG2L100H/FBG484 project.
 # Paths are relative to this script, so the checkout can be moved.
+# Change only the path in your source {...} command on another computer.
+# PGL50H/Logos is NOT a substitute for PG2L100H/Logos2.
 set stereo_src_root [file dirname [file normalize [info script]]]
-set_arch -family Logos2 -device PG2L100H -speedgrade -6 -package FBG484
+set stereo_design_files {
 """
 for f in files + ips:
-    tcl += f'add_design [file normalize [file join $stereo_src_root "{f}"]]\n'
-tcl += 'add_constraint [file join $stereo_src_root "stereo_j8.fdc"]\n'
+    tcl += f'    {{{f}}}\n'
+tcl += """}
+# Fail before changing the project if the copied source tree is incomplete.
+set stereo_missing {}
+foreach rel [concat $stereo_design_files {stereo_j8.fdc}] {
+    set path [file normalize [file join $stereo_src_root $rel]]
+    if {![file isfile $path] || ![file readable $path]} {
+        lappend stereo_missing $path
+    }
+}
+if {[llength $stereo_missing] != 0} {
+    error "Incomplete stereo source tree. Copy stereo_j8, source and project/ipcore together. Missing/unreadable:\\n[join $stereo_missing \\n]"
+}
+foreach command {set_arch add_design add_constraint} {
+    if {[llength [info commands $command]] == 0} {
+        error "PDS command '$command' is unavailable. Run this script inside PDS Tcl Console with an empty project open."
+    }
+}
+if {[catch {set_arch -family Logos2 -device PG2L100H -speedgrade -6 -package FBG484} stereo_arch_error]} {
+    error "Cannot select the required PG2L100H-6/FBG484 (Logos2). Check the open project, PDS version, device support and license. Do NOT substitute PGL50H/Logos. Original PDS error: $stereo_arch_error"
+}
+foreach rel $stereo_design_files {
+    add_design [file normalize [file join $stereo_src_root $rel]]
+}
+add_constraint [file join $stereo_src_root "stereo_j8.fdc"]
+puts "Stereo J8 import complete: [llength $stereo_design_files] design entries + 1 FDC. Verify PG2L100H, FBG484, -6 in Project Settings."
+"""
 tcl += '# Next: compile -top_module image_pcie_capture, then synthesize, map, place/route.\n'
 write("add_sources.tcl", tcl)
 for f in files + ips:

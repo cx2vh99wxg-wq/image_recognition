@@ -1,0 +1,380 @@
+{
+  "yolov5s-640-640.rknn": {
+    "sha256": "3c75dfd25cd152de1fe787544fd40e8b96f6a98b40004b8621cd9ea18def9588",
+    "size": 7934084,
+    "metadata": {
+      "attrs": {
+        "images": {
+          "idx": 0,
+          "shape": [
+            1,
+            3,
+            640,
+            640
+          ],
+          "layout": "nchw",
+          "layout_ori": "nchw",
+          "is_output": false,
+          "range": [
+            0,
+            1
+          ],
+          "origin_dynamic": false,
+          "dtype": "float32",
+          "mean": [
+            0,
+            0,
+            0
+          ],
+          "std": [
+            255,
+            255,
+            255
+          ],
+          "rgb2bgr": false
+        },
+        "output0": {
+          "is_output": true,
+          "idx": 0,
+          "shape": [
+            1,
+            255,
+            80,
+            80
+          ],
+          "dtype": "float32",
+          "layout": "nchw"
+        },
+        "286": {
+          "is_output": true,
+          "idx": 1,
+          "shape": [
+            1,
+            255,
+            40,
+            40
+          ],
+          "dtype": "float32",
+          "layout": "nchw"
+        },
+        "288": {
+          "is_output": true,
+          "idx": 2,
+          "shape": [
+            1,
+            255,
+            20,
+            20
+          ],
+          "dtype": "float32",
+          "layout": "nchw"
+        }
+      },
+      "quant_tab": {
+        "images": {
+          "name": "images",
+          "dtype": "float32",
+          "qmethod": "layer",
+          "qtype": "asym",
+          "min": [
+            0.0
+          ],
+          "max": [
+            1.0
+          ],
+          "scale": [],
+          "zero_point": [],
+          "ori_min": [
+            0.0
+          ],
+          "ori_max": [
+            1.0
+          ]
+        },
+        "output0": {
+          "name": "output0",
+          "dtype": "float32",
+          "qmethod": "layer",
+          "qtype": "asym",
+          "min": [
+            0.0
+          ],
+          "max": [
+            0.9992126226425171
+          ],
+          "scale": [],
+          "zero_point": [],
+          "ori_min": [
+            0.0
+          ],
+          "ori_max": [
+            0.9992126226425171
+          ]
+        },
+        "286": {
+          "name": "286",
+          "dtype": "float32",
+          "qmethod": "layer",
+          "qtype": "asym",
+          "min": [
+            5.960464477539063e-08
+          ],
+          "max": [
+            0.9996432065963745
+          ],
+          "scale": [],
+          "zero_point": [],
+          "ori_min": [
+            5.960464477539063e-08
+          ],
+          "ori_max": [
+            0.9996432065963745
+          ]
+        },
+        "288": {
+          "name": "288",
+          "dtype": "float32",
+          "qmethod": "layer",
+          "qtype": "asym",
+          "min": [
+            9.834766387939453e-07
+          ],
+          "max": [
+            0.9998157024383545
+          ],
+          "scale": [],
+          "zero_point": [],
+          "ori_min": [
+            9.834766387939453e-07
+          ],
+          "ori_max": [
+            0.9998157024383545
+          ]
+        }
+      },
+      "dynamic_shapes": {}
+    },
+    "anchor_source": "reference profile in yolo_decode.c; verify against original PT/ONNX exporter, not stored here"
+  },
+  "yolopv2_Nx3x480x640_rk3568.rknn": {
+    "sha256": "57a9d1e39c44c9b1f3dfa0ca7583897aa3c05dfda7889e269bec64827ab9a26a",
+    "size": 43055006,
+    "metadata": {
+      "attrs": {
+        "input": {
+          "idx": 0,
+          "shape": [
+            1,
+            3,
+            480,
+            640
+          ],
+          "layout": "nchw",
+          "layout_ori": "nchw",
+          "is_output": false,
+          "range": [
+            0,
+            1
+          ],
+          "origin_dynamic": false,
+          "dtype": "float32",
+          "mean": [
+            0,
+            0,
+            0
+          ],
+          "std": [
+            255,
+            255,
+            255
+          ],
+          "rgb2bgr": false
+        },
+        "seg": {
+          "is_output": true,
+          "idx": 0,
+          "shape": [
+            1,
+            2,
+            480,
+            640
+          ],
+          "dtype": "float32",
+          "layout": "nchw"
+        },
+        "ll": {
+          "is_output": true,
+          "idx": 1,
+          "shape": [
+            1,
+            1,
+            480,
+            640
+          ],
+          "dtype": "float32",
+          "layout": "nchw"
+        },
+        "pred0": {
+          "is_output": true,
+          "idx": 2,
+          "shape": [
+            1,
+            255,
+            60,
+            80
+          ],
+          "dtype": "float32",
+          "layout": "nchw"
+        },
+        "pred1": {
+          "is_output": true,
+          "idx": 3,
+          "shape": [
+            1,
+            255,
+            30,
+            40
+          ],
+          "dtype": "float32",
+          "layout": "nchw"
+        },
+        "pred2": {
+          "is_output": true,
+          "idx": 4,
+          "shape": [
+            1,
+            255,
+            15,
+            20
+          ],
+          "dtype": "float32",
+          "layout": "nchw"
+        }
+      },
+      "quant_tab": {
+        "input": {
+          "name": "input",
+          "dtype": "float32",
+          "qmethod": "layer",
+          "qtype": "asym",
+          "min": [
+            0.0
+          ],
+          "max": [
+            1.0
+          ],
+          "scale": [],
+          "zero_point": [],
+          "ori_min": [
+            0.0
+          ],
+          "ori_max": [
+            1.0
+          ]
+        },
+        "seg": {
+          "name": "seg",
+          "dtype": "float32",
+          "qmethod": "layer",
+          "qtype": "asym",
+          "min": [
+            0.0
+          ],
+          "max": [
+            1.0
+          ],
+          "scale": [],
+          "zero_point": [],
+          "ori_min": [
+            0.0
+          ],
+          "ori_max": [
+            1.0
+          ]
+        },
+        "ll": {
+          "name": "ll",
+          "dtype": "float32",
+          "qmethod": "layer",
+          "qtype": "asym",
+          "min": [
+            0.0
+          ],
+          "max": [
+            1.0
+          ],
+          "scale": [],
+          "zero_point": [],
+          "ori_min": [
+            0.0
+          ],
+          "ori_max": [
+            1.0
+          ]
+        },
+        "pred0": {
+          "name": "pred0",
+          "dtype": "float32",
+          "qmethod": "layer",
+          "qtype": "asym",
+          "min": [
+            -47.32837677001953
+          ],
+          "max": [
+            11.84200382232666
+          ],
+          "scale": [],
+          "zero_point": [],
+          "ori_min": [
+            -47.32837677001953
+          ],
+          "ori_max": [
+            11.84200382232666
+          ]
+        },
+        "pred1": {
+          "name": "pred1",
+          "dtype": "float32",
+          "qmethod": "layer",
+          "qtype": "asym",
+          "min": [
+            -47.27082443237305
+          ],
+          "max": [
+            12.159231185913086
+          ],
+          "scale": [],
+          "zero_point": [],
+          "ori_min": [
+            -47.27082443237305
+          ],
+          "ori_max": [
+            12.159231185913086
+          ]
+        },
+        "pred2": {
+          "name": "pred2",
+          "dtype": "float32",
+          "qmethod": "layer",
+          "qtype": "asym",
+          "min": [
+            -23.83195686340332
+          ],
+          "max": [
+            12.048600196838379
+          ],
+          "scale": [],
+          "zero_point": [],
+          "ori_min": [
+            -23.83195686340332
+          ],
+          "ori_max": [
+            12.048600196838379
+          ]
+        }
+      },
+      "dynamic_shapes": {}
+    },
+    "anchor_source": "reference profile in yolo_decode.c; verify against original PT/ONNX exporter, not stored here"
+  }
+}

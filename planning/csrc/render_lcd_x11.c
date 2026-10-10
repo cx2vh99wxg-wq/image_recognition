@@ -104,10 +104,19 @@ static void overlay_apply(render_lcd_ctx_t *ctx)
             case 6:   /* CMD_STOP */
                 c_fill_rect(cv, cw, ch, ax - 42, ay - 42, 84, 84, RED);
                 break;
+            case 7:   /* CMD_COAST: released throttle, distinct from forward */
+                c_fill_rect(cv, cw, ch, ax - 36, ay - 8, 72, 16, 0x20C0FFu);
+                break;
+            case 2:   /* CMD_BACK */
+                c_fill_rect(cv, cw, ch, ax - 13, ay - 50, 26, 56, YEL);
+                c_fill_tri (cv, cw, ch, ax, ay + 56, 36, 56, 1, YEL);
+                break;
             case 1:   /* CMD_GO：向上箭头 */
-            default:
                 c_fill_rect(cv, cw, ch, ax - 13, ay - 6, 26, 56, YEL);
                 c_fill_tri (cv, cw, ch, ax, ay - 6, 36, 56, 0, YEL);
+                break;
+            default:
+                c_fill_rect(cv, cw, ch, ax - 20, ay - 20, 40, 40, 0x808080u);
                 break;
         }
     }

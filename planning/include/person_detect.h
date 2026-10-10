@@ -6,7 +6,7 @@
  *
  * 实现策略：
  *  - 板端（__linux__ 且非 USE_STUB）：RKNN 推理 YOLOv5s，取 class=person 最大框；
- *  - 本机 / USE_STUB：桩，返回"无行人"（PERSON_NONE），保证纯逻辑可单测、可联调。
+ *  - 模型初始化/推理失败返回错误；禁止把失败伪装成“无人”。
  */
 #ifndef PERSON_DETECT_H
 #define PERSON_DETECT_H
@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include "driving_types.h"
 #include "driving_config.h"   /* PersonState */
+#include "yolo_decode.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,15 +22,16 @@ extern "C" {
 
 typedef struct person_detect_ctx person_detect_ctx_t;
 
-/* model_path 可为 NULL（桩模式忽略）。成功 0，失败 -1。 */
+/* model_path 必须指向有效 RKNN 模型。成功 0，失败 -1。 */
 int  person_detect_init(person_detect_ctx_t **ctx, const char *model_path,
                         int img_w, int img_h);
 
-/* 输入 RGB888 图，输出 PersonState。桩模式恒 PERSON_NONE。 */
+/* 输入 RGB888 图，输出 PersonState。失败时返回 -1。 */
 int  person_detect_run(person_detect_ctx_t *ctx, const uint8_t *rgb888,
                        uint32_t frame_id, uint64_t now_us, PersonState *out);
 
 void person_detect_deinit(person_detect_ctx_t *ctx);
+int person_detect_boxes(person_detect_ctx_t *ctx, const uint8_t *rgb888, yolo_boxes_t *boxes);
 
 #ifdef __cplusplus
 }

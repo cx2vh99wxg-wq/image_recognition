@@ -48,7 +48,7 @@ test/test_control_logic: test/test_control_logic.o csrc/control_logic.o
 	$(CC) -o $@ $^
 
 # ---- 板端构建（S 端控制进程 control_main） ----
-BOARD_OBJS := obj/control_logic.o obj/fspi_driver.o obj/main_control.o \
+BOARD_OBJS := obj/control_logic.o obj/actuator.o obj/fspi_driver.o obj/main_control.o \
               obj/shm_ipc.o obj/log.o
 
 obj/%.o: csrc/%.c

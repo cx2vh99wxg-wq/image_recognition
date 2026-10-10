@@ -6,7 +6,8 @@
 
 echo "==== 停止进程 ===="
 sudo pkill -f '(^|/)control_main([[:space:]]|$)' 2>/dev/null || true
-sleep 2   # 控制进程有阻塞转向时序，先给它时间执行退出清理
+sleep .1  # new control asserts STOP immediately
+sudo pkill -f '(^|/)adas_main([[:space:]]|$)' 2>/dev/null || true
 sudo pkill -f perception_main 2>/dev/null || true
 sudo pkill -f udp_m_send_main 2>/dev/null || true
 sudo pkill -f planning_main    2>/dev/null || true
@@ -14,7 +15,7 @@ sleep 1
 
 echo "==== 清理共享内存 ===="
 for key in 0x12345679 0x1234567A 0x1234567B 0x1234567C 0x1234567D \
-           0x1234567E 0x1234567F 0x12345680 0x12345681; do
+           0x1234567E 0x1234567F 0x12345680 0x12345681 0x12345684; do
     sudo ipcrm -M $((key)) 2>/dev/null && echo "  删除 key $key" || true
 done
 

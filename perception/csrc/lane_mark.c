@@ -37,6 +37,8 @@ int lane_marks_analyze(const lane_seg_t *seg, int img_w, int img_h,
     if (y1 - y0 < 4) return -1;
 
     const int mid = img_w / 2;
+    int cross_margin = (LM_CROSS_MARGIN * img_w + 320) / 640;
+    if (cross_margin < 1) cross_margin = 1;
     int rows = 0;
     int left_cnt = 0, right_cnt = 0;     /* 左/右半幅"有车道线"的行数 */
     long left_sum = 0, right_sum = 0;    /* 左/右车道线 x 累加（求均值） */
@@ -98,10 +100,10 @@ int lane_marks_analyze(const lane_seg_t *seg, int img_w, int img_h,
     }
 
     /* 压线 / 变道：近场车道线贴近车辆中心（图像中线） */
-    if (out->left_x  >= 0 && abs(out->left_x  - mid) <= LM_CROSS_MARGIN) {
+    if (out->left_x  >= 0 && abs(out->left_x  - mid) <= cross_margin) {
         out->crossing = 1; out->crossing_left  = 1;
     }
-    if (out->right_x >= 0 && abs(out->right_x - mid) <= LM_CROSS_MARGIN) {
+    if (out->right_x >= 0 && abs(out->right_x - mid) <= cross_margin) {
         out->crossing = 1; out->crossing_right = 1;
     }
     out->lane_change = out->crossing;

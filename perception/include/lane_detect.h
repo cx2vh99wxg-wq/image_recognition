@@ -10,6 +10,7 @@
 #define LANE_DETECT_H
 
 #include <stdint.h>
+#include "rknn_vision.h"
 
 #include "rknn_api.h"   /* RKNN 运行时头（板端提供，本机语法检查用同名桩头） */
 
@@ -31,15 +32,8 @@ typedef struct {
 
 /* RKNN 引擎句柄 */
 typedef struct {
-    rknn_context     ctx;
-    rknn_input_output_num io_num;
-    rknn_tensor_attr *in_attr;
-    rknn_tensor_attr *out_attr;
-    rknn_input      *inputs;
-    rknn_output     *outputs;
-    uint8_t         *in_buf;     /* 模型输入 RGB */
-    float           *lane_buf;   /* 车道线输出缓存 */
-    float           *drive_buf;  /* 可行驶区域输出缓存 */
+    rknn_vision_t engine;
+    yolo_boxes_t detections;
     int              m_w;
     int              m_h;
     int              ready;

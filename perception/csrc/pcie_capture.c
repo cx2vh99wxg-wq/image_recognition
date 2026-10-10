@@ -115,7 +115,8 @@ int pcie_capture_open(frame_grabber_t *g, int img_w, int img_h, int lead_px)
     g->img_w = img_w;
     g->img_h = img_h;
     g->lead_px = lead_px;
-    g->fd = open(PANGO_PCIE_DEV, O_RDWR);
+    const char *device=getenv("PCIE_DEVICE");
+    g->fd = open(device?device:PANGO_PCIE_DEV, O_RDWR);
     if (g->fd < 0) {
         perror("open " PANGO_PCIE_DEV);
         return -1;
