@@ -415,10 +415,8 @@ define_attribute {p:perst_n} {PAP_IO_STANDARD} {LVCMOS18}
 define_attribute {p:perst_n} {PAP_IO_NONE} {TRUE}
 define_attribute {p:ref_clk_p} {PAP_IO_LOC} {F6}
 define_attribute {p:ref_clk_n} {PAP_IO_LOC} {E6}
-create_generated_clock -name {cfg_clk} -source [get_ports {free_clk}] [get_nets {u_ov5640_top/u_pll/clkout0}] -master_clock [get_clocks ref_clk] -multiply_by {2} -divide_by {5}
-create_generated_clock -name {clk_25M} -source [get_ports {free_clk}] [get_nets {u_ov5640_top/u_pll/clkout1}] -master_clock [get_clocks ref_clk] -multiply_by {1} -divide_by {2}
-set_clock_groups -name cfg_clk -asynchronous -group [get_clocks {cfg_clk}]
-set_clock_groups -name clk_25M -asynchronous -group [get_clocks {clk_25M}]
+# clkout0 is unconnected in drive_camera_top. clkout1 is 25 MHz, defined
+# once below as camera_cfg25; the old 12.5 MHz alias was contradictory.
 define_attribute {n:cmos5_pclk} {PAP_CLOCK_DEDICATED_ROUTE} {FALSE} 
 define_attribute {n:cmos6_pclk} {PAP_CLOCK_DEDICATED_ROUTE} {FALSE} 
 define_attribute {p:cmos5_data[7]} {PAP_IO_DIRECTION} {INPUT}
@@ -438,8 +436,8 @@ define_attribute {p:cmos5_data[5]} {PAP_IO_STANDARD} {LVCMOS33}
 define_attribute {p:cmos5_data[5]} {PAP_IO_NONE} {TRUE}
 define_attribute {p:cmos5_data[4]} {PAP_IO_DIRECTION} {INPUT}
 define_attribute {p:cmos5_data[4]} {PAP_IO_LOC} {L13}
-define_attribute {p:cmos5_data[4]} {PAP_IO_VCCIO} {3.3}
-define_attribute {p:cmos5_data[4]} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:cmos5_data[4]} {PAP_IO_VCCIO} {1.8}
+define_attribute {p:cmos5_data[4]} {PAP_IO_STANDARD} {LVCMOS18}
 define_attribute {p:cmos5_data[4]} {PAP_IO_NONE} {TRUE}
 define_attribute {p:cmos5_data[3]} {PAP_IO_DIRECTION} {INPUT}
 define_attribute {p:cmos5_data[3]} {PAP_IO_LOC} {V19}
@@ -577,15 +575,15 @@ create_clock -name {cmos5_pclk} [get_ports {cmos5_pclk}] -period {17.857} -wavef
 create_clock -name {cmos6_pclk} [get_ports {cmos6_pclk}] -period {17.857} -waveform {0.000 8.928}
 define_attribute {p:back} {PAP_IO_DIRECTION} {OUTPUT}
 define_attribute {p:back} {PAP_IO_LOC} {J14}
-define_attribute {p:back} {PAP_IO_VCCIO} {3.3}
-define_attribute {p:back} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:back} {PAP_IO_VCCIO} {1.8}
+define_attribute {p:back} {PAP_IO_STANDARD} {LVCMOS18}
 define_attribute {p:back} {PAP_IO_DRIVE} {4}
 define_attribute {p:back} {PAP_IO_NONE} {TRUE}
 define_attribute {p:back} {PAP_IO_SLEW} {FAST}
 define_attribute {p:go} {PAP_IO_DIRECTION} {OUTPUT}
 define_attribute {p:go} {PAP_IO_LOC} {G17}
-define_attribute {p:go} {PAP_IO_VCCIO} {3.3}
-define_attribute {p:go} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:go} {PAP_IO_VCCIO} {1.8}
+define_attribute {p:go} {PAP_IO_STANDARD} {LVCMOS18}
 define_attribute {p:go} {PAP_IO_DRIVE} {4}
 define_attribute {p:go} {PAP_IO_NONE} {TRUE}
 define_attribute {p:go} {PAP_IO_SLEW} {FAST}
@@ -605,8 +603,8 @@ define_attribute {p:right} {PAP_IO_NONE} {TRUE}
 define_attribute {p:right} {PAP_IO_SLEW} {FAST}
 define_attribute {p:stop} {PAP_IO_DIRECTION} {OUTPUT}
 define_attribute {p:stop} {PAP_IO_LOC} {H13}
-define_attribute {p:stop} {PAP_IO_VCCIO} {3.3}
-define_attribute {p:stop} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:stop} {PAP_IO_VCCIO} {1.8}
+define_attribute {p:stop} {PAP_IO_STANDARD} {LVCMOS18}
 define_attribute {p:stop} {PAP_IO_DRIVE} {4}
 define_attribute {p:stop} {PAP_IO_NONE} {TRUE}
 define_attribute {p:stop} {PAP_IO_SLEW} {FAST}
@@ -616,38 +614,42 @@ define_attribute {p:heart_beat_led} {PAP_IO_VCCIO} {1.8}
 define_attribute {p:heart_beat_led} {PAP_IO_STANDARD} {LVCMOS18}
 create_generated_clock -name {camera_cfg25} -source [get_ports {free_clk}] [get_pins {u_ov5640_top/u_pll/clkout1}] -multiply_by {1}
 create_generated_clock -name {camera_reset50} -source [get_ports {free_clk}] [get_pins {u_ov5640_top/u_pll/clkout2}] -multiply_by {2}
+# stereo_reg_config toggles clock_20k every 1250 clk25 edges: actually 10 kHz.
+create_generated_clock -name {camera_i2c2} -source [get_pins {u_ov5640_top/u_pll/clkout1}] [get_nets {u_ov5640_top/cfg2/clock_20k}] -master_clock [get_clocks {camera_cfg25}] -divide_by {2500}
+create_generated_clock -name {camera_i2c5} -source [get_pins {u_ov5640_top/u_pll/clkout1}] [get_nets {u_ov5640_top/cfg5/clock_20k}] -master_clock [get_clocks {camera_cfg25}] -divide_by {2500}
+create_generated_clock -name {camera_i2c6} -source [get_pins {u_ov5640_top/u_pll/clkout1}] [get_nets {u_ov5640_top/cfg6/clock_20k}] -master_clock [get_clocks {camera_cfg25}] -divide_by {2500}
 
 define_attribute {p:spi_data[3]} {PAP_IO_DIRECTION} {INOUT}
 define_attribute {p:spi_data[3]} {PAP_IO_LOC} {L18}
-define_attribute {p:spi_data[3]} {PAP_IO_VCCIO} {3.3}
-define_attribute {p:spi_data[3]} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:spi_data[3]} {PAP_IO_VCCIO} {1.8}
+define_attribute {p:spi_data[3]} {PAP_IO_STANDARD} {LVCMOS18}
 define_attribute {p:spi_data[3]} {PAP_IO_DRIVE} {12}
 define_attribute {p:spi_data[3]} {PAP_IO_SLEW} {FAST}
 define_attribute {p:spi_data[2]} {PAP_IO_DIRECTION} {INOUT}
 define_attribute {p:spi_data[2]} {PAP_IO_LOC} {M18}
-define_attribute {p:spi_data[2]} {PAP_IO_VCCIO} {3.3}
-define_attribute {p:spi_data[2]} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:spi_data[2]} {PAP_IO_VCCIO} {1.8}
+define_attribute {p:spi_data[2]} {PAP_IO_STANDARD} {LVCMOS18}
 define_attribute {p:spi_data[2]} {PAP_IO_DRIVE} {12}
 define_attribute {p:spi_data[2]} {PAP_IO_SLEW} {FAST}
 define_attribute {p:spi_data[1]} {PAP_IO_DIRECTION} {INOUT}
 define_attribute {p:spi_data[1]} {PAP_IO_LOC} {M22}
-define_attribute {p:spi_data[1]} {PAP_IO_VCCIO} {3.3}
-define_attribute {p:spi_data[1]} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:spi_data[1]} {PAP_IO_VCCIO} {1.8}
+define_attribute {p:spi_data[1]} {PAP_IO_STANDARD} {LVCMOS18}
 define_attribute {p:spi_data[1]} {PAP_IO_DRIVE} {12}
 define_attribute {p:spi_data[1]} {PAP_IO_SLEW} {FAST}
 define_attribute {p:spi_data[0]} {PAP_IO_DIRECTION} {INOUT}
 define_attribute {p:spi_data[0]} {PAP_IO_LOC} {N22}
-define_attribute {p:spi_data[0]} {PAP_IO_VCCIO} {3.3}
-define_attribute {p:spi_data[0]} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:spi_data[0]} {PAP_IO_VCCIO} {1.8}
+define_attribute {p:spi_data[0]} {PAP_IO_STANDARD} {LVCMOS18}
 define_attribute {p:spi_data[0]} {PAP_IO_DRIVE} {12}
 define_attribute {p:spi_data[0]} {PAP_IO_SLEW} {FAST}
 define_attribute {p:spi_clk} {PAP_IO_DIRECTION} {INPUT}
 define_attribute {p:spi_clk} {PAP_IO_LOC} {L19}
-define_attribute {p:spi_clk} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:spi_clk} {PAP_IO_VCCIO} {1.8}
 define_attribute {p:spi_clk} {PAP_IO_STANDARD} {LVCMOS18}
 define_attribute {p:spi_cs} {PAP_IO_DIRECTION} {INPUT}
 define_attribute {p:spi_cs} {PAP_IO_LOC} {L20}
-define_attribute {p:spi_cs} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:spi_cs} {PAP_IO_VCCIO} {1.8}
 define_attribute {p:spi_cs} {PAP_IO_STANDARD} {LVCMOS18}
 define_attribute {p:cmos2_data[7]} {PAP_IO_DIRECTION} {INPUT}
 define_attribute {p:cmos2_data[7]} {PAP_IO_LOC} {D16}
@@ -732,6 +734,15 @@ define_attribute {p:spi_data[0]} {PAP_IO_NONE} {TRUE}
 define_attribute {p:spi_clk} {PAP_IO_NONE} {TRUE}
 define_attribute {p:spi_cs} {PAP_IO_NONE} {TRUE}
 create_clock -name {cmos2_pclk} [get_ports {cmos2_pclk}] -period {17.857} -waveform {0.000 8.928}
+# Independent sensor oscillators -> DDR: Gray FIFO pointers and first-stage
+# VSYNC synchronizers. DDR -> sensors: Gray pointers and reset synchronizers.
+# Bound transit to less than the fastest domain period (DDR: 7.619 ns), rather
+# than suppressing these buses with blanket asynchronous clock groups.
+set_max_delay -datapath_only -from [get_clocks {cmos2_pclk cmos5_pclk cmos6_pclk}] -to [get_clocks {ddrphy_sysclk}] 7.000
+set_max_delay -datapath_only -from [get_clocks {ddrphy_sysclk}] -to [get_clocks {cmos2_pclk cmos5_pclk cmos6_pclk}] 7.000
+# Camera configuration only crosses to the asynchronous-assert / synchronous-
+# release reset synchronizers. All capture registers now see a local reset.
+set_max_delay -datapath_only -from [get_clocks {camera_reset50 camera_i2c2 camera_i2c5 camera_i2c6}] -to [get_clocks {cmos2_pclk cmos5_pclk cmos6_pclk}] 7.000
 define_attribute {p:RXD} {PAP_IO_DIRECTION} {INPUT}
 define_attribute {p:RXD} {PAP_IO_LOC} {C22}
 define_attribute {p:RXD} {PAP_IO_VCCIO} {3.3}

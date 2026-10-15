@@ -96,7 +96,7 @@ module stereo_axi_ctrl #(
   // [FIXED SECTION START]: Reset & VSYNC Synchronization (UNCHANGED)
   // =========================================================================
   wire [3:0] vsync_pulse_axi;
-  reg [2:0] vsync_sync_r[3:0];
+  (* ASYNC_REG="TRUE" *) reg [2:0] vsync_sync_r[3:0];
   wire [3:0] raw_vsync_in;
   assign raw_vsync_in = {wframe_vsync[0], wframe_vsync[2], wframe_vsync[1], wframe_vsync[0]};
 
@@ -116,11 +116,20 @@ module stereo_axi_ctrl #(
   wire [2:0] fifo_wr_rst_out;
   wire [2:0] fifo_rd_rst_out;
   reg [1:0] r_wr_vsync_edge [2:0]; 
+  // DDR initialization is asynchronous to each sensor. Assert immediately,
+  // release only after two local PCLK edges, including after a stopped camera.
+  (* ASYNC_REG="TRUE" *) reg [1:0] wr_reset_sync [2:0];
+  wire [2:0] wr_local_reset;
 
   generate
     for (gi = 0; gi < 3; gi = gi + 1) begin : rst_gen_loop
       always @(posedge wframe_pclk[gi] or posedge axi_reset) begin
-        if (axi_reset) begin
+        if (axi_reset) wr_reset_sync[gi] <= 2'b11;
+        else wr_reset_sync[gi] <= {wr_reset_sync[gi][0], 1'b0};
+      end
+      assign wr_local_reset[gi] = wr_reset_sync[gi][1];
+      always @(posedge wframe_pclk[gi] or posedge wr_local_reset[gi]) begin
+        if (wr_local_reset[gi]) begin
             fifo_wr_rst_cnt[gi] <= 5'd31;
             r_wr_vsync_edge[gi] <= 2'b00;
         end else begin
@@ -157,8 +166,8 @@ module stereo_axi_ctrl #(
   generate
     for (gi = 0; gi < 3; gi = gi + 1) begin : pix_cnt_loop
       
-      always @(posedge wframe_pclk[gi] or posedge axi_reset) begin
-        if (axi_reset) begin
+      always @(posedge wframe_pclk[gi] or posedge wr_local_reset[gi]) begin
+        if (wr_local_reset[gi]) begin
           r_vsync_d[gi] <= 0; pix_h[gi] <= 0; pix_v[gi] <= 0;
         end else begin
         r_vsync_d[gi] <= {r_vsync_d[gi][0], wframe_vsync[gi]};
@@ -392,31 +401,45 @@ module stereo_axi_ctrl #(
   integer rb;
   reg  rframe_vsync_dly;
   wire rframe_vsync_neg;
-  always @(posedge rframe_pclk) begin
-    if (axi_reset) rframe_vsync_dly <= 0;
+  (* ASYNC_REG="TRUE" *) reg [1:0] read_reset_sync;
+  wire read_local_reset = read_reset_sync[1];
+  always @(posedge rframe_pclk or posedge axi_reset) begin
+    if (axi_reset) read_reset_sync <= 2'b11;
+    else read_reset_sync <= {read_reset_sync[0], 1'b0};
+  end
+  always @(posedge rframe_pclk or posedge read_local_reset) begin
+    if (read_local_reset) rframe_vsync_dly <= 0;
     else rframe_vsync_dly <= rframe_vsync;
   end
   assign rframe_vsync_neg = rframe_vsync_dly & ~rframe_vsync;
   
   reg [4:0] rfifo_cnt;
   reg rfifo_rst;
-  always @(posedge rframe_pclk) begin
-    if (axi_reset) rfifo_cnt <= 5'h1f;
+  always @(posedge rframe_pclk or posedge read_local_reset) begin
+    if (read_local_reset) rfifo_cnt <= 5'h1f;
     else if (rframe_vsync_neg) rfifo_cnt <= 5'h1f;
     else if (rfifo_cnt > 0) rfifo_cnt <= rfifo_cnt - 1;
   end
-  always @(posedge rframe_pclk) begin
-    if (axi_reset) rfifo_rst <= 1;
+  always @(posedge rframe_pclk or posedge read_local_reset) begin
+    if (read_local_reset) rfifo_rst <= 1;
     else rfifo_rst <= (rfifo_cnt != 0);
   end
-  wire w_rfifo_rst = axi_reset || rfifo_rst;
+  wire w_rfifo_rst = read_local_reset || rfifo_rst;
+  // The same frame-reset event reaches both FIFO ports, but each domain
+  // releases reset on its own clock. Do not sample a foreign reset in logic.
+  (* ASYNC_REG="TRUE" *) reg [1:0] rfifo_write_reset_sync;
+  always @(posedge axi_clk or posedge w_rfifo_rst) begin
+    if (w_rfifo_rst) rfifo_write_reset_sync <= 2'b11;
+    else rfifo_write_reset_sync <= {rfifo_write_reset_sync[0], 1'b0};
+  end
+  wire r_rfifo_rst_axi = rfifo_write_reset_sync[1];
   reg rfifo_wenb;
   reg [C_DATA_LEN-1:0] rfifo_wdata;
   wire rfifo_wfull;
 
   R_FIFO_128i_128o u_R_FIFO (
       .wr_clk(axi_clk),
-      .wr_rst(w_rfifo_rst),
+      .wr_rst(r_rfifo_rst_axi),
       .wr_en(rfifo_wenb),
       .wr_data(rfifo_wdata),
       .almost_full(rfifo_wfull),
@@ -432,7 +455,6 @@ module stereo_axi_ctrl #(
   end
   
   // w_rfifo_rst also marks the start of each PCIe image read.
-  reg r_rfifo_rst_axi;
   always @(posedge axi_clk or posedge axi_reset) begin
     if (axi_reset) begin
       read_ready <= 0;
@@ -449,7 +471,6 @@ module stereo_axi_ctrl #(
   reg [C_BUF_SIZE-1:0] araddr_offset;
   reg r_rd_pend;
 
-  always @(posedge axi_clk) r_rfifo_rst_axi <= w_rfifo_rst;
   reg [1:0] rfifo_rst_busy_sr;
   always @(posedge axi_clk) rfifo_rst_busy_sr <= {rfifo_rst_busy_sr[0], r_rfifo_rst_axi};
 

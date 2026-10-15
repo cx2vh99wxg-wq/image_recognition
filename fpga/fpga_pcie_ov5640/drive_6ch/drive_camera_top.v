@@ -63,21 +63,27 @@ module drive_camera_top (
         .reg_conf_done(init6), .i2c_sclk(scl6), .i2c_sdat(cmos6_sda),
         .clock_20k(), .reg_index()
     );
+    // SCCB completion and power reset originate outside the sensor domain.
+    // Keep asynchronous assertion, but release capture on two local PCLK edges.
+    wire capture2_rst_n, capture5_rst_n, capture6_rst_n;
+    drive_reset_sync reset2(cmos2_pclk, init2 && cmos2_reset, capture2_rst_n);
+    drive_reset_sync reset5(cmos5_pclk, init5 && cmos5_reset, capture5_rst_n);
+    drive_reset_sync reset6(cmos6_pclk, init6 && cmos6_reset, capture6_rst_n);
     // The outputs of each capture block remain in that sensor's PCLK domain.
     cmos_capture_data capture2 (
-        .rst_n(init2 && cmos2_reset), .cam_pclk(cmos2_pclk),
+        .rst_n(capture2_rst_n), .cam_pclk(cmos2_pclk),
         .cam_vsync(cmos2_vsync), .cam_href(cmos2_href), .cam_data(cmos2_data),
         .active_x(), .active_y(), .cmos_frame_vsync(video2_vs),
         .cmos_frame_href(), .cmos_frame_valid(video2_de), .cmos_frame_data(video2_data)
     );
     cmos_capture_data capture5 (
-        .rst_n(init5 && cmos5_reset), .cam_pclk(cmos5_pclk),
+        .rst_n(capture5_rst_n), .cam_pclk(cmos5_pclk),
         .cam_vsync(cmos5_vsync), .cam_href(cmos5_href), .cam_data(cmos5_data),
         .active_x(), .active_y(), .cmos_frame_vsync(video5_vs),
         .cmos_frame_href(), .cmos_frame_valid(video5_de), .cmos_frame_data(video5_data)
     );
     cmos_capture_data capture6 (
-        .rst_n(init6 && cmos6_reset), .cam_pclk(cmos6_pclk),
+        .rst_n(capture6_rst_n), .cam_pclk(cmos6_pclk),
         .cam_vsync(cmos6_vsync), .cam_href(cmos6_href), .cam_data(cmos6_data),
         .active_x(), .active_y(), .cmos_frame_vsync(video6_vs),
         .cmos_frame_href(), .cmos_frame_valid(video6_de), .cmos_frame_data(video6_data)
@@ -85,4 +91,13 @@ module drive_camera_top (
     assign video2_clk=cmos2_pclk;
     assign video5_clk = cmos5_pclk;
     assign video6_clk = cmos6_pclk;
+endmodule
+
+module drive_reset_sync(input clk, input async_rst_n, output rst_n);
+    (* ASYNC_REG="TRUE" *) reg [1:0] sync_ff;
+    always @(posedge clk or negedge async_rst_n) begin
+        if (!async_rst_n) sync_ff <= 2'b00;
+        else sync_ff <= {sync_ff[0], 1'b1};
+    end
+    assign rst_n = sync_ff[1];
 endmodule
