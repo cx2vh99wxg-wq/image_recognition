@@ -6,10 +6,13 @@
 #
 # 用法（在 S 端 RK3568 上，需 root）：
 #   sudo ./scripts/start_s.sh [--model 行人模型绝对路径] [--no-lcd] [--with-stub] [--no-build]
+#   sudo ./scripts/start_s.sh --local-pcie [--swap-eyes] [--no-person] [--no-overlay]
 #   sudo bash ./scripts/start_s.sh        # 也可以（本脚本不依赖可执行位）
 #
 # 默认 --local-stub：S 端使用确定的灰度模拟图；不以共享内存存在推断摄像头在线。
-# --local-pcie：直接读取 S 板自己的 PCIe；--no-local-stub：兼容外部共享内存采集。
+# --local-pcie：直接读取 S 板自己的 FPGA（双目摄像头就地显示，见
+#   docs/partC-s-local-camera.md）；--no-local-stub：兼容外部共享内存采集。
+# --swap-eyes：本地双目左右对调（纯显示侧；位流/FDC 不动）。
 # 模拟模式自动关闭行人推理与彩色叠加；真实采集验证可加 --no-person --no-overlay。
 #
 # --with-stub：单板自测模式。除 S 端决策+显示外，本机再起一个
@@ -47,6 +50,7 @@ NO_BUILD=0
 LOCAL_SOURCE=stub
 NO_PERSON=0
 NO_OVERLAY=0
+SWAP_EYES=0
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -59,7 +63,8 @@ while [ $# -gt 0 ]; do
         --no-local-stub) LOCAL_SOURCE=shm; shift ;;
         --no-person)     NO_PERSON=1; shift ;;
         --no-overlay)    NO_OVERLAY=1; shift ;;
-        --help|-h) echo "Usage: $0 [--local-stub|--local-pcie|--no-local-stub] [--no-person] [--no-overlay] [--no-lcd] [--with-stub] [--no-build] [--model path]"; exit 0 ;;
+        --swap-eyes)     SWAP_EYES=1; shift ;;
+        --help|-h) echo "Usage: $0 [--local-stub|--local-pcie|--no-local-stub] [--no-person] [--no-overlay] [--swap-eyes] [--no-lcd] [--with-stub] [--no-build] [--model path]"; exit 0 ;;
         *)               echo "未知参数：$1"; exit 2 ;;
     esac
 done
@@ -154,8 +159,28 @@ ARGS=(--model "$MODEL")
 case "$LOCAL_SOURCE" in
     stub) ARGS+=(--local-stub --no-person --no-overlay) ;;
     pcie)
+        # S 板就地采集：FPGA（stereo_j8 位流）→ 板内 PCIe → planning_main 直读。
         if [ ! -e /dev/pango_pci_driver ]; then
-            insmod "$REPO_ROOT/drivers/pango_pci_driver.ko"
+            if [ "$(id -u)" -ne 0 ]; then
+                echo "错误：加载 PCIe 驱动需要 root：sudo bash scripts/start_s.sh --local-pcie"
+                exit 1
+            fi
+            if lsmod 2>/dev/null | grep -q '^pango_pci_driver '; then
+                echo "错误：驱动已加载但 /dev/pango_pci_driver 不存在——多为 PCIe 未枚举/probe 失败。"
+                echo "      先看 lspci -nn 是否有 0755:0755，再试 echo 1 | sudo tee /sys/bus/pci/rescan；仍无则 sudo dmesg | tail -40"
+                exit 1
+            fi
+            if command -v modinfo >/dev/null 2>&1; then
+                KO_KERNEL="$(modinfo -F vermagic "$REPO_ROOT/drivers/pango_pci_driver.ko" 2>/dev/null | awk '{print $1}')"
+                if [ -n "$KO_KERNEL" ] && [ "$KO_KERNEL" != "$(uname -r)" ]; then
+                    echo "错误：驱动内核版本 $KO_KERNEL ≠ 运行内核 $(uname -r)；请换与内核匹配的 .ko（仅改文件名无效）"
+                    exit 1
+                fi
+            fi
+            if ! insmod "$REPO_ROOT/drivers/pango_pci_driver.ko"; then
+                echo "错误：insmod 失败。先确认：① S 板 FPGA 已下载 stereo_j8 位流；② lspci -nn 能看到 0755:0755；③ sudo dmesg | tail -40 看 probe 报错"
+                exit 1
+            fi
         fi
         # planning_main runs as the desktop user. Grant only this user access
         # to the capture device for this boot; do not make /dev/mem world-writable.
@@ -168,7 +193,9 @@ case "$LOCAL_SOURCE" in
 esac
 [ "$NO_PERSON" = 1 ] && ARGS+=(--no-person)
 [ "$NO_OVERLAY" = 1 ] && ARGS+=(--no-overlay)
+[ "$SWAP_EYES" = 1 ] && ARGS+=(--swap-eyes)
 echo "[3b] S 本地图来源：$LOCAL_SOURCE；布局 960x480（M 上三路 / S 下三路）"
+[ "$SWAP_EYES" = 1 ] && echo "     双目左右对调：已启用（--swap-eyes，纯显示侧；去掉该参数即还原）"
 
 LOG="$REPO_ROOT/planning.log"
 : > "$LOG"

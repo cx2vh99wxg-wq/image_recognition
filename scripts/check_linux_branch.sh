@@ -9,9 +9,11 @@
 #   每次上板失败 = 一次板卡往返，所以提前在本机用最小桩头文件把 __linux__
 #   分支强制打开编译一遍，把这类问题挡在提交之前。
 #
-# 桩头文件在 scripts/x11stub/（X11/Xlib.h、X11/Xutil.h、X11/keysym.h、prelude.h），
-# 只声明本项目用到的类型与函数，位宽按 aarch64 语义对齐（GC 是指针类型、
-# Window/KeySym 是 64 位整型），以便复现真实编译期的类型诊断。
+# 桩头文件在 scripts/x11stub/（X11/Xlib.h、X11/Xutil.h、X11/keysym.h、
+# sys/ioctl.h、prelude.h），只声明本项目用到的类型与函数，位宽按 aarch64
+# 语义对齐（GC 是指针类型、Window/KeySym 是 64 位整型），以便复现真实
+# 编译期的类型诊断。sys/ioctl.h 的 _IOC 宏与 <asm-generic/ioctl.h> 逐位
+# 一致，保证 pango_pcie_abi.h 的 ABI 命令号在检查中按板端真实值参与编译。
 #
 # 用法： bash scripts/check_linux_branch.sh
 set -u
@@ -19,11 +21,11 @@ set -u
 cd "$(dirname "$0")/.." || exit 1          # 切到仓库根，之后一律用相对路径
 CC="${CC:-gcc}"
 FLAGS="-std=gnu11 -D_DEFAULT_SOURCE -D__linux__ -Wall -Wextra -Werror -O2"
-INC="-include scripts/x11stub/prelude.h -Iscripts/x11stub -Iplanning/include -Icommon/include"
+INC="-include scripts/x11stub/prelude.h -Iscripts/x11stub -Iplanning/include -Icommon/include -Iperception/include"
 
 rm -rf _linuxchk; mkdir -p _linuxchk
 fail=0
-for f in planning/csrc/render_lcd_x11.c; do
+for f in planning/csrc/render_lcd_x11.c planning/csrc/main_planning.c; do
     printf '  %-40s ' "$f"
     if $CC $FLAGS $INC -c "$f" -o _linuxchk/x.o 2>_linuxchk/e.txt; then
         echo OK

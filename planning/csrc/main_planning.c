@@ -10,10 +10,14 @@
  *
  * 用法：
  *   ./planning_main [--model path] [--no-lcd] [--local-stub|--local-pcie]
- *                   [--no-person] [--no-overlay] [--build-info]
+ *                   [--no-person] [--no-overlay] [--swap-eyes] [--build-info]
  *
  * --local-pcie 直接读取 S 板自己的 FPGA；--local-stub 强制模拟图。
  * 两者均未指定时，兼容读取外部采集进程的 shm_pcie_img。
+ * --swap-eyes 把本地双目左右对调：将 640×480 里的「左上」「左下」两个
+ * 320×240 子块整块互换（显示端下排左一格/右一格随之对调）。纯软件调整，
+ * 不动 FPGA 位流与 FDC——用于"哪只眼显示在左边"不合预期时（CAM1/CAM2
+ * 是模块电气编号，不保证等于面对镜头观察时的左右）。
  */
 #include "shm_ipc.h"
 #include "build_info.h"
@@ -60,12 +64,31 @@ static void rgb565_to_888(const uint8_t *src, uint8_t *dst, int n)
     }
 }
 
+/* --swap-eyes：本地双目左右对调。
+ * 640×480 帧按 2×2 四宫格排布：左上=CAM1、右上=黑、左下=CAM2（stereo_j8 位流
+ * 约定）。本函数把「左上」与「左下」两个 320×240 子块整块互换——显示端下排的
+ * 左一格/右一格随之对调，用来适配"CAM1/CAM2 电气编号 ≠ 面对镜头的实际左右"。
+ * 纯显示侧调整：不动 FPGA 位流、不动 FDC、不动 UDP 协议。 */
+static void swap_local_eyes(uint8_t *f565)
+{
+    const size_t row_bytes = (size_t)DISP_CELL_W * 2u;   /* 320 像素 = 640 字节 */
+    uint8_t tmp[DISP_CELL_W * 2u];
+    for (int y = 0; y < DISP_CELL_H; y++) {
+        uint8_t *a = f565 + ((size_t)y * IMG_WIDTH) * 2u;                  /* 左上第 y 行 */
+        uint8_t *b = f565 + ((size_t)(DISP_CELL_H + y) * IMG_WIDTH) * 2u;  /* 左下第 y 行 */
+        memcpy(tmp, a, row_bytes);
+        memcpy(a, b, row_bytes);
+        memcpy(b, tmp, row_bytes);
+    }
+}
+
 int main(int argc, char **argv)
 {
     const char *model_path = NULL;
     int use_lcd = 1;
     int local_pcie = 0, use_overlay = 1, use_person = 1, exit_status = 0;
     int local_stub = 0;      /* --local-stub：本地 PCIe 图缺失时用合成拼接图顶上 */
+    int swap_eyes = 0;       /* --swap-eyes：本地双目左右对调（纯显示侧） */
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--model") == 0 && i + 1 < argc) model_path = argv[++i];
         else if (strcmp(argv[i], "--no-lcd") == 0) use_lcd = 0;
@@ -73,8 +96,9 @@ int main(int argc, char **argv)
         else if (strcmp(argv[i], "--local-pcie") == 0) local_pcie = 1;
         else if (strcmp(argv[i], "--no-overlay") == 0) use_overlay = 0;
         else if (strcmp(argv[i], "--no-person") == 0) use_person = 0;
+        else if (strcmp(argv[i], "--swap-eyes") == 0) swap_eyes = 1;
         else if (strcmp(argv[i], "--build-info") == 0) { planning_build_info("planning_main"); return 0; }
-        else { fprintf(stderr, "Usage: %s [--model path] [--no-lcd] [--local-stub|--local-pcie] [--no-overlay] [--no-person] [--build-info]\n", argv[0]); return 2; }
+        else { fprintf(stderr, "Usage: %s [--model path] [--no-lcd] [--local-stub|--local-pcie] [--no-overlay] [--no-person] [--swap-eyes] [--build-info]\n", argv[0]); return 2; }
     }
 
     if (local_stub && local_pcie) { fprintf(stderr, "Select only one local source\n"); return 2; }
@@ -173,6 +197,10 @@ int main(int argc, char **argv)
     LOGI("布局=%dx%d，上排 M 三路，下排 S 三路；S来源=%s 叠加=%d 行人推理=%d\n",
          DISP_WIN_W, DISP_WIN_H, local_stub ? "stub" : local_pcie ? "pcie" : "external-shm",
          use_overlay, use_person);
+    if (swap_eyes)
+        LOGI("--swap-eyes：本地双目左右已对调（左上↔左下，纯显示侧；如需还原去掉该参数）\n");
+    if (local_pcie)
+        LOGI("S 本地 PCIe：stereo_j8 位流约定 左上=CAM1 / 右上=黑(占位) / 左下=CAM2 → 下排 [CAM1|黑|CAM2]\n");
 
     /* ---- 决策 ---- */
     decision_ctx_t dec;
@@ -188,12 +216,14 @@ int main(int argc, char **argv)
      * 也能端到端验证。显式桩模式不读取残留共享内存。 */
     if (local_stub) {
         stub_pattern_fill(s_local565, IMG_WIDTH, IMG_HEIGHT, 1);
+        if (swap_eyes) swap_local_eyes(s_local565);
         LOGI("--local-stub：本地图用合成拼接图案（模拟 S 端 3 路摄像头 → 2×2 拼 640×480）\n");
     }
 
     DisplayMode mode = DISPLAY_MODE_SPLIT;
     ControlCommandMsg cmd;
     uint32_t frames_recv = 0, frames_lcd = 0;
+    uint32_t local_frames = 0;    /* --local-pcie：成功抓取的本地帧数（诊断用） */
     uint64_t last_pkt_us = 0, last_draw_us = 0;
     int local_ok = 0;
 
@@ -297,6 +327,7 @@ int main(int argc, char **argv)
         else if (local_pcie) {
             local_ok = (pcie_capture_grab(&grabber, s_local565) == 0);
             if (!local_ok) { LOGE("S PCIe 抓帧失败，停止真实采集\n"); g_keep_running = 0; exit_status = 1; }
+            else { if (swap_eyes) swap_local_eyes(s_local565); local_frames++; }
         } else local_ok = (shm_read_pcie_img(s_local565, IMG_FRAME_BYTES) == 0);
 
         /* ---- 3. 行人检测（本地图 RGB565→888 后送 YOLOv5s） ---- */
@@ -465,6 +496,14 @@ int main(int argc, char **argv)
                  (int)cur_lm.crossing, (int)cur_lm.lane_change,
                  (int)cur_zb.detected,
                  man_on ? "(人工按键中，按 a 交还自动)" : "");
+            /* 本地 PCIe 采集诊断：FPGA 每行加 120 个 0xFFFF 前导填充（stereo_j8 顶层
+             * image_pcie_capture.v 的数据拼接段），主机侧剥离前统计。白像素≈满值
+             * 说明"FPGA→DDR→PCIe→驱动"整条读数通路正常；此时若画面仍黑，问题在
+             * 摄像头侧（J8 装接/供电/SCCB/复位/PCLK），而不是链路层。 */
+            if (local_pcie)
+                LOGI("  本地采集=%u 帧 前导[白=%u 非零=%u]/%u（白多=PCIe 读数通路正常）\n",
+                     local_frames, grabber.lead_white_pixels, grabber.lead_nonzero_pixels,
+                     (unsigned)(PCIE_LEAD_PIXELS * IMG_HEIGHT));
             win_pkts = 0;
             win_loops = 0;
         }
