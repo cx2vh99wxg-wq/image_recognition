@@ -29,6 +29,9 @@ typedef struct {
     int             img_h;
     int             lead_px;
     pango_dma_xfer  dma;       /* DMA 描述符（驱动 ABI） */
+    /* Last grabbed frame: padding-pixel counters for PCIe path diagnosis. */
+    uint32_t        lead_nonzero_pixels;
+    uint32_t        lead_white_pixels;
 } frame_grabber_t;
 
 /* 打开设备并准备 DMA 映射；成功返回 0 */

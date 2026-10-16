@@ -7,7 +7,11 @@ typedef unsigned long long Window;   /* 与 aarch64 上 unsigned long 同宽，�
 typedef unsigned long long XID;
 typedef unsigned long long KeySym;
 typedef struct _XGC { int dummy; } *GC;   /* real Xlib: GC is a pointer type */
-typedef struct { char *data; int width, height; } XImage;
+typedef struct {
+    char *data;
+    int width, height, depth, bits_per_pixel, byte_order, bytes_per_line;
+    unsigned long red_mask, green_mask, blue_mask;
+} XImage;
 typedef struct { int type; unsigned long long serial; unsigned int keycode, state; } XKeyEvent;
 typedef union { int type; XKeyEvent xkey; } XEvent;
 typedef struct { int type; } XErrorEvent;
@@ -16,11 +20,14 @@ typedef struct { int type; } XErrorEvent;
 #define ExposureMask (1L<<15)
 #define StructureNotifyMask (1L<<17)
 #define ZPixmap 2
+#define LSBFirst 0
+#define DestroyNotify 17
 #define CurrentTime 0L
 #define RevertToParent 2
 #define BlackPixel(d,s) ((void)(d), (void)(s), 0)
 #define WhitePixel(d,s) ((void)(d), (void)(s), 0xFFFFFF)
 #define DefaultScreen(d) ((void)(d), 0)
+#define DefaultDepth(d,s) ((void)(d), (void)(s), 24)
 #define RootWindow(d,s) ((void)(d), (void)(s), 0)
 #define DefaultVisual(d,s) ((void)(d), (void)(s), (Visual*)0)
 Display *XOpenDisplay(const char *);

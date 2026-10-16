@@ -105,6 +105,8 @@ int main(int argc, char **argv)
     frame_grabber_t grabber;
     memset(&grabber, 0, sizeof(grabber)); grabber.fd = -1;
     if (stereo_pcie) {
+        /* stereo_j8 keeps the original PCIe output formatter: each 640-pixel
+         * DDR row is preceded by 120 padding pixels on the host DMA stream. */
         if (pcie_capture_open(&grabber, IMG_WIDTH, IMG_HEIGHT, PCIE_LEAD_PIXELS) != 0 ||
             pcie_capture_start(&grabber) != 0) {
             LOGE("双目 PCIe 初始化失败；需要 stereo_j8 FPGA 位流，不回退模拟图\n");

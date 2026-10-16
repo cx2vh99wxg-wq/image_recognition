@@ -24,7 +24,7 @@ NATIVE_SRCS := csrc/decision.c csrc/person_detect.c csrc/render_lcd_x11.c \
                csrc/udp_sender.c csrc/udp_receiver.c csrc/stub_pattern.c csrc/frame_compose.c csrc/stereo_test_frame.c
 TEST_SRCS   := test/test_decision.c test/test_udp.c
 
-.PHONY: all native_objs tests bin sender clean
+.PHONY: all native_objs tests bin sender local-preview clean
 
 all: native_objs tests
 
@@ -36,11 +36,12 @@ native_objs: $(NATIVE_SRCS:.c=.o)
 test/%.o: test/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-tests: test/test_decision test/test_udp test/test_compose
+tests: test/test_decision test/test_udp test/test_compose test/test_local_view
 	@echo "---- 运行 planning 单元测试 ----"
 	./test/test_decision
 	./test/test_udp
 	./test/test_compose
+	./test/test_local_view
 
 test/test_decision: test/test_decision.o csrc/decision.o
 	$(CC) -o $@ $^
@@ -49,6 +50,9 @@ test/test_udp: test/test_udp.o csrc/udp_receiver.o ../common/csrc/udp_proto.o
 	$(CC) -o $@ $^
 
 test/test_compose: test/test_compose.o csrc/frame_compose.o csrc/stub_pattern.o csrc/stereo_test_frame.o csrc/udp_receiver.o ../common/csrc/udp_proto.o
+	$(CC) -o $@ $^
+
+test/test_local_view: test/test_local_view.o csrc/stereo_local_view.o
 	$(CC) -o $@ $^
 
 # ---- 板端构建（S 端决策进程 + M 端 UDP 发送器） ----
@@ -73,9 +77,14 @@ sender:
 	    ../common/csrc/log.c \
 	    -lrt
 
+# Build and run only on the M board. This has no UDP, NPU, or S-board dependency.
+local-preview:
+	$(ARCHCC) $(CFLAGS) -o stereo_local_preview csrc/stereo_local_preview.c \
+	    csrc/stereo_local_view.c ../perception/csrc/pcie_capture.c -lX11
+
 clean:
 	rm -f csrc/*.o test/*.o obj/*.o test/test_decision test/test_udp \
-	      test/test_compose planning_main udp_m_send_main adas_main
+	      test/test_compose test/test_local_view planning_main udp_m_send_main adas_main stereo_local_preview
 
 ADAS_SRCS := csrc/adas_main.c csrc/drive_policy.c csrc/person_detect.c \
  csrc/udp_sender.c csrc/udp_receiver.c csrc/render_lcd_x11.c csrc/frame_compose.c \

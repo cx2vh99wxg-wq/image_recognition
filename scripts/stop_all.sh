@@ -10,6 +10,7 @@ sleep .1  # new control asserts STOP immediately
 sudo pkill -f '(^|/)adas_main([[:space:]]|$)' 2>/dev/null || true
 sudo pkill -f perception_main 2>/dev/null || true
 sudo pkill -f udp_m_send_main 2>/dev/null || true
+sudo pkill -f '(^|/)stereo_local_preview([[:space:]]|$)' 2>/dev/null || true
 sudo pkill -f planning_main    2>/dev/null || true
 sleep 1
 

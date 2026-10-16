@@ -153,12 +153,29 @@ int pcie_capture_grab(frame_grabber_t *g, uint8_t *out_rgb565)
 
     const size_t clean_row_bytes = (size_t)g->img_w * 2u;
     const size_t skip_bytes = (size_t)g->lead_px * 2u;
+    g->lead_nonzero_pixels = 0;
+    g->lead_white_pixels = 0;
 
     for (int y = 0; y < g->img_h; y++) {
         /* 逐行设置读偏移并触发 DMA 读 */
         g->dma.offset_addr = (uint32_t)(y * (g->lead_px + g->img_w) * 2);
-        if (ioctl(g->fd, PANGO_IO_DMA_WR, &g->dma) != 0) return -1;
-        if (ioctl(g->fd, PANGO_IO_RD_KRNL, &g->dma) != 0) return -1;
+        if (ioctl(g->fd, PANGO_IO_DMA_WR, &g->dma) != 0) {
+            fprintf(stderr, "PCIe row %d: ", y);
+            perror("ioctl PANGO_IO_DMA_WR");
+            return -1;
+        }
+        if (ioctl(g->fd, PANGO_IO_RD_KRNL, &g->dma) != 0) {
+            fprintf(stderr, "PCIe row %d: ", y);
+            perror("ioctl PANGO_IO_RD_KRNL");
+            return -1;
+        }
+
+        for (int x = 0; x < g->lead_px; ++x) {
+            const uint8_t lo = g->dma.read_buf[2 * x];
+            const uint8_t hi = g->dma.read_buf[2 * x + 1];
+            g->lead_nonzero_pixels += (lo != 0 || hi != 0);
+            g->lead_white_pixels += (lo == 0xff && hi == 0xff);
+        }
 
         /* 拷贝有效像素（跳过前导） */
         memcpy(out_rgb565 + (size_t)y * clean_row_bytes,
