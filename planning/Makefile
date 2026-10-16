@@ -24,7 +24,7 @@ NATIVE_SRCS := csrc/decision.c csrc/person_detect.c csrc/render_lcd_x11.c \
                csrc/udp_sender.c csrc/udp_receiver.c csrc/stub_pattern.c csrc/frame_compose.c csrc/stereo_test_frame.c
 TEST_SRCS   := test/test_decision.c test/test_udp.c
 
-.PHONY: all native_objs tests bin sender local-preview clean
+.PHONY: all native_objs tests bin sender local-preview pcie-step clean
 
 all: native_objs tests
 
@@ -82,9 +82,17 @@ local-preview:
 	$(ARCHCC) $(CFLAGS) -o stereo_local_preview csrc/stereo_local_preview.c \
 	    csrc/stereo_local_view.c ../perception/csrc/pcie_capture.c -lX11
 
+# PCIe 采集链路「单步」诊断工具（上板专用，root 运行）：
+#   一次只做一个动作（open/MAP/触发/读回/整帧），动作前后把标记 fsync 到
+#   ./pcie_step.log —— 若某步冻结整机，重启后看日志最后一行即知冻在哪。
+#   用法与判读表见 test/pcie_step_probe.c 文件头。
+pcie-step:
+	$(ARCHCC) $(CFLAGS) -o pcie_step_probe test/pcie_step_probe.c \
+	    ../perception/csrc/pcie_capture.c -lrt
+
 clean:
 	rm -f csrc/*.o test/*.o obj/*.o test/test_decision test/test_udp \
-	      test/test_compose test/test_local_view planning_main udp_m_send_main adas_main stereo_local_preview
+	      test/test_compose test/test_local_view planning_main udp_m_send_main adas_main stereo_local_preview pcie_step_probe
 
 ADAS_SRCS := csrc/adas_main.c csrc/drive_policy.c csrc/person_detect.c \
  csrc/udp_sender.c csrc/udp_receiver.c csrc/render_lcd_x11.c csrc/frame_compose.c \
