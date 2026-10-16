@@ -1,8 +1,14 @@
 # Run in the PDS Tcl console AFTER creating an empty PG2L100H/FBG484 project.
-# Paths are relative to this script, so the checkout can be moved.
-# Change only the path in your source {...} command on another computer.
+# Some PDS versions report an empty [info script] for sourced files. In that
+# case set PDS_SOURCE_DIR to the absolute stereo_j8 directory before sourcing.
 # PGL50H/Logos is NOT a substitute for PG2L100H/Logos2.
-set stereo_src_root [file dirname [file normalize [info script]]]
+if {[info exists PDS_SOURCE_DIR] && [string trim $PDS_SOURCE_DIR] ne ""} {
+    set stereo_src_root [file normalize $PDS_SOURCE_DIR]
+} elseif {[info script] ne ""} {
+    set stereo_src_root [file dirname [file normalize [info script]]]
+} else {
+    error "Cannot determine stereo_j8 directory. First set PDS_SOURCE_DIR to its absolute path, then source add_sources.tcl again. No project files have been added."
+}
 set stereo_design_files {
     {image_pcie_capture.v}
     {stereo_camera_top.v}

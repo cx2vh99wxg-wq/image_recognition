@@ -47,3 +47,6 @@ _transfer/
 adas_main
 control_main
 logs/
+
+# Local PDS build databases and bitstreams; keep hardware-specific outputs out of Git.
+/pds_work/

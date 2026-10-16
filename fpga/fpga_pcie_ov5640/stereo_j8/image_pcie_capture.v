@@ -64,10 +64,9 @@ module image_pcie_capture #(
 
     //LED signals
     output reg        heart_beat_led,
-    output reg        pclk_led,
+    output reg        pclk_led
 
-    // Existing vehicle outputs remain inactive during this video-only test.
-    output wire go, back, left, right, stop
+    // Video-only bring-up: no vehicle-control pins.
 );
   //assign test = 0;
 
@@ -282,7 +281,6 @@ module image_pcie_capture #(
   reg          line_start_flag;  // 行开始标志寄存
   reg          waiting_for_line;  // 等待新行标志
   reg  [  6:0] pixel_block_counter;  // 当前行已传输的128位块计数(0-94)
-  assign {go, back, left, right, stop} = 5'b11111;
   wire video5_clk, video5_vs, video5_de;
   wire video6_clk, video6_vs, video6_de;
   wire [15:0] video5_data, video6_data;
@@ -803,8 +801,8 @@ module image_pcie_capture #(
   end
 
   //=======================
-  // 数据拼接模块: 在每行前面添加120个白色填充像素(15个128位数据块)
-  // 图像尺寸: 760×480 (原640×480 + 120填充像素)
+  // 数据拼接模块: 在每行前面添加120个黑色像素(15个128位数据块)
+  // 图像尺寸: 760×480 (原640×480 + 120黑色像素)
   // DMA地址范围: 0x000~0x5E (95个128位传输 = 1520字节)
   //=======================
   reg  [11:0] o_dma_write_addr_last;

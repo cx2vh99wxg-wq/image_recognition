@@ -601,7 +601,7 @@ always @(reg_index) begin
         231: reg_data <= {16'h4407,8'h04};
         232: reg_data <= {16'h460c,8'h22};
         233: reg_data <= {16'h4837,8'h22};
-        234: reg_data <= {16'h3824,8'h02};
+        234: reg_data <= {16'h3824,8'h10}; // low-speed J8 level-shifter test
         235: reg_data <= {16'h5001,8'ha3};
         236: reg_data <= {16'h3b07,8'h0a};
         237: reg_data <= {16'h503d,8'h00};

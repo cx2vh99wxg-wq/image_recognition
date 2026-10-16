@@ -4,7 +4,7 @@
 
 本次提供独立的 `fpga/fpga_pcie_ov5640/stereo_j8` 配置。原三路摄像头 PDS 工程保持原样。新配置需要在 PDS 中综合、布局布线并生成新的位流；仓库旧 `project/generate_bitstream/image_pcie_capture.sbit` **不是**本次测试位流。
 
-已完成软件测试和两项 RTL 单元仿真；尚未在 PDS 中完成整机综合、时序收敛、下载或板上实拍验证。下面是可执行的上板方案，不能把这些本机检查当作硬件验收。
+已完成软件测试和两项 RTL 单元仿真。本机 PDS 2022.2-SP6.4 已用修正后的 Bank L4=1.8V 约束重新生成实验位流。此前错误的 3.3V 位流已改名隔离，**严禁下载**。新位流的时序与实拍仍未通过板上验证。
 
 ## 1 测试画面和数据路径
 
@@ -53,11 +53,11 @@ PCIe/UDP 保留每板 640×480 RGB565 的四格载荷。本测试位流将左上
 - [双目模块完整原理图](stereo_j8/camera-1.png)
 - [FPGA JTAG 原页](stereo_j8/board-17.png)
 
-连接时 M 板断电。把双目模块 J17 的1脚对准底板 J8 的1脚，所有针号一一对应；以 PCB 的1脚标识、方焊盘和原理图为准，不按排针朝向猜。不要错开一排或反插。J8.2 是5 V；这张摄像头原理图的 J17.2 未连接，不能把它改接到摄像头 IO。
+**用户已根据完整原理图确认 FPGA Bank L4 实际为 1.8V，L13 与 J8.7 之间有 RS0108TE1D142 电平转换器。** 因此 FPGA 球位 L13 的约束必须是 LVCMOS18/VCCIO=1.8V；底板手册将 J8.7 标作 `/3V3` 说的是连接器侧，不能直接照抄到 FPGA 侧。RS0108 支持自动双向转换，但还要按完整原理图确认该通道两侧供电、OE使能和实际连线。装接时 M 板断电：J17.1 对准 J8.1，以 PCB 的1脚标识、方焊盘和原理图为准。J8.2 是5 V；模块 J17.2 未连接，不能把它改接到摄像头 IO。
 
 模块 J17.39、40 接3.3 V，J17.1、37、38接地；J17.2、15、16、19、28、30、36未接摄像头信号。模块内部 RT9011 产生1.5 V/2.8 V；U27提供24 MHz XCLK；PWDN通过R5/R6下拉。因此 **不需要从 FPGA 添加 XCLK 或 PWDN 顶层引脚**。
 
-所有 DVP 数据/同步信号方向是摄像头→FPGA；RESET 是FPGA→摄像头；SDA双向。新的 SCCB SCL 使用开漏输出，释放高电平由模块上的2.8 V上拉提供。GPIO Bank 按板卡设计和原工程使用 LVCMOS33，不能因模块内部2.8 V就随意修改板上供电；不支持5 V逻辑输入。
+所有 DVP 数据/同步信号方向是摄像头→FPGA；RESET 是FPGA→摄像头；SDA双向。新的 SCCB SCL 使用开漏输出，释放高电平由模块上的2.8 V上拉提供。FDC对 L13 使用 LVCMOS18，其他已映射相机球位仍按各自 Bank 使用 LVCMOS33。RS0108 在 1.8V/3.3V 供电组合下给出的推挽数据速率是**典型 22 Mbps**，并非任意速度均可靠；摄像头 CAM1_D4 每个 PCLK 周期传输一位，必须实测 J8.18 的 PCLK 及翻转边沿质量。当前测试将活动寄存器表的 `0x3824` 改为 `0x10` 以降低 DVP PCLK，不能只凭该寄存器值推断实际频率。相机IO不支持5 V逻辑输入。[RS0108 厂商规格书](https://en.run-ic.com/upload/goods/20240401/202404011547237113.pdf)
 
 ## 3 双目摄像头全部28根信号的约束表
 
@@ -102,14 +102,14 @@ define_attribute {p:cmos5_data[0]} {PAP_IO_STANDARD} {LVCMOS33}
 | --- | --- | --- |
 | free_clk | V4，手册25 MHz晶振 | DDR、摄像头配置PLL等参考时钟；不是50 MHz |
 | board_rst_n | M15，KEY0/SW7 | 用户逻辑复位，低有效，LVCMOS18 |
-| perst_n | M16，KEY1/SW8 | 沿原工程作为PCIe逻辑复位；这是按键，不等同于ARM专用PERST线 |
+| perst_n | M16，KEY1/SW8 | 原工程保留的顶层输入；本测试综合报告提示该输入未连接到有效逻辑，不能把它当作PCIe复位诊断依据 |
 | ref_clk_p/n | F6/E6，板载100 MHz | PCIe HSST参考时钟 |
 | DDR3 | 手册第12、13页，完整FDC的mem_* | 使用已配置的16位DDR3 IP；不要重新自动分配引脚 |
 | PCIe rxp/rxn/txp/txn | 原PCIe IP的HSST lane0/1及其固定位置约束 | 已在PCB内连接RK3568，不在J8上；不能设成普通LVCMOS GPIO |
 | heart_beat_led | J16，LED3 | DDR初始化后心跳 |
 | pclk_led | M17，LED4 | PCIe用户时钟指示，不能据此判断摄像头已出图 |
 
-新FDC将按键和LED的Bank电压标注统一为1.8 V，与手册相应原理图的`1V8`信号一致；原文件部分位置写成3.3 V。DDR/PCIe内部位置约束沿用原工程，不是由J8表推导的。相机PCLK的56 MHz约束暂沿原工程，实际频率与DVP输入时序裕量需要用PDS报告和上板测量确认，不能据此宣称时序已经收敛。
+Bank L4 已按用户确认的实际 VCCIO=1.8V 约束：L13、M15/M16、J16/M17 全部使用 `LVCMOS18`。此前以 J8 的 `/3V3` 标签推断 FPGA L13 所在 Bank 为 3.3V 是错误的；使用那一版约束生成的位流已隔离。DDR/PCIe内部位置约束沿用原工程，不是由J8表推导的。相机PCLK的56 MHz约束暂沿原工程，实际频率与DVP输入时序裕量需要用PDS报告和上板测量确认。
 
 ## 4 在 PDS 新建测试工程
 
@@ -143,13 +143,14 @@ python scripts/check_stereo_j8.py
 
 ### 4.3 添加29个HDL和5个IP
 
-在PDS的Tcl Console中执行下列一行，路径使用 `/`：
+在PDS的Tcl Console中执行下列两行，路径使用 `/`；`PDS_SOURCE_DIR` 必须指向队友电脑的 `stereo_j8` 目录：
 
 ```tcl
-source {D:/vmshare/image_recognition/fpga/fpga_pcie_ov5640/stereo_j8/add_sources.tcl}
+set PDS_SOURCE_DIR {D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/stereo_j8}
+source {D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/stereo_j8/add_sources.tcl}
 ```
 
-上面的盘符和仓库目录只是本机示例，必须换成队友电脑上的实际路径；保留大括号，使用正斜杠。不要修改脚本内部的相对路径或器件参数。新版脚本会先检查34个设计入口及FDC是否存在，再设置器件；缺文件、不是PDS控制台或器件设置报错时会停止，并显示原始错误。IP内部依赖的完整检查仍由 `check_stereo_j8.py` 完成。
+上面的路径是此前确认的队友电脑路径；若实际仓库位置改变，两行一起修改。保留大括号，使用正斜杠。部分PDS版本在 `source` 内返回空的 `[info script]`，显式设置 `PDS_SOURCE_DIR` 可避免把PDS工程目录误作源码目录。不要修改脚本内部的相对路径或器件参数。新版脚本会先检查34个设计入口及FDC是否存在，再设置器件；缺文件、不是PDS控制台或器件设置报错时会停止，并显示原始错误。IP内部依赖的完整检查仍由 `check_stereo_j8.py` 完成。
 
 此脚本设置器件、导入29个HDL文件、5个IP描述文件和1个完整FDC。它不下载板卡、不改Flash，也不运行漫长的综合。**在空工程中执行一次**；重新导入前先检查是否已有这些源，避免重复。
 
@@ -187,9 +188,12 @@ compile -top_module image_pcie_capture
 
 ### 4.5 综合到位流
 
+**本机实测进度（2026-10-16）：** 已使用修正后的 Bank L4=1.8V FDC，在 PDS 2022.2-SP6.4 完整重跑 Compile、Synthesize、Device Map、Place & Route、Report Timing、Generate Bitstream。新位流是 `pds_work/stereo_j8_batch/generate_bitstream/image_pcie_capture.sbit`，SHA-256 为 `B40CE54F97422297FE118A3E6C99DE5B2348DBEC2586F6AB03AFCF6841CF348A`。PDS 日志明确显示 `cmos5_data[4] LOC=L13 VCCIO=1.8 IOSTANDARD=LVCMOS18`。先前 3.3V 版本已改名为 `image_pcie_capture.sbit.DO_NOT_FLASH_BANK_L4_1V8`，不能下载。**时序仍未收敛：**慢角报告中 `cmos5_pclk → ddrphy_sysclk` WNS=-7.166ns、反向 WNS=-7.222ns；`camera_reset50 → cmos*_pclk` 还有恢复时间违例。摄像头数据/HREF/VSYNC未设置板级输入延迟。新位流仅是电压约束已修正的实验构建，不能把文件生成视为稳定采集已证实；上板还要实测 PCLK、检查图像和 DMA。
+
 按PDS流程依次执行：Compile → Synthesize → Device Map → Place & Route → Report Timing → Generate Bitstream。可逐项双击流程树；对应原工程使用的命令为：
 
 ```tcl
+compile -top_module image_pcie_capture
 synthesize -ads -selected_syn_tool_opt 2
 dev_map
 pnr
@@ -199,7 +203,7 @@ gen_bit_stream
 
 每步成功后再继续。重点检查：无找不到模块/IP、重复定义、多驱动、Bank电压冲突、未约束普通IO；DDR/PCIe IP位置有效；查看setup/hold和未约束路径。不能把“生成了文件”当成时序通过。相机输入delay/skew和跨时钟路径仍需要结合实物与报告评审，测试配置没有宣称量产级时序闭合。
 
-在**新工程**输出目录查找 `generate_bitstream/image_pcie_capture.sbit`，以PDS实际结果路径为准，核对生成时间。不要误选仓库原工程中早已存在的同名位流。可以把本次产物单独复制并命名为 `stereo_j8_test.sbit` 方便区分。
+在**新工程**输出目录查找 `generate_bitstream/image_pcie_capture.sbit`，以PDS实际结果路径为准，核对生成时间及SHA-256。不要误选仓库原工程中早已存在的同名位流，尤其不能选 `*.DO_NOT_FLASH_BANK_L4_1V8`。可以把本次产物单独复制并命名为 `stereo_j8_test.sbit` 方便区分。`pds_work/` 已被 Git 忽略；只推送源码不会把这份位流带到队友电脑，需要单独传输并核验SHA-256，或让队友按同一源码重建。
 
 ## 5 下载到 M 板 FPGA
 
@@ -210,7 +214,7 @@ gen_bit_stream
 3. 按手册核对J12：1=TCK、3=TDO、5=TMS、9=TDI，4=A3V3参考，2/10=GND，其余按原图保留。对准1脚。下载器的参考电压连接不等于让下载器给整板供电。
 4. 给开发板接正常电源，确认PC识别下载器；未识别时安装该下载器配套驱动。
 5. PDS打开 `Tools → Configuration` 或流程入口 `Configuration`，在设备区域执行 `Scan Device`。应检测到 `PG2L100H`。
-6. 为扫描出的FPGA选择刚生成的 `stereo_j8_test.sbit`，选择FPGA配置/Program操作，再执行界面的运行按钮。等待完成/成功状态。不同PDS补丁的按钮名可能为Program/Run，以“配置FPGA SRAM”为目标，不选择擦除Flash。
+6. 为扫描出的FPGA选择上述**1.8V 新位流**（原文件名 `image_pcie_capture.sbit`，或你复制后命名的 `stereo_j8_test.sbit`），先核对SHA-256，再选择FPGA配置/Program操作，执行界面的运行按钮。等待完成/成功状态。不同PDS补丁的按钮名可能为Program/Run，以“配置FPGA SRAM”为目标，不选择擦除Flash。
 7. 完成后观察LED3的DDR初始化心跳。没有心跳先查时钟/复位/DDR，摄像头和UDP软件无法修复DDR初始化失败。
 
 `.sbit`经JTAG配置到FPGA的易失配置存储器，断电后会丢失。若板上Flash仍有旧程序，下次上电会重新加载旧程序。测试阶段记录本次下载的文件和时间。
@@ -245,7 +249,7 @@ lspci -nn
 3. 按工具的Flash流程执行擦除、编程和校验。若列表中找不到XT25BF128或工具提示不兼容，停在型号选择，查此PDS版本的Flash支持列表/模块厂商说明，不猜测替代芯片。
 4. 等待Verify成功后再断电重启；重新检查DDR心跳、PCIe枚举、实拍画面。这样才能确认“上电自动加载新测试位流”。
 
-本次交付的是源代码和约束，没有在此电脑生成`.sbit/.sfc`，也没有访问或改写板卡Flash。Flash窗口的具体型号列表须以你们安装的PDS版本为准。
+本机已生成测试 `.sbit`，未生成 `.sfc`，也没有访问或改写板卡Flash。Flash窗口的具体型号列表须以你们安装的PDS版本为准。
 
 ## 6 在两块 RK3568 上运行测试
 
@@ -316,11 +320,11 @@ sudo bash scripts/start_m.sh --stereo-pcie --swap-eyes
 | --- | --- |
 | PDS Scan Device 无器件 | FPGA J12而非ARM JTAG；下载器驱动、供电、1脚方向 |
 | Compile缺模块或重复定义 | 仅按design_files.txt导入；5个idf子目录齐全；没混入原顶层和test_*.sv |
-| PDS报Bank电压冲突 | 本测试完整FDC是否唯一导入；M15/M16、J16/M17为1.8 V，摄像头为3.3 V |
+| PDS报Bank电压冲突 | Bank L4实际为1.8V；确认 L13、M15/M16、J16/M17 均约束为 `VCCIO=1.8/LVCMOS18`，并核对该球位经过RS0108电平转换器 |
 | DDR心跳没有 | free_clk=V4/25 MHz、KEY0释放、DDR IP与原板16位参数、DDR引脚/时序 |
-| Linux没有PCIe端点 | 先配置FPGA再枚举；KEY1是否一直按下；PCIe复位/时钟/HSST IP |
+| Linux没有PCIe端点 | 先配置FPGA再枚举；检查PCIe复位/时钟/HSST IP及板上连接；本测试KEY1输入已被综合优化，按它不能修复链路 |
 | ioctl失败或发送器退出 | 检查ko与内核、设备权限、端点链路；没有自动回退到模拟图 |
-| 左右都黑但有UDP帧 | 确认不是旧位流；J8方向/3.3 V；SCCB ACK；摄像头复位和PCLK/HREF/VSYNC |
+| 左右都黑但有UDP帧 | 确认使用的是1.8V新位流；J8方向与模块供电；RS0108两侧供电/OE；SCCB ACK；摄像头复位、PCLK/HREF/VSYNC |
 | 只有一颗有图 | 对应SDA/SCL/RESET/data映射；观察该颗reg_index是否在重试；镜头排线 |
 | 图像分界错位或斜纹 | 使用本次新位流；PCIe仍为每行760像素、剥离120；检查D0至D7顺序、RGB565高低字节、PCLK采样时序 |
 | 图像能显示但停住 | 遮挡确认是否更新；摄像头失帧时旧画面不会自动超时变黑；检查对应PCLK/VSYNC和DDR读写 |
@@ -335,7 +339,7 @@ sudo bash scripts/start_m.sh --stereo-pcie --swap-eyes
 
 | 改动 | 目的 |
 | --- | --- |
-| 独立stereo_j8顶层、摄像头配置与FDC | 用J8的cmos5/6直采，两路实拍和一格黑；不依赖cmos2/CNN/HMI；既有低有效运动引脚固定为高 |
+| 独立stereo_j8顶层、摄像头配置与FDC | 用J8的cmos5/6直采，两路实拍和一格黑；不依赖cmos2/CNN/HMI；摄像头专用顶层不输出电机控制引脚 |
 | 独立stereo_axi_ctrl | 左右摄像头分别选DDR读帧银行，读帧边界锁存；不再被缺失第三颗摄像头计数卡住；启动未就绪图块填黑 |
 | 关闭原623像素补偿 | 本测试使用原始DVP数据，不沿用CNN路径的经验性整图移位；仍须板上验证对齐 |
 | stereo_camera_top | PLL锁定/复位后的上电等待、两颗摄像头独立SCCB、开漏SCL、RGB565采集 |
@@ -352,10 +356,10 @@ sudo bash scripts/start_m.sh --stereo-pcie --swap-eyes
 - C侧planning决策、UDP重组、六格合成测试通过；新增黑色中格、左右交换和UDP模拟输出检查通过。
 - 新M发送器源文件以`-Wall -Wextra -Werror`编译通过；启动脚本隔离回归通过。
 - 使用本机现有Vivado XSim只做普通RTL单元仿真，`test_stereo_axi`与`test_stereo_config`通过；不使用Vivado给Pango FPGA综合或下载。FIFO在这项单元仿真中是简化接口模型，不验证真实DDR/PCIe IP。
-- 28条摄像头球位与独立抄录的手册映射一致；完整FDC的89个显式球位无重复；5个IP的128条源路径均存在。
+- 28条摄像头球位与独立抄录的手册映射一致；完整FDC的84个显式球位无重复；5个IP的128条源路径均存在。
 - 86个公开Verilog文件经解析/连接检查，余下未解析单元属于Pango加密IP或器件原语，必须在PDS中完成真正综合。
 
-未完成：PDS整机实现与时序验收、RK3568 Linux实际链接/运行、摄像头电气/图像质量、板上DMA/UDP测试。独立读银行也不等于双目硬件同步或无撕裂保证；两个视角的同步曝光、立体标定和深度计算均不属于此次测试。
+未完成：PDS时序收敛、RS0108两侧供电/OE及实际PCLK核验、RK3568 Linux实际链接/运行、摄像头电气/图像质量、板上DMA/UDP测试。Bank L4=1.8V由用户依据完整原理图确认。PDS已生成修正后的实验位流，但不等于双目硬件同步或无撕裂保证；两个视角的同步曝光、立体标定和深度计算均不属于此次测试。
 
 当前更新为工作区改动，未替你们提交、推送或刷板。
 
@@ -383,8 +387,8 @@ sudo bash scripts/start_m.sh --stereo-pcie --swap-eyes
 | 位置 | 随电脑变化的内容 | 实际处理 |
 | --- | --- | --- |
 | 手册4.2的新工程目录 | `D:/pds_work/stereo_j8_test` | 换成队友电脑有写权限的新空目录；建议短英文路径，不覆盖原工程 |
-| 手册4.3的 `source {...}` | `D:/vmshare/image_recognition` | 换成队友仓库实际根目录，例如下面的命令 |
-| `stereo_j8/add_sources.tcl` | `stereo_src_root` | 已用 `[info script]` 自动定位，通常不用改；必须以 `source` 执行文件，不能逐行粘贴整个文件导致脚本路径丢失 |
+| 手册4.3的 `PDS_SOURCE_DIR` 和 `source {...}` | `D:/Study_Object/image_recognition/image_recognition` | 两行都换成队友仓库实际根目录，例如下面的命令 |
+| `stereo_j8/add_sources.tcl` | `stereo_src_root` | 优先用 `PDS_SOURCE_DIR`，避免PDS控制台 `[info script]` 为空时误取工程目录；不要手动改脚本内部源码路径 |
 | `design_files.txt`、Tcl内的源文件清单 | `../source/...`、`../project/ipcore/...` | 不是盘符占位符；保留相邻目录结构，不逐条改绝对路径。若主动重组目录，要同步修改生成器、清单和导入脚本 |
 | 5个IP的 `.idf` 与其子目录 | 相对RTL、加密文件和初始化参数文件 | 整目录保留；不能只复制5个IDF，不能混入其他器件的IP |
 | `prepare_stereo_j8.py`、`check_stereo_j8.py` | Python命令及运行位置 | 两者均按 `__file__` 找仓库，没有本机盘符。Windows可用 `py -3`，Linux用 `python3`；已生成工程无需执行prepare，也无需安装本机使用的其他仿真工具 |
@@ -395,9 +399,10 @@ sudo bash scripts/start_m.sh --stereo-pcie --swap-eyes
 | `test_stereo_*.sv`、本机Vivado/XSim验证命令 | 仿真工具路径与库 | 只是之前的单元验证环境，不是队友执行PDS综合的前提；测试文件不能加进Designs |
 | Windows拷贝到Linux的脚本 | CRLF行尾、可执行位 | 保持LF；在板上用 `bash scripts/start_*.sh` 启动。出现 `$'\r'` 或 `bad interpreter` 时修正文本行尾，不能对ko/so/位流等二进制转换 |
 
-例如仓库放在 `E:/team/adas`，只需在PDS控制台执行：
+例如仓库放在 `E:/team/adas`，在PDS控制台执行：
 
 ```tcl
+set PDS_SOURCE_DIR {E:/team/adas/fpga/fpga_pcie_ov5640/stereo_j8}
 source {E:/team/adas/fpga/fpga_pcie_ov5640/stereo_j8/add_sources.tcl}
 ```
 
@@ -478,6 +483,6 @@ RUSER_HOME="$(getent passwd "$RUSER" | cut -d: -f6)"
 
 ### 9.4 本次迁移检查的修改和验证
 
-本次修改了生成器 `scripts/prepare_stereo_j8.py`、其生成的 `stereo_j8/add_sources.tcl` 和本手册：增加文件齐全检查、PDS命令检查、目标器件设置失败提示，以及迁移清单。没有把PG2L100H换成PGL50H，也没有改动已核对的FDC或摄像头RTL；本节板端特殊环境的改法是按需配置说明，不表示已经改写板端启动脚本。
+本次修改了生成器 `scripts/prepare_stereo_j8.py`、其生成的 `stereo_j8/add_sources.tcl`、FDC、摄像头寄存器表和本手册：增加文件齐全检查、PDS命令检查、目标器件设置失败提示；将 Bank L4 修为已确认的1.8V，降低CAM1数据位所经电平转换器的测试PCLK。PG2L100H仍是目标器件；本节板端特殊环境的改法是按需配置说明，不表示已经改写板端启动脚本。
 
-验证通过：Tcl模拟PDS命令的4项检查（搬迁至含空格路径、器件拒绝、非PDS控制台、缺文件时不导入）；引脚与依赖检查仍为28条摄像头映射、89个无重复显式球位和128条IP源路径；`git diff --check`通过。该验证不代替完整版PDS的实际器件库、综合、布局布线和下载测试。
+验证通过：Tcl模拟PDS命令的4项检查（搬迁至含空格路径、器件拒绝、非PDS控制台、缺文件时不导入）；引脚与依赖检查为28条摄像头映射、84个无重复显式球位和128条IP源路径；`git diff --check`通过。本机完整版PDS还完成了实际综合、布局布线和实验位流生成；板上下载及图像测试仍需完成。

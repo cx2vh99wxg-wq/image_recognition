@@ -15,19 +15,18 @@ def write(name, text):
     (OUT / name).write_bytes(text.encode("utf-8"))
 
 top = (BASE / "source/image_pcie_capture.v").read_text(encoding="utf-8")
-# The camera-only test has no HMI, FSPI or movement commands. Keep the existing
-# movement pins driven inactive, rather than leaving a former active-low output low.
+# The camera-only test has no HMI, FSPI or movement commands. Do not expose
+# vehicle-control outputs on unrelated FPGA pins during this bring-up.
 top = re.sub(r"    //coms2\n.*?    //coms5", "    //coms5", top, count=1, flags=re.S)
-top = re.sub(r"    //fspi\n.*?\n\);", """    // Existing vehicle outputs remain inactive during this video-only test.
-    output wire go, back, left, right, stop
+top = re.sub(r"    //fspi\n.*?\n\);", """    // Video-only bring-up: no vehicle-control pins.
 );""", top, count=1, flags=re.S)
 top = top.replace("    output reg        ref_led,", "")
+top = top.replace("    output reg        pclk_led,", "    output reg        pclk_led")
 top = re.sub(r"  wire \[31:0\] cmos[256]_pclk_count;[^\n]*\n", "", top)
 top = re.sub(r"  // UART signals\n.*?  assign cfg_ido_req_en", "  reg ref_led;\n  assign cfg_ido_req_en", top, count=1, flags=re.S)
 a = top.index("  //===================================================================================================================\n  //fspi")
 b = top.index("  //*==============================================================================\n  //ddr3 IP", a)
-camera = """  assign {go, back, left, right, stop} = 5'b11111;
-  wire video5_clk, video5_vs, video5_de;
+camera = """  wire video5_clk, video5_vs, video5_de;
   wire video6_clk, video6_vs, video6_de;
   wire [15:0] video5_data, video6_data;
   stereo_camera_top u_ov5640_top (
@@ -85,7 +84,11 @@ axi = axi.replace("  assign axi_araddr = C_BASE_ADDR + (rc_rframe_index * FRAME_
   assign axi_araddr = C_BASE_ADDR + (read_bank[read_channel] * FRAME_SIZE_BYTES) + araddr_offset;""")
 axi = axi.replace("rfifo_wdata <= axi_rdata;", "rfifo_wdata <= read_ready[read_channel] ? axi_rdata : {C_DATA_LEN{1'b0}};")
 axi = axi.replace("assign tp_o = {ws_state, cur_ch, min_abs_cnt[3:0], wr_idx[0], wr_idx[1], wr_idx[2]};", "assign tp_o = {18'd0, ws_state, cur_ch, read_ready, read_bank[0], read_bank[1], read_bank[2]};")
-write("stereo_axi_ctrl.v", axi)
+# This file has hand-reviewed clock-domain reset synchronizers in the checked-in
+# bring-up RTL. Regenerating it from the older three-camera controller would
+# silently discard those fixes, so require the maintained copy instead.
+if not (OUT / "stereo_axi_ctrl.v").is_file():
+    raise SystemExit("Missing maintained stereo_axi_ctrl.v; restore it from the project checkout")
 
 # Same vendor register table, deterministic reset even when the divided clock is
 # held low, honor the power-on delay, and do not treat NACK as configuration done.
@@ -94,6 +97,12 @@ cfg = cfg.replace("module reg_config", "module stereo_reg_config").replace("  i2
 cfg = cfg.replace("always @(posedge clock_20k)", "always @(posedge clock_20k or negedge camera_rstn)")
 cfg = cfg.replace("if (reg_conf_done_reg == 1'b0)", "if (initial_en && reg_conf_done_reg == 1'b0)")
 cfg = cfg.replace("reg_index   <= reg_index + 1'b1;", "if (!ack) reg_index <= reg_index + 1'b1;")
+# J8.7 is level-shifted through an RS0108; the vendor lists 22 Mb/s typical
+# for push-pull data with VCCA=1.8 V and VCCB=3.3 V. The active OV5640 table
+# enables the manual DVP PCLK divider at
+# 0x460C[1]; use /16 for low-speed bring-up instead of the original /2.
+assert "234: reg_data <= {16'h3824,8'h02};" in cfg
+cfg = cfg.replace("234: reg_data <= {16'h3824,8'h02};", "234: reg_data <= {16'h3824,8'h10}; // low-speed J8 level-shifter test")
 write("stereo_reg_config.v", cfg)
 i2c = "`timescale 1ns / 1ps\n" + (BASE / "source/ov5640/rtl/i2c_com.v").read_text(encoding="utf-8")
 i2c = i2c.replace("module i2c_com", "module stereo_i2c_com").replace("reg ack1,ack2,ack3;", "reg ack0,ack1,ack2,ack3;")
@@ -107,12 +116,14 @@ fdc = (BASE / "project/project.fdc").read_text(encoding="utf-8")
 lines = []
 for line in fdc.splitlines():
     if line.lstrip().startswith("#") or not line.strip(): continue
-    if re.search(r"cmos[12]_|p:spi_|p:RXD|p:ref_led|clk_50M", line): continue
+    if re.search(r"cmos[12]_|p:spi_|p:RXD|p:ref_led|p:(?:go|back|left|right|stop)\}|clk_50M", line): continue
     if "{PAP_IO_UNUSED}" in line: continue
-    if "p:board_rst_n" in line or "p:perst_n" in line:
+    if any(f"p:{name}" in line for name in ("board_rst_n", "perst_n", "pclk_led", "cmos5_data[4]")):
         line = line.replace("{PAP_IO_VCCIO} {3.3}", "{PAP_IO_VCCIO} {1.8}")
     if "p:pclk_led" in line:
-        line = line.replace("{J16}", "{M17}").replace("{LVCMOS33}", "{LVCMOS18}").replace("{PAP_IO_VCCIO} {3.3}", "{PAP_IO_VCCIO} {1.8}")
+        line = line.replace("{J16}", "{M17}").replace("{LVCMOS33}", "{LVCMOS18}")
+    if "p:cmos5_data[4]" in line:
+        line = line.replace("{LVCMOS33}", "{LVCMOS18}")
     lines.append(line)
 for key, value in [("PAP_IO_DIRECTION","OUTPUT"),("PAP_IO_LOC","J16"),("PAP_IO_VCCIO","1.8"),("PAP_IO_STANDARD","LVCMOS18")]:
     lines.append(f"define_attribute {{p:heart_beat_led}} {{{key}}} {{{value}}}")
@@ -134,10 +145,16 @@ for f in raw:
 ips = [f"../project/ipcore/{n}/{n}.idf" for n in ["ddr3", "clk_1080p_gen", "pcie_test", "W_FIFO_16i_128o", "R_FIFO_128i_128o"]]
 write("design_files.txt", "\n".join(files + ips) + "\n")
 tcl = """# Run in the PDS Tcl console AFTER creating an empty PG2L100H/FBG484 project.
-# Paths are relative to this script, so the checkout can be moved.
-# Change only the path in your source {...} command on another computer.
+# Some PDS versions report an empty [info script] for sourced files. In that
+# case set PDS_SOURCE_DIR to the absolute stereo_j8 directory before sourcing.
 # PGL50H/Logos is NOT a substitute for PG2L100H/Logos2.
-set stereo_src_root [file dirname [file normalize [info script]]]
+if {[info exists PDS_SOURCE_DIR] && [string trim $PDS_SOURCE_DIR] ne ""} {
+    set stereo_src_root [file normalize $PDS_SOURCE_DIR]
+} elseif {[info script] ne ""} {
+    set stereo_src_root [file dirname [file normalize [info script]]]
+} else {
+    error "Cannot determine stereo_j8 directory. First set PDS_SOURCE_DIR to its absolute path, then source add_sources.tcl again. No project files have been added."
+}
 set stereo_design_files {
 """
 for f in files + ips:
