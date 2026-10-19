@@ -1,6 +1,6 @@
 /*
  * 车辆控制程序 (弯道检测自动转向)
- * 作者：辉哥大盗
+ * 作者：科研轮转
  * 功能：弯道检测自动左右转 + 人员检测紧急制动 + 显示控制
  *
  * 控制逻辑：
@@ -130,7 +130,7 @@ void stop_all_vehicle_movement() {
 int main(int argc, char *argv[]) {
     printf("=== 车辆控制程序 (弯道检测自动转向) ===\n");
     printf("版本: 8.0 (弯道检测自动转向 + 紧急制动)\n");
-    printf("作者: 辉哥大盗\n");
+    printf("作者: 科研轮转\n");
     printf("功能: 弯道检测自动左右转 + 人员检测紧急制动 + 显示控制\n");
     printf("工作模式说明:\n");
     printf("- 实时读取: 从FSPI寄存器0读取实际模式值\n");
@@ -144,53 +144,8 @@ int main(int argc, char *argv[]) {
     printf("- 实时响应: 检测到指令时立即执行对应操作\n\n");
     
 
-// 转到左边
-void turn_to_left() {
-    if (wheel_position == WHEEL_LEFT) return;
-
-    if (wheel_position == WHEEL_RIGHT) {
-        vehicle_control(2, 1);
-        usleep(TIME_LEFT_TO_RIGHT);
-        wheel_position = WHEEL_LEFT;
-    } else {
-        vehicle_control(2, 1);
-        usleep(TIME_NEUTRAL_TO_LEFT);
-        wheel_position = WHEEL_LEFT;
-    }
-    vehicle_control(2, 0);
-}
-
-// 转到右边
-// void turn_to_right() {
-//     if (wheel_position == WHEEL_RIGHT) return;
-
-//     if (wheel_position == WHEEL_LEFT) {
-//         vehicle_control(3, 1);
-//         usleep(TIME_LEFT_TO_RIGHT);
-//         wheel_position = WHEEL_RIGHT;
-//     } else {
-//         vehicle_control(3, 1);
-//         usleep(TIME_NEUTRAL_TO_RIGHT);
-//         wheel_position = WHEEL_RIGHT;
-//     }
-//     vehicle_control(3, 0);
-// }
-
-// // 回中
-// void turn_to_neutral() {
-//     if (wheel_position == WHEEL_NEUTRAL) return;
-
-//     if (wheel_position == WHEEL_LEFT) {
-//         vehicle_control(3, 1);
-//         usleep(TIME_LEFT_TO_NEUTRAL);
-//     } else {
-//         vehicle_control(2, 1);
-//         usleep(TIME_RIGHT_TO_NEUTRAL);
-//     }
-//     vehicle_control(2, 0);
-//     vehicle_control(3, 0);
-//     wheel_position = WHEEL_NEUTRAL;
-// }
+    /* 转向函数已在文件作用域定义；此处原有的同内容嵌套定义及旧注释代码
+     * 不参与实际控制流程，直接使用上方统一实现。 */
     // 注册信号处理函数
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);

@@ -71,6 +71,8 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp | $(BUILDDIR)
 	@echo "编译C++文件: $<"
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
+$(BUILDDIR)/main.o: $(INCDIR)/camera_orientation.h
+
 # 创建build目录
 $(BUILDDIR):
 	@echo "创建build目录"

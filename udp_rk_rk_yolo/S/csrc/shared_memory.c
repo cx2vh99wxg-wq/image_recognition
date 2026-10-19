@@ -10,25 +10,22 @@
 #include <sys/stat.h>
 #include <time.h>
 
-//=========================================================================
-// 共享内存管理实现
-//=========================================================================
-
+/* 按图像来源选取共享键和容量。写端遇到旧段时先删除再创建，读端只连接；
+ * 映射完成后写端初始化控制头、读端增加读者计数，并分别打开两把命名信号量。 */
 int shared_memory_init(SharedMemoryManager* manager, SharedMemoryType type, int is_writer) {
     if (!manager) {
         fprintf(stderr, "*** 致命错误: manager指针为空 ***\n");
         return -1;
     }
-    
+
     memset(manager, 0, sizeof(SharedMemoryManager));
     manager->is_writer = is_writer;
     manager->type = type;
-    
-    // 根据类型确定共享内存大小和key
+
     size_t shm_size;
     key_t shm_key;
     const char* type_name;
-    
+
     if (type == SHM_TYPE_PCIE) {
         shm_size = sizeof(PCIeSharedMemory);
         shm_key = SHM_PCIE_IMAGE_KEY;
@@ -41,31 +38,31 @@ int shared_memory_init(SharedMemoryManager* manager, SharedMemoryType type, int 
         fprintf(stderr, "*** 致命错误: 不支持的共享内存类型: %d ***\n", type);
         return -1;
     }
-    
-    printf("正在初始化%s共享内存 (key=0x%x, size=%zu bytes)\n", 
+
+    printf("正在初始化%s共享内存 (key=0x%x, size=%zu bytes)\n",
            type_name, shm_key, shm_size);
-    
+
     if (is_writer) {
-        // 写入者创建共享内存
-        manager->shm_id = shmget(shm_key, shm_size, 
+
+        manager->shm_id = shmget(shm_key, shm_size,
                                 IPC_CREAT | IPC_EXCL | 0666);
         if (manager->shm_id == -1) {
             if (errno == EEXIST) {
-                // 共享内存已存在，删除后重新创建
+
                 int old_shm_id = shmget(shm_key, 0, 0);
                 if (old_shm_id != -1) {
                     shmctl(old_shm_id, IPC_RMID, NULL);
                     printf("已删除现有的%s共享内存\n", type_name);
                 }
-                manager->shm_id = shmget(shm_key, shm_size, 
+                manager->shm_id = shmget(shm_key, shm_size,
                                         IPC_CREAT | 0666);
             }
         }
     } else {
-        // 读取者连接到现有共享内存
+
         manager->shm_id = shmget(shm_key, shm_size, 0666);
     }
-    
+
     if (manager->shm_id == -1) {
         fprintf(stderr, "*** 致命错误: %s共享内存创建/连接失败 ***\n", type_name);
         fprintf(stderr, "*** 错误原因: %s ***\n", strerror(errno));
@@ -80,16 +77,14 @@ int shared_memory_init(SharedMemoryManager* manager, SharedMemoryType type, int 
         }
         return -1;
     }
-    
-    // 连接到共享内存
+
     manager->shm_ptr.generic_ptr = shmat(manager->shm_id, NULL, 0);
     if (manager->shm_ptr.generic_ptr == (void*)-1) {
         fprintf(stderr, "*** 致命错误: %s共享内存连接失败 ***\n", type_name);
         fprintf(stderr, "*** 错误原因: %s ***\n", strerror(errno));
         return -1;
     }
-    
-    // 如果是写入者，初始化控制结构
+
     if (is_writer) {
         if (type == SHM_TYPE_PCIE) {
             memset(manager->shm_ptr.pcie_ptr, 0, sizeof(PCIeSharedMemory));
@@ -103,55 +98,56 @@ int shared_memory_init(SharedMemoryManager* manager, SharedMemoryType type, int 
             manager->shm_ptr.udp_ptr->control.frame_height = UDP_IMAGE_HEIGHT;
         }
     } else {
-        // 读取者增加计数
+
         if (type == SHM_TYPE_PCIE) {
             __sync_fetch_and_add(&manager->shm_ptr.pcie_ptr->control.reader_count, 1);
         } else if (type == SHM_TYPE_UDP) {
             __sync_fetch_and_add(&manager->shm_ptr.udp_ptr->control.reader_count, 1);
         }
     }
-    
-    // 初始化信号量
+
     char sem_name_write[64], sem_name_read[64];
     snprintf(sem_name_write, sizeof(sem_name_write), "/%s_write_%08X", type_name, shm_key);
     snprintf(sem_name_read, sizeof(sem_name_read), "/%s_read_%08X", type_name, shm_key);
-    
+
     if (is_writer) {
-        // 写入者创建信号量
+
         sem_unlink(sem_name_write);
         sem_unlink(sem_name_read);
-        
+
         manager->write_sem = sem_open(sem_name_write, O_CREAT | O_EXCL, 0666, 1);
         manager->read_sem = sem_open(sem_name_read, O_CREAT | O_EXCL, 0666, 0);
     } else {
-        // 读取者打开现有信号量
+
         manager->write_sem = sem_open(sem_name_write, 0);
         manager->read_sem = sem_open(sem_name_read, 0);
     }
-    
+
     if (manager->write_sem == SEM_FAILED || manager->read_sem == SEM_FAILED) {
         fprintf(stderr, "Warning: sem_open failed: %s\n", strerror(errno));
         fprintf(stderr, "Continuing without semaphores (no synchronization protection)\n");
         manager->write_sem = SEM_FAILED;
         manager->read_sem = SEM_FAILED;
-        // 不返回错误，继续执行但没有信号量保护
+
     }
-    
+
     printf("Shared memory initialized successfully (is_writer: %d)\n", is_writer);
     return 0;
 }
 
-int shared_memory_write_image(SharedMemoryManager* manager, 
-                             const uint8_t* image_data, 
+/* 向指定图像段发布 RGB565 帧。先锁住写端信号量并写数据及校验值，
+ * 再更新帧号与就绪位，最后释放写锁并通知读端；保留信号量不可用时的路径。 */
+int shared_memory_write_image(SharedMemoryManager* manager,
+                             const uint8_t* image_data,
                              uint32_t width, uint32_t height) {
     if (!manager || !manager->shm_ptr.generic_ptr || !image_data || !manager->is_writer) {
         return -1;
     }
-    
+
     SharedMemoryControl* control;
     uint8_t* image_buffer;
     size_t max_image_size;
-    
+
     if (manager->type == SHM_TYPE_PCIE) {
         control = &manager->shm_ptr.pcie_ptr->control;
         image_buffer = manager->shm_ptr.pcie_ptr->image_data;
@@ -163,64 +159,60 @@ int shared_memory_write_image(SharedMemoryManager* manager,
     } else {
         return -1;
     }
-    
-    size_t image_size = width * height * 2; // RGB565
+
+    size_t image_size = width * height * 2;
     if (image_size > max_image_size) {
-        fprintf(stderr, "Error: Image size too large: %zu > %zu\n", 
+        fprintf(stderr, "Error: Image size too large: %zu > %zu\n",
                 image_size, max_image_size);
         return -1;
     }
-    
-    // 等待写锁（如果信号量可用）
+
     if (manager->write_sem != SEM_FAILED) {
         if (sem_wait(manager->write_sem) != 0) {
             return -1;
         }
     }
-    
-    // 更新控制信息
+
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     uint64_t timestamp = ts.tv_sec * 1000000000ULL + ts.tv_nsec;
-    
+
     control->timestamp = timestamp;
     control->frame_width = width;
     control->frame_height = height;
-    
-    // 复制图像数据
+
     memcpy(image_buffer, image_data, image_size);
-    
-    // 计算校验和
+
     control->checksum = calculate_data_checksum(image_data, image_size);
-    
-    // 原子更新帧信息
+
     __sync_fetch_and_add(&control->frame_id, 1);
     __sync_bool_compare_and_swap(&control->frame_ready, 0, 1);
-    
-    // 释放写锁并通知读取者（如果信号量可用）
+
     if (manager->write_sem != SEM_FAILED) {
         sem_post(manager->write_sem);
     }
     if (manager->read_sem != SEM_FAILED) {
         sem_post(manager->read_sem);
     }
-    
+
     return 0;
 }
 
-int shared_memory_read_image(SharedMemoryManager* manager, 
-                            uint8_t* image_data, 
+/* 只有出现就绪帧时才尝试读取；读锁最多等待 10 ms。复制图像后核对校验值，
+ * 成功时写出尺寸与帧号并返回字节数，无新帧返回 0，失败返回 -1。 */
+int shared_memory_read_image(SharedMemoryManager* manager,
+                            uint8_t* image_data,
                             size_t max_size,
-                            uint32_t* width, 
+                            uint32_t* width,
                             uint32_t* height,
                             uint32_t* frame_id) {
     if (!manager || !manager->shm_ptr.generic_ptr || !image_data || manager->is_writer) {
         return -1;
     }
-    
+
     SharedMemoryControl* control;
     uint8_t* image_buffer;
-    
+
     if (manager->type == SHM_TYPE_PCIE) {
         control = &manager->shm_ptr.pcie_ptr->control;
         image_buffer = manager->shm_ptr.pcie_ptr->image_data;
@@ -230,70 +222,63 @@ int shared_memory_read_image(SharedMemoryManager* manager,
     } else {
         return -1;
     }
-    
-    // 检查写入者是否活跃
+
     if (!control->writer_active) {
         return -1;
     }
-    
-    // 非阻塞检查是否有新帧
+
     if (!control->frame_ready) {
-        return 0;  // 无新数据
+        return 0;
     }
-    
-    // 尝试获取读锁（非阻塞，如果信号量可用）
+
     if (manager->read_sem != SEM_FAILED) {
         struct timespec timeout;
         clock_gettime(CLOCK_REALTIME, &timeout);
-        timeout.tv_nsec += 10000000;  // 10ms超时
+        timeout.tv_nsec += 10000000;
         if (timeout.tv_nsec >= 1000000000) {
             timeout.tv_sec += 1;
             timeout.tv_nsec -= 1000000000;
         }
-        
+
         if (sem_timedwait(manager->read_sem, &timeout) != 0) {
-            return 0;  // 超时，无新数据
+            return 0;
         }
     }
-    
-    // 读取控制信息
+
     uint32_t img_width = control->frame_width;
     uint32_t img_height = control->frame_height;
     uint32_t current_frame_id = control->frame_id;
     uint32_t expected_checksum = control->checksum;
-    
-    size_t image_size = img_width * img_height * 2; // RGB565
+
+    size_t image_size = img_width * img_height * 2;
     if (image_size > max_size) {
         fprintf(stderr, "Error: Buffer too small: %zu > %zu\n", image_size, max_size);
         return -1;
     }
-    
-    // 复制图像数据
+
     memcpy(image_data, image_buffer, image_size);
-    
-    // 验证校验和
+
     uint32_t actual_checksum = calculate_data_checksum(image_data, image_size);
     if (actual_checksum != expected_checksum) {
         fprintf(stderr, "Warning: Checksum mismatch (expected: 0x%08X, actual: 0x%08X)\n",
                 expected_checksum, actual_checksum);
     }
-    
-    // 标记帧已被读取
+
     __sync_bool_compare_and_swap(&control->frame_ready, 1, 0);
-    
-    // 返回信息
+
     if (width) *width = img_width;
     if (height) *height = img_height;
     if (frame_id) *frame_id = current_frame_id;
-    
+
     return image_size;
 }
 
+/* 用就绪位、写端活跃状态和传入帧号判断是否有新帧，不复制图像数据。 */
 int shared_memory_has_new_frame(SharedMemoryManager* manager, uint32_t last_frame_id) {
     if (!manager || !manager->shm_ptr.generic_ptr) {
         return -1;
     }
-    
+
     SharedMemoryControl* control;
     if (manager->type == SHM_TYPE_PCIE) {
         control = &manager->shm_ptr.pcie_ptr->control;
@@ -302,20 +287,22 @@ int shared_memory_has_new_frame(SharedMemoryManager* manager, uint32_t last_fram
     } else {
         return -1;
     }
-    
+
     if (!control->writer_active) {
-        return -1;  // 写入者不活跃
+        return -1;
     }
-    
+
     uint32_t current_frame_id = control->frame_id;
     return (current_frame_id > last_frame_id && control->frame_ready) ? 1 : 0;
 }
 
+/* 按角色更新控制头并分离映射；写端删除共享段和命名信号量，
+ * 读端只关闭自身的连接。清理末尾将管理器恢复为全零状态。 */
 void shared_memory_cleanup(SharedMemoryManager* manager) {
     if (!manager) {
         return;
     }
-    
+
     if (manager->shm_ptr.generic_ptr && manager->shm_ptr.generic_ptr != (void*)-1) {
         SharedMemoryControl* control;
         if (manager->type == SHM_TYPE_PCIE) {
@@ -325,26 +312,26 @@ void shared_memory_cleanup(SharedMemoryManager* manager) {
         } else {
             control = NULL;
         }
-        
+
         if (control) {
             if (!manager->is_writer) {
-                // 读取者减少计数
+
                 __sync_fetch_and_sub(&control->reader_count, 1);
             } else {
-                // 写入者标记非活跃
+
                 control->writer_active = 0;
             }
         }
-        
+
         shmdt(manager->shm_ptr.generic_ptr);
         manager->shm_ptr.generic_ptr = NULL;
     }
-    
+
     if (manager->is_writer && manager->shm_id != -1) {
-        // 写入者删除共享内存
+
         shmctl(manager->shm_id, IPC_RMID, NULL);
     }
-    
+
     if (manager->write_sem && manager->write_sem != SEM_FAILED) {
         sem_close(manager->write_sem);
         if (manager->is_writer) {
@@ -355,7 +342,7 @@ void shared_memory_cleanup(SharedMemoryManager* manager) {
             sem_unlink(sem_name);
         }
     }
-    
+
     if (manager->read_sem && manager->read_sem != SEM_FAILED) {
         sem_close(manager->read_sem);
         if (manager->is_writer) {
@@ -366,16 +353,18 @@ void shared_memory_cleanup(SharedMemoryManager* manager) {
             sem_unlink(sem_name);
         }
     }
-    
+
     memset(manager, 0, sizeof(SharedMemoryManager));
     printf("Shared memory cleaned up\n");
 }
 
+/* 逐字节将 32 位校验值循环左移一位后与当前字节异或。
+ * 空指针或零长度输入返回零；该算法与接收端校验过程配套。 */
 uint32_t calculate_data_checksum(const uint8_t* data, size_t size) {
     if (!data || size == 0) {
         return 0;
     }
-    
+
     uint32_t checksum = 0;
     for (size_t i = 0; i < size; i++) {
         checksum = ((checksum << 1) | (checksum >> 31)) ^ data[i];
@@ -383,40 +372,36 @@ uint32_t calculate_data_checksum(const uint8_t* data, size_t size) {
     return checksum;
 }
 
-//=========================================================================
-// 兼容性函数
-//=========================================================================
-
+/* 兼容旧入口，仅固定图像类型为 PCIe，其余初始化逻辑由通用入口负责。 */
 int shared_memory_init_pcie(SharedMemoryManager* manager, int is_writer) {
     return shared_memory_init(manager, SHM_TYPE_PCIE, is_writer);
 }
 
+/* 兼容旧入口，仅固定图像类型为 UDP，其余初始化逻辑由通用入口负责。 */
 int shared_memory_init_udp(SharedMemoryManager* manager, int is_writer) {
     return shared_memory_init(manager, SHM_TYPE_UDP, is_writer);
 }
 
-//=========================================================================
-// 显示控制共享内存管理实现
-//=========================================================================
-
+/* 显示控制段由写端创建并初始化为全部八路摄像头模式；读端附加已有段。
+ * 段已存在时保留删除旧段再创建的既有行为。 */
 int display_control_shm_init(DisplayControlSharedMemory** shm_ptr, int is_writer) {
     if (!shm_ptr) {
         fprintf(stderr, "*** 致命错误: shm_ptr指针为空 ***\n");
         return -1;
     }
-    
+
     int shm_id;
     size_t shm_size = sizeof(DisplayControlSharedMemory);
-    
-    printf("正在初始化显示控制共享内存 (key=0x%x, size=%zu bytes, is_writer=%d)\n", 
+
+    printf("正在初始化显示控制共享内存 (key=0x%x, size=%zu bytes, is_writer=%d)\n",
            SHM_DISPLAY_CONTROL_KEY, shm_size, is_writer);
-    
+
     if (is_writer) {
-        // 写入者创建共享内存
+
         shm_id = shmget(SHM_DISPLAY_CONTROL_KEY, shm_size, IPC_CREAT | IPC_EXCL | 0666);
         if (shm_id == -1) {
             if (errno == EEXIST) {
-                // 共享内存已存在，删除后重新创建
+
                 int old_shm_id = shmget(SHM_DISPLAY_CONTROL_KEY, 0, 0);
                 if (old_shm_id != -1) {
                     shmctl(old_shm_id, IPC_RMID, NULL);
@@ -426,10 +411,10 @@ int display_control_shm_init(DisplayControlSharedMemory** shm_ptr, int is_writer
             }
         }
     } else {
-        // 读取者连接到现有共享内存
+
         shm_id = shmget(SHM_DISPLAY_CONTROL_KEY, shm_size, 0666);
     }
-    
+
     if (shm_id == -1) {
         fprintf(stderr, "*** 致命错误: 显示控制共享内存创建/连接失败 ***\n");
         fprintf(stderr, "*** 错误原因: %s ***\n", strerror(errno));
@@ -438,83 +423,78 @@ int display_control_shm_init(DisplayControlSharedMemory** shm_ptr, int is_writer
         }
         return -1;
     }
-    
-    // 连接到共享内存
+
     *shm_ptr = (DisplayControlSharedMemory*)shmat(shm_id, NULL, 0);
     if (*shm_ptr == (void*)-1) {
         fprintf(stderr, "*** 致命错误: 显示控制共享内存连接失败 ***\n");
         fprintf(stderr, "*** 错误原因: %s ***\n", strerror(errno));
         return -1;
     }
-    
-    // 如果是写入者，初始化控制结构
+
     if (is_writer) {
         memset(*shm_ptr, 0, sizeof(DisplayControlSharedMemory));
-        (*shm_ptr)->mode = DISPLAY_MODE_ALL_CAMERAS;  // 默认显示所有摄像头
-        (*shm_ptr)->valid = 1;                        // 标记有效
-        
-        // 设置初始时间戳
+        (*shm_ptr)->mode = DISPLAY_MODE_ALL_CAMERAS;
+        (*shm_ptr)->valid = 1;
+
         struct timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
         (*shm_ptr)->last_update = (uint32_t)ts.tv_sec;
-        
+
         printf("显示控制共享内存初始化完成，默认模式: 所有摄像头 (0x99)\n");
     } else {
         printf("显示控制共享内存连接成功 (读取者模式)\n");
     }
-    
+
     return 0;
 }
 
+/* 写端先清除有效位，再分离并删除显示控制段；读端只分离。 */
 void display_control_shm_cleanup(DisplayControlSharedMemory* shm_ptr, int is_writer) {
     if (!shm_ptr || shm_ptr == (void*)-1) {
         return;
     }
-    
+
     if (is_writer) {
-        // 写入者标记无效
+
         shm_ptr->valid = 0;
         printf("显示控制共享内存已标记为无效\n");
     }
-    
-    // 断开连接
+
     shmdt(shm_ptr);
-    
+
     if (is_writer) {
-        // 写入者删除共享内存
+
         int shm_id = shmget(SHM_DISPLAY_CONTROL_KEY, 0, 0);
         if (shm_id != -1) {
             shmctl(shm_id, IPC_RMID, NULL);
             printf("显示控制共享内存已删除\n");
         }
     }
-    
+
     printf("显示控制共享内存清理完成\n");
 }
 
-//=========================================================================
-// 紧急制动共享内存管理实现
-//=========================================================================
-
+/* 连接紧急制动段；写端初始化为未检出人员、制动使能值 1 和有效状态，
+ * 读端沿用已有段，不覆盖当前检测结果。 */
 int emergency_brake_shm_init(EmergencyBrakeSharedMemory** shm_ptr, int is_writer) {
     if (!shm_ptr) {
         fprintf(stderr, "*** 致命错误: shm_ptr指针为空 ***\n");
         return -1;
     }
-    
+
     int shm_id;
     size_t shm_size = sizeof(EmergencyBrakeSharedMemory);
-    
-    printf("正在初始化紧急制动共享内存 (key=0x%x, size=%zu bytes, is_writer=%d)\n", 
+
+    printf("正在初始化紧急制动共享内存 (key=0x%x, size=%zu bytes, is_writer=%d)\n",
            SHM_EMERGENCY_BRAKE_KEY, shm_size, is_writer);
     printf("角色: %s\n", is_writer ? "写入者(PCIe-YOLO检测)" : "读取者(FSPI-制动控制)");
-    
+
     if (is_writer) {
-        // 写入者(PCIe程序)创建共享内存
+
         shm_id = shmget(SHM_EMERGENCY_BRAKE_KEY, shm_size, IPC_CREAT | IPC_EXCL | 0666);
         if (shm_id == -1) {
             if (errno == EEXIST) {
-                // 共享内存已存在，删除后重新创建
+
                 int old_shm_id = shmget(SHM_EMERGENCY_BRAKE_KEY, 0, 0);
                 if (old_shm_id != -1) {
                     shmctl(old_shm_id, IPC_RMID, NULL);
@@ -524,10 +504,10 @@ int emergency_brake_shm_init(EmergencyBrakeSharedMemory** shm_ptr, int is_writer
             }
         }
     } else {
-        // 读取者(FSPI程序)连接到现有共享内存
+
         shm_id = shmget(SHM_EMERGENCY_BRAKE_KEY, shm_size, 0666);
     }
-    
+
     if (shm_id == -1) {
         fprintf(stderr, "*** 致命错误: 紧急制动共享内存创建/连接失败 ***\n");
         fprintf(stderr, "*** 错误原因: %s ***\n", strerror(errno));
@@ -536,35 +516,34 @@ int emergency_brake_shm_init(EmergencyBrakeSharedMemory** shm_ptr, int is_writer
         }
         return -1;
     }
-    
-    // 连接到共享内存
+
     *shm_ptr = (EmergencyBrakeSharedMemory*)shmat(shm_id, NULL, 0);
     if (*shm_ptr == (void*)-1) {
         fprintf(stderr, "*** 致命错误: 紧急制动共享内存连接失败 ***\n");
         fprintf(stderr, "*** 错误原因: %s ***\n", strerror(errno));
         return -1;
     }
-    
-    // 如果是写入者，初始化控制结构
+
     if (is_writer) {
         memset(*shm_ptr, 0, sizeof(EmergencyBrakeSharedMemory));
-        (*shm_ptr)->person_detected = 0;        // 初始未检测到人
-        (*shm_ptr)->brake_enable = 1;           // 初始制动信号为1(正常运行)
-        (*shm_ptr)->valid = 1;                  // 标记有效
-        
-        // 设置初始时间戳
+        (*shm_ptr)->person_detected = 0;
+        (*shm_ptr)->brake_enable = 1;
+        (*shm_ptr)->valid = 1;
+
         struct timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
         (*shm_ptr)->last_update = (uint32_t)ts.tv_sec;
-        
+
         printf("紧急制动共享内存初始化完成，默认状态: 正常运行 (brake_enable=1)\n");
     } else {
         printf("紧急制动共享内存连接成功 (读取者模式)\n");
     }
-    
+
     return 0;
 }
 
+/* 写入人员检出状态、检测框和制动使能值，再更新单调时间与计数器。
+ * 从未检出转为检出时累计一次检测与制动激活；保留现有原子操作顺序。 */
 int emergency_brake_update_status(EmergencyBrakeSharedMemory* shm_ptr, int person_detected,
                                  int box_left, int box_top, int box_right, int box_bottom) {
     if (!shm_ptr || shm_ptr == (void*)-1) {
@@ -577,14 +556,11 @@ int emergency_brake_update_status(EmergencyBrakeSharedMemory* shm_ptr, int perso
         return -1;
     }
 
-    // 更新检测状态和制动信号
     int old_person_detected = shm_ptr->person_detected;
     int old_brake_enable = shm_ptr->brake_enable;
 
-    // 原子更新人员检测状态
     __sync_lock_test_and_set(&shm_ptr->person_detected, person_detected ? 1 : 0);
 
-    // 更新检测框位置
     if (person_detected) {
         __sync_lock_test_and_set(&shm_ptr->box_left, box_left);
         __sync_lock_test_and_set(&shm_ptr->box_top, box_top);
@@ -592,19 +568,14 @@ int emergency_brake_update_status(EmergencyBrakeSharedMemory* shm_ptr, int perso
         __sync_lock_test_and_set(&shm_ptr->box_bottom, box_bottom);
     }
 
-    // 根据人员检测状态设置制动信号
-    // person_detected = 1 -> brake_enable = 0 (紧急制动)
-    // person_detected = 0 -> brake_enable = 1 (正常运行)
     int new_brake_enable = person_detected ? 0 : 1;
     __sync_lock_test_and_set(&shm_ptr->brake_enable, new_brake_enable);
 
-    // 更新时间戳和计数器
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     __sync_lock_test_and_set(&shm_ptr->last_update, (uint32_t)ts.tv_sec);
     __sync_fetch_and_add(&shm_ptr->frame_count, 1);
 
-    // 如果检测状态发生变化，更新相应计数器
     if (person_detected && !old_person_detected) {
         __sync_fetch_and_add(&shm_ptr->detection_count, 1);
         printf("[紧急制动] 检测到人员！触发紧急制动 (brake_enable: %d->0)\n", old_brake_enable);
@@ -621,51 +592,50 @@ int emergency_brake_update_status(EmergencyBrakeSharedMemory* shm_ptr, int perso
     return 0;
 }
 
+/* 在段有效时按需读取人员检出状态和制动使能值；任一输出指针可为空。 */
 int emergency_brake_read_status(EmergencyBrakeSharedMemory* shm_ptr, int* person_detected, int* brake_enable) {
     if (!shm_ptr || shm_ptr == (void*)-1) {
         fprintf(stderr, "错误: 紧急制动共享内存指针无效\n");
         return -1;
     }
-    
+
     if (!shm_ptr->valid) {
         fprintf(stderr, "警告: 紧急制动共享内存已标记为无效\n");
         return -1;
     }
-    
-    // 原子读取状态
+
     if (person_detected) {
         *person_detected = shm_ptr->person_detected;
     }
-    
+
     if (brake_enable) {
         *brake_enable = shm_ptr->brake_enable;
     }
-    
+
     return 0;
 }
 
+/* 写端先标记数据无效并打印计数，再分离并删除段；读端只分离。 */
 void emergency_brake_shm_cleanup(EmergencyBrakeSharedMemory* shm_ptr, int is_writer) {
     if (!shm_ptr || shm_ptr == (void*)-1) {
         return;
     }
 
     if (is_writer) {
-        // 写入者标记无效
+
         shm_ptr->valid = 0;
         printf("紧急制动共享内存已标记为无效\n");
 
-        // 输出统计信息
         printf("=== 紧急制动统计 ===\n");
         printf("总检测帧数: %u\n", shm_ptr->frame_count);
         printf("人员检测次数: %u\n", shm_ptr->detection_count);
         printf("紧急制动激活次数: %u\n", shm_ptr->brake_active_count);
     }
 
-    // 断开连接
     shmdt(shm_ptr);
 
     if (is_writer) {
-        // 写入者删除共享内存
+
         int shm_id = shmget(SHM_EMERGENCY_BRAKE_KEY, 0, 0);
         if (shm_id != -1) {
             shmctl(shm_id, IPC_RMID, NULL);
@@ -676,15 +646,12 @@ void emergency_brake_shm_cleanup(EmergencyBrakeSharedMemory* shm_ptr, int is_wri
     printf("紧急制动共享内存清理完成\n");
 }
 
-//=========================================================================
-// 弯道检测结果共享内存实现
-//=========================================================================
-
-// 全局变量存储弯道检测共享内存信息
+/* 弯道结果专用段的标识、映射地址和当前进程读写角色。 */
 static int g_curve_shm_id = -1;
 static CurveDetectionSharedMemory* g_curve_shm_ptr = NULL;
 static int g_curve_is_writer = 0;
 
+/* 按固定键创建或连接弯道结果段；写端初始化为直道并标记活跃。 */
 int curve_detection_shm_init(int is_writer) {
     size_t shm_size = sizeof(CurveDetectionSharedMemory);
     key_t shm_key = SHM_CURVE_DETECTION_KEY;
@@ -695,12 +662,12 @@ int curve_detection_shm_init(int is_writer) {
     g_curve_is_writer = is_writer;
 
     if (is_writer) {
-        // 写入者创建共享内存
+
         g_curve_shm_id = shmget(shm_key, shm_size,
                                 IPC_CREAT | IPC_EXCL | 0666);
         if (g_curve_shm_id == -1) {
             if (errno == EEXIST) {
-                // 共享内存已存在，尝试连接
+
                 printf("弯道检测共享内存已存在，尝试连接...\n");
                 g_curve_shm_id = shmget(shm_key, shm_size, 0666);
                 if (g_curve_shm_id == -1) {
@@ -713,7 +680,7 @@ int curve_detection_shm_init(int is_writer) {
             }
         }
     } else {
-        // 读取者连接现有共享内存
+
         g_curve_shm_id = shmget(shm_key, shm_size, 0666);
         if (g_curve_shm_id == -1) {
             perror("连接弯道检测共享内存失败");
@@ -721,7 +688,6 @@ int curve_detection_shm_init(int is_writer) {
         }
     }
 
-    // 附加到共享内存
     g_curve_shm_ptr = (CurveDetectionSharedMemory*)shmat(g_curve_shm_id, NULL, 0);
     if (g_curve_shm_ptr == (void*)-1) {
         perror("附加弯道检测共享内存失败");
@@ -732,7 +698,6 @@ int curve_detection_shm_init(int is_writer) {
     printf("弯道检测共享内存初始化成功 (id=%d, ptr=%p)\n",
            g_curve_shm_id, (void*)g_curve_shm_ptr);
 
-    // 如果是写入者，初始化结构
     if (is_writer) {
         memset(g_curve_shm_ptr, 0, sizeof(CurveDetectionSharedMemory));
         g_curve_shm_ptr->writer_active = 1;
@@ -743,13 +708,13 @@ int curve_detection_shm_init(int is_writer) {
     return 0;
 }
 
+/* 清除写端活跃位，分离映射；只有写端删除段。 */
 void curve_detection_shm_cleanup(void) {
-    // 如果是写入者，标记为不活跃
+
     if (g_curve_is_writer && g_curve_shm_ptr != NULL) {
         g_curve_shm_ptr->writer_active = 0;
     }
 
-    // 分离共享内存
     if (g_curve_shm_ptr != NULL) {
         if (shmdt(g_curve_shm_ptr) == -1) {
             perror("分离弯道检测共享内存失败");
@@ -757,7 +722,6 @@ void curve_detection_shm_cleanup(void) {
         g_curve_shm_ptr = NULL;
     }
 
-    // 如果是写入者，删除共享内存
     if (g_curve_is_writer && g_curve_shm_id != -1) {
         if (shmctl(g_curve_shm_id, IPC_RMID, NULL) == -1) {
             perror("删除弯道检测共享内存失败");
@@ -768,6 +732,7 @@ void curve_detection_shm_cleanup(void) {
     printf("弯道检测共享内存已清理\n");
 }
 
+/* 仅写端发布帧号、类别、置信度和角度，同时更新原有时间戳。 */
 int curve_detection_update(uint32_t frame_id, CurveType curve_type,
                           uint32_t confidence, uint32_t curve_angle) {
     if (g_curve_shm_ptr == NULL) {
@@ -780,14 +745,12 @@ int curve_detection_update(uint32_t frame_id, CurveType curve_type,
         return -1;
     }
 
-    // 更新弯道检测结果
     g_curve_shm_ptr->frame_id = frame_id;
     g_curve_shm_ptr->curve_type = curve_type;
     g_curve_shm_ptr->confidence = confidence;
     g_curve_shm_ptr->curve_angle = curve_angle;
-    g_curve_shm_ptr->timestamp = (uint64_t)time(NULL) * 1000000; // 微秒时间戳
+    g_curve_shm_ptr->timestamp = (uint64_t)time(NULL) * 1000000;
 
-    // 每100帧打印一次，避免刷屏
     if (frame_id % 100 == 0) {
         const char* curve_name = "未知";
         switch(curve_type) {
@@ -803,6 +766,7 @@ int curve_detection_update(uint32_t frame_id, CurveType curve_type,
     return 0;
 }
 
+/* 将最近一次弯道检测结果复制到四个非空输出指针。 */
 int curve_detection_read(uint32_t* frame_id, CurveType* curve_type,
                         uint32_t* confidence, uint32_t* curve_angle) {
     if (g_curve_shm_ptr == NULL) {
@@ -815,7 +779,6 @@ int curve_detection_read(uint32_t* frame_id, CurveType* curve_type,
         return -1;
     }
 
-    // 读取弯道检测结果
     *frame_id = g_curve_shm_ptr->frame_id;
     *curve_type = (CurveType)g_curve_shm_ptr->curve_type;
     *confidence = g_curve_shm_ptr->confidence;

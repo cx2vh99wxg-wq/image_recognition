@@ -123,7 +123,7 @@ fi
 echo "======================================"
 echo "Welcome to S-End FPGA System"
 echo "======================================"
-echo "Author: 辉哥大盗"
+echo "Author: 科研轮转"
 echo "Time: $(date)"
 echo "======================================"
 

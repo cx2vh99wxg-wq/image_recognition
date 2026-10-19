@@ -7,90 +7,39 @@
 extern "C" {
 #endif
 
-/**
- * @brief FSPI模块初始化
- * @return 0表示成功，-1表示失败
- */
+/* 打开固定 SPI 设备并设置模式、位宽和频率。成功返回 0；设备打开或配置失败返回 -1。 */
 int fspi_init(void);
 
-/**
- * @brief FSPI写数据
- * @param addr 写入地址 (16位)
- * @param data 写入数据 (8位)
- * @return 0表示成功，-1表示失败
- */
+/* 向 16 位地址写入一个字节。未初始化或最多 15 次写事务均失败时返回 -1。 */
 int fspi_write_data(uint16_t addr, uint8_t data);
 
-/**
- * @brief FSPI读数据 - 用于读取指定地址的寄存器值
- * @param addr 读取地址 (16位)
- *             地址0: 小车视镜功能状态寄存器
- *                   0x00 = 前视镜模式
- *                   0x11 = 后视镜模式
- *                   其他值 = 异常状态
- *             地址1-4: 其他功能寄存器
- * @param data 读取数据指针 (8位) - 用于存储读取到的寄存器值
- * @return 0表示成功，-1表示失败
- * @note 此函数会进行多次读取重试，返回出现频率最高的值以提高可靠性
- */
+/* 先发送 16 位寄存器地址，再读取一字节。重复读取并选取出现频率最高的值；
+ * 计数相同时优先选取数值较小者。地址 0 的读值按视镜状态协议解释：
+ * 0x00 为前视镜，0x11 为后视镜，其余值按异常状态记录。 */
 int fspi_read_data(uint16_t addr, uint8_t *data);
 
-/**
- * @brief FSPI直接读数据 - 不需要先写地址
- * @param data 读取数据指针 (8位)
- * @return 0表示成功，-1表示失败
- */
+/* 不预先发送地址，直接读取一字节；同样通过重复采样筛选结果。 */
 int fspi_read_direct(uint8_t *data);
 
-/**
- * @brief 车辆控制函数（无读回验证）
- * @param command 控制命令 (0=前进, 1=后退, 2=左转, 3=右转)
- * @param enable 运动/停止 (1=运动, 0=停止) -> 实际发送值：运动=0, 停止=1
- * @return 0表示成功，-1表示失败
- */
+/* 控制方向寄存器 0..3：依次为前进、后退、左转和右转。
+ * enable=1 代表运动但协议写值为 0；enable=0 代表停止且写值为 1。
+ * 该操作只确认写事务成功，不读回控制寄存器。 */
 int vehicle_control(int command, int enable);
 
-/**
- * @brief 车辆前进控制
- * @param enable 运动/停止 (1=运动, 0=停止) -> 实际发送值：运动=0, 停止=1
- * @return 0表示成功，-1表示失败
- */
+/* 方向便捷入口与 vehicle_control 共用参数校验及状态输出。 */
 int vehicle_forward(int enable);
-
-/**
- * @brief 车辆后退控制
- * @param enable 运动/停止 (1=运动, 0=停止) -> 实际发送值：运动=0, 停止=1
- * @return 0表示成功，-1表示失败
- */
 int vehicle_backward(int enable);
-
-/**
- * @brief 车辆左转控制
- * @param enable 运动/停止 (1=运动, 0=停止) -> 实际发送值：运动=0, 停止=1
- * @return 0表示成功，-1表示失败
- */
 int vehicle_turn_left(int enable);
-
-/**
- * @brief 车辆右转控制
- * @param enable 运动/停止 (1=运动, 0=停止) -> 实际发送值：运动=0, 停止=1
- * @return 0表示成功，-1表示失败
- */
 int vehicle_turn_right(int enable);
 
-/**
- * @brief 立即主动停止 - 地址4
- * @return 0表示成功，-1表示失败
- */
+/* 向地址 4 写入 1 触发主动紧急停止，不做寄存器读回验证。 */
 int vehicle_emergency_stop(void);
 
-/**
- * @brief FSPI清理资源
- */
+/* 关闭已打开的设备句柄并清空内部句柄状态；可安全重复调用。 */
 void fspi_cleanup(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // FSPI_MODULE_H
+#endif /* FSPI_MODULE_H */

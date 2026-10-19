@@ -1,84 +1,78 @@
 
-module uart_lcd(
-    input                               clk                        ,
-    input                               rst_n                      ,
-    input              [   7: 0]        uart_rx                    ,
-    input                               uart_rx_valid              ,
-    output             [   7: 0]        mode                       ,
-    output             [   7: 0]        blc                        ,
-    output             [   7: 0]        awb                        ,
-    output             [   7: 0]        liangdu                    ,
-    output             [   7: 0]        baohedu                    ,
-    output                              awb_en                     ,
-    output             [   7: 0]        binarization               ,
-    output             [   3: 0]        cnn_level                  ,
-    output             [   7: 0]        sobel                      ,
-    output                     isp_judge    ,
-    output [7:0] cb_min,
-    output [7:0] cb_max,
-    output [7:0] cr_min,
-    output [7:0] cr_max
+/* 解析串口屏送来的 0x30、0x90 帧头、功能编号和一个配置字节。
+ * 寄存器在 uart_rx_valid 有效时更新，输出直接反映已保存的配置值。 */
+module uart_lcd (
+    input             clk,
+    input             rst_n,
+    input      [7:0]  uart_rx,
+    input             uart_rx_valid,
+    output     [7:0]  mode,
+    output     [7:0]  blc,
+    output     [7:0]  awb,
+    output     [7:0]  liangdu,
+    output     [7:0]  baohedu,
+    output            awb_en,
+    output     [7:0]  binarization,
+    output     [3:0]  cnn_level,
+    output     [7:0]  sobel,
+    output            isp_judge,
+    output     [7:0]  cb_min,
+    output     [7:0]  cb_max,
+    output     [7:0]  cr_min,
+    output     [7:0]  cr_max
 );
 
-    reg                [   7: 0]        mode_reg                 =0;
-    reg                [   7: 0]        blc_reg                  =0;
-    reg                [   7: 0]        awb_reg                  =127;
-    reg                [   7: 0]        liangdu_reg              =64;
-    reg                [   7: 0]        baohedu_reg              =80;
-    reg                                 awb_en_reg               =1'b1;
-    reg                [   7: 0]        binarization_reg         =127;
-    reg                [   3: 0]        cnn_level_reg            =0;
-    reg                [   7: 0]        sobel_reg                =40;
+    reg [7:0] mode_reg = 0;
+    reg [7:0] blc_reg = 0;
+    reg [7:0] awb_reg = 127;
+    reg [7:0] liangdu_reg = 64;
+    reg [7:0] baohedu_reg = 80;
+    reg       awb_en_reg = 1'b1;
+    reg [7:0] binarization_reg = 127;
+    reg [3:0] cnn_level_reg = 0;
+    reg [7:0] sobel_reg = 40;
     reg [7:0] cb_min_reg, cb_max_reg, cr_min_reg, cr_max_reg;
-    reg [0:0] isp_judge_reg ;
+    reg [0:0] isp_judge_reg;
 
-assign mode   =mode_reg;   
-assign blc    =blc_reg;      
-assign awb    =awb_reg;    
-assign liangdu=liangdu_reg;
-assign baohedu=baohedu_reg;
-assign awb_en =awb_en_reg;
-assign binarization=binarization_reg;
-assign cnn_level=cnn_level_reg;
-assign sobel=sobel_reg;
-assign isp_judge=isp_judge_reg;
-assign cb_min = cb_min_reg;
-assign cb_max = cb_max_reg;
-assign cr_min = cr_min_reg;
-assign cr_max = cr_max_reg;
+    /* 各输出端口与配置寄存器一一对应。 */
+    assign mode = mode_reg;
+    assign blc = blc_reg;
+    assign awb = awb_reg;
+    assign liangdu = liangdu_reg;
+    assign baohedu = baohedu_reg;
+    assign awb_en = awb_en_reg;
+    assign binarization = binarization_reg;
+    assign cnn_level = cnn_level_reg;
+    assign sobel = sobel_reg;
+    assign isp_judge = isp_judge_reg;
+    assign cb_min = cb_min_reg;
+    assign cb_max = cb_max_reg;
+    assign cr_min = cr_min_reg;
+    assign cr_max = cr_max_reg;
 
+    /* 状态编号与现有命令协议保持一致，复位后等待第一个帧头字节。 */
+    localparam st_idle = 1;
+    localparam st_idle1 = 2;
+    localparam st_select = 3;
+    localparam st_mode = 4;
+    localparam st_blc = 5;
+    localparam st_awb = 7;
+    localparam st_liangdu = 8;
+    localparam st_baohedu = 9;
+    localparam st_awb_en = 10;
+    localparam st_binarization = 11;
+    localparam st_cnn = 12;
+    localparam st_sobel = 13;
+    localparam st_isp_judge = 14;
+    localparam st_cbmin = 15;
+    localparam st_cbmax = 16;
+    localparam st_crmin = 17;
+    localparam st_crmax = 18;
 
+    reg [7:0] cur_state;
+    reg [7:0] next_state;
 
-//(三段式状态机)状态定义
-    localparam                          st_idle                   = 1     ;     //前导码
-    localparam                          st_idle1                  = 2     ;     //前导码
-    localparam                          st_select                 = 3     ;     //选择不同模式
-    localparam                          st_mode                   = 4     ;     //isp模式选择
-    localparam                          st_blc                    = 5     ;     //blc数据
-    localparam                          st_awb                    = 7     ;     //awb数据
-    localparam                          st_liangdu                = 8     ;     //liangdu数据
-    localparam                          st_baohedu                = 9     ;     //baohedu数据
-    localparam                          st_awb_en                 = 10    ;     //awb使能数据
-    localparam                          st_binarization           = 11    ;     //二值化阈值数据
-    localparam                          st_cnn                    = 12    ;     //cnn数据
-    localparam                          st_sobel                    = 13    ;     //sobel数据
-    localparam                          st_isp_judge              = 14    ;     //isp 亮度增强控制 //0cnn,1gamma
-localparam st_cbmin = 15;
-localparam st_cbmax = 16;
-localparam st_crmin = 17;
-localparam st_crmax = 18;
-    
-
-
-
-    reg                [   7:0]         cur_state                  ;
-    reg                [   7:0]         next_state                 ;
-
-
-
-    
-    
-//(三段式状态机)同步时序描述状态转移
+/* 时序状态寄存器在低有效复位时回到初始状态。 */
     always @(posedge clk or negedge rst_n)
         begin
             if(rst_n == 1'b0)
@@ -86,7 +80,8 @@ localparam st_crmax = 18;
             else
                 cur_state <= next_state;
         end
-//组合逻辑判断状态转移条件
+
+/* 组合逻辑先识别双字节帧头，再按功能编号选择接收状态。 */
     always @( * ) begin
         case(cur_state)
             st_idle:
@@ -132,131 +127,23 @@ localparam st_crmax = 18;
                     else
                         next_state = st_select;
                 end
-            st_mode:
-                begin
-                    if(  uart_rx_valid   )
-                    begin
-                        //mode_reg=uart_rx;         
-                        next_state = st_idle  ;
-                    end
-                    else next_state = st_mode;
-                end
-            st_blc:
-                begin
-                    if(  uart_rx_valid   )
-                    begin
-                        //blc_reg=uart_rx;         
-                        next_state = st_idle  ;
-                    end
-                    else next_state = st_blc;
-                end
-            st_awb:
-                begin
-                    if(  uart_rx_valid   )
-                    begin
-                        //awb_reg=uart_rx;         
-                        next_state = st_idle  ;
-                    end
-                    else next_state = st_awb;
-                end
-            st_liangdu:
-                begin
-                    if(  uart_rx_valid   )
-                    begin
-                        //liangdu_reg=uart_rx;         
-                        next_state = st_idle  ;
-                    end
-                    else next_state = st_liangdu;
-                end
-            st_baohedu:
-                begin
-                    if(  uart_rx_valid   )
-                    begin
-                        //baohedu_reg=uart_rx;         
-                        next_state = st_idle  ;
-                    end
-                    else next_state = st_baohedu;
-                end
-            st_awb_en:
-                begin
-                    if(  uart_rx_valid   )
-                    begin
-                        //awb_en_reg=uart_rx[0];         
-                        next_state = st_idle  ;
-                    end
-                    else next_state =st_awb_en;
-                end
-            st_binarization:
-                begin
-                    if(  uart_rx_valid   )
-                    begin         
-                        next_state = st_idle  ;
-                    end
-                    else next_state = st_binarization;
-                end
-            st_cnn:
-                begin
-                    if(  uart_rx_valid   )
-                    begin         
-                        next_state = st_idle  ;
-                    end
-                    else next_state = st_cnn;
-                end
-            st_sobel:
-                begin
-                    if(  uart_rx_valid   )
-                    begin         
-                        next_state = st_idle  ;
-                    end
-                    else next_state = st_sobel;
-                end
-            st_cbmin:
-                begin
-                    if(  uart_rx_valid   )
-                    begin                 
-                        next_state = st_idle  ;
-                    end
-                    else next_state = st_cbmin;
-                end
-            st_cbmax:
-                begin
-                    if(  uart_rx_valid   )
-                    begin                  
-                        next_state = st_idle  ;
-                    end
-                    else next_state = st_cbmax;
-                end
-            st_crmin:
-                begin
-                    if(  uart_rx_valid   )
-                    begin                 
-                        next_state = st_idle  ;
-                    end
-                    else next_state = st_crmin;
-                end
-            st_crmax:
-                begin
-                    if(  uart_rx_valid   )
-                    begin                 
-                        next_state = st_idle  ;
-                    end
-                    else next_state = st_crmax;
-                end
-            st_isp_judge:
-                begin
-                    if(  uart_rx_valid   )
-                    begin         
-                        next_state = st_idle  ;
-                    end
-                    else next_state = st_isp_judge;
-                end
+            /* 收到数据字节后返回帧头；等待期间保持当前寄存器选择状态。 */
+            st_mode, st_blc, st_awb, st_liangdu, st_baohedu,
+            st_awb_en, st_binarization, st_cnn, st_sobel,
+            st_cbmin, st_cbmax, st_crmin, st_crmax, st_isp_judge: begin
+                if (uart_rx_valid)
+                    next_state = st_idle;
+                else
+                    next_state = cur_state;
+            end
             default: next_state= st_idle;
         endcase
     end
-//时序电路描述状态输出
-    always @(posedge clk or negedge rst_n)           
-        begin                                        
-            if(!rst_n)                               
+
+/* 仅在数据字节有效时更新目标寄存器；保留原有的各项复位值。 */
+    always @(posedge clk or negedge rst_n)
+        begin
+            if(!rst_n)
                 begin
                     mode_reg   <=8'd8;
                     blc_reg    <=0;
@@ -272,9 +159,9 @@ localparam st_crmax = 18;
                     cb_max_reg<=127;
                     cr_min_reg<=130;
                     cr_max_reg<=180;
-                end                       
-            else if(uart_rx_valid)     
-            begin                     
+                end
+            else if(uart_rx_valid)
+            begin
                 case (cur_state)
                     st_mode: mode_reg<=uart_rx;
                     st_blc: blc_reg<=uart_rx;
@@ -283,7 +170,7 @@ localparam st_crmax = 18;
                     st_baohedu: baohedu_reg<=uart_rx;
                     st_awb_en: awb_en_reg<=uart_rx[0];
                     st_binarization: binarization_reg<=uart_rx;
-                    //st_cnn: cnn_level_reg<=uart_rx[0];
+
                     st_cnn: cnn_level_reg<=uart_rx[3:0];
                     st_sobel: sobel_reg<=uart_rx;
                     st_isp_judge: isp_judge_reg<=uart_rx[0];
@@ -291,9 +178,9 @@ localparam st_crmax = 18;
                     st_cbmax: cb_max_reg<=uart_rx;
                     st_crmin: cr_min_reg<=uart_rx;
                     st_crmax: cr_max_reg<=uart_rx;
-                endcase      
-            end                                         
-            else  
+                endcase
+            end
+            else
             begin
                 mode_reg   <=mode_reg   ;
                 blc_reg    <=blc_reg    ;
@@ -310,6 +197,6 @@ localparam st_crmax = 18;
                 cr_min_reg<=cr_min_reg;
                 cr_max_reg<=cr_max_reg;
             end
-        end                                   
-                                                  
-endmodule                                                          
+        end
+
+endmodule

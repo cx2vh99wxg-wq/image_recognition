@@ -1,5 +1,6 @@
 #include "pcie_dma_read_test.h"
 #include "yolo_integration.h"
+#include "camera_orientation.h"
 #include "../../include/shared_memory.h"
 #include <stdio.h>
 #include <stdint.h>
@@ -20,7 +21,7 @@
 #endif
 
 //=========================================================================
-// *作   者：辉哥大盗（PCIE+YOLO整合版）
+// *作   者：科研轮转（PCIE+YOLO整合版）
 // *完成时间：2025年10月11日
 // *实现功能：图像采集与YOLO实时目标检测（整合PCIE驱动和YOLO识别）
 // *性能优化：在图像拼接完成后直接进行YOLO检测和标注绘制
@@ -64,6 +65,8 @@
 
 #define IMAGE_WIDTH  640
 #define IMAGE_HEIGHT 480
+#define CAMERA_TILE_WIDTH 320
+#define CAMERA_TILE_HEIGHT 240
 #define LEADING_PIXELS 120   /* 每行前导像素数量 */
 #define EXTRA_SKIP_PIXELS 0  /* 额外需要跳过的前导像素（微调） */
 
@@ -852,6 +855,10 @@ int main() {
             return -1;
         }
         
+        /* S端画面按摄像头区块旋转180度，保持视角位置和检测坐标一致。 */
+        rotate_rgb565_tiles_180((uint16_t*)image_buf_temp, IMAGE_WIDTH, IMAGE_HEIGHT,
+                                CAMERA_TILE_WIDTH, CAMERA_TILE_HEIGHT);
+
         /* 步骤2: 将RGB565转换为RGB888格式 */
         rgb565_to_rgb888((uint16_t*)image_buf_temp, image_buf_888, IMAGE_WIDTH * IMAGE_HEIGHT);
         
