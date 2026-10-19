@@ -23,25 +23,6 @@
 #define MAX_PACKET_SIZE 1400
 
 //=========================================================================
-// RGB565到RGB888格式转换
-//=========================================================================
-void rgb565_to_rgb888(const uint16_t* rgb565_data, uint8_t* rgb888_data, int pixel_count) {
-    for (int i = 0; i < pixel_count; i++) {
-        uint16_t pixel = rgb565_data[i];
-        
-        // 提取RGB565的各个分量
-        uint8_t r5 = (pixel >> 11) & 0x1F;
-        uint8_t g6 = (pixel >> 5) & 0x3F;
-        uint8_t b5 = pixel & 0x1F;
-        
-        // 转换到RGB888格式
-        rgb888_data[i * 3 + 0] = (r5 << 3) | (r5 >> 2);  // R
-        rgb888_data[i * 3 + 1] = (g6 << 2) | (g6 >> 4);  // G
-        rgb888_data[i * 3 + 2] = (b5 << 3) | (b5 >> 2);  // B
-    }
-}
-
-//=========================================================================
 // 帧同步和行同步结构定义 - 640*480专用
 //=========================================================================
 #define FRAME_HEADER_MAGIC 0xFF00FF00  /* 帧头魔数 */
@@ -90,7 +71,6 @@ int network_send_frame_with_sync(NetworkManager* net_mgr, const uint8_t* frame_d
                                  uint32_t curve_type, uint32_t curve_confidence, uint32_t curve_angle);
 void network_manager_cleanup(NetworkManager* net_mgr);
 uint32_t calculate_checksum(const uint8_t* data, size_t size);
-void rgb888_to_rgb565(const uint8_t* rgb888_data, uint16_t* rgb565_data, size_t num_pixels);
 
 //=========================================================================
 // 网络传输函数实现
@@ -158,120 +138,65 @@ uint32_t calculate_checksum(const uint8_t* data, size_t size) {
 }
 
 /**************************************************************************
-** 函数名称:    rgb888_to_rgb565 - RGB888转RGB565格式
-****************************************************************************/
-void rgb888_to_rgb565(const uint8_t* rgb888_data, uint16_t* rgb565_data, size_t num_pixels) {
-    for (size_t i = 0; i < num_pixels; i++) {
-        uint8_t r = rgb888_data[i * 3 + 0];
-        uint8_t g = rgb888_data[i * 3 + 1]; 
-        uint8_t b = rgb888_data[i * 3 + 2];
-        
-        // 转换为RGB565格式
-        rgb565_data[i] = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | ((b & 0xF8) >> 3);
-    }
-}
-
-/**************************************************************************
 ** 函数名称:    network_send_frame_with_sync - 发送带同步的640*480帧
 ****************************************************************************/
 int network_send_frame_with_sync(NetworkManager* net_mgr, const uint8_t* frame_data, uint32_t frame_id,
                                  uint32_t curve_type, uint32_t curve_confidence, uint32_t curve_angle) {
-    FrameHeader frame_header;
-    FrameTrailer frame_trailer;
-    LineHeader line_header;
-    ssize_t sent;
-    uint32_t frame_checksum = 0;
-    uint32_t total_sent = 0;
+    if (!net_mgr || !frame_data) return -1;
 
-    if (!net_mgr || !frame_data) {
+    // PCIe共享内存已经是RGB565，直接传输原始像素，不再重复转换颜色。
+    const uint32_t frame_checksum = calculate_checksum(frame_data, PCIE_FRAME_SIZE);
+    FrameHeader header = {};
+    header.magic = FRAME_HEADER_MAGIC;
+    header.frame_id = frame_id;
+    header.width = IMAGE_WIDTH;
+    header.height = IMAGE_HEIGHT;
+    header.data_size = PCIE_FRAME_SIZE;
+    header.line_count = IMAGE_HEIGHT;
+    header.checksum = frame_checksum;
+    header.timestamp = (uint32_t)time(NULL);
+    header.curve_type = curve_type;
+    header.curve_confidence = curve_confidence;
+    header.curve_angle = curve_angle;
+
+    const struct sockaddr* target = (const struct sockaddr*)&net_mgr->target_addr;
+    const socklen_t target_len = sizeof(net_mgr->target_addr);
+    if (sendto(net_mgr->socket_fd, &header, sizeof(header), 0,
+               target, target_len) != (ssize_t)sizeof(header)) {
+        perror("帧头发送失败");
         return -1;
     }
 
-    // 将RGB888转换为RGB565以节省传输带宽
-    static uint16_t* rgb565_buffer = NULL;
-    if (!rgb565_buffer) {
-        rgb565_buffer = (uint16_t*)malloc(IMAGE_WIDTH * IMAGE_HEIGHT * 2);
-        if (!rgb565_buffer) {
-            printf("RGB565缓冲区分配失败\n");
-            return -1;
-        }
-    }
-
-    rgb888_to_rgb565(frame_data, rgb565_buffer, IMAGE_WIDTH * IMAGE_HEIGHT);
-
-    // 第一步：发送帧头
-    frame_header.magic = FRAME_HEADER_MAGIC;
-    frame_header.frame_id = frame_id;
-    frame_header.width = IMAGE_WIDTH;
-    frame_header.height = IMAGE_HEIGHT;
-    frame_header.data_size = IMAGE_WIDTH * IMAGE_HEIGHT * 2; // RGB565
-    frame_header.line_count = IMAGE_HEIGHT;
-    frame_header.timestamp = (uint32_t)time(NULL);
-    frame_header.curve_type = curve_type;
-    frame_header.curve_confidence = curve_confidence;
-    frame_header.curve_angle = curve_angle;
-    frame_header.reserved = 0;
-
-    sent = sendto(net_mgr->socket_fd, &frame_header, sizeof(FrameHeader), 0,
-                  (struct sockaddr*)&net_mgr->target_addr, sizeof(net_mgr->target_addr));
-
-    if (sent != sizeof(FrameHeader)) {
-        printf("帧头发送失败\n");
-        return -1;
-    }
-
-    // 第二步：逐行发送图像数据
-    for (int line = 0; line < IMAGE_HEIGHT; line++) {
-        // 发送行头
+    for (uint16_t line = 0; line < IMAGE_HEIGHT; ++line) {
+        const uint8_t* line_data = frame_data + (size_t)line * IMAGE_WIDTH * 2;
+        LineHeader line_header = {};
         line_header.magic = LINE_HEADER_MAGIC;
         line_header.line_id = line;
-        line_header.line_size = IMAGE_WIDTH * 2; // 每行640像素 * 2字节
+        line_header.line_size = IMAGE_WIDTH * 2;
+        line_header.line_checksum = calculate_checksum(line_data, line_header.line_size);
 
-        // 计算行校验和
-        const uint8_t* line_data = (uint8_t*)(rgb565_buffer + line * IMAGE_WIDTH);
-        line_header.line_checksum = calculate_checksum(line_data, IMAGE_WIDTH * 2);
-
-        sent = sendto(net_mgr->socket_fd, &line_header, sizeof(LineHeader), 0,
-                      (struct sockaddr*)&net_mgr->target_addr, sizeof(net_mgr->target_addr));
-
-        if (sent != sizeof(LineHeader)) {
-            printf("行头发送失败: 行%d\n", line);
+        if (sendto(net_mgr->socket_fd, &line_header, sizeof(line_header), 0,
+                   target, target_len) != (ssize_t)sizeof(line_header) ||
+            sendto(net_mgr->socket_fd, line_data, line_header.line_size, 0,
+                   target, target_len) != (ssize_t)line_header.line_size) {
+            perror("图像行发送失败");
             return -1;
         }
-
-        // 发送行数据
-        sent = sendto(net_mgr->socket_fd, line_data, IMAGE_WIDTH * 2, 0,
-                      (struct sockaddr*)&net_mgr->target_addr, sizeof(net_mgr->target_addr));
-
-        if (sent != IMAGE_WIDTH * 2) {
-            printf("行数据发送失败: 行%d\n", line);
-            return -1;
-        }
-
-        frame_checksum += line_header.line_checksum;
-        total_sent += IMAGE_WIDTH * 2;
-
-        // 小延时防止网络拥塞 (每20行)
-        if (line % 20 == 0) {
-            usleep(500); // 500微秒
-        }
+        // 每帧约615KB，在100Mb/s链路上适当限流，避免队列溢出。
+        usleep(100);
     }
 
-    // 第三步：发送帧尾
-    frame_trailer.magic = FRAME_TRAILER_MAGIC;
-    frame_trailer.frame_id = frame_id;
-    frame_trailer.checksum = frame_checksum;
-    frame_trailer.total_lines = IMAGE_HEIGHT;
-
-    sent = sendto(net_mgr->socket_fd, &frame_trailer, sizeof(FrameTrailer), 0,
-                  (struct sockaddr*)&net_mgr->target_addr, sizeof(net_mgr->target_addr));
-
-    if (sent != sizeof(FrameTrailer)) {
-        printf("帧尾发送失败\n");
+    FrameTrailer trailer = {};
+    trailer.magic = FRAME_TRAILER_MAGIC;
+    trailer.frame_id = frame_id;
+    trailer.checksum = frame_checksum;
+    trailer.total_lines = IMAGE_HEIGHT;
+    if (sendto(net_mgr->socket_fd, &trailer, sizeof(trailer), 0,
+               target, target_len) != (ssize_t)sizeof(trailer)) {
+        perror("帧尾发送失败");
         return -1;
     }
-    
-    return total_sent;
+    return PCIE_FRAME_SIZE;
 }
 
 /**************************************************************************
@@ -340,11 +265,8 @@ int main(int argc, char* argv[]) {
     
     // 分配图像缓冲区
     uint8_t* image_buffer = (uint8_t*)malloc(PCIE_FRAME_SIZE);
-    uint8_t* rgb888_buffer = (uint8_t*)malloc(IMAGE_WIDTH * IMAGE_HEIGHT * 3);
-    if (!image_buffer || !rgb888_buffer) {
+    if (!image_buffer) {
         printf("图像缓冲区分配失败！\n");
-        if (image_buffer) free(image_buffer);
-        if (rgb888_buffer) free(rgb888_buffer);
         network_manager_cleanup(&network_manager);
         if (curve_detection_available) {
             curve_detection_shm_cleanup();
@@ -403,11 +325,12 @@ int main(int argc, char* argv[]) {
                 curve_angle = 0;
             }
 
-            // 将RGB565转换为RGB888
-            rgb565_to_rgb888((uint16_t*)image_buffer, rgb888_buffer, width * height);
-
             // 发送图像帧(包含弯道检测信息)
-            int send_result = network_send_frame_with_sync(&network_manager, rgb888_buffer, frame_id,
+            if (width != IMAGE_WIDTH || height != IMAGE_HEIGHT) {
+                fprintf(stderr, "跳过尺寸不匹配的帧: %ux%u\n", width, height);
+                continue;
+            }
+            int send_result = network_send_frame_with_sync(&network_manager, image_buffer, frame_id,
                                                           (uint32_t)curve_type, curve_confidence, curve_angle);
 
             if (send_result > 0) {
@@ -466,7 +389,6 @@ int main(int argc, char* argv[]) {
     // 清理资源
     printf("\n=== 清理资源 ===\n");
     free(image_buffer);
-    free(rgb888_buffer);
     network_manager_cleanup(&network_manager);
     if (curve_detection_available) {
         curve_detection_shm_cleanup();

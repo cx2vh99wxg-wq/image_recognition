@@ -1382,6 +1382,10 @@ int main() {
     struct timeval stream_start, current_time;
     uint8_t* pcie_buffer = NULL;
     uint8_t* udp_buffer = NULL;
+    int pcie_available = 0;
+    int udp_available = 0;
+    time_t last_pcie_retry = 0;
+    time_t last_udp_retry = 0;
     int frame_count = 0;
     double total_time = 0.0;
     uint32_t last_pcie_frame_id = 0;
@@ -1426,26 +1430,25 @@ int main() {
         return -1;
     }
     
-    // 初始化PCIe共享内存（读取者）
+    // 本地PCIe尚未运行时也允许远端UDP画面进入窗口。
+    memset(pcie_buffer, 0, PCIE_IMAGE_WIDTH * PCIE_IMAGE_HEIGHT * 2);
+    memset(udp_buffer, 0, UDP_IMAGE_WIDTH * UDP_IMAGE_HEIGHT * 2);
     printf("\n=== 初始化PCIe共享内存连接 ===\n");
-    if (shared_memory_init_pcie(&pcie_shm_manager, 0) != 0) {  // 0表示读取者
-        printf("PCIe共享内存连接失败！\n");
-        free(pcie_buffer);
-        free(udp_buffer);
-        return -1;
+    if (shared_memory_init_pcie(&pcie_shm_manager, 0) == 0) {
+        pcie_available = 1;
+        printf("PCIe共享内存连接成功\n");
+    } else {
+        printf("PCIe共享内存暂不可用，继续显示UDP图像\n");
     }
-    printf("PCIe共享内存连接成功\n");
-    
-    // 初始化UDP共享内存（读取者）
+
+    // 接收进程可以稍后启动；窗口持续等待UDP共享内存出现。
     printf("\n=== 初始化UDP共享内存连接 ===\n");
-    if (shared_memory_init_udp(&udp_shm_manager, 0) != 0) {  // 0表示读取者
-        printf("UDP共享内存连接失败！\n");
-        shared_memory_cleanup(&pcie_shm_manager);
-        free(pcie_buffer);
-        free(udp_buffer);
-        return -1;
+    if (shared_memory_init_udp(&udp_shm_manager, 0) == 0) {
+        udp_available = 1;
+        printf("UDP共享内存连接成功\n");
+    } else {
+        printf("UDP共享内存暂不可用，等待网络接收进程\n");
     }
-    printf("UDP共享内存连接成功\n");
 
     // 加载car.png图像
     printf("\n=== 加载car.png图像 ===\n");
@@ -1489,8 +1492,8 @@ int main() {
         if (emergency_brake_shm) {
             emergency_brake_shm_cleanup(emergency_brake_shm, 0);
         }
-        shared_memory_cleanup(&pcie_shm_manager);
-        shared_memory_cleanup(&udp_shm_manager);
+        if (pcie_available) shared_memory_cleanup(&pcie_shm_manager);
+        if (udp_available) shared_memory_cleanup(&udp_shm_manager);
         free(pcie_buffer);
         free(udp_buffer);
         return -1;
@@ -1549,23 +1552,38 @@ int main() {
             }
         }
         
-        // 尝试读取PCIe共享内存
-        int pcie_result = shared_memory_read_image(&pcie_shm_manager, 
-                                                 pcie_buffer, 
-                                                 PCIE_IMAGE_WIDTH * PCIE_IMAGE_HEIGHT * 2,
-                                                 &pcie_width, &pcie_height, &pcie_frame_id);
-        
+        // 每秒重试连接本地采集进程；远端UDP渲染不依赖其启动顺序。
+        if (!pcie_available && time(NULL) != last_pcie_retry) {
+            last_pcie_retry = time(NULL);
+            if (shared_memory_init_pcie(&pcie_shm_manager, 0) == 0) {
+                pcie_available = 1;
+                printf("PCIe共享内存已连接\n");
+            }
+        }
+        int pcie_result = pcie_available
+            ? shared_memory_read_image(&pcie_shm_manager, pcie_buffer,
+                                       PCIE_IMAGE_WIDTH * PCIE_IMAGE_HEIGHT * 2,
+                                       &pcie_width, &pcie_height, &pcie_frame_id)
+            : 0;
+
         if (pcie_result > 0 && pcie_frame_id != last_pcie_frame_id) {
             last_pcie_frame_id = pcie_frame_id;
             pcie_updated = 1;
         }
         
-        // 尝试读取UDP共享内存
-        int udp_result = shared_memory_read_image(&udp_shm_manager, 
-                                                udp_buffer, 
-                                                UDP_IMAGE_WIDTH * UDP_IMAGE_HEIGHT * 2,
-                                                &udp_width, &udp_height, &udp_frame_id);
-        
+        if (!udp_available && time(NULL) != last_udp_retry) {
+            last_udp_retry = time(NULL);
+            if (shared_memory_init_udp(&udp_shm_manager, 0) == 0) {
+                udp_available = 1;
+                printf("UDP共享内存已连接\n");
+            }
+        }
+        int udp_result = udp_available
+            ? shared_memory_read_image(&udp_shm_manager, udp_buffer,
+                                       UDP_IMAGE_WIDTH * UDP_IMAGE_HEIGHT * 2,
+                                       &udp_width, &udp_height, &udp_frame_id)
+            : 0;
+
         if (udp_result > 0 && udp_frame_id != last_udp_frame_id) {
             last_udp_frame_id = udp_frame_id;
             udp_updated = 1;
@@ -1653,8 +1671,8 @@ int main() {
 
     curve_detection_shm_cleanup();
 
-    shared_memory_cleanup(&pcie_shm_manager);
-    shared_memory_cleanup(&udp_shm_manager);
+    if (pcie_available) shared_memory_cleanup(&pcie_shm_manager);
+    if (udp_available) shared_memory_cleanup(&udp_shm_manager);
     
     if (pcie_buffer) {
         free(pcie_buffer);

@@ -112,7 +112,7 @@ if ! shopt -oq posix; then
   fi
 fi
 if [ -f ~/setup_network.sh ]; then
-    sudo ~/setup_network.sh
+    sudo bash ~/setup_network.sh
 fi
 if [ -f ~/pango_pci_driver.ko ]; then
     sudo insmod ~/pango_pci_driver.ko
