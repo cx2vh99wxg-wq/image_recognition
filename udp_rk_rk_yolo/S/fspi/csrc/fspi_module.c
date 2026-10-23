@@ -19,9 +19,9 @@
 #include <time.h>
 
 #define SPI_DEVICE "/dev/spidev4.0"
-#define SPI_SPEED 100000000
+#define SPI_SPEED 24000000
 #define SPI_MODE_FLAGS (SPI_CPOL | SPI_CPHA)
-#define SPI_TRANSFER_SIZE 3
+#define SPI_TRANSFER_SIZE 5
 #define SPI_CYCLE_COUNT 1
 #define SPI_BITS_PER_WORD 8
 #define SPI_DELAY_US 0
@@ -69,7 +69,7 @@ static int g_spi_fd = -1;
 
 static int configure_spi_interface(int fd, SpiTestConfig *config);
 static int perform_transfer(int fd, uint8_t *tx_buf, uint8_t *rx_buf, SpiTestConfig *config);
-static int spi_write_3bytes(int fd, uint16_t addr, uint8_t data);
+static int spi_write_register(int fd, uint16_t addr, uint8_t data);
 static int spi_read_addr_data(int fd, uint16_t addr, uint8_t *data);
 static int spi_read_direct(int fd, uint8_t *data);
 static int spi_write_reliable(int fd, uint16_t addr, uint8_t data);
@@ -116,26 +116,32 @@ static int perform_transfer(int fd, uint8_t *tx_buf, uint8_t *rx_buf, SpiTestCon
     switch (config->protocol_mode)
     {
     case SPI_MODE_DUAL:
-        tr.tx_nbits = tr.rx_nbits = 2;
+        tr.tx_nbits = tx_buf ? 2 : 0;
+        tr.rx_nbits = rx_buf ? 2 : 0;
         break;
     case SPI_MODE_QUAD:
-        tr.tx_nbits = tr.rx_nbits = 4;
+        tr.tx_nbits = tx_buf ? 4 : 0;
+        tr.rx_nbits = rx_buf ? 4 : 0;
         break;
     default:
-        tr.tx_nbits = tr.rx_nbits = 1;
+        tr.tx_nbits = tx_buf ? 1 : 0;
+        tr.rx_nbits = rx_buf ? 1 : 0;
     }
 
     return ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
 }
 
-/* 将十六位地址拆成高低字节，再附上数据字节，以四线发送模式写出。 */
-static int spi_write_3bytes(int fd, uint16_t addr, uint8_t data)
+/* FPGA 首字节是写命令 0x00；地址与数据必须在同一次片选期间跟随。
+ * 尾随空字节给跨时钟域的寄存器控制器留出提交写入的时间。 */
+static int spi_write_register(int fd, uint16_t addr, uint8_t data)
 {
-    uint8_t tx_buffer[3];
+    uint8_t tx_buffer[SPI_TRANSFER_SIZE];
 
-    tx_buffer[0] = (addr >> 8) & 0xFF;
-    tx_buffer[1] = addr & 0xFF;
-    tx_buffer[2] = data;
+    tx_buffer[0] = 0x00;
+    tx_buffer[1] = (uint8_t)(addr >> 8);
+    tx_buffer[2] = (uint8_t)addr;
+    tx_buffer[3] = data;
+    tx_buffer[4] = 0x00;
 
     g_config.spi_mode |= SPI_TX_QUAD;
     g_config.spi_mode &= ~SPI_RX_QUAD;
@@ -147,7 +153,7 @@ static int spi_write_3bytes(int fd, uint16_t addr, uint8_t data)
 
     if (perform_transfer(fd, tx_buffer, NULL, &g_config) < 0)
     {
-        perror("Write 3 bytes failed");
+        perror("Write register failed");
         return -1;
     }
 
@@ -239,7 +245,7 @@ static int spi_write_reliable(int fd, uint16_t addr, uint8_t data)
 
     for (retry_count = 0; retry_count < WRITE_RETRY_COUNT; retry_count++)
     {
-        ret = spi_write_3bytes(fd, addr, data);
+        ret = spi_write_register(fd, addr, data);
 
         if (ret == 0)
         {
@@ -467,14 +473,14 @@ int vehicle_turn_right(int enable) {
     return vehicle_control(3, enable);
 }
 
-/* 向地址 4 写入一，执行主动紧急停止。 */
+/* stop 按键低电平有效；向地址 4 写零并保持，直到明确写一解除。 */
 int vehicle_emergency_stop(void) {
     if (g_spi_fd < 0) {
         return -1;
     }
 
     uint16_t addr = 4;
-    uint8_t stop_value = 1;
+    uint8_t stop_value = 0;
 
     printf("正在执行立即主动停止...\n");
 

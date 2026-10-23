@@ -77,11 +77,11 @@ module image_pcie_capture #(
     input  wire       spi_clk,
     input  wire       spi_cs,
     inout  wire [3:0] spi_data,
-    output wire       go,
-    output wire       back,
-    output wire       left,
-    output wire       right,
-    output wire       stop,
+    inout  wire       go,
+    inout  wire       back,
+    inout  wire       left,
+    inout  wire       right,
+    inout  wire       stop,
     //test
     //output wire test,
 
@@ -331,87 +331,75 @@ module image_pcie_capture #(
   wire [  7:0] mem3_out;
   wire [  7:0] mem4_out;
 
-  // stop脉冲生成器：1秒间隔的0101脉冲
-  reg [25:0] stop_pulse_cnt;            // 计数器，用于1秒计时 (25MHz × 1s = 25,000,000)
-  reg stop_pulse;                       // 脉冲信号
-  reg [1:0] pulse_step;                 // 脉冲步骤：0=空闲, 1=第1个0, 2=第1个1, 3=第2个0
-  reg mem4_out_d1;                      // mem4_out[0]的延迟一拍
-  wire mem4_negedge;                    // mem4_out[0]的下降沿检测
-  parameter STOP_PULSE_1S = 26'd25_000_000;  // 1秒计数值 (free_clk为25MHz)
-
-  // 下降沿检测：从1变到0
-  assign mem4_negedge = (mem4_out_d1 == 1'b1) && (mem4_out[0] == 1'b0);
-
-  always @(posedge free_clk or negedge board_rst_n) begin
+  // FSPI registers are written on its faster wr_clk. Their button levels
+  // are held for many free_clk periods, so two flip-flops safely transfer
+  // them into the 25 MHz pad-control domain before any decision is made.
+  reg [4:0] fspi_button_meta;
+  reg [4:0] fspi_button_sync;   always @(posedge free_clk or negedge board_rst_n) begin
     if (!board_rst_n) begin
-      mem4_out_d1 <= 1'b1;               // 初始化为1
+      fspi_button_meta <= 5'b11111;
+      fspi_button_sync <= 5'b11111;
     end else begin
-      mem4_out_d1 <= mem4_out[0];        // 延迟一拍
+      fspi_button_meta <= {mem4_out[0], mem3_out[0], mem2_out[0], mem1_out[0], mem0_out[0]};
+      fspi_button_sync <= fspi_button_meta;
     end
   end
 
-  always @(posedge free_clk or negedge board_rst_n) begin
-    if (!board_rst_n) begin
-      stop_pulse_cnt <= 26'd0;
-      stop_pulse <= 1'b1;                // 默认输出1
-      pulse_step <= 2'd0;                // 空闲状态
-    end else begin
-      case (pulse_step)
-        2'd0: begin  // 空闲状态，默认输出1，等待触发
-          stop_pulse <= 1'b1;
-          stop_pulse_cnt <= 26'd0;
-          if (mem4_negedge) begin        // 检测到下降沿触发
-            pulse_step <= 2'd1;          // 启动脉冲序列
-            stop_pulse <= 1'b0;          // 输出第1个0
-            stop_pulse_cnt <= 26'd0;
-          end
-          else
-            pulse_step <= 2'd0;
-        end
+  // UART commands originate on true_50M. A stable-value filter prevents a
+  // multi-bit direction change from looking like a momentary E request.
+  wire [3:0] hmi_select_sync;
+  wire hmi_rearm;
+  hmi_control_synchronizer u_hmi_control_synchronizer (
+      .clk          (free_clk),
+      .rst_n        (board_rst_n),
+      .async_code   (select_rearview),
+      .code_sync    (hmi_select_sync),
+      .rearm_command(hmi_rearm)
+  );
 
-        2'd1: begin  // 第1个0 (持续1秒)
-          if (stop_pulse_cnt >= STOP_PULSE_1S - 1) begin
-            stop_pulse_cnt <= 26'd0;
-            stop_pulse <= 1'b1;          // 切换到1
-            pulse_step <= 2'd2;
-          end else begin
-            stop_pulse_cnt <= stop_pulse_cnt + 1'b1;
-          end
-        end
+  // The physical STOP key toggles a latch in the original remote. A level
+  // from FSPI must therefore become one finite press, followed by a locked
+  // interval until the operator requests another press on the HMI.
+  wire stop_pressed;
+  wire movement_blocked;
+  wire fspi_direction_armed;
+  remote_stop_controller u_remote_stop_controller (
+      .clk                  (free_clk),
+      .rst_n                (board_rst_n),
+      .brake_request        (~fspi_button_sync[4]),
+      .rearm_command        (hmi_rearm),
+      .fspi_directions_idle (&fspi_button_sync[3:0]),
+      .stop_pressed         (stop_pressed),
+      .movement_blocked     (movement_blocked),
+      .fspi_direction_armed (fspi_direction_armed)
+  );
 
-        2'd2: begin  // 第1个1 (持续1秒)
-          if (stop_pulse_cnt >= STOP_PULSE_1S - 1) begin
-            stop_pulse_cnt <= 26'd0;
-            stop_pulse <= 1'b0;          // 切换到0
-            pulse_step <= 2'd3;
-          end else begin
-            stop_pulse_cnt <= stop_pulse_cnt + 1'b1;
-          end
-        end
+  // A released HMI direction must not expose an older active FSPI register.
+  // Return control to FSPI only after all four direction registers are idle.
+  wire go_released;
+  wire back_released;
+  wire left_released;
+  wire right_released;
+  remote_direction_arbiter u_remote_direction_arbiter (
+      .clk                 (free_clk),
+      .rst_n               (board_rst_n),
+      .hmi_code            (hmi_select_sync),
+      .fspi_released       (fspi_button_sync[3:0]),
+      .fspi_direction_armed(fspi_direction_armed),
+      .movement_blocked    (movement_blocked),
+      .go_released         (go_released),
+      .back_released       (back_released),
+      .left_released       (left_released),
+      .right_released      (right_released)
+  );
 
-        2'd3: begin  // 第2个0 (持续1秒)
-          if (stop_pulse_cnt >= STOP_PULSE_1S - 1) begin
-            stop_pulse_cnt <= 26'd0;
-            stop_pulse <= 1'b1;          // 切换到1
-            pulse_step <= 2'd0;          // 完成，回到空闲状态
-          end else begin
-            stop_pulse_cnt <= stop_pulse_cnt + 1'b1;
-          end
-        end
-
-        default: begin
-          pulse_step <= 2'd0;
-          stop_pulse <= 1'b1;
-        end
-      endcase
-    end
-  end
-
-  assign go = (select_rearview == 4'ha) ? 1'b0 : mem0_out[0];                    // aa=前进启动(0), 否则停止(1)
-  assign back = (select_rearview == 4'hb) ? 1'b0 : mem1_out[0];                  // bb=后退启动(0), 否则停止(1)
-  assign left = (select_rearview == 4'hc) ? 1'b0 : mem2_out[0];           // cc=左转启动(0), 或由mem2_out[0]控制
-  assign right = (select_rearview == 4'hd) ? 1'b0 : mem3_out[0];          // dd=右转启动(0), 或由mem3_out[0]控制
-  assign stop = stop_pulse;                                                 // stop由脉冲生成器控制
+  // The original remote supplies its own 3.3 V pull-up. Release each
+  // contact to high impedance; only an active button sinks it to ground.
+  assign go    = go_released    ? 1'bz : 1'b0;
+  assign back  = back_released  ? 1'bz : 1'b0;
+  assign left  = left_released  ? 1'bz : 1'b0;
+  assign right = right_released ? 1'bz : 1'b0;
+  assign stop  = stop_pressed   ? 1'b0 : 1'bz;
 
   fspi_slave_top u_fspi_slave_top (
       .sys_clk        (free_clk),
@@ -1234,4 +1222,210 @@ vga_ctrl u_vga_ctrl
   // 输出拼接后的数据
   assign i_dma_write_data = concatenated_data;
 
+endmodule
+
+// HMI directions have priority while pressed. Their release frame is 0, so a
+// previously asserted FSPI bit must not immediately press the same contact
+// again. Wait for an all-idle FSPI state before accepting a fresh FSPI press.
+module remote_direction_arbiter (
+    input  wire       clk,
+    input  wire       rst_n,
+    input  wire [3:0] hmi_code,
+    input  wire [3:0] fspi_released,
+    input  wire       fspi_direction_armed,
+    input  wire       movement_blocked,
+    output wire       go_released,
+    output wire       back_released,
+    output wire       left_released,
+    output wire       right_released
+);
+  wire hmi_go    = (hmi_code == 4'ha);
+  wire hmi_back  = (hmi_code == 4'hb);
+  wire hmi_left  = (hmi_code == 4'hc);
+  wire hmi_right = (hmi_code == 4'hd);
+  wire hmi_neutral = (hmi_code == 4'he);
+  wire hmi_direction_valid = hmi_go | hmi_back | hmi_left | hmi_right;
+  wire fspi_idle = &fspi_released;
+
+  reg hmi_release_hold;
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+      hmi_release_hold <= 1'b0;
+    else if (hmi_direction_valid)
+      hmi_release_hold <= 1'b1;
+    else if (fspi_idle)
+      hmi_release_hold <= 1'b0;
+  end
+
+  wire hmi_owns_direction = hmi_direction_valid | hmi_neutral | hmi_release_hold;
+  wire fspi_blocked = ~fspi_direction_armed;
+  assign go_released    = movement_blocked | (hmi_owns_direction ? ~hmi_go    : (fspi_blocked | fspi_released[0]));
+  assign back_released  = movement_blocked | (hmi_owns_direction ? ~hmi_back  : (fspi_blocked | fspi_released[1]));
+  assign left_released  = movement_blocked | (hmi_owns_direction ? ~hmi_left  : (fspi_blocked | fspi_released[2]));
+  assign right_released = movement_blocked | (hmi_owns_direction ? ~hmi_right : (fspi_blocked | fspi_released[3]));
+endmodule
+
+// The remote controller's STOP key toggles its internal motor latch on each
+// distinct press. Convert the level-driven pedestrian alarm into one press,
+// hold the direction lock, then require a fresh HMI E press to toggle it back.
+// This controller has no readback of the remote's actual latch state.
+module remote_stop_controller #(
+    // free_clk is 25 MHz (40 ns in project.fdc): 250 ms press, 50 ms release.
+    parameter integer STOP_PULSE_CYCLES = 6_250_000,
+    parameter integer STOP_GAP_CYCLES   = 1_250_000
+) (
+    input  wire clk,
+    input  wire rst_n,
+    input  wire brake_request,
+    input  wire rearm_command,
+    input  wire fspi_directions_idle,
+    output wire stop_pressed,
+    output wire movement_blocked,
+    output wire fspi_direction_armed
+);
+  localparam [2:0] ST_READY        = 3'd0;
+  localparam [2:0] ST_BRAKE_PRESS  = 3'd1;
+  localparam [2:0] ST_LOCKED       = 3'd2;
+  localparam [2:0] ST_REARM_PRESS  = 3'd3;
+  localparam [2:0] ST_REARM_GAP    = 3'd4;
+  localparam [2:0] ST_REARM_WAIT   = 3'd5;
+  localparam [2:0] ST_BRAKE_GAP    = 3'd6;
+
+  reg [2:0] state;
+  reg [22:0] pulse_count;
+  reg rearm_previous;
+  reg rearm_abort;
+  reg fspi_armed;
+  wire rearm_rising = rearm_command & ~rearm_previous;
+
+  assign stop_pressed = (state == ST_BRAKE_PRESS) | (state == ST_REARM_PRESS);
+  assign movement_blocked = brake_request | rearm_command | (state != ST_READY);
+  assign fspi_direction_armed = fspi_armed;
+
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      state          <= ST_READY;
+      pulse_count    <= 23'd0;
+      rearm_previous <= 1'b0;
+      rearm_abort    <= 1'b0;
+      fspi_armed     <= 1'b1;
+    end else begin
+      rearm_previous <= rearm_command;
+
+      // A post-brake FSPI direction is accepted only after all four command
+      // registers have been released. E also discards any held old command.
+      if ((state == ST_READY && brake_request) || rearm_rising)
+        fspi_armed <= 1'b0;
+      else if (state == ST_READY && fspi_directions_idle)
+        fspi_armed <= 1'b1;
+
+      case (state)
+        ST_READY: begin
+          pulse_count <= 23'd0;
+          if (brake_request)
+            state <= ST_BRAKE_PRESS;
+        end
+
+        ST_BRAKE_PRESS: begin
+          if (pulse_count == STOP_PULSE_CYCLES - 1) begin
+            pulse_count <= 23'd0;
+            state <= ST_BRAKE_GAP;
+          end else
+            pulse_count <= pulse_count + 23'd1;
+        end
+
+        ST_BRAKE_GAP: begin
+          // Let the original remote debounce the released key before any
+          // operator-requested second press can be accepted.
+          if (pulse_count == STOP_GAP_CYCLES - 1) begin
+            pulse_count <= 23'd0;
+            state <= ST_LOCKED;
+          end else
+            pulse_count <= pulse_count + 23'd1;
+        end
+
+        ST_LOCKED: begin
+          // An E press while a person is still present is ignored. The user
+          // must release E and press again after the alarm clears.
+          if (rearm_rising && !brake_request) begin
+            pulse_count <= 23'd0;
+            rearm_abort <= 1'b0;
+            state <= ST_REARM_PRESS;
+          end
+        end
+
+        ST_REARM_PRESS: begin
+          if (brake_request)
+            rearm_abort <= 1'b1;
+          if (pulse_count == STOP_PULSE_CYCLES - 1) begin
+            pulse_count <= 23'd0;
+            state <= ST_REARM_GAP;
+          end else
+            pulse_count <= pulse_count + 23'd1;
+        end
+
+        ST_REARM_GAP: begin
+          // If a person reappears during rearm, let the STOP contact release
+          // for at least 50 ms before issuing one new braking press. Keep
+          // all direction contacts released throughout this interval.
+          if (brake_request)
+            rearm_abort <= 1'b1;
+          if (pulse_count == STOP_GAP_CYCLES - 1) begin
+            pulse_count <= 23'd0;
+            if (rearm_abort || brake_request)
+              state <= ST_BRAKE_PRESS;
+            else
+              state <= ST_REARM_WAIT;
+          end else
+            pulse_count <= pulse_count + 23'd1;
+        end
+
+        ST_REARM_WAIT: begin
+          if (brake_request) begin
+            state <= ST_BRAKE_PRESS;
+          end else if (!rearm_command) begin
+            // A held E cannot generate a second STOP press. After it is
+            // released, a new direction command may be accepted.
+            state <= ST_READY;
+          end
+        end
+
+        default: begin
+          state <= ST_LOCKED;
+          pulse_count <= 23'd0;
+        end
+      endcase
+    end
+  end
+endmodule
+
+// The UART decoder and the remote-button controller use different clocks.
+// A held E code must survive eight 25 MHz samples before it can toggle STOP;
+// this rejects the short intermediate values possible during a 4-bit CDC.
+module hmi_control_synchronizer (
+    input  wire       clk,
+    input  wire       rst_n,
+    input  wire [3:0] async_code,
+    output reg  [3:0] code_sync,
+    output wire       rearm_command
+);
+  reg [3:0] code_meta;
+  reg [2:0] e_stable_count;
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      code_meta      <= 4'h0;
+      code_sync      <= 4'h0;
+      e_stable_count <= 3'd0;
+    end else begin
+      code_meta <= async_code;
+      code_sync <= code_meta;
+      if (code_sync == 4'he) begin
+        if (e_stable_count != 3'd7)
+          e_stable_count <= e_stable_count + 3'd1;
+      end else begin
+        e_stable_count <= 3'd0;
+      end
+    end
+  end
+  assign rearm_command = (code_sync == 4'he) && (e_stable_count == 3'd7);
 endmodule

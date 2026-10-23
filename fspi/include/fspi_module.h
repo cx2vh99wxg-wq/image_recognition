@@ -32,7 +32,7 @@ int vehicle_backward(int enable);
 int vehicle_turn_left(int enable);
 int vehicle_turn_right(int enable);
 
-/* 向地址 4 写入 1 触发主动紧急停止，不做寄存器读回验证。 */
+/* 向地址 4 写入 0 并保持 stop 按键有效；写入 1 才会解除。 */
 int vehicle_emergency_stop(void);
 
 /* 关闭已打开的设备句柄并清空内部句柄状态；可安全重复调用。 */

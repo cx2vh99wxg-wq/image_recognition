@@ -18,6 +18,7 @@
 #define _DEFAULT_SOURCE
 #define _BSD_SOURCE
 #include "fspi_module.h"
+#include "brake_policy.h"
 #include "../include/shared_memory.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,9 +48,125 @@ static DisplayControlSharedMemory* display_control_shm = NULL;
 static EmergencyBrakeSharedMemory* emergency_brake_shm = NULL;
 static WheelPosition wheel_position = WHEEL_NEUTRAL;
 
-// 人员检测停车功能控制
-static int person_detection_brake_enabled = 0;  // 人员检测停车功能开关：1=开启，0=关闭
+// 上电后默认启用行人制动；原来的 0xff/0xee 指令仍可切换该功能。
+static int person_detection_brake_enabled = 1;
 static uint8_t last_toggle_command = 0x00;      // 上次处理的切换指令值，避免重复处理
+static int last_brake_value = -1;
+static uint32_t next_brake_release_refresh = 0;
+static int brake_active = 1;
+static int turn_pulse_active = 0;
+static uint32_t next_brake_attach = 0;
+
+/* 读端只接受检测程序最近两秒写入的状态。检测程序未启动、退出或卡住时保持刹停。
+ * 制动期间重复发送低电平；释放期间每秒重写一次，避免无回执的 SPI 写入丢失后状态长期不同步。 */
+static int monitor_emergency_brake(void)
+{
+    struct timespec ts;
+    int clock_ok = clock_gettime(CLOCK_MONOTONIC, &ts) == 0;
+    uint32_t now = clock_ok ? (uint32_t)ts.tv_sec : 0;
+
+    if (person_detection_brake_enabled && !emergency_brake_shm &&
+        clock_ok && now >= next_brake_attach) {
+        if (emergency_brake_shm_init(&emergency_brake_shm, 0) == 0) {
+            printf("[自动刹停] 已连接行人检测共享内存\n");
+        }
+        next_brake_attach = now + 1;
+    }
+
+    int person_detected = 0;
+    int brake_enable = 1;
+    int status_valid = 0;
+    uint32_t last_update = 0;
+    if (emergency_brake_shm && emergency_brake_shm != (void*)-1 &&
+        emergency_brake_shm->frame_count > 0 &&
+        emergency_brake_read_status(emergency_brake_shm,
+                                    &person_detected, &brake_enable) == 0) {
+        status_valid = 1;
+        last_update = emergency_brake_shm->last_update;
+    }
+
+    int required = brake_required(person_detection_brake_enabled,
+                                  status_valid && clock_ok,
+                                  person_detected, brake_enable,
+                                  last_update, now);
+
+    /* FPGA 复位时方向寄存器也会回到低电平。每次释放 stop 前先重写
+     * 四个方向为高电平；任一路写入失败就保持制动并在下轮重试。 */
+    int refresh_release = !required &&
+        (last_brake_value != 1 ||
+         (!turn_pulse_active &&
+          (!clock_ok || now >= next_brake_release_refresh)));
+    if (refresh_release) {
+        int directions_released = 1;
+        for (int i = 0; i < 4; ++i) {
+            if (fspi_write_data(i, 1) != 0) {
+                directions_released = 0;
+            }
+        }
+        if (!directions_released) {
+            static uint32_t last_release_error_log = 0;
+            if (now != last_release_error_log) {
+                fprintf(stderr, "[自动刹停] 方向键释放失败，保持制动并重试\n");
+                last_release_error_log = now;
+            }
+            last_brake_value = -1;
+            required = 1;
+        }
+    }
+
+    if (emergency_brake_shm && person_detection_brake_enabled &&
+        (!status_valid || !clock_ok || last_update == 0 ||
+         last_update > now || now - last_update >= BRAKE_STATUS_TIMEOUT_SECONDS)) {
+        emergency_brake_shm_cleanup(emergency_brake_shm, 0);
+        emergency_brake_shm = NULL;
+        next_brake_attach = now + 1;
+    }
+
+    if (required != brake_active) {
+        printf("[自动刹停] %s\n", required ? "制动：发现行人或检测数据不可用"
+                                           : "解除：最近的检测结果没有行人");
+        brake_active = required;
+    }
+
+    int value_to_write = required ? 0 : 1; // 原遥控器按键低电平有效
+    if (required || refresh_release) {
+        if (fspi_write_data(4, (uint8_t)value_to_write) == 0) {
+            last_brake_value = value_to_write;
+            if (!required) {
+                next_brake_release_refresh = now + 1;
+            }
+        } else {
+            if (!required) {
+                last_brake_value = -1;
+            }
+            static uint32_t last_error_log = 0;
+            if (now != last_error_log) {
+                fprintf(stderr, "[自动刹停] 写制动寄存器失败，下一次轮询将重试\n");
+                last_error_log = now;
+            }
+        }
+    }
+
+    // 释放命令未成功写入时，软件也不继续发起转向。
+    return required || last_brake_value != 1;
+}
+
+/* 制动出现时立即结束当前转向脉冲；正常释放刷新等脉冲结束后再做。 */
+static int wait_with_brake_checks(unsigned int duration_us)
+{
+    turn_pulse_active = 1;
+    while (duration_us > 0 && g_running) {
+        unsigned int slice = duration_us < 20000 ? duration_us : 20000;
+        usleep(slice);
+        if (monitor_emergency_brake()) {
+            turn_pulse_active = 0;
+            return -1;
+        }
+        duration_us -= slice;
+    }
+    turn_pulse_active = 0;
+    return g_running ? 0 : -1;
+}
 
 // 获取当前时间戳（秒，支持小数）
 double get_current_time() {
@@ -74,44 +191,58 @@ void signal_handler(int sig) {
 void turn_to_left() {
     if (wheel_position == WHEEL_LEFT) return;
 
+    if (monitor_emergency_brake()) return;
+
     if (wheel_position == WHEEL_RIGHT) {
         vehicle_control(2, 1);
-        usleep(TIME_LEFT_TO_RIGHT);
-        wheel_position = WHEEL_LEFT;
+        int completed = wait_with_brake_checks(TIME_LEFT_TO_RIGHT) == 0;
+        vehicle_control(2, 0);
+        if (completed) wheel_position = WHEEL_LEFT;
     } else {
         vehicle_control(2, 1);
-        usleep(TIME_NEUTRAL_TO_LEFT);
-        wheel_position = WHEEL_LEFT;
+        int completed = wait_with_brake_checks(TIME_NEUTRAL_TO_LEFT) == 0;
+        vehicle_control(2, 0);
+        if (completed) wheel_position = WHEEL_LEFT;
     }
-    vehicle_control(2, 0);
 }
 
 // 转到右边
 void turn_to_right() {
     if (wheel_position == WHEEL_RIGHT) return;
 
+    if (monitor_emergency_brake()) return;
+
     if (wheel_position == WHEEL_LEFT) {
         vehicle_control(3, 1);
-        usleep(TIME_LEFT_TO_RIGHT);
-        wheel_position = WHEEL_RIGHT;
+        int completed = wait_with_brake_checks(TIME_LEFT_TO_RIGHT) == 0;
+        vehicle_control(3, 0);
+        if (completed) wheel_position = WHEEL_RIGHT;
     } else {
         vehicle_control(3, 1);
-        usleep(TIME_NEUTRAL_TO_RIGHT);
-        wheel_position = WHEEL_RIGHT;
+        int completed = wait_with_brake_checks(TIME_NEUTRAL_TO_RIGHT) == 0;
+        vehicle_control(3, 0);
+        if (completed) wheel_position = WHEEL_RIGHT;
     }
-    vehicle_control(3, 0);
 }
 
 // 回中
 void turn_to_neutral() {
     if (wheel_position == WHEEL_NEUTRAL) return;
 
+    if (monitor_emergency_brake()) return;
+
     if (wheel_position == WHEEL_LEFT) {
         vehicle_control(3, 1);
-        usleep(TIME_LEFT_TO_NEUTRAL);
+        if (wait_with_brake_checks(TIME_LEFT_TO_NEUTRAL) != 0) {
+            vehicle_control(3, 0);
+            return;
+        }
     } else {
         vehicle_control(2, 1);
-        usleep(TIME_RIGHT_TO_NEUTRAL);
+        if (wait_with_brake_checks(TIME_RIGHT_TO_NEUTRAL) != 0) {
+            vehicle_control(2, 0);
+            return;
+        }
     }
     vehicle_control(2, 0);
     vehicle_control(3, 0);
@@ -120,11 +251,13 @@ void turn_to_neutral() {
 
 // 停止所有车辆运动
 void stop_all_vehicle_movement() {
-    printf("停止所有转向运动...\n");
+    printf("释放所有方向控制...\n");
+    vehicle_control(0, 0);
+    vehicle_control(1, 0);
     vehicle_control(2, 0);
     vehicle_control(3, 0);
     wheel_position = WHEEL_NEUTRAL;
-    printf("所有转向运动已停止\n");
+    printf("所有方向控制已释放\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -136,8 +269,8 @@ int main(int argc, char *argv[]) {
     printf("- 实时读取: 从FSPI寄存器0读取实际模式值\n");
     printf("- 显示控制: 0x11-0x88对应8个摄像头，0x99对应所有摄像头\n");
     printf("- 左右转向: 完全由弯道检测自动控制\n");
-    printf("- 紧急制动: PCIe检测到人员时写0到寄存器4，无人时写1\n");
-    printf("- 制动控制: 0xff开启人员检测停车功能，0xee关闭该功能\n");
+    printf("- 紧急制动: 默认开启；有人或检测不可用时写0到寄存器4，确认无人时写1\n");
+    printf("- 制动控制: 预留0xff开启、0xee关闭指令（当前FPGA读回仅4位）\n");
     printf("- 弯道检测: 自动读取UDP传来的弯道信息，智能控制车辆转向\n");
     printf("  * 智能转向: 左弯→左转，右弯→右转，直道→回中\n");
     printf("- 检测间隔: 每100ms检测一次模式变化\n");
@@ -161,14 +294,27 @@ int main(int argc, char *argv[]) {
     }
     printf("FSPI初始化成功！\n");
 
-    // 初始化所有控制寄存器为1
-    printf("初始化所有控制寄存器: 写1到寄存器0-4\n");
-    for (int i = 0; i <= 4; i++) {
+    // 先按住 stop，再释放四个方向键；检测结果新鲜且无人时才放开 stop。
+    printf("初始化控制寄存器: 制动4写0，方向0-3写1\n");
+    if (fspi_write_data(4, 0) != 0) {
+        fprintf(stderr, "无法设置初始制动，停止车辆控制程序\n");
+        fspi_cleanup();
+        return -1;
+    }
+    last_brake_value = 0;
+    int control_init_ok = 1;
+    for (int i = 0; i < 4; i++) {
         if (fspi_write_data(i, 1) == 0) {
             printf("✓ 寄存器%d初始化成功\n", i);
         } else {
             printf("✗ 寄存器%d初始化失败\n", i);
+            control_init_ok = 0;
         }
+    }
+    if (!control_init_ok) {
+        fprintf(stderr, "控制寄存器初始化失败，停止车辆控制程序\n");
+        fspi_cleanup();
+        return -1;
     }
     printf("\n");
     
@@ -181,27 +327,9 @@ int main(int argc, char *argv[]) {
     }
     printf("显示控制共享内存初始化成功\n\n");
     
-    // 初始化紧急制动共享内存（读取者）
+    // 检测程序若尚未启动，轮询函数会继续按住 stop 并定期重连。
     printf("=== 紧急制动共享内存初始化 ===\n");
-    if (emergency_brake_shm_init(&emergency_brake_shm, 0) != 0) {
-        printf("紧急制动共享内存初始化失败！请先启动PCIe检测程序\n");
-        printf("提示: 紧急制动功能需要PCIe程序先启动创建共享内存\n");
-        emergency_brake_shm = NULL;  // 设为NULL，程序继续运行但没有紧急制动功能
-    } else {
-        printf("紧急制动共享内存初始化成功\n");
-    }
-    printf("\n");
-    
-    // 初始化紧急制动共享内存（读取者）
-    printf("=== 紧急制动共享内存初始化 ===\n");
-    if (emergency_brake_shm_init(&emergency_brake_shm, 0) != 0) {
-        printf("紧急制动共享内存初始化失败！\n");
-        printf("注意: 这可能是因为PCIe程序尚未启动或已退出\n");
-        printf("紧急制动功能将被禁用，但其他功能正常\n");
-        emergency_brake_shm = NULL;  // 设置为NULL表示不可用
-    } else {
-        printf("紧急制动共享内存初始化成功\n");
-    }
+    monitor_emergency_brake();
     printf("\n");
 
     // 初始化弯道检测共享内存（读取者）
@@ -229,13 +357,13 @@ int main(int argc, char *argv[]) {
     printf("支持的指令值:\n");
     printf("  显示控制: 0x11-0x88(单摄像头), 0x99(全部摄像头)\n");
     printf("  左右转向: 完全由弯道检测自动控制\n");
-    printf("  制动功能控制: 0xff(开启人员检测停车功能), 0xee(关闭人员检测停车功能)\n");
-    printf("  紧急制动: 自动检测人员控制寄存器4 [有人:写0, 无人:写1]\n");
+    printf("  制动功能控制: 默认开启；0xff/0xee为当前FPGA尚不支持的预留指令\n");
+    printf("  紧急制动: 有人或检测失效写0，确认无人写1\n");
     printf("  弯道检测: 自动读取UDP传来的弯道信息并控制车辆转向 [置信度≥60%%时执行]\n");
     if (emergency_brake_shm) {
         printf("  紧急制动状态: 已启用，正在监控PCIe人员检测\n");
     } else {
-        printf("  紧急制动状态: 未启用（PCIe程序未运行）\n");
+        printf("  紧急制动状态: 等待PCIe程序，当前保持刹停\n");
     }
     printf("  人员检测停车功能: %s (0xff开启，0xee关闭)\n",
            person_detection_brake_enabled ? "已开启" : "已关闭");
@@ -250,8 +378,6 @@ int main(int argc, char *argv[]) {
     int curve_data_valid = 0;  // 标记当前周期的弯道数据是否有效
 
     while (g_running) {
-        printf("test\n");
-
         // 重置弯道数据有效标志
         curve_data_valid = 0;
 
@@ -318,61 +444,11 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        // 2. 检查紧急制动状态
-        if (emergency_brake_shm) {
-            int person_detected = 0;
-            int brake_enable = 1;
-
-            if (emergency_brake_read_status(emergency_brake_shm, &person_detected, &brake_enable) == 0) {
-                static int last_person_detected = -1;  // 记录上次人员检测状态
-                static int last_written_value = -1;    // 记录上次写入寄存器4的值
-
-                // 记录人员检测状态变化
-                if (person_detected != last_person_detected) {
-                    printf("📡 人员检测状态: %s → %s\n",
-                           last_person_detected == -1 ? "初始化" : (last_person_detected ? "有人员" : "无人员"),
-                           person_detected ? "有人员" : "无人员");
-                    last_person_detected = person_detected;
-                }
-
-                // 计算需要写入的值
-                int value_to_write;
-                if (!person_detection_brake_enabled) {
-                    // 功能已关闭，保持寄存器4为1（正常运行）
-                    value_to_write = 1;
-                } else {
-                    // 功能已开启，根据人员检测状态控制
-                    value_to_write = person_detected ? 0 : 1;
-                }
-
-                // 只在值需要改变时才写入
-                if (value_to_write != last_written_value) {
-                    fspi_write_data(4, value_to_write);
-                    last_written_value = value_to_write;
-
-                    // 打印状态变化信息
-                    if (person_detection_brake_enabled) {
-                        if (value_to_write == 0) {
-                            printf("\n🚨 紧急制动: 检测到人员，写0到寄存器4\n");
-                        } else {
-                            printf("\n✅ 正常运行: 无人员，写1到寄存器4\n");
-                        }
-                    } else {
-                        printf("\n📊 制动功能已关闭: 写1到寄存器4保持正常运行\n");
-                    }
-                }
-            } else {
-                // 如果读取失败，可能PCIe程序已退出
-                static int shm_error_count = 0;
-                if (++shm_error_count >= 50) {  // 5秒后报告一次
-                    printf("警告: 紧急制动共享内存读取失败，PCIe程序可能已退出\n");
-                    shm_error_count = 0;
-                }
-            }
-        }
+        // 2. 制动优先于自动转向；检测程序断线或数据过期也保持刹停。
+        int braking = monitor_emergency_brake();
 
         // 3. 根据弯道检测结果执行自动转向控制（在读取FSPI指令之前）
-        if (curve_data_valid) {
+        if (!braking && curve_data_valid) {
             // 静态变量跟踪上次的弯道类型，用于避免重复执行
             static CurveType last_applied_curve_type = CURVE_NONE;
             static uint32_t last_applied_confidence = 0;
@@ -566,6 +642,11 @@ int main(int argc, char *argv[]) {
     
     // 程序退出前的清理工作
     printf("\n=== 程序退出清理 ===\n");
+
+    // 车控进程停止监测后不能留下已释放的 stop 按键。
+    if (fspi_write_data(4, 0) != 0) {
+        fprintf(stderr, "警告: 退出时无法写入制动寄存器，请检查车辆状态\n");
+    }
 
     // 停止所有车辆运动
     stop_all_vehicle_movement();

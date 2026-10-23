@@ -179,11 +179,12 @@ reg [7:0] mem [4:0];  // 5个8位的内存单元(0-4)
 // 内存读写逻辑 - 统一使用negedge wr_clk与状态机保持一致
 always@(negedge wr_clk or negedge rst_n) begin
 	if(!rst_n) begin
-		mem[0] <= 8'd0;
-		mem[1] <= 8'd0;
-		mem[2] <= 8'd0;
-		mem[3] <= 8'd0;
-		mem[4] <= 8'd0;
+		// Active-low remote contacts must be released at FPGA reset.
+		mem[0] <= 8'd1;
+		mem[1] <= 8'd1;
+		mem[2] <= 8'd1;
+		mem[3] <= 8'd1;
+		mem[4] <= 8'd1;
 		rd_data <= 8'd0;
 	end
 	else begin

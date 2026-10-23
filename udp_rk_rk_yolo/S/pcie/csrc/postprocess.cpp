@@ -28,8 +28,8 @@ int initPostProcess(const char* label_file_path) {
     int count = 0;
     while (fgets(line, sizeof(line), fp) && count < OBJ_CLASS_NUM) {
 
-        char* newline = strchr(line, '\n');
-        if (newline) *newline = '\0';
+        /* 标签文件可能是 CRLF：同时去掉 \r 和 \n，避免 "person\r" 匹配失败。 */
+        line[strcspn(line, "\r\n")] = '\0';
 
         size_t len = strlen(line);
         if (len >= OBJ_NAME_MAX_SIZE) {

@@ -11,6 +11,7 @@ PCIE_TARGET = pcie/build/app
 UDP_TARGET = udp/build/video_receiver
 X11_TARGET = x11/csrc/build/eight_camera_renderer
 FSPI_TARGET = fspi/build/vehicle_control
+BRAKE_RELEASE_TEST = $(BUILD_DIR)/test_brake_release_policy
 
 # 编译器配置
 CXX = g++
@@ -39,7 +40,7 @@ ARCH := $(shell uname -m)
 # 主要目标
 # =============================================================================
 
-.PHONY: all clean pcie udp x11 fspi shared run run-background run-display run-fspi stop stop-force help install deps check
+.PHONY: all clean pcie udp x11 fspi shared run run-background run-display run-fspi stop stop-force help install deps check test-brake-release
 
 # 默认目标：编译所有程序
 all: shared pcie udp x11 fspi
@@ -155,6 +156,11 @@ run: all
 		echo "错误: X11程序不存在，请先运行 make"; \
 		exit 1; \
 	fi
+	@# 交互终端的 .bashrc 可能再次执行 make run；已有后台任务时直接拒绝重复启动。
+	@if pgrep -x vehicle_control >/dev/null || pgrep -x video_receiver >/dev/null || pgrep -x app >/dev/null; then \
+		echo "错误: S端系统已有运行进程，请先关闭旧显示窗口并执行 make stop 后再启动"; \
+		exit 1; \
+	fi
 	@# 清理之前的共享内存
 	@echo "清理共享内存..."
 	@-ipcrm -M 0x12345679 2>/dev/null || true
@@ -181,10 +187,16 @@ run: all
 	@echo ""
 	@# 启动FSPI控制程序
 	@echo "3. 启动FSPI按钮控制程序..."
-	@cd fspi && sudo bash -c './build/vehicle_control & echo $$!' > fspi.pid
-	@echo "FSPI程序已启动 (PID: $(shell cat fspi/fspi.pid 2>/dev/null || echo 'unknown'))"
-	@echo "模式控制: 直接读取0x11-0x99模式值切换摄像头视角"
+	@cd fspi && sudo bash -c './build/vehicle_control & echo $$! > fspi.pid'
 	@sleep 3
+	@fspi_pid=$$(cat fspi/fspi.pid 2>/dev/null); \
+		case "$$fspi_pid" in ''|*[!0-9]*) echo "错误: FSPI PID 无效，自动刹停不可用"; exit 1;; esac; \
+		if ! ps -p "$$fspi_pid" -o stat=,comm= 2>/dev/null | awk '$$1 !~ /^Z/ && $$2 == "vehicle_control" { running=1 } END { exit !running }'; then \
+			echo "错误: FSPI车控进程未运行，自动刹停不可用 (PID=$$fspi_pid)"; \
+			exit 1; \
+		fi; \
+		echo "FSPI车控程序已运行 (PID=$$fspi_pid)"
+	@echo "模式控制: 直接读取0x11-0x99模式值切换摄像头视角"
 	@echo ""
 	@# 启动X11显示程序（前台运行）
 	@echo "4. 启动X11显示程序（前台运行）..."
@@ -199,49 +211,26 @@ run: all
 # 停止系统
 stop:
 	@echo "=== 停止FPGA双通道视频显示系统 ==="
-	@# 使用shell脚本避免make进程被影响
-	@bash -c '\
-		echo "停止X11程序..."; \
-		pkill -TERM -f "eight_camera_renderer" 2>/dev/null || true; \
-		sleep 1; \
-	'
+	@# 用完整命令行锚定目标，避免 pkill 匹配到执行本命令的 shell。
+	@echo "停止X11程序..."
+	@-pkill -TERM -f '^./build/eight_camera_renderer$$' 2>/dev/null || true
+	@sleep 1
 	@# 停止FSPI程序
-	@bash -c '\
-		echo "停止FSPI程序..."; \
-		if [ -f "fspi/fspi.pid" ]; then \
-			sudo kill -TERM `cat fspi/fspi.pid` 2>/dev/null || true; \
-			sudo kill -KILL `cat fspi/fspi.pid` 2>/dev/null || true; \
-			rm -f fspi/fspi.pid; \
-		fi; \
-		sudo pkill -TERM -f "vehicle_control" 2>/dev/null || true; \
-		sleep 2; \
-		sudo pkill -KILL -f "vehicle_control" 2>/dev/null || true; \
-		sudo pkill -TERM -f "sudo.*vehicle_control" 2>/dev/null || true; \
-		sudo pkill -KILL -f "sudo.*vehicle_control" 2>/dev/null || true; \
-		sudo pkill -TERM -f "nohup.*vehicle_control" 2>/dev/null || true; \
-		sudo pkill -KILL -f "nohup.*vehicle_control" 2>/dev/null || true; \
-	'
+	@echo "停止FSPI程序..."
+	@-sudo pkill -TERM -x vehicle_control 2>/dev/null || true
+	@sleep 2
+	@-sudo pkill -KILL -x vehicle_control 2>/dev/null || true
+	@rm -f fspi/fspi.pid
 	@# 停止UDP程序
-	@bash -c '\
-		echo "停止UDP程序..."; \
-		if [ -f "udp/udp.pid" ]; then \
-			kill -TERM `cat udp/udp.pid` 2>/dev/null || true; \
-			rm -f udp/udp.pid; \
-		fi; \
-		pkill -TERM -f "video_receiver" 2>/dev/null || true; \
-	'
+	@echo "停止UDP程序..."
+	@-pkill -TERM -f '^./build/video_receiver$$' 2>/dev/null || true
+	@rm -f udp/udp.pid
 	@# 停止PCIe程序
-	@bash -c '\
-		echo "停止PCIe程序..."; \
-		if [ -f "pcie/pcie.pid" ]; then \
-			sudo kill -TERM `cat pcie/pcie.pid` 2>/dev/null || true; \
-			sudo kill -KILL `cat pcie/pcie.pid` 2>/dev/null || true; \
-			rm -f pcie/pcie.pid; \
-		fi; \
-		sudo pkill -TERM -f "build/app" 2>/dev/null || true; \
-		sleep 1; \
-		sudo pkill -KILL -f "build/app" 2>/dev/null || true; \
-	'
+	@echo "停止PCIe程序..."
+	@-sudo pkill -TERM -f '^./build/app$$' 2>/dev/null || true
+	@sleep 1
+	@-sudo pkill -KILL -f '^./build/app$$' 2>/dev/null || true
+	@rm -f pcie/pcie.pid
 	@# 清理共享内存和信号量
 	@echo "清理共享内存..."
 	@-ipcrm -M 0x12345679 2>/dev/null || true
@@ -261,15 +250,13 @@ stop-force:
 	@echo "警告: 使用SIGKILL强制终止所有进程"
 	@# 强制停止所有相关进程
 	@echo "强制停止X11程序..."
-	@-sudo pkill -KILL -f "eight_camera_renderer" 2>/dev/null || true
+	@-sudo pkill -KILL -f '^./build/eight_camera_renderer$$' 2>/dev/null || true
 	@echo "强制停止FSPI程序..."
-	@-sudo pkill -KILL -f "vehicle_control" 2>/dev/null || true
-	@-sudo pkill -KILL -f "sudo.*vehicle_control" 2>/dev/null || true
-	@-sudo pkill -KILL -f "nohup.*vehicle_control" 2>/dev/null || true
+	@-sudo pkill -KILL -x vehicle_control 2>/dev/null || true
 	@echo "强制停止UDP程序..."
-	@-sudo pkill -KILL -f "video_receiver" 2>/dev/null || true
+	@-sudo pkill -KILL -f '^./build/video_receiver$$' 2>/dev/null || true
 	@echo "强制停止PCIe程序..."
-	@-sudo pkill -KILL -f "build/app" 2>/dev/null || true
+	@-sudo pkill -KILL -f '^./build/app$$' 2>/dev/null || true
 	@# 清理PID文件
 	@rm -f pcie/pcie.pid udp/udp.pid fspi/fspi.pid
 	@# 清理共享内存和信号量
@@ -296,11 +283,20 @@ $(BUILD_DIR):
 # 编译共享库
 shared: $(BUILD_DIR)/$(SHARED_LIB)
 
+# 行人刹停释放策略单测无需摄像头、SPI 或 FPGA 设备。
+$(BRAKE_RELEASE_TEST): test_brake_release_policy.c $(SHARED_INC_DIR)/brake_release_policy.h | $(BUILD_DIR)
+	$(CC) -std=c99 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@
+
+test-brake-release: $(BRAKE_RELEASE_TEST)
+	./$(BRAKE_RELEASE_TEST)
+
 $(BUILD_DIR)/$(SHARED_LIB): $(SHARED_OBJECTS) | $(BUILD_DIR)
 	@echo "创建共享库: $@"
 	$(AR) $(ARFLAGS) $@ $^
 
 # 编译共享库对象文件
+$(BUILD_DIR)/shared_memory.o: $(SHARED_INC_DIR)/brake_release_policy.h
+
 $(BUILD_DIR)/%.o: $(SHARED_SRC_DIR)/%.c | $(BUILD_DIR)
 	@echo "编译共享库: $<"
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -475,7 +471,7 @@ status:
 	fi
 
 # 快速测试编译
-test: all
+test: all test-brake-release
 	@echo "=== 编译测试完成 ==="
 	@echo "所有程序编译成功！"
 	@echo ""

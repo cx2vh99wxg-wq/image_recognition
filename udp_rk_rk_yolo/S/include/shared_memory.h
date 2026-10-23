@@ -74,8 +74,8 @@ typedef struct {
 } DisplayControlSharedMemory;
 
 typedef struct {
-    /* 检测到人员时 person_detected=1，brake_enable=0 表示紧急制动；
-     * 无人员时 brake_enable=1 表示车辆正常运行。检测框坐标保存在同一段。 */
+    /* 检测到人员时 person_detected=1。brake_enable=0 表示应保持制动，
+     * 包括检出人员或本次模型推理失败；仅检测有效且无人时才为 1。 */
     volatile uint32_t person_detected;
     volatile uint32_t brake_enable;
     volatile uint32_t last_update;
@@ -165,12 +165,13 @@ int display_control_shm_init(DisplayControlSharedMemory** shm_ptr, int is_writer
 /* 写端清除有效位并删除段；读端只分离映射。 */
 void display_control_shm_cleanup(DisplayControlSharedMemory* shm_ptr, int is_writer);
 
-/* 连接紧急制动段；写端初始化为未检出人员且允许正常运行。 */
+/* 连接紧急制动段；写端在首帧有效检测前保持制动。 */
 int emergency_brake_shm_init(EmergencyBrakeSharedMemory** shm_ptr, int is_writer);
 
-/* 发布人员状态及边界框，并按状态变化更新制动信号和统计计数。 */
+/* 发布人员状态及边界框；检测失败时 detection_valid=0，制动保持有效。 */
 int emergency_brake_update_status(EmergencyBrakeSharedMemory* shm_ptr, int person_detected,
-                                 int box_left, int box_top, int box_right, int box_bottom);
+                                 int detection_valid, int box_left, int box_top,
+                                 int box_right, int box_bottom);
 
 /* 从有效的紧急制动段读取人员状态与制动使能值；两个输出指针均可为空。 */
 int emergency_brake_read_status(EmergencyBrakeSharedMemory* shm_ptr, int* person_detected, int* brake_enable);

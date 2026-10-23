@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #define _GNU_SOURCE
 #include "shared_memory.h"
+#include "brake_release_policy.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -474,7 +475,9 @@ void display_control_shm_cleanup(DisplayControlSharedMemory* shm_ptr, int is_wri
     printf("显示控制共享内存清理完成\n");
 }
 
-/* 连接紧急制动段；写端初始化为未检出人员、制动使能值 1 和有效状态，
+static BrakeReleaseState g_brake_release_state = {0};
+
+/* 连接紧急制动段；写端初始化为未检出人员、制动保持和有效状态，
  * 读端沿用已有段，不覆盖当前检测结果。 */
 int emergency_brake_shm_init(EmergencyBrakeSharedMemory** shm_ptr, int is_writer) {
     if (!shm_ptr) {
@@ -521,20 +524,22 @@ int emergency_brake_shm_init(EmergencyBrakeSharedMemory** shm_ptr, int is_writer
     if (*shm_ptr == (void*)-1) {
         fprintf(stderr, "*** 致命错误: 紧急制动共享内存连接失败 ***\n");
         fprintf(stderr, "*** 错误原因: %s ***\n", strerror(errno));
+        *shm_ptr = NULL;
         return -1;
     }
 
     if (is_writer) {
+        brake_release_reset(&g_brake_release_state);
         memset(*shm_ptr, 0, sizeof(EmergencyBrakeSharedMemory));
         (*shm_ptr)->person_detected = 0;
-        (*shm_ptr)->brake_enable = 1;
+        (*shm_ptr)->brake_enable = 0;
         (*shm_ptr)->valid = 1;
 
         struct timespec ts;
-        clock_gettime(CLOCK_MONOTONIC, &ts);
-        (*shm_ptr)->last_update = (uint32_t)ts.tv_sec;
+        (*shm_ptr)->last_update = clock_gettime(CLOCK_MONOTONIC, &ts) == 0
+                                      ? (uint32_t)ts.tv_sec : 0;
 
-        printf("紧急制动共享内存初始化完成，默认状态: 正常运行 (brake_enable=1)\n");
+        printf("紧急制动共享内存初始化完成，等待首帧检测时保持制动\n");
     } else {
         printf("紧急制动共享内存连接成功 (读取者模式)\n");
     }
@@ -542,10 +547,11 @@ int emergency_brake_shm_init(EmergencyBrakeSharedMemory** shm_ptr, int is_writer
     return 0;
 }
 
-/* 写入人员检出状态、检测框和制动使能值，再更新单调时间与计数器。
- * 从未检出转为检出时累计一次检测与制动激活；保留现有原子操作顺序。 */
+/* 写入原始人员检出状态、检测框和制动使能值，再更新单调时间与计数器。
+ * 检出人员或推理失败立即制动；连续两秒有效无人后才允许放行。 */
 int emergency_brake_update_status(EmergencyBrakeSharedMemory* shm_ptr, int person_detected,
-                                 int box_left, int box_top, int box_right, int box_bottom) {
+                                 int detection_valid, int box_left, int box_top,
+                                 int box_right, int box_bottom) {
     if (!shm_ptr || shm_ptr == (void*)-1) {
         fprintf(stderr, "错误: 紧急制动共享内存指针无效\n");
         return -1;
@@ -559,6 +565,19 @@ int emergency_brake_update_status(EmergencyBrakeSharedMemory* shm_ptr, int perso
     int old_person_detected = shm_ptr->person_detected;
     int old_brake_enable = shm_ptr->brake_enable;
 
+    struct timespec ts;
+    int clock_valid = clock_gettime(CLOCK_MONOTONIC, &ts) == 0;
+    uint64_t now_ms = clock_valid
+                          ? (uint64_t)ts.tv_sec * UINT64_C(1000) +
+                                (uint64_t)ts.tv_nsec / UINT64_C(1000000)
+                          : 0;
+    int new_brake_enable = brake_release_required(&g_brake_release_state,
+                                                 person_detected, detection_valid,
+                                                 clock_valid, now_ms) ? 0 : 1;
+    /* 收紧制动时先写制动位，放行时最后写制动位。读端看到中间状态也只会更保守。 */
+    if (new_brake_enable == 0) {
+        __sync_lock_test_and_set(&shm_ptr->brake_enable, 0);
+    }
     __sync_lock_test_and_set(&shm_ptr->person_detected, person_detected ? 1 : 0);
 
     if (person_detected) {
@@ -568,24 +587,30 @@ int emergency_brake_update_status(EmergencyBrakeSharedMemory* shm_ptr, int perso
         __sync_lock_test_and_set(&shm_ptr->box_bottom, box_bottom);
     }
 
-    int new_brake_enable = person_detected ? 0 : 1;
-    __sync_lock_test_and_set(&shm_ptr->brake_enable, new_brake_enable);
+    if (new_brake_enable == 1) {
+        __sync_lock_test_and_set(&shm_ptr->brake_enable, 1);
+    }
 
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    __sync_lock_test_and_set(&shm_ptr->last_update, (uint32_t)ts.tv_sec);
+    __sync_lock_test_and_set(&shm_ptr->last_update,
+                             clock_valid ? (uint32_t)ts.tv_sec : 0);
     __sync_fetch_and_add(&shm_ptr->frame_count, 1);
 
     if (person_detected && !old_person_detected) {
         __sync_fetch_and_add(&shm_ptr->detection_count, 1);
-        printf("[紧急制动] 检测到人员！触发紧急制动 (brake_enable: %d->0)\n", old_brake_enable);
-    } else if (!person_detected && old_person_detected) {
-        printf("[紧急制动] 人员消失，恢复正常运行 (brake_enable: %d->1)\n", old_brake_enable);
+        printf("[紧急制动] 检测到人员，保持制动 (brake_enable: %d->0)\n", old_brake_enable);
+    } else if (!person_detected && old_person_detected && detection_valid) {
+        printf("[紧急制动] 当前帧无人，等待连续两秒有效无人后解除制动\n");
+    }
+
+    if (!detection_valid && old_brake_enable != 0) {
+        printf("[紧急制动] 模型推理失败，保持制动\n");
     }
 
     if (new_brake_enable != old_brake_enable) {
         if (new_brake_enable == 0) {
             __sync_fetch_and_add(&shm_ptr->brake_active_count, 1);
+        } else {
+            printf("[紧急制动] 连续两秒有效无人，解除制动 (brake_enable: 0->1)\n");
         }
     }
 

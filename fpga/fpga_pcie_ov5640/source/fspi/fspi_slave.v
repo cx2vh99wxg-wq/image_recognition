@@ -6,12 +6,12 @@ module	fspi_slave
 	inout	wire	[3:0]	spi_data		,
 	input	wire			rst_n			,
 	input	wire	[3:0]		select_rearview	,	//从顶层传入的select_rearview信号
-	
+
 	//user	
 	output	wire	[1:0]	cmd				,	//2'b10:写   2'b01:读
 	output	wire	[7:0]	rx_data			,
 	output	wire			rx_data_valid	,
-	
+
 	input	wire	[7:0]	tx_data			,
 	output	wire			tx_data_valid	
 
@@ -22,6 +22,8 @@ reg	[7:0]	recv_data	;
 reg			recv_valid	;
 reg	[1:0]	cmd_reg		;
 reg			cmd_lock	;	//确保不会被数据误判操作
+reg [3:0] tx_data_reg;
+reg tx_valid_reg;
 
 
 //-----------------assign---------------------
@@ -87,8 +89,7 @@ always@(posedge spi_clk or negedge rst_n) begin
 end
 
 //--------------------发送部分-------------------------
-reg	[3:0]	tx_data_reg		;
-reg			tx_valid_reg	;	
+
 //下降沿发送
 always@(negedge spi_clk or negedge rst_n) begin
 	if ((rst_n == 1'b0) || spi_cs) 

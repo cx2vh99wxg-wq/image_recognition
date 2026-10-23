@@ -1,0 +1,1 @@
+cfg_gen_sfc -sbit "D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_stop_rearm_20261022.sbit" -sfc "D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_stop_rearm_20261022.sfc" -opcode 59

@@ -1,0 +1,73 @@
+2026-10-22 STOP rearm change record
+Root: D:\Study_Object\image_recognition\image_recognition
+
+Direct edits and deliverables:
+HMI\26年fpga_suc_stop_rearm_20261022.HMI (new)
+HMI\26年fpga_suc_stop_rearm_20261022.tft (new)
+fpga\fpga_pcie_ov5640\source\image_pcie_capture.v (modified)
+fpga\fpga_pcie_ov5640\sim\test_hmi_uart.v (modified)
+fpga\fpga_pcie_ov5640\sim\test_remote_stop_controller.v (new)
+fpga\fpga_pcie_ov5640\sim\convert_stop_rearm_20261022.tcl (new)
+fpga\fpga_pcie_ov5640\sim\stop_rearm_file_changes_20261022.txt (new)
+
+PDS-generated files touched by the successful final build (timestamp >= 2026-10-22 21:45:00). The generic image_pcie_capture.sbit/.smsk were restored and are excluded:
+fpga\fpga_pcie_ov5640\project\compile\cmr.db
+fpga\fpga_pcie_ov5640\project\compile\error_info.txt
+fpga\fpga_pcie_ov5640\project\compile\formal.pvf
+fpga\fpga_pcie_ov5640\project\compile\image_pcie_capture_comp.adf
+fpga\fpga_pcie_ov5640\project\compile\image_pcie_capture.cmr
+fpga\fpga_pcie_ov5640\project\compile\include_relation.txt
+fpga\fpga_pcie_ov5640\project\compile\parse_design\run.log
+fpga\fpga_pcie_ov5640\project\compile\parse_design\screen.pds
+fpga\fpga_pcie_ov5640\project\compile\parse_design\screen.tcl
+fpga\fpga_pcie_ov5640\project\compile\run.log
+fpga\fpga_pcie_ov5640\project\constraint_check\constraint_check.ccr
+fpga\fpga_pcie_ov5640\project\device_map\dmr.db
+fpga\fpga_pcie_ov5640\project\device_map\formal.pvf
+fpga\fpga_pcie_ov5640\project\device_map\image_pcie_capture_dmr.prt
+fpga\fpga_pcie_ov5640\project\device_map\image_pcie_capture_map.adf
+fpga\fpga_pcie_ov5640\project\device_map\image_pcie_capture.dmr
+fpga\fpga_pcie_ov5640\project\device_map\image_pcie_capture.pcf
+fpga\fpga_pcie_ov5640\project\device_map\run.log
+fpga\fpga_pcie_ov5640\project\flow.log
+fpga\fpga_pcie_ov5640\project\generate_bitstream\bgr.db
+fpga\fpga_pcie_ov5640\project\generate_bitstream\image_pcie_capture_stop_rearm_20261022.sbit
+fpga\fpga_pcie_ov5640\project\generate_bitstream\image_pcie_capture_stop_rearm_20261022.sfc
+fpga\fpga_pcie_ov5640\project\generate_bitstream\image_pcie_capture_stop_rearm_20261022.smsk
+fpga\fpga_pcie_ov5640\project\generate_bitstream\image_pcie_capture.bgr
+fpga\fpga_pcie_ov5640\project\generate_bitstream\run.log
+fpga\fpga_pcie_ov5640\project\generate_netlist\gnr.db
+fpga\fpga_pcie_ov5640\project\generate_netlist\image_pcie_capture_sim.v
+fpga\fpga_pcie_ov5640\project\generate_netlist\image_pcie_capture_sta.sdf
+fpga\fpga_pcie_ov5640\project\generate_netlist\image_pcie_capture.gnr
+fpga\fpga_pcie_ov5640\project\generate_netlist\run.log
+fpga\fpga_pcie_ov5640\project\impl.tcl
+fpga\fpga_pcie_ov5640\project\log\cfg.log
+fpga\fpga_pcie_ov5640\project\log\configuration.log
+fpga\fpga_pcie_ov5640\project\logbackup\run_2026-10-22-21-45-32.log
+fpga\fpga_pcie_ov5640\project\multiseed_summary.csv
+fpga\fpga_pcie_ov5640\project\place_route\clock_utilization.txt
+fpga\fpga_pcie_ov5640\project\place_route\image_pcie_capture_plc.adf
+fpga\fpga_pcie_ov5640\project\place_route\image_pcie_capture_pnr.adf
+fpga\fpga_pcie_ov5640\project\place_route\image_pcie_capture_pnr.netlist
+fpga\fpga_pcie_ov5640\project\place_route\image_pcie_capture_prr.prt
+fpga\fpga_pcie_ov5640\project\place_route\image_pcie_capture_timing_summary_after_hold_fix.txt
+fpga\fpga_pcie_ov5640\project\place_route\image_pcie_capture.prr
+fpga\fpga_pcie_ov5640\project\place_route\layers.txt
+fpga\fpga_pcie_ov5640\project\place_route\prr.db
+fpga\fpga_pcie_ov5640\project\place_route\run.log
+fpga\fpga_pcie_ov5640\project\report_timing\image_pcie_capture_rtp.adf
+fpga\fpga_pcie_ov5640\project\report_timing\image_pcie_capture.rtr
+fpga\fpga_pcie_ov5640\project\report_timing\rtr.db
+fpga\fpga_pcie_ov5640\project\report_timing\run.log
+fpga\fpga_pcie_ov5640\project\run.log
+fpga\fpga_pcie_ov5640\project\synthesize\add_sub_carrychain.log
+fpga\fpga_pcie_ov5640\project\synthesize\apm_drm_lutram_utilization.log
+fpga\fpga_pcie_ov5640\project\synthesize\formal.pvf
+fpga\fpga_pcie_ov5640\project\synthesize\image_pcie_capture_controlsets.txt
+fpga\fpga_pcie_ov5640\project\synthesize\image_pcie_capture_syn.adf
+fpga\fpga_pcie_ov5640\project\synthesize\image_pcie_capture_syn.vm
+fpga\fpga_pcie_ov5640\project\synthesize\image_pcie_capture.snr
+fpga\fpga_pcie_ov5640\project\synthesize\logbackup\run_2026-10-22-21-45-32.log
+fpga\fpga_pcie_ov5640\project\synthesize\run.log
+fpga\fpga_pcie_ov5640\project\synthesize\snr.db

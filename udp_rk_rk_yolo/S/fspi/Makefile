@@ -16,6 +16,7 @@ BUILDDIR = build
 
 # 目标程序
 TARGET_APP = $(BUILDDIR)/vehicle_control
+TARGET_TEST = $(BUILDDIR)/test_brake_control
 
 # 源文件（添加共享内存源文件）
 FSPI_SOURCES = $(SRCDIR)/fspi_module.c
@@ -69,8 +70,11 @@ clean:
 	@echo "清理编译文件"
 	rm -rf $(BUILDDIR)
 
-# 快速测试编译
-test: app
+# 行人制动策略测试无需 SPI 设备。
+$(TARGET_TEST): test_brake_control.c $(INCDIR)/brake_policy.h | $(BUILDDIR)
+	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $@
+
+test: app $(TARGET_TEST)
 	@echo "=== 编译测试完成 ==="
 	@echo "可执行文件: $(TARGET_APP)"
 	@if [ -f "$(TARGET_APP)" ]; then \
@@ -80,6 +84,7 @@ test: app
 		echo "编译失败!"; \
 		exit 1; \
 	fi
+	./$(TARGET_TEST)
 
 # 运行程序 (需要管理员权限访问SPI设备)
 run: app
