@@ -7,45 +7,28 @@
 extern "C" {
 #endif
 
-/**
- * @brief FSPI模块初始化
- * @return 0表示成功，-1表示失败
- */
+/* 打开固定 SPI 设备并写入总线模式、字宽和时钟配置；成功返回 0。 */
 int fspi_init(void);
 
-/**
- * @brief FSPI写数据
- * @param addr 写入地址 (16位)
- * @param data 写入数据 (8位)
- * @return 0表示成功，-1表示失败
- */
+/* 向 16 位地址写入一字节，失败时最多尝试三次；成功为 0，失败为 -1。 */
 int fspi_write_data(uint16_t addr, uint8_t data);
 
-/**
- * @brief FSPI读数据
- * @param addr 读取地址 (16位)
- * @param data 读取数据指针 (8位)
- * @return 0表示成功，-1表示失败
- */
+/* 先发送地址，再连续采样五次；从成功读值中选出现次数最多的字节，
+ * 次数相同时选数值较小者。成功为 0，全部失败为 -1。 */
 int fspi_read_data(uint16_t addr, uint8_t *data);
 
-// 外部全局变量声明
+/* 保存已选择的视频流编号，由 switch_video_stream 在写入成功后更新。 */
 extern int current_video_stream;
 
-/**
- * @brief 切换视频流
- * @param stream_id 视频流ID (1-6)
- * @return 0表示成功，-1表示失败
- */
+/* 仅接受视频流编号 1..6，写往地址 0 后尝试读回。
+ * 读回失败或读值不同只记录日志；写入成功时仍更新 current_video_stream 并返回 0。 */
 int switch_video_stream(int stream_id);
 
-/**
- * @brief FSPI清理资源
- */
+/* 关闭已打开的设备句柄并重置内部状态；重复调用不会再次关闭。 */
 void fspi_cleanup(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // FSPI_MODULE_H
+#endif /* FSPI_MODULE_H */

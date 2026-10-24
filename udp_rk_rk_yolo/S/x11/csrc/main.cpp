@@ -21,7 +21,7 @@
 #endif
 
 //=========================================================================
-// *作   者：辉哥大盗（C语言重构版：X11双通道渲染程序）
+// *作   者：科研轮转（C语言重构版：X11双通道渲染程序）
 // *完成时间：2025年10月14日
 // *实现功能：读取PCIe和UDP共享内存，合成1280×480图像显示
 // *性能优化：专注于渲染显示，支持双缓冲和高性能显示
@@ -41,6 +41,12 @@
 // 单个摄像头区块尺寸
 #define CAMERA_BLOCK_WIDTH 320
 #define CAMERA_BLOCK_HEIGHT 240
+
+// 只在显示端上下翻转 S 端 PCIe 摄像头区块，保持各区块原来的位置。
+// 采集端的识别图像与车控坐标不变。
+static inline int pcie_display_source_row(int row) {
+    return CAMERA_BLOCK_HEIGHT - 1 - row;
+}
 
 // 使用头文件中定义的DisplayMode枚举
 
@@ -250,7 +256,8 @@ void render_camera_block(uint32_t* display_pixels, const uint16_t* source_pixels
             int orig_y = y / scale_factor;
             
             // 从源图像读取像素
-            int source_idx = (src_y + orig_y) * (src_x >= 640 ? UDP_IMAGE_WIDTH : PCIE_IMAGE_WIDTH) + (src_x + orig_x);
+            int source_y = src_y + (src_x < PCIE_IMAGE_WIDTH ? pcie_display_source_row(orig_y) : orig_y);
+            int source_idx = source_y * (src_x >= 640 ? UDP_IMAGE_WIDTH : PCIE_IMAGE_WIDTH) + (src_x + orig_x);
             uint16_t pixel = source_pixels[source_idx];
             
             // BGR565转RGB888 (修正颜色通道顺序)
@@ -322,7 +329,7 @@ void render_scaled_camera_block(uint32_t* display_pixels, const uint16_t* source
             } else {
                 // PCIe摄像头：src_x已经是相对位置
                 pixel_x = src_x + (int)orig_x;
-                pixel_y = src_y + (int)orig_y;
+                pixel_y = src_y + pcie_display_source_row((int)orig_y);
             }
             
             // 边界检查
@@ -878,9 +885,10 @@ int render_engine_render_with_transition(RenderEngine* engine,
     // Bottom row - PCIe cameras (y: 240-479)
     for (int y = 0; y < CAMERA_BLOCK_HEIGHT; y++) {
         int display_y = y + 240;
+        int source_y = pcie_display_source_row(y);
         // 后右 0x33
         for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-            uint16_t pixel = pcie_pixels[(y + 240) * PCIE_IMAGE_WIDTH + x];
+            uint16_t pixel = pcie_pixels[(source_y + 240) * PCIE_IMAGE_WIDTH + x];
             uint8_t b = ((pixel >> 11) & 0x1F) << 3;
             uint8_t g = ((pixel >> 5) & 0x3F) << 2;
             uint8_t r = (pixel & 0x1F) << 3;
@@ -890,7 +898,7 @@ int render_engine_render_with_transition(RenderEngine* engine,
         }
         // 后中复制 0x44
         for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-            uint16_t pixel = pcie_pixels[(y + 240) * PCIE_IMAGE_WIDTH + 320 + x];
+            uint16_t pixel = pcie_pixels[(source_y + 240) * PCIE_IMAGE_WIDTH + 320 + x];
             uint8_t b = ((pixel >> 11) & 0x1F) << 3;
             uint8_t g = ((pixel >> 5) & 0x3F) << 2;
             uint8_t r = (pixel & 0x1F) << 3;
@@ -900,7 +908,7 @@ int render_engine_render_with_transition(RenderEngine* engine,
         }
         // 后左 0x22
         for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-            uint16_t pixel = pcie_pixels[y * PCIE_IMAGE_WIDTH + 320 + x];
+            uint16_t pixel = pcie_pixels[source_y * PCIE_IMAGE_WIDTH + 320 + x];
             uint8_t b = ((pixel >> 11) & 0x1F) << 3;
             uint8_t g = ((pixel >> 5) & 0x3F) << 2;
             uint8_t r = (pixel & 0x1F) << 3;
@@ -910,7 +918,7 @@ int render_engine_render_with_transition(RenderEngine* engine,
         }
         // 后中 0x11
         for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-            uint16_t pixel = pcie_pixels[y * PCIE_IMAGE_WIDTH + x];
+            uint16_t pixel = pcie_pixels[source_y * PCIE_IMAGE_WIDTH + x];
             uint8_t b = ((pixel >> 11) & 0x1F) << 3;
             uint8_t g = ((pixel >> 5) & 0x3F) << 2;
             uint8_t r = (pixel & 0x1F) << 3;
@@ -1237,10 +1245,11 @@ int render_engine_render_camera_view(RenderEngine* engine,
             // Bottom row - PCIe cameras (y: 240-479)
             for (int y = 0; y < CAMERA_BLOCK_HEIGHT; y++) {
                 int display_y = y + 240;
+                int source_y = pcie_display_source_row(y);
 
                 // 后右 0x33 (PCIe bottom-left) -> display (0, 240)
                 for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-                    uint16_t pixel = pcie_pixels[(y + 240) * PCIE_IMAGE_WIDTH + x];
+                    uint16_t pixel = pcie_pixels[(source_y + 240) * PCIE_IMAGE_WIDTH + x];
                     uint8_t b = ((pixel >> 11) & 0x1F) << 3;
                     uint8_t g = ((pixel >> 5) & 0x3F) << 2;
                     uint8_t r = (pixel & 0x1F) << 3;
@@ -1249,7 +1258,7 @@ int render_engine_render_camera_view(RenderEngine* engine,
 
                 // 后中复制 0x44 (PCIe bottom-right) -> display (320, 240)
                 for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-                    uint16_t pixel = pcie_pixels[(y + 240) * PCIE_IMAGE_WIDTH + 320 + x];
+                    uint16_t pixel = pcie_pixels[(source_y + 240) * PCIE_IMAGE_WIDTH + 320 + x];
                     uint8_t b = ((pixel >> 11) & 0x1F) << 3;
                     uint8_t g = ((pixel >> 5) & 0x3F) << 2;
                     uint8_t r = (pixel & 0x1F) << 3;
@@ -1258,7 +1267,7 @@ int render_engine_render_camera_view(RenderEngine* engine,
 
                 // 后左 0x22 (PCIe top-right) -> display (640, 240)
                 for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-                    uint16_t pixel = pcie_pixels[y * PCIE_IMAGE_WIDTH + 320 + x];
+                    uint16_t pixel = pcie_pixels[source_y * PCIE_IMAGE_WIDTH + 320 + x];
                     uint8_t b = ((pixel >> 11) & 0x1F) << 3;
                     uint8_t g = ((pixel >> 5) & 0x3F) << 2;
                     uint8_t r = (pixel & 0x1F) << 3;
@@ -1382,6 +1391,10 @@ int main() {
     struct timeval stream_start, current_time;
     uint8_t* pcie_buffer = NULL;
     uint8_t* udp_buffer = NULL;
+    int pcie_available = 0;
+    int udp_available = 0;
+    time_t last_pcie_retry = 0;
+    time_t last_udp_retry = 0;
     int frame_count = 0;
     double total_time = 0.0;
     uint32_t last_pcie_frame_id = 0;
@@ -1426,26 +1439,25 @@ int main() {
         return -1;
     }
     
-    // 初始化PCIe共享内存（读取者）
+    // 本地PCIe尚未运行时也允许远端UDP画面进入窗口。
+    memset(pcie_buffer, 0, PCIE_IMAGE_WIDTH * PCIE_IMAGE_HEIGHT * 2);
+    memset(udp_buffer, 0, UDP_IMAGE_WIDTH * UDP_IMAGE_HEIGHT * 2);
     printf("\n=== 初始化PCIe共享内存连接 ===\n");
-    if (shared_memory_init_pcie(&pcie_shm_manager, 0) != 0) {  // 0表示读取者
-        printf("PCIe共享内存连接失败！\n");
-        free(pcie_buffer);
-        free(udp_buffer);
-        return -1;
+    if (shared_memory_init_pcie(&pcie_shm_manager, 0) == 0) {
+        pcie_available = 1;
+        printf("PCIe共享内存连接成功\n");
+    } else {
+        printf("PCIe共享内存暂不可用，继续显示UDP图像\n");
     }
-    printf("PCIe共享内存连接成功\n");
-    
-    // 初始化UDP共享内存（读取者）
+
+    // 接收进程可以稍后启动；窗口持续等待UDP共享内存出现。
     printf("\n=== 初始化UDP共享内存连接 ===\n");
-    if (shared_memory_init_udp(&udp_shm_manager, 0) != 0) {  // 0表示读取者
-        printf("UDP共享内存连接失败！\n");
-        shared_memory_cleanup(&pcie_shm_manager);
-        free(pcie_buffer);
-        free(udp_buffer);
-        return -1;
+    if (shared_memory_init_udp(&udp_shm_manager, 0) == 0) {
+        udp_available = 1;
+        printf("UDP共享内存连接成功\n");
+    } else {
+        printf("UDP共享内存暂不可用，等待网络接收进程\n");
     }
-    printf("UDP共享内存连接成功\n");
 
     // 加载car.png图像
     printf("\n=== 加载car.png图像 ===\n");
@@ -1489,8 +1501,8 @@ int main() {
         if (emergency_brake_shm) {
             emergency_brake_shm_cleanup(emergency_brake_shm, 0);
         }
-        shared_memory_cleanup(&pcie_shm_manager);
-        shared_memory_cleanup(&udp_shm_manager);
+        if (pcie_available) shared_memory_cleanup(&pcie_shm_manager);
+        if (udp_available) shared_memory_cleanup(&udp_shm_manager);
         free(pcie_buffer);
         free(udp_buffer);
         return -1;
@@ -1549,23 +1561,38 @@ int main() {
             }
         }
         
-        // 尝试读取PCIe共享内存
-        int pcie_result = shared_memory_read_image(&pcie_shm_manager, 
-                                                 pcie_buffer, 
-                                                 PCIE_IMAGE_WIDTH * PCIE_IMAGE_HEIGHT * 2,
-                                                 &pcie_width, &pcie_height, &pcie_frame_id);
-        
+        // 每秒重试连接本地采集进程；远端UDP渲染不依赖其启动顺序。
+        if (!pcie_available && time(NULL) != last_pcie_retry) {
+            last_pcie_retry = time(NULL);
+            if (shared_memory_init_pcie(&pcie_shm_manager, 0) == 0) {
+                pcie_available = 1;
+                printf("PCIe共享内存已连接\n");
+            }
+        }
+        int pcie_result = pcie_available
+            ? shared_memory_read_image(&pcie_shm_manager, pcie_buffer,
+                                       PCIE_IMAGE_WIDTH * PCIE_IMAGE_HEIGHT * 2,
+                                       &pcie_width, &pcie_height, &pcie_frame_id)
+            : 0;
+
         if (pcie_result > 0 && pcie_frame_id != last_pcie_frame_id) {
             last_pcie_frame_id = pcie_frame_id;
             pcie_updated = 1;
         }
         
-        // 尝试读取UDP共享内存
-        int udp_result = shared_memory_read_image(&udp_shm_manager, 
-                                                udp_buffer, 
-                                                UDP_IMAGE_WIDTH * UDP_IMAGE_HEIGHT * 2,
-                                                &udp_width, &udp_height, &udp_frame_id);
-        
+        if (!udp_available && time(NULL) != last_udp_retry) {
+            last_udp_retry = time(NULL);
+            if (shared_memory_init_udp(&udp_shm_manager, 0) == 0) {
+                udp_available = 1;
+                printf("UDP共享内存已连接\n");
+            }
+        }
+        int udp_result = udp_available
+            ? shared_memory_read_image(&udp_shm_manager, udp_buffer,
+                                       UDP_IMAGE_WIDTH * UDP_IMAGE_HEIGHT * 2,
+                                       &udp_width, &udp_height, &udp_frame_id)
+            : 0;
+
         if (udp_result > 0 && udp_frame_id != last_udp_frame_id) {
             last_udp_frame_id = udp_frame_id;
             udp_updated = 1;
@@ -1653,8 +1680,8 @@ int main() {
 
     curve_detection_shm_cleanup();
 
-    shared_memory_cleanup(&pcie_shm_manager);
-    shared_memory_cleanup(&udp_shm_manager);
+    if (pcie_available) shared_memory_cleanup(&pcie_shm_manager);
+    if (udp_available) shared_memory_cleanup(&udp_shm_manager);
     
     if (pcie_buffer) {
         free(pcie_buffer);

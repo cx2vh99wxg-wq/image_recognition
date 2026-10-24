@@ -112,7 +112,7 @@ if ! shopt -oq posix; then
   fi
 fi
 if [ -f ~/setup_network.sh ]; then
-    sudo ~/setup_network.sh
+    sudo bash ~/setup_network.sh
 fi
 if [ -f ~/pango_pci_driver.ko ]; then
     sudo insmod ~/pango_pci_driver.ko
@@ -123,7 +123,7 @@ fi
 echo "======================================"
 echo "Welcome to M-End FPGA System"
 echo "======================================"
-echo "Author: 辉哥大盗"
+echo "Author: 科研轮转"
 echo "Time: $(date)"
 echo "======================================"
 
@@ -133,10 +133,10 @@ if [[ $- == *i* ]]; then
     echo ""
     
     # 检查当前目录，如果不在正确目录则自动切换
-    if [[ "$(pwd)" != */W ]] && [[ "$(pwd)" != */W/ ]]; then
+    if [[ "$(pwd)" != */M ]] && [[ "$(pwd)" != */M/ ]]; then
         echo "切换到M端工作目录..."
-        cd ~/W 2>/dev/null || cd /home/$(whoami)/W 2>/dev/null || {
-            echo "警告: 未找到M端工作目录 ~/W"
+        cd ~/M 2>/dev/null || cd /home/$(whoami)/M 2>/dev/null || {
+            echo "警告: 未找到M端工作目录 ~/M"
             echo "请手动切换到包含Makefile的目录"
             echo "然后运行: make run"
             return

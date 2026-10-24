@@ -1,5 +1,5 @@
 # Makefile for M-End Project
-# Author: 辉哥大盗
+# Author: 科研轮转
 # Date: 2025年10月17日
 # Description: 管理PCIe模块和UDP模块的构建
 
@@ -46,7 +46,7 @@ info:
 	@echo "======================================"
 	@echo "$(PROJECT_NAME) Build System"
 	@echo "======================================"
-	@echo "Author: 辉哥大盗"
+	@echo "Author: 科研轮转"
 	@echo "Date: 2025年10月17日"
 	@echo "======================================"
 	@echo "Modules:"

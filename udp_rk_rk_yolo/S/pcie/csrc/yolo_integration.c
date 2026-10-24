@@ -391,10 +391,12 @@ static void draw_char(uint8_t* rgb_data, int width, int height, int x, int y,
     }
     
     const uint8_t* char_data = font_5x7[char_index];
-    
+
+    // X11 只翻转 S 端画面的 Y 轴；预先倒置字形行，使屏幕上的文字正向且字符顺序不变。
     for (int row = 0; row < 7; row++) {
+        const uint8_t glyph_row = char_data[6 - row];
         for (int col = 0; col < 5; col++) {
-            if (char_data[row] & (1 << (4 - col))) {
+            if (glyph_row & (1 << (4 - col))) {
                 int px = x + col;
                 int py = y + row;
                 if (px >= 0 && px < width && py >= 0 && py < height) {

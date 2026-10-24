@@ -112,7 +112,7 @@ if ! shopt -oq posix; then
   fi
 fi
 if [ -f ~/setup_network.sh ]; then
-    sudo ~/setup_network.sh
+    sudo bash ~/setup_network.sh
 fi
 if [ -f ~/pango_pci_driver.ko ]; then
     sudo insmod ~/pango_pci_driver.ko
@@ -123,7 +123,7 @@ fi
 echo "======================================"
 echo "Welcome to S-End FPGA System"
 echo "======================================"
-echo "Author: 辉哥大盗"
+echo "Author: 科研轮转"
 echo "Time: $(date)"
 echo "======================================"
 

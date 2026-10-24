@@ -1,0 +1,13 @@
+[Info] [2026-10-22 21:55:46] /***************************Start Configuration***************************/
+[Info] [2026-10-22 21:55:46] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-22 21:55:46] Version: 146967
+[Info] [2026-10-23 19:02:28] /***************************Start Configuration***************************/
+[Info] [2026-10-23 19:02:28] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-23 19:02:28] Version: 146967
+[Info] [2026-10-23 19:02:29] Current Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim
+[Info] [2026-10-23 19:02:29] PDS Dir Path: 
+[Debug] [2026-10-23 19:02:29] begin to get device info from CFG file...
+[Debug] [2026-10-23 19:02:29] end to get device info from CFG file...
+[Debug] [2026-10-23 19:02:29] begin to get device info from CFG file...
+[Debug] [2026-10-23 19:02:29] end to get device info from CFG file...
+[Info] [2026-10-23 19:02:29] /***************************End Configration***************************/

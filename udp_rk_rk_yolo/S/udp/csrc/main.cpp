@@ -22,7 +22,7 @@
 #endif
 
 //=========================================================================
-// *作   者：辉哥大盗（C语言重构版：UDP网络接收后台程序）
+// *作   者：科研轮转（C语言重构版：UDP网络接收后台程序）
 // *完成时间：2025年10月14日
 // *实现功能：480p视频流UDP行同步接收并写入共享内存（网络接收端）
 // *性能优化：去除X11显示功能，专注于网络接收和共享内存写入
@@ -137,8 +137,6 @@ typedef struct {
     struct sockaddr_in client_addr;
     socklen_t client_len;
     uint8_t* frame_buffer;
-    uint8_t* temp_buffer;      /* 临时接收缓冲区 */
-    uint8_t* line_buffer;      /* 行缓冲区 */
     size_t buffer_size;
     SyncController sync_ctrl;   /* 同步控制器 */
 } NetworkReceiver;
@@ -148,6 +146,7 @@ typedef struct {
 //=========================================================================
 static volatile int keep_running = 1;
 static SharedMemoryManager shm_manager;
+static int curve_detection_available = 0;
 
 //=========================================================================
 // 函数声明
@@ -186,13 +185,9 @@ double get_time_diff(struct timeval start, struct timeval end) {
 }
 
 uint32_t calculate_checksum(const uint8_t* data, size_t size) {
-    if (!data || size == 0) {
-        return 0;
-    }
-    
     uint32_t checksum = 0;
-    for (size_t i = 0; i < size; i++) {
-        checksum = ((checksum << 1) | (checksum >> 31)) ^ data[i];
+    for (size_t i = 0; i < size; ++i) {
+        checksum += data[i];
     }
     return checksum;
 }
@@ -261,21 +256,18 @@ int network_receiver_init(NetworkReceiver* receiver) {
     }
     
     memset(receiver, 0, sizeof(NetworkReceiver));
+    receiver->socket_fd = -1;
     
     // 分配缓冲区
     receiver->buffer_size = FRAME_BUFFER_SIZE;
-    receiver->frame_buffer = (uint8_t*)aligned_alloc(64, receiver->buffer_size);
-    receiver->temp_buffer = (uint8_t*)aligned_alloc(64, receiver->buffer_size);
-    receiver->line_buffer = (uint8_t*)aligned_alloc(64, LINE_DATA_MAX_SIZE);
+    receiver->frame_buffer = (uint8_t*)malloc(receiver->buffer_size);
     
-    if (!receiver->frame_buffer || !receiver->temp_buffer || !receiver->line_buffer) {
+    if (!receiver->frame_buffer) {
         network_receiver_cleanup(receiver);
         return -1;
     }
     
     memset(receiver->frame_buffer, 0, receiver->buffer_size);
-    memset(receiver->temp_buffer, 0, receiver->buffer_size);
-    memset(receiver->line_buffer, 0, LINE_DATA_MAX_SIZE);
     
     // 初始化同步控制器
     reset_sync_state(receiver);
@@ -300,10 +292,7 @@ int network_receiver_init(NetworkReceiver* receiver) {
         perror("设置接收缓冲区大小失败");
     }
     
-    // 设置非阻塞模式
-    int flags = fcntl(receiver->socket_fd, F_GETFL, 0);
-    fcntl(receiver->socket_fd, F_SETFL, flags | O_NONBLOCK);
-    
+    // 使用阻塞接收与超时，等待每个数据报到达。
     // 绑定到端口
     receiver->server_addr.sin_family = AF_INET;
     receiver->server_addr.sin_addr.s_addr = INADDR_ANY;
@@ -347,217 +336,103 @@ void print_sync_statistics(const NetworkReceiver* receiver) {
 }
 
 //=========================================================================
-// 核心行同步接收函数 - 完全按照main copy.cpp的逻辑
+// 按数据报接收完整帧，并在包丢失时重新同步到下一帧头
 //=========================================================================
-int network_receive_with_sync(NetworkReceiver* receiver) {
-    FrameHeader frame_header;
-    FrameTrailer frame_trailer;
-    LineHeader line_header;
-    ssize_t received;
-    uint32_t total_received = 0;
-    int retry_count = 0;  // 添加重试计数器变量
-    
-    if (!receiver || !receiver->frame_buffer) {
+// 读取一个UDP数据报。超时返回0，让主循环及时处理停止信号。
+static ssize_t receive_packet(NetworkReceiver* receiver, uint8_t* packet, size_t capacity) {
+    while (keep_running) {
+        receiver->client_len = sizeof(receiver->client_addr);
+        ssize_t size = recvfrom(receiver->socket_fd, packet, capacity, 0,
+                                (struct sockaddr*)&receiver->client_addr, &receiver->client_len);
+        if (size >= 0) return size;
+        if (errno == EINTR) continue;
+        if (errno == EAGAIN || errno == EWOULDBLOCK) return 0;
+        perror("UDP接收失败");
         return -1;
     }
-    
-    // 第一步：等待并接收帧头 - 更宽松的处理
-    received = recvfrom(receiver->socket_fd, &frame_header, sizeof(FrameHeader), 0,
-                       (struct sockaddr*)&receiver->client_addr, &receiver->client_len);
-    
-    if (received != sizeof(FrameHeader)) {
-        receiver->sync_ctrl.lost_frames++;
-        return 0;  // 返回0而不是-1，让主循环继续
+    return 0;
+}
+
+int network_receive_with_sync(NetworkReceiver* receiver) {
+    if (!receiver || !receiver->frame_buffer) return -1;
+
+    uint8_t packet[MAX_PACKET_SIZE];
+    FrameHeader header;
+    // 启动在半帧或发生丢包时，扫描到下一个有效帧头。
+    while (keep_running) {
+        ssize_t size = receive_packet(receiver, packet, sizeof(packet));
+        if (size <= 0) return (int)size;
+        if (size != (ssize_t)sizeof(header)) continue;
+        memcpy(&header, packet, sizeof(header));
+        if (header.magic == FRAME_HEADER_MAGIC &&
+            header.width == IMAGE_WIDTH && header.height == IMAGE_HEIGHT &&
+            header.data_size == FRAME_BUFFER_SIZE && header.line_count == IMAGE_HEIGHT) {
+            break;
+        }
     }
-    
-    // 验证帧头 - 更宽松的处理
-    if (frame_header.magic != FRAME_HEADER_MAGIC) {
+    if (!keep_running) return 0;
+
+    const struct sockaddr_in source = receiver->client_addr;
+    uint32_t checksum = 0;
+    for (uint16_t line = 0; line < IMAGE_HEIGHT; ++line) {
+        ssize_t size = receive_packet(receiver, packet, sizeof(packet));
+        LineHeader line_header;
+        if (size != (ssize_t)sizeof(line_header) ||
+            receiver->client_addr.sin_addr.s_addr != source.sin_addr.s_addr ||
+            receiver->client_addr.sin_port != source.sin_port) {
+            receiver->sync_ctrl.corrupted_frames++;
+            return 0;
+        }
+        memcpy(&line_header, packet, sizeof(line_header));
+        if (line_header.magic != LINE_HEADER_MAGIC ||
+            line_header.line_id != line || line_header.line_size != IMAGE_WIDTH * 2) {
+            receiver->sync_ctrl.corrupted_frames++;
+            return 0;
+        }
+
+        size = receive_packet(receiver, packet, sizeof(packet));
+        if (size != line_header.line_size ||
+            receiver->client_addr.sin_addr.s_addr != source.sin_addr.s_addr ||
+            receiver->client_addr.sin_port != source.sin_port ||
+            calculate_checksum(packet, line_header.line_size) != line_header.line_checksum) {
+            receiver->sync_ctrl.corrupted_frames++;
+            return 0;
+        }
+        memcpy(receiver->frame_buffer + (size_t)line * IMAGE_WIDTH * 2,
+               packet, line_header.line_size);
+        checksum += line_header.line_checksum;
+    }
+
+    ssize_t size = receive_packet(receiver, packet, sizeof(packet));
+    FrameTrailer trailer;
+    if (size != (ssize_t)sizeof(trailer) ||
+        receiver->client_addr.sin_addr.s_addr != source.sin_addr.s_addr ||
+        receiver->client_addr.sin_port != source.sin_port) {
         receiver->sync_ctrl.corrupted_frames++;
-        return 0;  // 继续下一帧
+        return 0;
     }
-    
-    if (frame_header.width != IMAGE_WIDTH || frame_header.height != IMAGE_HEIGHT) {
+    memcpy(&trailer, packet, sizeof(trailer));
+    // 旧版M端没有初始化帧头校验字段；帧尾与逐行校验足以验证完整数据。
+    if (trailer.magic != FRAME_TRAILER_MAGIC ||
+        trailer.frame_id != header.frame_id ||
+        trailer.total_lines != IMAGE_HEIGHT ||
+        trailer.checksum != checksum) {
         receiver->sync_ctrl.corrupted_frames++;
-        return 0;  // 继续下一帧
+        return 0;
     }
 
-    // 打印弯道检测结果
-    static uint32_t print_count = 0;
-    static uint32_t last_curve_type = 999;  // 上次的弯道类型
-    const char* curve_name = "UNKNOWN";
-
-    switch(frame_header.curve_type) {
-        case 0:
-            curve_name = "STRAIGHT";
-            break;
-        case 1:
-            curve_name = "LEFT";
-            break;
-        case 2:
-            curve_name = "RIGHT";
-            break;
-        case 3:
-            curve_name = "S-CURVE";
-            break;
-    }
-
-    // 当弯道类型变化时立即打印，或每30帧打印一次
-    if (frame_header.curve_type != last_curve_type || print_count % 30 == 0) {
-        fprintf(stderr, "\n========================================\n");
-        fprintf(stderr, "  [Road Detection] Frame %u\n", frame_header.frame_id);
-        fprintf(stderr, "  Road Type:  %s\n", curve_name);
-        fprintf(stderr, "  Confidence: %u%%\n", frame_header.curve_confidence);
-        fprintf(stderr, "  Angle:      %u degrees\n", frame_header.curve_angle);
-        fprintf(stderr, "========================================\n\n");
-
-        last_curve_type = frame_header.curve_type;
-    } else {
-        // 简洁模式：一行显示
-        fprintf(stderr, "[Road] Frame%u: %s (Conf:%u%%, Angle:%u)\n",
-               frame_header.frame_id, curve_name,
-               frame_header.curve_confidence, frame_header.curve_angle);
-    }
-
-    print_count++;
-
-    // 将弯道信息写入共享内存，供FSPI读取
-    if (curve_detection_update(frame_header.frame_id,
-                               (CurveType)frame_header.curve_type,
-                               frame_header.curve_confidence,
-                               frame_header.curve_angle) != 0) {
+    receiver->sync_ctrl.total_frames++;
+    if (curve_detection_available &&
+        curve_detection_update(header.frame_id, (CurveType)header.curve_type,
+                               header.curve_confidence, header.curve_angle) != 0) {
         fprintf(stderr, "警告: 弯道信息写入共享内存失败\n");
     }
-
-    // 第二步：逐行接收图像数据
-    receiver->sync_ctrl.frame_checksum = 0;
-    
-    for (int line = 0; line < IMAGE_HEIGHT; line++) {
-        // 接收行头 - 添加重试机制
-        int retry_count = 0;
-        while (retry_count < 3) {
-            received = recvfrom(receiver->socket_fd, &line_header, sizeof(LineHeader), 0,
-                               (struct sockaddr*)&receiver->client_addr, &receiver->client_len);
-            
-            if (received == sizeof(LineHeader)) {
-                break;  // 成功接收
-            }
-            
-            retry_count++;
-            if (received < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-                usleep(1000);  // 等待1ms后重试
-                continue;
-            } else {
-                // 接收失败，继续重试
-            }
-        }
-        
-        if (retry_count >= 3) {
-            receiver->sync_ctrl.corrupted_frames++;
-            return 0;  // 跳过此帧，继续下一帧
-        }
-        
-        // 验证行头 - 更宽松的验证
-        if (line_header.magic != LINE_HEADER_MAGIC) {
-            receiver->sync_ctrl.corrupted_frames++;
-            return 0;  // 跳过此帧
-        }
-        
-        // 允许一定的行号偏差
-        if (abs((int)line_header.line_id - line) > 2) {
-            receiver->sync_ctrl.corrupted_frames++;
-            return 0;  // 跳过此帧
-        }
-        
-        // 接收行数据 (640像素 * 2字节 = 1280字节) - 更宽松的处理
-        uint32_t line_size = IMAGE_WIDTH * 2;
-        if (line_header.line_size > LINE_DATA_MAX_SIZE || line_header.line_size < line_size - 100) {
-            receiver->sync_ctrl.corrupted_frames++;
-            return 0;  // 跳过此帧
-        }
-        
-        // 使用实际的行大小而不是固定值
-        uint32_t actual_line_size = line_header.line_size;
-        
-        retry_count = 0;
-        while (retry_count < 3) {
-            received = recvfrom(receiver->socket_fd, receiver->line_buffer, actual_line_size, 0,
-                               (struct sockaddr*)&receiver->client_addr, &receiver->client_len);
-            
-            if (received == actual_line_size) {
-                break;  // 成功接收
-            }
-            
-            retry_count++;
-            if (received < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-                usleep(1000);  // 等待1ms后重试
-                continue;
-            } else {
-                // 接收失败，继续重试
-            }
-        }
-        
-        if (retry_count >= 3) {
-            receiver->sync_ctrl.corrupted_frames++;
-            return 0;  // 跳过此帧
-        }
-        
-        // 验证行校验和 - 可选的校验
-        uint32_t calc_checksum = calculate_checksum(receiver->line_buffer, actual_line_size);
-        if (calc_checksum != line_header.line_checksum) {
-            // 校验和错误，但继续处理这一行
-        }
-        
-        // 复制行数据到帧缓冲区 - 安全复制
-        size_t copy_size = (actual_line_size > line_size) ? line_size : actual_line_size;
-        if (line < IMAGE_HEIGHT) {  // 确保不会越界
-            memcpy(receiver->frame_buffer + line * IMAGE_WIDTH * 2, receiver->line_buffer, copy_size);
-        }
-        receiver->sync_ctrl.frame_checksum += calc_checksum;
-        total_received += copy_size;
-        
-        // 显示进度 (已移除输出)
+    if (receiver->sync_ctrl.total_frames % 30 == 1) {
+        fprintf(stderr, "UDP帧%u接收完成，累计%u帧，丢弃%u帧\n",
+                header.frame_id, receiver->sync_ctrl.total_frames,
+                receiver->sync_ctrl.corrupted_frames);
     }
-    
-    // 第三步：接收并验证帧尾 - 可选验证
-    retry_count = 0;
-    while (retry_count < 3) {
-        received = recvfrom(receiver->socket_fd, &frame_trailer, sizeof(FrameTrailer), 0,
-                           (struct sockaddr*)&receiver->client_addr, &receiver->client_len);
-        
-        if (received == sizeof(FrameTrailer)) {
-            break;  // 成功接收
-        }
-        
-        retry_count++;
-        if (received < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-            usleep(1000);  // 等待1ms后重试
-            continue;
-        }
-    }
-    
-    if (retry_count >= 3) {
-        // 即使帧尾失败也继续处理，因为图像数据已经接收完毕
-        receiver->sync_ctrl.total_frames++;
-        return total_received;
-    }
-    
-    // 验证帧尾 - 宽松验证
-    if (frame_trailer.magic != FRAME_TRAILER_MAGIC) {
-        // 帧尾魔数错误，但继续处理
-    }
-    
-    if (frame_trailer.frame_id != frame_header.frame_id) {
-        // 帧ID不匹配，但继续处理
-    }
-    
-    // 校验和验证也改为警告
-    if (frame_trailer.checksum != receiver->sync_ctrl.frame_checksum) {
-        // 帧校验和不匹配，但继续处理
-    }
-    
-    receiver->sync_ctrl.total_frames++;
-    
-    return total_received;
+    return FRAME_BUFFER_SIZE;
 }
 
 void network_receiver_cleanup(NetworkReceiver* receiver) {
@@ -575,15 +450,7 @@ void network_receiver_cleanup(NetworkReceiver* receiver) {
         receiver->frame_buffer = NULL;
     }
     
-    if (receiver->temp_buffer) {
-        free(receiver->temp_buffer);
-        receiver->temp_buffer = NULL;
-    }
-    
-    if (receiver->line_buffer) {
-        free(receiver->line_buffer);
-        receiver->line_buffer = NULL;
-    }
+
 }
 
 //=========================================================================
@@ -592,7 +459,6 @@ void network_receiver_cleanup(NetworkReceiver* receiver) {
 int main() {
     NetworkReceiver network_receiver;
     struct timeval stream_start, current_time;
-    uint8_t* image_buf_888 = NULL;
     int frame_count = 0;
     double total_time = 0.0;
     
@@ -606,25 +472,16 @@ int main() {
     }
 
     // 初始化弯道检测共享内存（S端UDP作为写入者）
-    if (curve_detection_shm_init(1) != 0) {  // 1表示写入者
-        fprintf(stderr, "弯道检测共享内存初始化失败\n");
-        shared_memory_cleanup(&shm_manager);
-        return -1;
+    if (curve_detection_shm_init(1) == 0) {
+        curve_detection_available = 1;
+        printf("弯道检测共享内存初始化成功\n");
+    } else {
+        fprintf(stderr, "弯道检测共享内存不可用，继续接收图像\n");
     }
-    printf("弯道检测共享内存初始化成功，S端UDP将写入弯道信息供FSPI读取\n");
-    
+
     // 初始化网络接收器
     if (network_receiver_init(&network_receiver) != 0) {
-        curve_detection_shm_cleanup();
-        shared_memory_cleanup(&shm_manager);
-        return -1;
-    }
-    
-    // 分配RGB888转换缓冲区（用于保存PPM）
-    image_buf_888 = (uint8_t*)malloc(IMAGE_WIDTH * IMAGE_HEIGHT * 3);
-    if (!image_buf_888) {
-        network_receiver_cleanup(&network_receiver);
-        curve_detection_shm_cleanup();
+        if (curve_detection_available) curve_detection_shm_cleanup();
         shared_memory_cleanup(&shm_manager);
         return -1;
     }
@@ -673,12 +530,8 @@ int main() {
     // 系统清理
     network_receiver_cleanup(&network_receiver);
     shared_memory_cleanup(&shm_manager);
-    curve_detection_shm_cleanup();  // 清理弯道检测共享内存
+    if (curve_detection_available) curve_detection_shm_cleanup();
 
-    if (image_buf_888) {
-        free(image_buf_888);
-        image_buf_888 = NULL;
-    }
 
     return 0;
 }
