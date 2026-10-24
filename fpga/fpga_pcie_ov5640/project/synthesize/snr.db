@@ -224447,10 +224447,10 @@ Total I/O ports = 111 of 285 (38.95%)
             <data>RAM(GB)</data>
         </column_headers>
         <row>
-            <data>0h:1m:1s</data>
-            <data>0h:1m:10s</data>
-            <data>0h:1m:20s</data>
-            <data>1,123</data>
+            <data>0h:1m:5s</data>
+            <data>0h:1m:14s</data>
+            <data>0h:1m:30s</data>
+            <data>1,138</data>
             <data>WINDOWS 10 x86_64</data>
             <data>Unknown</data>
             <data>31</data>

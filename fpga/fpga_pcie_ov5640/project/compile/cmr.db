@@ -745,9 +745,9 @@
             <data>RAM(GB)</data>
         </column_headers>
         <row>
-            <data>0h:0m:25s</data>
-            <data>0h:0m:25s</data>
-            <data>0h:1m:1s</data>
+            <data>0h:0m:23s</data>
+            <data>0h:0m:23s</data>
+            <data>0h:1m:11s</data>
             <data>356</data>
             <data>WINDOWS 10 x86_64</data>
             <data>Unknown</data>

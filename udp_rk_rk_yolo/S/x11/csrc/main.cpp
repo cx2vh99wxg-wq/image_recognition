@@ -42,6 +42,12 @@
 #define CAMERA_BLOCK_WIDTH 320
 #define CAMERA_BLOCK_HEIGHT 240
 
+// 只在显示端上下翻转 S 端 PCIe 摄像头区块，保持各区块原来的位置。
+// 采集端的识别图像与车控坐标不变。
+static inline int pcie_display_source_row(int row) {
+    return CAMERA_BLOCK_HEIGHT - 1 - row;
+}
+
 // 使用头文件中定义的DisplayMode枚举
 
 //=========================================================================
@@ -250,7 +256,8 @@ void render_camera_block(uint32_t* display_pixels, const uint16_t* source_pixels
             int orig_y = y / scale_factor;
             
             // 从源图像读取像素
-            int source_idx = (src_y + orig_y) * (src_x >= 640 ? UDP_IMAGE_WIDTH : PCIE_IMAGE_WIDTH) + (src_x + orig_x);
+            int source_y = src_y + (src_x < PCIE_IMAGE_WIDTH ? pcie_display_source_row(orig_y) : orig_y);
+            int source_idx = source_y * (src_x >= 640 ? UDP_IMAGE_WIDTH : PCIE_IMAGE_WIDTH) + (src_x + orig_x);
             uint16_t pixel = source_pixels[source_idx];
             
             // BGR565转RGB888 (修正颜色通道顺序)
@@ -322,7 +329,7 @@ void render_scaled_camera_block(uint32_t* display_pixels, const uint16_t* source
             } else {
                 // PCIe摄像头：src_x已经是相对位置
                 pixel_x = src_x + (int)orig_x;
-                pixel_y = src_y + (int)orig_y;
+                pixel_y = src_y + pcie_display_source_row((int)orig_y);
             }
             
             // 边界检查
@@ -878,9 +885,10 @@ int render_engine_render_with_transition(RenderEngine* engine,
     // Bottom row - PCIe cameras (y: 240-479)
     for (int y = 0; y < CAMERA_BLOCK_HEIGHT; y++) {
         int display_y = y + 240;
+        int source_y = pcie_display_source_row(y);
         // 后右 0x33
         for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-            uint16_t pixel = pcie_pixels[(y + 240) * PCIE_IMAGE_WIDTH + x];
+            uint16_t pixel = pcie_pixels[(source_y + 240) * PCIE_IMAGE_WIDTH + x];
             uint8_t b = ((pixel >> 11) & 0x1F) << 3;
             uint8_t g = ((pixel >> 5) & 0x3F) << 2;
             uint8_t r = (pixel & 0x1F) << 3;
@@ -890,7 +898,7 @@ int render_engine_render_with_transition(RenderEngine* engine,
         }
         // 后中复制 0x44
         for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-            uint16_t pixel = pcie_pixels[(y + 240) * PCIE_IMAGE_WIDTH + 320 + x];
+            uint16_t pixel = pcie_pixels[(source_y + 240) * PCIE_IMAGE_WIDTH + 320 + x];
             uint8_t b = ((pixel >> 11) & 0x1F) << 3;
             uint8_t g = ((pixel >> 5) & 0x3F) << 2;
             uint8_t r = (pixel & 0x1F) << 3;
@@ -900,7 +908,7 @@ int render_engine_render_with_transition(RenderEngine* engine,
         }
         // 后左 0x22
         for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-            uint16_t pixel = pcie_pixels[y * PCIE_IMAGE_WIDTH + 320 + x];
+            uint16_t pixel = pcie_pixels[source_y * PCIE_IMAGE_WIDTH + 320 + x];
             uint8_t b = ((pixel >> 11) & 0x1F) << 3;
             uint8_t g = ((pixel >> 5) & 0x3F) << 2;
             uint8_t r = (pixel & 0x1F) << 3;
@@ -910,7 +918,7 @@ int render_engine_render_with_transition(RenderEngine* engine,
         }
         // 后中 0x11
         for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-            uint16_t pixel = pcie_pixels[y * PCIE_IMAGE_WIDTH + x];
+            uint16_t pixel = pcie_pixels[source_y * PCIE_IMAGE_WIDTH + x];
             uint8_t b = ((pixel >> 11) & 0x1F) << 3;
             uint8_t g = ((pixel >> 5) & 0x3F) << 2;
             uint8_t r = (pixel & 0x1F) << 3;
@@ -1237,10 +1245,11 @@ int render_engine_render_camera_view(RenderEngine* engine,
             // Bottom row - PCIe cameras (y: 240-479)
             for (int y = 0; y < CAMERA_BLOCK_HEIGHT; y++) {
                 int display_y = y + 240;
+                int source_y = pcie_display_source_row(y);
 
                 // 后右 0x33 (PCIe bottom-left) -> display (0, 240)
                 for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-                    uint16_t pixel = pcie_pixels[(y + 240) * PCIE_IMAGE_WIDTH + x];
+                    uint16_t pixel = pcie_pixels[(source_y + 240) * PCIE_IMAGE_WIDTH + x];
                     uint8_t b = ((pixel >> 11) & 0x1F) << 3;
                     uint8_t g = ((pixel >> 5) & 0x3F) << 2;
                     uint8_t r = (pixel & 0x1F) << 3;
@@ -1249,7 +1258,7 @@ int render_engine_render_camera_view(RenderEngine* engine,
 
                 // 后中复制 0x44 (PCIe bottom-right) -> display (320, 240)
                 for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-                    uint16_t pixel = pcie_pixels[(y + 240) * PCIE_IMAGE_WIDTH + 320 + x];
+                    uint16_t pixel = pcie_pixels[(source_y + 240) * PCIE_IMAGE_WIDTH + 320 + x];
                     uint8_t b = ((pixel >> 11) & 0x1F) << 3;
                     uint8_t g = ((pixel >> 5) & 0x3F) << 2;
                     uint8_t r = (pixel & 0x1F) << 3;
@@ -1258,7 +1267,7 @@ int render_engine_render_camera_view(RenderEngine* engine,
 
                 // 后左 0x22 (PCIe top-right) -> display (640, 240)
                 for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-                    uint16_t pixel = pcie_pixels[y * PCIE_IMAGE_WIDTH + 320 + x];
+                    uint16_t pixel = pcie_pixels[source_y * PCIE_IMAGE_WIDTH + 320 + x];
                     uint8_t b = ((pixel >> 11) & 0x1F) << 3;
                     uint8_t g = ((pixel >> 5) & 0x3F) << 2;
                     uint8_t r = (pixel & 0x1F) << 3;

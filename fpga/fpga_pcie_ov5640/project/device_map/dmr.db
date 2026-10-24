@@ -3679,9 +3679,9 @@
             <data>RAM(GB)</data>
         </column_headers>
         <row>
-            <data>0h:0m:18s</data>
             <data>0h:0m:20s</data>
-            <data>0h:0m:29s</data>
+            <data>0h:0m:21s</data>
+            <data>0h:0m:30s</data>
             <data>798</data>
             <data>WINDOWS 10 x86_64</data>
             <data>Unknown</data>
