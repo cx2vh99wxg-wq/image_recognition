@@ -745,10 +745,10 @@
             <data>RAM(GB)</data>
         </column_headers>
         <row>
-            <data>0h:0m:28s</data>
-            <data>0h:0m:28s</data>
-            <data>0h:1m:21s</data>
-            <data>355</data>
+            <data>0h:0m:25s</data>
+            <data>0h:0m:25s</data>
+            <data>0h:1m:1s</data>
+            <data>356</data>
             <data>WINDOWS 10 x86_64</data>
             <data>Unknown</data>
             <data>31</data>
@@ -4894,6 +4894,11 @@
         </row>
         <row>
             <data message="4">Verilog-0003: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v(line number: 4)] Elaborating module uart_lcd</data>
+        </row>
+        <row>
+            <data message="4">Module instance {image_pcie_capture/u_uart_lcd} parameter value:
+    FRAME_GAP_CYCLES = 32'b00000000000001111010000100100000
+    TRACTION_LEASE_CYCLES = 32'b00000101111101011110000100000000</data>
         </row>
         <row>
             <data message="4">Verilog-0004: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 496)] Elaborating instance u_ov5640_top</data>
@@ -13771,34 +13776,7 @@
             <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 1104)] Removed register node black_sent_counter[4] that is stuck at constant 0.</data>
         </row>
         <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[15] that is stuck at constant 0.</data>
-        </row>
-        <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[14] that is stuck at constant 0.</data>
-        </row>
-        <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[13] that is stuck at constant 0.</data>
-        </row>
-        <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[12] that is stuck at constant 0.</data>
-        </row>
-        <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[11] that is stuck at constant 0.</data>
-        </row>
-        <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos5_reg_config/clock_20k_cnt[15] that is stuck at constant 0.</data>
-        </row>
-        <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos5_reg_config/clock_20k_cnt[14] that is stuck at constant 0.</data>
-        </row>
-        <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos5_reg_config/clock_20k_cnt[13] that is stuck at constant 0.</data>
-        </row>
-        <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos5_reg_config/clock_20k_cnt[12] that is stuck at constant 0.</data>
-        </row>
-        <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos5_reg_config/clock_20k_cnt[11] that is stuck at constant 0.</data>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v(line number: 70)] Removed register node u_uart_lcd/frame_gap_count[19] that is stuck at constant 0.</data>
         </row>
         <row>
             <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos6_reg_config/clock_20k_cnt[15] that is stuck at constant 0.</data>
@@ -13816,13 +13794,43 @@
             <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos6_reg_config/clock_20k_cnt[11] that is stuck at constant 0.</data>
         </row>
         <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 53)] Removed register node u_ov5640_top/cmos2_reg_config/reg_index[8] that is stuck at constant 0.</data>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos5_reg_config/clock_20k_cnt[15] that is stuck at constant 0.</data>
+        </row>
+        <row>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos5_reg_config/clock_20k_cnt[14] that is stuck at constant 0.</data>
+        </row>
+        <row>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos5_reg_config/clock_20k_cnt[13] that is stuck at constant 0.</data>
+        </row>
+        <row>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos5_reg_config/clock_20k_cnt[12] that is stuck at constant 0.</data>
+        </row>
+        <row>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos5_reg_config/clock_20k_cnt[11] that is stuck at constant 0.</data>
+        </row>
+        <row>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[15] that is stuck at constant 0.</data>
+        </row>
+        <row>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[14] that is stuck at constant 0.</data>
+        </row>
+        <row>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[13] that is stuck at constant 0.</data>
+        </row>
+        <row>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[12] that is stuck at constant 0.</data>
+        </row>
+        <row>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[11] that is stuck at constant 0.</data>
+        </row>
+        <row>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 53)] Removed register node u_ov5640_top/cmos6_reg_config/reg_index[8] that is stuck at constant 0.</data>
         </row>
         <row>
             <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 53)] Removed register node u_ov5640_top/cmos5_reg_config/reg_index[8] that is stuck at constant 0.</data>
         </row>
         <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 53)] Removed register node u_ov5640_top/cmos6_reg_config/reg_index[8] that is stuck at constant 0.</data>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 53)] Removed register node u_ov5640_top/cmos2_reg_config/reg_index[8] that is stuck at constant 0.</data>
         </row>
         <row>
             <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_rx.v(line number: 35)] Removed register node u_uart_loopback/u_uart_rx/baud_cnt[15] that is stuck at constant 0.</data>
@@ -13885,16 +13893,16 @@
             <data message="4">Removed inst genblk2.init_ras_n that is redundant to genblk2.init_cas_n.</data>
         </row>
         <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/ipcore/ddr3/rtl/ddrphy/ips2l_ddrphy_data_slice_wrcal_v1_10.vp(line number: 354)] Removed register node I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[0].ddrphy_data_slice/ddrphy_data_slice_wrcal/delay_cnt[3] that is stuck at constant 0.</data>
-        </row>
-        <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/ipcore/ddr3/rtl/ddrphy/ips2l_ddrphy_data_slice_wrcal_v1_10.vp(line number: 354)] Removed register node I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[0].ddrphy_data_slice/ddrphy_data_slice_wrcal/delay_cnt[2] that is stuck at constant 0.</data>
-        </row>
-        <row>
             <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/ipcore/ddr3/rtl/ddrphy/ips2l_ddrphy_data_slice_wrcal_v1_10.vp(line number: 354)] Removed register node I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[1].ddrphy_data_slice/ddrphy_data_slice_wrcal/delay_cnt[3] that is stuck at constant 0.</data>
         </row>
         <row>
             <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/ipcore/ddr3/rtl/ddrphy/ips2l_ddrphy_data_slice_wrcal_v1_10.vp(line number: 354)] Removed register node I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[1].ddrphy_data_slice/ddrphy_data_slice_wrcal/delay_cnt[2] that is stuck at constant 0.</data>
+        </row>
+        <row>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/ipcore/ddr3/rtl/ddrphy/ips2l_ddrphy_data_slice_wrcal_v1_10.vp(line number: 354)] Removed register node I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[0].ddrphy_data_slice/ddrphy_data_slice_wrcal/delay_cnt[3] that is stuck at constant 0.</data>
+        </row>
+        <row>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/ipcore/ddr3/rtl/ddrphy/ips2l_ddrphy_data_slice_wrcal_v1_10.vp(line number: 354)] Removed register node I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[0].ddrphy_data_slice/ddrphy_data_slice_wrcal/delay_cnt[2] that is stuck at constant 0.</data>
         </row>
         <row>
             <data message="4">Removed inst dqs_gate_comp_en_r that is redundant to dqs_gate_comp_done.</data>
@@ -14005,9 +14013,6 @@
             <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/ipcore/ddr3/rtl/ddrphy/ips2l_ddrphy_wrcal_v1_7.vp(line number: 732)] Removed register node I_ips_ddr_top/u_ddrphy_top/ddrphy_calib_top/ddrphy_wrcal/wrcal_ba[0] that is stuck at constant 0.</data>
         </row>
         <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/ipcore/pcie_test/rtl/hsst_pipe/hsstl_rst4mcrsw_rx_rst_initfsm_v1_0.v(line number: 62)] Removed register node u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_rx_rst_mcrsw/genblk1[3].hsst_rst4mcrsw_rx_init/rx_rst_initfsm_multi_sw_lane/P_RX_PLL_RSTN that is stuck at constant 0.</data>
-        </row>
-        <row>
             <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/ipcore/pcie_test/rtl/hsst_pipe/hsstl_rst4mcrsw_rx_rst_initfsm_v1_0.v(line number: 62)] Removed register node u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_rx_rst_mcrsw/genblk1[0].hsst_rst4mcrsw_rx_init/rx_rst_initfsm_multi_sw_lane/P_RX_PLL_RSTN that is stuck at constant 0.</data>
         </row>
         <row>
@@ -14015,6 +14020,9 @@
         </row>
         <row>
             <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/ipcore/pcie_test/rtl/hsst_pipe/hsstl_rst4mcrsw_rx_rst_initfsm_v1_0.v(line number: 62)] Removed register node u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_rx_rst_mcrsw/genblk1[2].hsst_rst4mcrsw_rx_init/rx_rst_initfsm_multi_sw_lane/P_RX_PLL_RSTN that is stuck at constant 0.</data>
+        </row>
+        <row>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/ipcore/pcie_test/rtl/hsst_pipe/hsstl_rst4mcrsw_rx_rst_initfsm_v1_0.v(line number: 62)] Removed register node u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_rx_rst_mcrsw/genblk1[3].hsst_rst4mcrsw_rx_init/rx_rst_initfsm_multi_sw_lane/P_RX_PLL_RSTN that is stuck at constant 0.</data>
         </row>
         <row>
             <data message="4">Removed inst line_start_flag that is redundant to is_sending_black.</data>
@@ -14054,9 +14062,6 @@
         </row>
         <row>
             <data message="4">FSM state_fsm[2:0] inferred.</data>
-        </row>
-        <row>
-            <data message="4">FSM cur_state_fsm[7:0] inferred.</data>
         </row>
         <row>
             <data message="4">FSM ws_state_fsm[2:0] inferred.</data>
@@ -14306,6 +14311,12 @@
         </row>
         <row>
             <data message="4">Constant propagation done on N112 (bmsREDAND).</data>
+        </row>
+        <row>
+            <data message="5">Loop was found during constant probe.</data>
+        </row>
+        <row>
+            <data message="5">Loop was found during constant probe.</data>
         </row>
         <row>
             <data message="5">Loop was found during constant probe.</data>

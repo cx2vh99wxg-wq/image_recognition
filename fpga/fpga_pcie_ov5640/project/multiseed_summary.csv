@@ -3,7 +3,7 @@ project name,project.pds
 
 Single Seed:
 Seed,State,Convergence,Setup(Slow),Setup(Fast),Hold(Slow),Hold(Fast),Recovery(Slow),Recovery(Fast),Removal(Slow),Removal(Fast),PBM-GP,PBM-PreGP,PBM-PostGP,LP,Total Placement Cpu Time,Detailed routing,Total Routing Cpu Time,Wire Length After Post-GP,Wire Length After LP,Wire Length After DP,Routing Arc Length,Worst Slack After GP Timing,Worst Slack After LP Timing,Worst Slack Before RP,Worst Slack Before DP,Worst Slack After DP,Worst Slack After Placement,Worst Slack After TA By Preroute,TNS After DP,TNS Before Route,Setup(Slow) Total Failing TNS,Setup(Slow) Total Failing Endpoints,Hold(Slow) Total Failing THS,Hold(Slow) Total Failing Endpoints,Power
-single,OK,Fail,-7.268,-4.119,0.087,0.046,-6.260,-4.637,0.332,0.233,NA,NA,NA,1.98,57.20,73.16,115.47,NA,NA,NA,327931,NA,NA,-3511,-3511,-3344,-4383,NA,-227067,-291883,-580.587,118,0.000,0,4.719
+single,OK,Fail,-8.204,-5.629,-0.723,0.103,-7.781,-5.622,0.338,0.236,NA,NA,NA,1.67,43.80,49.69,80.55,NA,NA,NA,326356,NA,NA,-3467,-3467,-3345,-4017,NA,-208225,-266610,-515.404,120,-0.723,1,4.708
 Pass Rate/Convergence Rate,100.00%,0.00%
 
 Synthesize:
@@ -11,15 +11,15 @@ control_set,358
 Synthesize Performance Summary:
 slack category,Synthesize Setup WNS,Synthesize Setup TNS,Synthesize Recovery WNS,Synthesize Recovery TNS
 slack value,-7.345,-330.973,-7.929,-166.509
-Synthesize Process Cpu Time,0h:1m:29s
+Synthesize Process Cpu Time,0h:1m:10s
 
 Device Map:
 Device Map Resource Usage Summary:
 Logic Utilization,LUT,FF,DRM,APM,Distributed RAM,HSSTHP,USCM,HCKB,RCKB
-Used,11745,41103,71.5,74,1918,NA,13,0,2
+Used,11782,41144,71.5,74,1918,NA,13,0,2
 Available,66600,133200,155,240,19900,NA,32,96,24
 Utilization(%),18%,31%,47%,31%,10%,NA,41%,0%,9%
-Device Map Process Cpu Time,0h:0m:24s
+Device Map Process Cpu Time,0h:0m:20s
 
 Project Configurations:
 top module,image_pcie_capture
