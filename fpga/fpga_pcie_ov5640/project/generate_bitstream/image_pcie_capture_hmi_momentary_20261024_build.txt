@@ -1,0 +1,18 @@
+PDS build: HMI momentary GO/BACK/STOP
+Project: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/project.pds
+Tool: PDS 2022.2-SP6.4 build 146967
+Device: Logos2 PG2L100H-6 FBG484
+Bitstream: compressed, configuration clock 40M
+Build completed: 2026-10-24 17:57:35 Asia/Shanghai
+Build duration: 00:09:19; exit code 0
+SFC conversion: cfg_gen_sfc -opcode 59; exit code 0
+SBIT and SFC generated only; no hardware programmed.
+
+Timing: Some Constraints Violated. Slow-corner worst setup slack -7.128 ns (cmos5_pclk -> ddrphy_sysclk); worst recovery slack -4.914 ns. Full timing closure is not achieved.
+
+SHA256:
+258FD8356F52830220A551A41B3938D197D54C7A4F0D4179185912984EA5DF96  D:\Study_Object\image_recognition\image_recognition\fpga\fpga_pcie_ov5640\project\generate_bitstream\image_pcie_capture_hmi_momentary_20261024.sbit
+BF18720FECCB09556FCCBE6F5860AC7E5DAB67517D9C7878945B027231B7F53A  D:\Study_Object\image_recognition\image_recognition\fpga\fpga_pcie_ov5640\project\generate_bitstream\image_pcie_capture_hmi_momentary_20261024.sfc
+761F6AFE881575B09A43914DDDCD1AC57BB3628D0D92DDD1FBB574054E11AF77  D:\Study_Object\image_recognition\image_recognition\fpga\fpga_pcie_ov5640\source\image_pcie_capture.v
+B23C53033F97BB5428CA6D81417278184ECE8073FD3CC49E0497C95A61AD0622  D:\Study_Object\image_recognition\image_recognition\fpga\fpga_pcie_ov5640\source\uart_lcd\uart_lcd.v
+A7D38977B22C0E560A2A540174E91AF3A6B781472C1B8EDC3B407D1806B93BAB  D:\Study_Object\image_recognition\image_recognition\fpga\fpga_pcie_ov5640\project\project.fdc

@@ -925,14 +925,14 @@ create_clock -name {cmos5_pclk} [get_ports {cmos5_pclk}] -period {17.857} -wavef
 create_clock -name {cmos6_pclk} [get_ports {cmos6_pclk}] -period {17.857} -waveform {0.000 8.928}
 #create_generated_clock -name {clk_54M} -source [get_ports {free_clk}] [get_nets {u_clk_syn/clkout0}] -master_clock [get_clocks {ref_clk}] -multiply_by {54} -divide_by {25}
 create_generated_clock -name {clk_50M} -source [get_ports {free_clk}] [get_nets {u_ov5640_top/u_pll/clkout2}] -master_clock [get_clocks {ref_clk}] -multiply_by {1} -duty_cycle {50.000}
-define_attribute {p:back} {PAP_IO_DIRECTION} {INOUT}
+define_attribute {p:back} {PAP_IO_DIRECTION} {OUTPUT}
 define_attribute {p:back} {PAP_IO_LOC} {J14}
 define_attribute {p:back} {PAP_IO_VCCIO} {3.3}
 define_attribute {p:back} {PAP_IO_STANDARD} {LVCMOS33}
 define_attribute {p:back} {PAP_IO_DRIVE} {4}
 define_attribute {p:back} {PAP_IO_NONE} {TRUE}
 define_attribute {p:back} {PAP_IO_SLEW} {FAST}
-define_attribute {p:go} {PAP_IO_DIRECTION} {INOUT}
+define_attribute {p:go} {PAP_IO_DIRECTION} {OUTPUT}
 define_attribute {p:go} {PAP_IO_LOC} {G17}
 define_attribute {p:go} {PAP_IO_VCCIO} {3.3}
 define_attribute {p:go} {PAP_IO_STANDARD} {LVCMOS33}
@@ -953,7 +953,7 @@ define_attribute {p:right} {PAP_IO_STANDARD} {LVCMOS33}
 define_attribute {p:right} {PAP_IO_DRIVE} {4}
 define_attribute {p:right} {PAP_IO_NONE} {TRUE}
 define_attribute {p:right} {PAP_IO_SLEW} {FAST}
-define_attribute {p:stop} {PAP_IO_DIRECTION} {INOUT}
+define_attribute {p:stop} {PAP_IO_DIRECTION} {OUTPUT}
 define_attribute {p:stop} {PAP_IO_LOC} {H13}
 define_attribute {p:stop} {PAP_IO_VCCIO} {3.3}
 define_attribute {p:stop} {PAP_IO_STANDARD} {LVCMOS33}

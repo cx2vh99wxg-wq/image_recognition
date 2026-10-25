@@ -77,11 +77,11 @@ module image_pcie_capture #(
     input  wire       spi_clk,
     input  wire       spi_cs,
     inout  wire [3:0] spi_data,
-    inout  wire       go,
-    inout  wire       back,
+    output wire       go,
+    output wire       back,
     inout  wire       left,
     inout  wire       right,
-    inout  wire       stop,
+    output wire       stop,
     //test
     //output wire test,
 
@@ -357,9 +357,8 @@ module image_pcie_capture #(
       .rearm_command(hmi_rearm)
   );
 
-  // The physical STOP key toggles a latch in the original remote. A level
-  // from FSPI must therefore become one finite press, followed by a locked
-  // interval until the operator requests another press on the HMI.
+  // A pedestrian request latches STOP and all direction contacts until E.
+  // HMI E remains a momentary manual STOP and can force-clear that latch.
   wire stop_pressed;
   wire movement_blocked;
   wire fspi_direction_armed;
@@ -393,13 +392,13 @@ module image_pcie_capture #(
       .right_released      (right_released)
   );
 
-  // The original remote supplies its own 3.3 V pull-up. Release each
-  // contact to high impedance; only an active button sinks it to ground.
-  assign go    = go_released    ? 1'bz : 1'b0;
-  assign back  = back_released  ? 1'bz : 1'b0;
+  // GO/BACK/STOP actively drive the requested idle-high/pressed-low levels.
+  // LEFT/RIGHT retain their existing open-drain contact wiring.
+  assign go    = go_released;
+  assign back  = back_released;
   assign left  = left_released  ? 1'bz : 1'b0;
   assign right = right_released ? 1'bz : 1'b0;
-  assign stop  = stop_pressed   ? 1'b0 : 1'bz;
+  assign stop  = ~stop_pressed;
 
   fspi_slave_top u_fspi_slave_top (
       .sys_clk        (free_clk),
@@ -1265,15 +1264,11 @@ module remote_direction_arbiter (
   assign right_released = movement_blocked | (hmi_owns_direction ? ~hmi_right : (fspi_blocked | fspi_released[3]));
 endmodule
 
-// The remote controller's STOP key toggles its internal motor latch on each
-// distinct press. Convert the level-driven pedestrian alarm into one press,
-// hold the direction lock, then require a fresh HMI E press to toggle it back.
-// This controller has no readback of the remote's actual latch state.
-module remote_stop_controller #(
-    // free_clk is 25 MHz (40 ns in project.fdc): 250 ms press, 50 ms release.
-    parameter integer STOP_PULSE_CYCLES = 6_250_000,
-    parameter integer STOP_GAP_CYCLES   = 1_250_000
-) (
+// A new automatic brake request holds STOP low until a fresh manual E press.
+// E may force-clear the latch while the request is still high. That same
+// request is then consumed until it clears; a subsequent rise brakes again.
+// Manual E itself holds STOP low, so STOP returns high when E is released.
+module remote_stop_controller (
     input  wire clk,
     input  wire rst_n,
     input  wire brake_request,
@@ -1283,118 +1278,46 @@ module remote_stop_controller #(
     output wire movement_blocked,
     output wire fspi_direction_armed
 );
-  localparam [2:0] ST_READY        = 3'd0;
-  localparam [2:0] ST_BRAKE_PRESS  = 3'd1;
-  localparam [2:0] ST_LOCKED       = 3'd2;
-  localparam [2:0] ST_REARM_PRESS  = 3'd3;
-  localparam [2:0] ST_REARM_GAP    = 3'd4;
-  localparam [2:0] ST_REARM_WAIT   = 3'd5;
-  localparam [2:0] ST_BRAKE_GAP    = 3'd6;
-
-  reg [2:0] state;
-  reg [22:0] pulse_count;
+  reg brake_latched;
+  reg brake_event_armed;
   reg rearm_previous;
-  reg rearm_abort;
   reg fspi_armed;
   wire rearm_rising = rearm_command & ~rearm_previous;
+  wire new_brake_event = brake_request & brake_event_armed;
 
-  assign stop_pressed = (state == ST_BRAKE_PRESS) | (state == ST_REARM_PRESS);
-  assign movement_blocked = brake_request | rearm_command | (state != ST_READY);
+  assign stop_pressed = rst_n && (brake_latched | rearm_command);
+  assign movement_blocked = brake_latched | rearm_command;
   assign fspi_direction_armed = fspi_armed;
 
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      state          <= ST_READY;
-      pulse_count    <= 23'd0;
+      brake_latched  <= 1'b0;
+      brake_event_armed <= 1'b1;
       rearm_previous <= 1'b0;
-      rearm_abort    <= 1'b0;
       fspi_armed     <= 1'b1;
     end else begin
       rearm_previous <= rearm_command;
 
-      // A post-brake FSPI direction is accepted only after all four command
-      // registers have been released. E also discards any held old command.
-      if ((state == ST_READY && brake_request) || rearm_rising)
+      // A held pre-brake direction must not resume after manual unlock.
+      // Require all four FSPI registers to be idle before accepting a new one.
+      if (brake_latched || new_brake_event || rearm_command)
         fspi_armed <= 1'b0;
-      else if (state == ST_READY && fspi_directions_idle)
+      else if (fspi_directions_idle)
         fspi_armed <= 1'b1;
 
-      case (state)
-        ST_READY: begin
-          pulse_count <= 23'd0;
-          if (brake_request)
-            state <= ST_BRAKE_PRESS;
-        end
+      if (!brake_request)
+        brake_event_armed <= 1'b1;
 
-        ST_BRAKE_PRESS: begin
-          if (pulse_count == STOP_PULSE_CYCLES - 1) begin
-            pulse_count <= 23'd0;
-            state <= ST_BRAKE_GAP;
-          end else
-            pulse_count <= pulse_count + 23'd1;
-        end
-
-        ST_BRAKE_GAP: begin
-          // Let the original remote debounce the released key before any
-          // operator-requested second press can be accepted.
-          if (pulse_count == STOP_GAP_CYCLES - 1) begin
-            pulse_count <= 23'd0;
-            state <= ST_LOCKED;
-          end else
-            pulse_count <= pulse_count + 23'd1;
-        end
-
-        ST_LOCKED: begin
-          // An E press while a person is still present is ignored. The user
-          // must release E and press again after the alarm clears.
-          if (rearm_rising && !brake_request) begin
-            pulse_count <= 23'd0;
-            rearm_abort <= 1'b0;
-            state <= ST_REARM_PRESS;
-          end
-        end
-
-        ST_REARM_PRESS: begin
-          if (brake_request)
-            rearm_abort <= 1'b1;
-          if (pulse_count == STOP_PULSE_CYCLES - 1) begin
-            pulse_count <= 23'd0;
-            state <= ST_REARM_GAP;
-          end else
-            pulse_count <= pulse_count + 23'd1;
-        end
-
-        ST_REARM_GAP: begin
-          // If a person reappears during rearm, let the STOP contact release
-          // for at least 50 ms before issuing one new braking press. Keep
-          // all direction contacts released throughout this interval.
-          if (brake_request)
-            rearm_abort <= 1'b1;
-          if (pulse_count == STOP_GAP_CYCLES - 1) begin
-            pulse_count <= 23'd0;
-            if (rearm_abort || brake_request)
-              state <= ST_BRAKE_PRESS;
-            else
-              state <= ST_REARM_WAIT;
-          end else
-            pulse_count <= pulse_count + 23'd1;
-        end
-
-        ST_REARM_WAIT: begin
-          if (brake_request) begin
-            state <= ST_BRAKE_PRESS;
-          end else if (!rearm_command) begin
-            // A held E cannot generate a second STOP press. After it is
-            // released, a new direction command may be accepted.
-            state <= ST_READY;
-          end
-        end
-
-        default: begin
-          state <= ST_LOCKED;
-          pulse_count <= 23'd0;
-        end
-      endcase
+      if (rearm_rising && brake_latched) begin
+        // Explicit operator override. Consume a still-present alarm so the
+        // following cycle cannot immediately undo this manual unlock.
+        brake_latched <= 1'b0;
+        if (brake_request)
+          brake_event_armed <= 1'b0;
+      end else if (new_brake_event) begin
+        brake_latched <= 1'b1;
+        brake_event_armed <= 1'b0;
+      end
     end
   end
 endmodule

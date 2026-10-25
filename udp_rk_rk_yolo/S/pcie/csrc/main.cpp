@@ -1,5 +1,6 @@
 #include "pcie_dma_read_test.h"
 #include "yolo_integration.h"
+#include "person_brake_trigger.h"
 #include "camera_orientation.h"
 #include "../../include/shared_memory.h"
 #include <stdio.h>
@@ -891,29 +892,30 @@ int main() {
             detection_results = cached_results;
         }
         
-        // 检查是否有人员检测并更新紧急制动状态
-        int person_detected = 0;
-        int person_count = 0;
+        // 制动使用所有候选框的独立统计，不受 64 个显示框或绘图去重限制。
+        // 必须是精确的 person 类别，且未四舍五入的模型置信度严格大于 40%。
+        int person_count = detection_valid ? detection_results.person_brake_count : 0;
+        int person_detected = person_count > 0;
         int person_box_left = 0, person_box_top = 0, person_box_right = 0, person_box_bottom = 0;
         static int last_person_detected = -1;  // 记录上次检测状态
         static int consecutive_person_frames = 0;  // 连续检测到人的帧数
 
-        if (detection_results.count > 0) {
-            // 检查检测结果中是否包含"person"
-            for (int i = 0; i < detection_results.count; i++) {
-                if (strcmp(detection_results.results[i].name, "person") == 0) {
-                    person_detected = 1;
-                    person_count++;
-                    // 保存第一个检测到的人的框位置
-                    if (person_count == 1) {
-                        person_box_left = detection_results.results[i].box.left;
-                        person_box_top = detection_results.results[i].box.top;
-                        person_box_right = detection_results.results[i].box.right;
-                        person_box_bottom = detection_results.results[i].box.bottom;
-                    }
-                }
-            }
+        if (person_detected) {
+            const BOX_RECT* box = &detection_results.person_brake_result.box;
+            person_box_left = box->left;
+            person_box_top = box->top;
+            person_box_right = box->right;
+            person_box_bottom = box->bottom;
+        }
 
+        // 先发布制动请求，避免绘图和控制台输出延迟 FSPI 响应。
+        if (g_brake_shm) {
+            emergency_brake_update_status(g_brake_shm, person_detected, detection_valid,
+                                        person_box_left, person_box_top,
+                                        person_box_right, person_box_bottom);
+        }
+
+        if (detection_results.count > 0) {
             // 绘制检测结果
             draw_detection_results(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, &detection_results);
         }
@@ -931,7 +933,8 @@ int main() {
                 printf("🚨                 人员检测警报                   🚨\n");
                 printf("🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n");
                 printf("⏰ 检测时间: %s\n", time_str);
-                printf("👥 检测到人员数量: %d 人\n", person_count);
+                printf("👥 置信度 > %.0f%% 的人员候选框: %d 个\n",
+                       PERSON_BRAKE_CONFIDENCE_THRESHOLD * 100.0f, person_count);
                 printf("📍 检测帧编号: %d\n", frame_count);
                 printf("🎯 YOLO目标总数: %d 个\n", detection_results.count);
                 printf("🚨 紧急制动状态: 已通知FSPI程序触发制动\n");
@@ -941,14 +944,14 @@ int main() {
                 consecutive_person_frames = 1;
             } else {
                 printf("\n✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅\n");
-                printf("✅             当前帧未检出人员                 ✅\n");
+                printf("✅          当前无置信度 > 40%% 的人员            ✅\n");
                 printf("✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅\n");
                 printf("⏰ 未检出时间: %s\n", time_str);
-                printf("👤 检测状态: 当前帧未检出人员\n");
+                printf("👤 检测状态: 当前无置信度 > 40%% 的人员\n");
                 printf("📍 未检出帧编号: %d\n", frame_count);
                 printf("⏱️  持续检测帧数: %d 帧\n", consecutive_person_frames);
-                printf("🛑 紧急制动状态: 保持制动，等待连续两秒有效无人\n");
-                printf("🚗 车辆状态: 无人确认完成后才可恢复运行\n");
+                printf("🛑 紧急制动状态: FPGA 保持锁定，需人为按下 REARM 解除\n");
+                printf("🚗 车辆状态: 当前检测结果不会自动解除已触发的刹车锁定\n");
                 printf("🔄 监控状态: 继续监控区域安全...\n");
                 printf("✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅\n\n");
                 consecutive_person_frames = 0;
@@ -961,13 +964,6 @@ int main() {
                 printf("⚠️  持续人员检测: 已连续检测到人员 %d 帧 (约%.1f秒)\n", 
                        consecutive_person_frames, consecutive_person_frames * YOLO_DETECT_INTERVAL / 30.0);
             }
-        }
-        
-        // 更新紧急制动共享内存状态
-        if (g_brake_shm) {
-            emergency_brake_update_status(g_brake_shm, person_detected, detection_valid,
-                                        person_box_left, person_box_top,
-                                        person_box_right, person_box_bottom);
         }
         
         // 更新上次检测状态

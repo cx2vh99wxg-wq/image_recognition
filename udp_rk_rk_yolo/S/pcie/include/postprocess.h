@@ -34,6 +34,10 @@ typedef struct _detect_result_group_t
     int id;
     int count;
     detect_result_t results[OBJ_NUMB_MAX_SIZE];
+    /* All decoded proposals contribute, including those beyond the display cap.
+     * The representative box is the highest-confidence qualifying person. */
+    int person_brake_count;
+    detect_result_t person_brake_result;
 } detect_result_group_t;
 
 #ifdef __cplusplus
@@ -43,7 +47,8 @@ extern "C" {
 /* 从文本文件顺序读取最多 80 个类别名；成功返回 0，文件不可用返回 -1。 */
 int initPostProcess(const char* label_file_path);
 
-/* C 接口：解码三个量化输出层，按原扫描顺序返回最多 64 个候选框。
+/* C 接口：解码三个量化输出层，按原扫描顺序返回最多 64 个显示候选框，
+ * 同时统计全部候选框中置信度严格大于 40% 的 person 制动结果。
  * nms_threshold 当前仅保留在接口中，现有实现不执行非极大值抑制。 */
 int post_process_simple(int8_t *input0, int8_t *input1, int8_t *input2, 
                        int model_in_h, int model_in_w,

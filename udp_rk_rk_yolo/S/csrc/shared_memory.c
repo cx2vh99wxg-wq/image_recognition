@@ -477,7 +477,7 @@ void display_control_shm_cleanup(DisplayControlSharedMemory* shm_ptr, int is_wri
 
 static BrakeReleaseState g_brake_release_state = {0};
 
-/* 连接紧急制动段；写端初始化为未检出人员、制动保持和有效状态，
+/* 连接紧急制动段；写端初始化为未检出人员、制动请求有效和段有效状态，
  * 读端沿用已有段，不覆盖当前检测结果。 */
 int emergency_brake_shm_init(EmergencyBrakeSharedMemory** shm_ptr, int is_writer) {
     if (!shm_ptr) {
@@ -539,7 +539,7 @@ int emergency_brake_shm_init(EmergencyBrakeSharedMemory** shm_ptr, int is_writer
         (*shm_ptr)->last_update = clock_gettime(CLOCK_MONOTONIC, &ts) == 0
                                       ? (uint32_t)ts.tv_sec : 0;
 
-        printf("紧急制动共享内存初始化完成，等待首帧检测时保持制动\n");
+        printf("紧急制动共享内存初始化完成，等待首帧检测时发布制动请求\n");
     } else {
         printf("紧急制动共享内存连接成功 (读取者模式)\n");
     }
@@ -548,7 +548,8 @@ int emergency_brake_shm_init(EmergencyBrakeSharedMemory** shm_ptr, int is_writer
 }
 
 /* 写入原始人员检出状态、检测框和制动使能值，再更新单调时间与计数器。
- * 检出人员或推理失败立即制动；连续两秒有效无人后才允许放行。 */
+ * 检出人员或推理失败立即发布请求；连续两秒有效无人只清除软件请求，
+ * STOP 锁存由 FPGA 保持直到人工 REARM，人工也可强制解除当前报警。 */
 int emergency_brake_update_status(EmergencyBrakeSharedMemory* shm_ptr, int person_detected,
                                  int detection_valid, int box_left, int box_top,
                                  int box_right, int box_bottom) {
@@ -574,7 +575,7 @@ int emergency_brake_update_status(EmergencyBrakeSharedMemory* shm_ptr, int perso
     int new_brake_enable = brake_release_required(&g_brake_release_state,
                                                  person_detected, detection_valid,
                                                  clock_valid, now_ms) ? 0 : 1;
-    /* 收紧制动时先写制动位，放行时最后写制动位。读端看到中间状态也只会更保守。 */
+    /* 请求置位时先写制动位，清除请求时最后写制动位，避免发布过程漏掉报警。 */
     if (new_brake_enable == 0) {
         __sync_lock_test_and_set(&shm_ptr->brake_enable, 0);
     }
@@ -597,20 +598,20 @@ int emergency_brake_update_status(EmergencyBrakeSharedMemory* shm_ptr, int perso
 
     if (person_detected && !old_person_detected) {
         __sync_fetch_and_add(&shm_ptr->detection_count, 1);
-        printf("[紧急制动] 检测到人员，保持制动 (brake_enable: %d->0)\n", old_brake_enable);
+        printf("[紧急制动] 检测到人员，发布制动请求 (brake_enable: %d->0)\n", old_brake_enable);
     } else if (!person_detected && old_person_detected && detection_valid) {
-        printf("[紧急制动] 当前帧无人，等待连续两秒有效无人后解除制动\n");
+        printf("[紧急制动] 当前帧无人，等待连续两秒有效无人后清除软件请求；STOP 仍由人工 REARM 解锁\n");
     }
 
     if (!detection_valid && old_brake_enable != 0) {
-        printf("[紧急制动] 模型推理失败，保持制动\n");
+        printf("[紧急制动] 模型推理失败，保持制动请求\n");
     }
 
     if (new_brake_enable != old_brake_enable) {
         if (new_brake_enable == 0) {
             __sync_fetch_and_add(&shm_ptr->brake_active_count, 1);
         } else {
-            printf("[紧急制动] 连续两秒有效无人，解除制动 (brake_enable: 0->1)\n");
+            printf("[紧急制动] 连续两秒有效无人，清除软件请求 (brake_enable: 0->1)；FPGA 锁存不自动解除\n");
         }
     }
 

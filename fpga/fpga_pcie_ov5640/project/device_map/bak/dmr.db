@@ -17,7 +17,7 @@
             <data>DIFFIO_L3_G0_00P</data>
             <data></data>
             <data></data>
-            <data>YES</data>
+            <data></data>
         </row>
         <row>
             <data>F16</data>
@@ -26,7 +26,7 @@
             <data>DIFFIO_L3_G0_01P</data>
             <data></data>
             <data></data>
-            <data></data>
+            <data>YES</data>
         </row>
         <row>
             <data>C14</data>
@@ -35,7 +35,7 @@
             <data>DIFFIO_L3_G0_02P_DQS</data>
             <data></data>
             <data></data>
-            <data>YES</data>
+            <data></data>
         </row>
         <row>
             <data>E13</data>
@@ -44,7 +44,7 @@
             <data>DIFFIO_L3_G0_03P</data>
             <data></data>
             <data></data>
-            <data></data>
+            <data>YES</data>
         </row>
         <row>
             <data>E16</data>
@@ -53,7 +53,7 @@
             <data>DIFFIO_L3_G0_04P</data>
             <data></data>
             <data></data>
-            <data></data>
+            <data>YES</data>
         </row>
         <row>
             <data>D14</data>
@@ -71,7 +71,7 @@
             <data>DIFFIO_L3_G1_06P</data>
             <data></data>
             <data></data>
-            <data></data>
+            <data>YES</data>
         </row>
         <row>
             <data>C13</data>
@@ -89,7 +89,7 @@
             <data>DIFFIO_L3_G1_08P_DQS</data>
             <data></data>
             <data></data>
-            <data></data>
+            <data>YES</data>
         </row>
         <row>
             <data>A13</data>
@@ -98,7 +98,7 @@
             <data>DIFFIO_L3_G1_09P</data>
             <data></data>
             <data></data>
-            <data>YES</data>
+            <data></data>
         </row>
         <row>
             <data>B17</data>
@@ -107,7 +107,7 @@
             <data>DIFFIO_L3_G1_10P_GSCLK</data>
             <data></data>
             <data></data>
-            <data>YES</data>
+            <data></data>
         </row>
         <row>
             <data>D17</data>
@@ -116,7 +116,7 @@
             <data>DIFFIO_L3_G1_11P_GMCLK</data>
             <data></data>
             <data></data>
-            <data>YES</data>
+            <data></data>
         </row>
         <row>
             <data>C18</data>
@@ -125,7 +125,7 @@
             <data>DIFFIO_L3_G2_12P_GMCLK</data>
             <data></data>
             <data></data>
-            <data></data>
+            <data>YES</data>
         </row>
         <row>
             <data>E19</data>
@@ -134,7 +134,7 @@
             <data>DIFFIO_L3_G2_13P_GSCLK</data>
             <data></data>
             <data></data>
-            <data>YES</data>
+            <data></data>
         </row>
         <row>
             <data>F18</data>
@@ -152,7 +152,7 @@
             <data>DIFFIO_L3_G2_15P</data>
             <data></data>
             <data></data>
-            <data>YES</data>
+            <data></data>
         </row>
         <row>
             <data>A18</data>
@@ -242,7 +242,7 @@
             <data>DIFFIO_L3_G0_00N</data>
             <data></data>
             <data></data>
-            <data>YES</data>
+            <data></data>
         </row>
         <row>
             <data>E17</data>
@@ -260,7 +260,7 @@
             <data>DIFFIO_L3_G0_02N_DQS</data>
             <data></data>
             <data></data>
-            <data>YES</data>
+            <data></data>
         </row>
         <row>
             <data>E14</data>
@@ -269,7 +269,7 @@
             <data>DIFFIO_L3_G0_03N</data>
             <data></data>
             <data></data>
-            <data></data>
+            <data>YES</data>
         </row>
         <row>
             <data>D16</data>
@@ -278,7 +278,7 @@
             <data>DIFFIO_L3_G0_04N</data>
             <data></data>
             <data></data>
-            <data></data>
+            <data>YES</data>
         </row>
         <row>
             <data>D15</data>
@@ -296,7 +296,7 @@
             <data>DIFFIO_L3_G1_06N</data>
             <data></data>
             <data></data>
-            <data></data>
+            <data>YES</data>
         </row>
         <row>
             <data>B13</data>
@@ -305,7 +305,7 @@
             <data>DIFFIO_L3_G1_07N</data>
             <data></data>
             <data></data>
-            <data></data>
+            <data>YES</data>
         </row>
         <row>
             <data>A16</data>
@@ -314,7 +314,7 @@
             <data>DIFFIO_L3_G1_08N_DQS</data>
             <data></data>
             <data></data>
-            <data></data>
+            <data>YES</data>
         </row>
         <row>
             <data>A14</data>
@@ -323,7 +323,7 @@
             <data>DIFFIO_L3_G1_09N</data>
             <data></data>
             <data></data>
-            <data>YES</data>
+            <data></data>
         </row>
         <row>
             <data>B18</data>
@@ -332,7 +332,7 @@
             <data>DIFFIO_L3_G1_10N_GSCLK</data>
             <data></data>
             <data></data>
-            <data>YES</data>
+            <data></data>
         </row>
         <row>
             <data>C17</data>
@@ -341,7 +341,7 @@
             <data>DIFFIO_L3_G1_11N_GMCLK</data>
             <data></data>
             <data></data>
-            <data>YES</data>
+            <data></data>
         </row>
         <row>
             <data>C19</data>
@@ -350,7 +350,7 @@
             <data>DIFFIO_L3_G2_12N_GMCLK</data>
             <data></data>
             <data></data>
-            <data></data>
+            <data>YES</data>
         </row>
         <row>
             <data>D19</data>
@@ -368,7 +368,7 @@
             <data>DIFFIO_L3_G2_14N_DQS</data>
             <data></data>
             <data></data>
-            <data></data>
+            <data>YES</data>
         </row>
         <row>
             <data>A20</data>
@@ -377,7 +377,7 @@
             <data>DIFFIO_L3_G2_15N</data>
             <data></data>
             <data></data>
-            <data>YES</data>
+            <data></data>
         </row>
         <row>
             <data>A19</data>
@@ -404,7 +404,7 @@
             <data>DIFFIO_L3_G3_18N_VREF</data>
             <data></data>
             <data></data>
-            <data></data>
+            <data>YES</data>
         </row>
         <row>
             <data>B22</data>
@@ -458,7 +458,7 @@
             <data>SIO_L3_01</data>
             <data></data>
             <data></data>
-            <data>YES</data>
+            <data></data>
         </row>
         <row>
             <data>H13</data>
@@ -2603,7 +2603,7 @@
             <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_gpll/u_gpll</data>
             <data>I_ips_ddr_top/u_ddrphy_top/u_sysclk_bufg</data>
             <data>core_clk</data>
-            <data>4053</data>
+            <data>4056</data>
         </row>
         <row>
             <data>CLKOUT</data>
@@ -2624,7 +2624,7 @@
             <data>u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/x2.GTP_HSST_2LANE_TOP/U_GTP_HSSTLP_WRAPPER/PLL0_ENABLE.U_GTP_HSSTLP_PLL0</data>
             <data>u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/u_clkbufg</data>
             <data>ref_clk</data>
-            <data>286</data>
+            <data>297</data>
         </row>
         <row>
             <data>O</data>
@@ -2666,7 +2666,7 @@
             <data>the_instance_name/u_gpll</data>
             <data>clkbufg_5</data>
             <data>ntclkbufg_5</data>
-            <data>118</data>
+            <data>91</data>
         </row>
         <row>
             <data>CLKOUT2</data>
@@ -2704,33 +2704,33 @@
             <data>Fanout</data>
         </column_headers>
         <row>
-            <data>N485</data>
-            <data>N485</data>
+            <data>N483</data>
+            <data>N483</data>
             <data>11</data>
         </row>
         <row>
-            <data>N131_0</data>
-            <data>N131_0</data>
+            <data>N129_0</data>
+            <data>N129_0</data>
             <data>555</data>
         </row>
         <row>
-            <data>N479</data>
-            <data>N479</data>
+            <data>N477</data>
+            <data>N477</data>
             <data>12</data>
         </row>
         <row>
             <data>I_ips_ddr_top/u_ddrc_rstn_sync/N0_1_rnmt</data>
             <data>I_ips_ddr_top/u_ddrc_rstn_sync/N0_1</data>
-            <data>1331</data>
+            <data>1275</data>
         </row>
         <row>
-            <data>N227</data>
-            <data>N227</data>
+            <data>N225</data>
+            <data>N225</data>
             <data>97</data>
         </row>
         <row>
-            <data>N215</data>
-            <data>N215</data>
+            <data>N213</data>
+            <data>N213</data>
             <data>24</data>
         </row>
         <row>
@@ -2861,7 +2861,7 @@
         <row>
             <data>I_ips_ddr_top/u_ips_ddrc_top/mcdq_rdatapath/mcdq_prefetch_fifo/rst</data>
             <data>I_ips_ddr_top/u_ips_ddrc_top/mcdq_apb_cross_v1_2/N28</data>
-            <data>1445</data>
+            <data>1448</data>
         </row>
         <row>
             <data>u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/N37</data>
@@ -2941,7 +2941,7 @@
         <row>
             <data>u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_rx_rst_mcrsw/N1</data>
             <data>u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_rx_rst_mcrsw/N1</data>
-            <data>177</data>
+            <data>188</data>
         </row>
         <row>
             <data>u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/P_PMA_LANE_RST [0]</data>
@@ -3048,7 +3048,7 @@
         <row>
             <data>core_clk</data>
             <data>I_ips_ddr_top/u_ddrphy_top/u_sysclk_bufg</data>
-            <data>4053</data>
+            <data>4056</data>
         </row>
         <row>
             <data>ntclkbufg_3</data>
@@ -3068,17 +3068,27 @@
         <row>
             <data>I_ips_ddr_top/u_ips_ddrc_top/mcdq_rdatapath/mcdq_prefetch_fifo/rst</data>
             <data>I_ips_ddr_top/u_ips_ddrc_top/mcdq_apb_cross_v1_2/N28</data>
-            <data>1445</data>
+            <data>1448</data>
         </row>
         <row>
             <data>I_ips_ddr_top/u_ddrc_rstn_sync/N0_1_rnmt</data>
             <data>I_ips_ddr_top/u_ddrc_rstn_sync/N0_1</data>
-            <data>1331</data>
+            <data>1275</data>
         </row>
         <row>
-            <data>N131_0</data>
-            <data>N131_0</data>
+            <data>N129_0</data>
+            <data>N129_0</data>
             <data>555</data>
+        </row>
+        <row>
+            <data>ref_clk</data>
+            <data>u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/u_clkbufg</data>
+            <data>297</data>
+        </row>
+        <row>
+            <data>u_cnn_top/u_gamma_judge/per_data_1 [6]</data>
+            <data>u_cnn_top/u_gamma_judge/per_data_1[6]</data>
+            <data>296</data>
         </row>
         <row>
             <data>u_cnn_top/u_gamma_judge/per_data_1 [5]</data>
@@ -3086,19 +3096,9 @@
             <data>296</data>
         </row>
         <row>
-            <data>u_cnn_top/u_gamma_judge/per_data_1 [6]</data>
-            <data>u_cnn_top/u_gamma_judge/per_data_1[6]</data>
-            <data>290</data>
-        </row>
-        <row>
             <data>I_ips_ddr_top/u_ddrphy_top/calib_done</data>
             <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_calib_top/ddrphy_main_ctrl/calib_done</data>
-            <data>287</data>
-        </row>
-        <row>
-            <data>ref_clk</data>
-            <data>u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/u_clkbufg</data>
-            <data>286</data>
+            <data>283</data>
         </row>
         <row>
             <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/read_frame_href</data>
@@ -3116,18 +3116,38 @@
             <data>260</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [0]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[0]</data>
-            <data>260</data>
-        </row>
-        <row>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [0]</data>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[0]</data>
             <data>260</data>
         </row>
         <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [0]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[0]</data>
+            <data>260</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [3]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[3]</data>
+            <data>259</data>
+        </row>
+        <row>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [1]</data>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[1]</data>
+            <data>259</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [1]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[1]</data>
+            <data>259</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [2]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[2]</data>
+            <data>259</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [1]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[1]</data>
             <data>259</data>
         </row>
         <row>
@@ -3151,23 +3171,8 @@
             <data>259</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [3]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[3]</data>
-            <data>259</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [1]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[1]</data>
-            <data>259</data>
-        </row>
-        <row>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [1]</data>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[1]</data>
-            <data>259</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [2]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[2]</data>
             <data>259</data>
         </row>
         <row>
@@ -3176,18 +3181,18 @@
             <data>259</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [2]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[2]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [2]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[2]</data>
             <data>259</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [1]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[1]</data>
-            <data>259</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [5]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[5]</data>
+            <data>258</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [5]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[5]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [4]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[4]</data>
             <data>258</data>
         </row>
         <row>
@@ -3196,13 +3201,13 @@
             <data>258</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [4]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[4]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [4]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[4]</data>
             <data>258</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [4]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[4]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [5]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[5]</data>
             <data>258</data>
         </row>
         <row>
@@ -3216,13 +3221,8 @@
             <data>258</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [5]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[5]</data>
-            <data>258</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [4]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[4]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [4]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[4]</data>
             <data>258</data>
         </row>
         <row>
@@ -3241,8 +3241,13 @@
             <data>202</data>
         </row>
         <row>
-            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT [6]</data>
-            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT[6]</data>
+            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT [4]</data>
+            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT[4]</data>
+            <data>202</data>
+        </row>
+        <row>
+            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT [2]</data>
+            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT[2]</data>
             <data>202</data>
         </row>
         <row>
@@ -3251,13 +3256,8 @@
             <data>202</data>
         </row>
         <row>
-            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT [4]</data>
-            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT[4]</data>
-            <data>202</data>
-        </row>
-        <row>
-            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT [2]</data>
-            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT[2]</data>
+            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT [6]</data>
+            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT[6]</data>
             <data>202</data>
         </row>
         <row>
@@ -3273,17 +3273,17 @@
         <row>
             <data>u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_rx_rst_mcrsw/N1</data>
             <data>u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_rx_rst_mcrsw/N1</data>
-            <data>177</data>
+            <data>188</data>
         </row>
         <row>
             <data>u_axi4_ctrl/tp_o [11]</data>
             <data>u_axi4_ctrl/cur_ch[1]</data>
-            <data>175</data>
+            <data>173</data>
         </row>
         <row>
             <data>u_axi4_ctrl/tp_o [10]</data>
             <data>u_axi4_ctrl/cur_ch[0]</data>
-            <data>173</data>
+            <data>171</data>
         </row>
         <row>
             <data>I_ips_ddr_top/u_ddrphy_top/rst_clk</data>
@@ -3291,14 +3291,14 @@
             <data>163</data>
         </row>
         <row>
-            <data>o_dma_write_data_req</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/o_bar_rd_clk_en</data>
+            <data>u_cnn_top/u_gamma_judge/per_data_1 [7]</data>
+            <data>u_cnn_top/u_gamma_judge/per_data_1[7]</data>
             <data>156</data>
         </row>
         <row>
-            <data>u_cnn_top/u_gamma_judge/per_data_1 [7]</data>
-            <data>u_cnn_top/u_gamma_judge/per_data_1[7]</data>
-            <data>146</data>
+            <data>o_dma_write_data_req</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/o_bar_rd_clk_en</data>
+            <data>156</data>
         </row>
         <row>
             <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_calib_top/wrcal_start</data>
@@ -3306,13 +3306,13 @@
             <data>145</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/u_mwr_wr_ctrl/ips2l_pcie_dma_mwr_wr_ctrl/data_position [0]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/u_mwr_wr_ctrl/ips2l_pcie_dma_mwr_wr_ctrl/data_position[0]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/u_mwr_wr_ctrl/ips2l_pcie_dma_mwr_wr_ctrl/data_position [1]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/u_mwr_wr_ctrl/ips2l_pcie_dma_mwr_wr_ctrl/data_position[1]</data>
             <data>144</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/u_mwr_wr_ctrl/ips2l_pcie_dma_mwr_wr_ctrl/data_position [1]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/u_mwr_wr_ctrl/ips2l_pcie_dma_mwr_wr_ctrl/data_position[1]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/u_mwr_wr_ctrl/ips2l_pcie_dma_mwr_wr_ctrl/data_position [0]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/u_mwr_wr_ctrl/ips2l_pcie_dma_mwr_wr_ctrl/data_position[0]</data>
             <data>144</data>
         </row>
         <row>
@@ -3326,13 +3326,13 @@
             <data>138</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/rd_en</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/N6</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_cpld_tx_ctrl/N44</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_cpld_tx_ctrl/N44</data>
             <data>137</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_cpld_tx_ctrl/N44</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_cpld_tx_ctrl/N44</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/rd_en</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/N6</data>
             <data>137</data>
         </row>
         <row>
@@ -3351,7 +3351,22 @@
             <data>130</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/_N31397</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/ips2l_pcie_dma_bar0/U_ipm2l_sdpram_ips2l_pcie_dma_ram/addr_bus_rd_sel [1]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/ips2l_pcie_dma_bar0/U_ipm2l_sdpram_ips2l_pcie_dma_ram/addr_bus_rd_ce[1]</data>
+            <data>128</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_mwr_tx_ctrl/N334</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_mwr_tx_ctrl/N334_inv</data>
+            <data>128</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/_N31549</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/mem_0_0_we</data>
+            <data>128</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/_N31677</data>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/mem_0_0_we</data>
             <data>128</data>
         </row>
@@ -3366,37 +3381,7 @@
             <data>128</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/_N31525</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/mem_0_0_we</data>
-            <data>128</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/_N31653</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/mem_0_0_we</data>
-            <data>128</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/N40</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/N40</data>
-            <data>128</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/data_position [1]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/data_position[1]</data>
-            <data>128</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/data_position [0]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/data_position[0]</data>
-            <data>128</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/N40</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/N40</data>
-            <data>128</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/_N31781</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/_N31421</data>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/mem_0_0_we</data>
             <data>128</data>
         </row>
@@ -3406,24 +3391,34 @@
             <data>128</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/ips2l_pcie_dma_bar0/U_ipm2l_sdpram_ips2l_pcie_dma_ram/addr_bus_rd_sel [1]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/ips2l_pcie_dma_bar0/U_ipm2l_sdpram_ips2l_pcie_dma_ram/addr_bus_rd_ce[1]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/N40</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/N40</data>
             <data>128</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_mwr_tx_ctrl/N334</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_mwr_tx_ctrl/N334_inv</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/data_position [0]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/data_position[0]</data>
+            <data>128</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/data_position [1]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/data_position[1]</data>
+            <data>128</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/N40</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/N40</data>
+            <data>128</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/_N31293</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/mem_0_0_we</data>
             <data>128</data>
         </row>
         <row>
             <data>u_axi4_ctrl/N82</data>
             <data>u_axi4_ctrl/N82_mux4_3</data>
             <data>120</data>
-        </row>
-        <row>
-            <data>ntclkbufg_5</data>
-            <data>clkbufg_5</data>
-            <data>118</data>
         </row>
         <row>
             <data>u_cnn_top/conv_top/conv6/conv1_3/u_Matrix_Generate_3X3_8Bit/read_frame_href</data>
@@ -3436,13 +3431,13 @@
             <data>111</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/u_ips2l_pcie_dma_tlp_rcv/state_reg [0]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/u_ips2l_pcie_dma_tlp_rcv/state_reg[0]</data>
+            <data>u_axi4_ctrl/N60</data>
+            <data>u_axi4_ctrl/N60_mux4_3</data>
             <data>108</data>
         </row>
         <row>
-            <data>u_axi4_ctrl/N60</data>
-            <data>u_axi4_ctrl/N60_mux4_3</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/u_ips2l_pcie_dma_tlp_rcv/state_reg [0]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/u_ips2l_pcie_dma_tlp_rcv/state_reg[0]</data>
             <data>108</data>
         </row>
         <row>
@@ -3466,18 +3461,18 @@
             <data>99</data>
         </row>
         <row>
-            <data>N227</data>
-            <data>N227</data>
+            <data>N225</data>
+            <data>N225</data>
             <data>97</data>
+        </row>
+        <row>
+            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_cpd_ctrl/N0</data>
+            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_cpd_ctrl/N0</data>
+            <data>95</data>
         </row>
         <row>
             <data>I_ips_ddr_top/u_ips_ddrc_top/mcdq_dcp_top/ctrl_back_rdy</data>
             <data>I_ips_ddr_top/u_ips_ddrc_top/mcdq_dcp_top/mcdq_dcp_back_ctrl/ctrl_back_rdy</data>
-            <data>95</data>
-        </row>
-        <row>
-            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_cpd_ctrl/N0</data>
-            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_cpd_ctrl/N0</data>
             <data>95</data>
         </row>
         <row>
@@ -3488,12 +3483,17 @@
         <row>
             <data>u_axi4_ctrl/vsync_pulse_axi [0]</data>
             <data>u_axi4_ctrl/N4554</data>
-            <data>90</data>
+            <data>91</data>
         </row>
         <row>
-            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[1].ddrphy_data_slice/I_ips_ddr_top/debug_data_alias [137]</data>
-            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[1].ddrphy_data_slice/ddrphy_dqs_rddata_align/ck_dqs_diff[1]</data>
-            <data>84</data>
+            <data>ntclkbufg_5</data>
+            <data>clkbufg_5</data>
+            <data>91</data>
+        </row>
+        <row>
+            <data>u_axi4_ctrl/vsync_pulse_axi [1]</data>
+            <data>u_axi4_ctrl/N4556</data>
+            <data>86</data>
         </row>
         <row>
             <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[0].ddrphy_data_slice/debug_data [68]</data>
@@ -3501,18 +3501,18 @@
             <data>84</data>
         </row>
         <row>
-            <data>u_cnn_top/u_gamma_judge/per_data_1 [8]</data>
-            <data>u_cnn_top/u_gamma_judge/per_data_1[8]</data>
-            <data>82</data>
-        </row>
-        <row>
-            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[1].ddrphy_data_slice/I_ips_ddr_top/debug_data_alias [136]</data>
-            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[1].ddrphy_data_slice/ddrphy_dqs_rddata_align/ck_dqs_diff[0]</data>
-            <data>82</data>
+            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[1].ddrphy_data_slice/I_ips_ddr_top/debug_data_alias [137]</data>
+            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[1].ddrphy_data_slice/ddrphy_dqs_rddata_align/ck_dqs_diff[1]</data>
+            <data>84</data>
         </row>
         <row>
             <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[0].ddrphy_data_slice/debug_data [67]</data>
             <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[0].ddrphy_data_slice/ddrphy_dqs_rddata_align/ck_dqs_diff[0]</data>
+            <data>81</data>
+        </row>
+        <row>
+            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[1].ddrphy_data_slice/I_ips_ddr_top/debug_data_alias [136]</data>
+            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[1].ddrphy_data_slice/ddrphy_dqs_rddata_align/ck_dqs_diff[0]</data>
             <data>81</data>
         </row>
     </table>
@@ -3531,13 +3531,13 @@
         </row>
         <row>
             <data>FF</data>
-            <data>41144</data>
+            <data>41102</data>
             <data>133200</data>
             <data>31</data>
         </row>
         <row>
             <data>LUT</data>
-            <data>11782</data>
+            <data>11706</data>
             <data>66600</data>
             <data>18</data>
         </row>
@@ -3679,10 +3679,10 @@
             <data>RAM(GB)</data>
         </column_headers>
         <row>
+            <data>0h:0m:18s</data>
             <data>0h:0m:19s</data>
-            <data>0h:0m:20s</data>
-            <data>0h:0m:25s</data>
-            <data>797</data>
+            <data>0h:0m:23s</data>
+            <data>796</data>
             <data>WINDOWS 10 x86_64</data>
             <data>Unknown</data>
             <data>31</data>
@@ -4483,10 +4483,10 @@
             <data message="4">The instance clkbufg_5(GTP_CLKBUFG) has been inserted on the net true_50M in design, driver pin CLKOUT0(instance the_instance_name/u_gpll) -&gt; load pin CLK(instance u_uart_lcd/bytes_seen[0]).</data>
         </row>
         <row>
-            <data message="6">DeviceMap-2011: The net nt_free_clk has both clock instance I_ips_ddr_top/u_ddrphy_top/u_clkbufm(GTP_CLKBUFM) loader and other clock pin loader.</data>
+            <data message="4">The instance clkbufg_6(GTP_CLKBUFG) has been inserted on the net u_ov5640_top/clk_50M in design, driver pin CLKOUT2(instance u_ov5640_top/u_pll/u_gpll) -&gt; load pin CLK(instance u_ov5640_top/cmos1cmos2_power_on_delay/camera_pwnd_reg).</data>
         </row>
         <row>
-            <data message="4">The instance clkbufg_6(GTP_CLKBUFG) has been inserted on the net u_ov5640_top/clk_50M in design, driver pin CLKOUT2(instance u_ov5640_top/u_pll/u_gpll) -&gt; load pin CLK(instance u_ov5640_top/cmos1cmos2_power_on_delay/camera_pwnd_reg).</data>
+            <data message="6">DeviceMap-2011: The net nt_free_clk has both clock instance I_ips_ddr_top/u_ddrphy_top/u_clkbufm(GTP_CLKBUFM) loader and other clock pin loader.</data>
         </row>
         <row>
             <data message="4">The instance clkbufg_7(GTP_CLKBUFG) has been inserted on the net nt_spi_clk in design, driver pin O(instance spi_clk_ibuf) -&gt; load pin I(instance u_fspi_slave_top/u_fspi_slave/N105).</data>
@@ -4498,19 +4498,19 @@
             <data message="4">The instance clkbufg_9(GTP_CLKBUFG) has been inserted on the net u_fspi_slave_top/wr_clk in design, driver pin CLKOUT0(instance u_fspi_slave_top/clk_gen_inst/u_gpll) -&gt; load pin I(instance u_fspi_slave_top/u_spi_ram_crtl/N178).</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: N138_2_1/gateop, insts:24.</data>
+            <data message="4">Infer CARRY group, base inst: N136_2_1/gateop, insts:24.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: N219_0_1/gateop, insts:22.</data>
+            <data message="4">Infer CARRY group, base inst: N217_0_1/gateop, insts:22.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: N231_0_1/gateop, insts:26.</data>
+            <data message="4">Infer CARRY group, base inst: N229_0_1/gateop, insts:26.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: N304_0_1/gateop, insts:11.</data>
+            <data message="4">Infer CARRY group, base inst: N302_0_1/gateop, insts:11.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: N400_5/gateop, insts:2.</data>
+            <data message="4">Infer CARRY group, base inst: N398_5/gateop, insts:2.</data>
         </row>
         <row>
             <data message="4">Infer CARRY group, base inst: u_axi4_ctrl/N214_1_1/gateop, insts:9.</data>
@@ -4582,25 +4582,22 @@
             <data message="4">Infer CARRY group, base inst: u_axi4_ctrl/axi_araddr_1_1/gateop, insts:10.</data>
         </row>
         <row>
+            <data message="4">Infer CARRY group, base inst: u_hmi_control_synchronizer/N21/gateop, insts:2.</data>
+        </row>
+        <row>
             <data message="4">Infer CARRY group, base inst: u_hmi_control_synchronizer/N23_8/gateop, insts:2.</data>
         </row>
         <row>
             <data message="4">Infer CARRY group, base inst: u_refclk_perstn_debounce/N15_1_1/gateop, insts:15.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: u_remote_stop_controller/N36_1_1/gateop, insts:22.</data>
+            <data message="4">Infer CARRY group, base inst: u_remote_direction_arbiter/N12_4/gateop, insts:2.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: u_remote_stop_controller/N128_47/gateop, insts:3.</data>
-        </row>
-        <row>
-            <data message="4">Infer CARRY group, base inst: u_remote_stop_controller/N136_8/gateop, insts:2.</data>
+            <data message="4">Infer CARRY group, base inst: u_remote_stop_controller/N8/gateop, insts:2.</data>
         </row>
         <row>
             <data message="4">Infer CARRY group, base inst: u_uart_lcd/N39_1_1/gateop, insts:18.</data>
-        </row>
-        <row>
-            <data message="4">Infer CARRY group, base inst: u_uart_lcd/N143_1_1/gateop, insts:26.</data>
         </row>
         <row>
             <data message="4">Infer CARRY group, base inst: u_cnn_top/RGB888_YCbCr_cnn/N20_2_1/gateop, insts:10.</data>
@@ -4702,7 +4699,7 @@
             <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_mwr_tx_ctrl/N29.lt_0/gateop, insts:4.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_mwr_tx_ctrl/N35_1.fsub_1/gateop, insts:8.</data>
+            <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_mwr_tx_ctrl/N35_1.fsub_0/gateop, insts:9.</data>
         </row>
         <row>
             <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_mwr_tx_ctrl/N52[5]/gateop, insts:2.</data>
@@ -5077,13 +5074,10 @@
             <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_rx_rst_mcrsw/rx_rst_fsm_multi_sw_lane/N36_1_1/gateop, insts:15.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_rx_rst_mcrsw/rx_rst_fsm_multi_sw_lane/N62_16/gateop, insts:2.</data>
+            <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_rx_rst_mcrsw/rx_rst_fsm_multi_sw_lane/N62_12/gateop, insts:2.</data>
         </row>
         <row>
             <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_rx_rst_mcrsw/rx_rst_fsm_multi_sw_lane/N64_1_0/gateop, insts:10.</data>
-        </row>
-        <row>
-            <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_rx_rst_mcrsw/rx_rst_fsm_multi_sw_lane/N108/gateop, insts:2.</data>
         </row>
         <row>
             <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_tx_rst_mcrsw/pll_lock_multi_sw_deb/N13_1_1/gateop, insts:11.</data>
@@ -5101,7 +5095,7 @@
             <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_tx_rst_mcrsw/tx_rst_fsm_multi_sw_lane/N463_46/gateop, insts:2.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_tx_rst_mcrsw/tx_rst_fsm_multi_sw_lane/N463_60/gateop, insts:3.</data>
+            <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_tx_rst_mcrsw/tx_rst_fsm_multi_sw_lane/N463_66/gateop, insts:3.</data>
         </row>
         <row>
             <data message="4">Infer CARRY group, base inst: I_ips_ddr_top/u_ips_ddrc_top/mcdq_dcp_top/mcdq_dcp_buf/A_ips2l_distributed_fifo/u_ips2l_distributed_fifo_distributed_fifo_v1_0/u_ips2l_distributed_fifo_ctr/N24_1.fsub_0/gateop, insts:7.</data>
@@ -10763,42 +10757,9 @@
                     <data>VIRTUAL_IO</data>
                 </column_headers>
                 <row>
-                    <data>back</data>
-                    <data>inout</data>
-                    <data>J14</data>
-                    <data>3.3</data>
-                    <data>LVCMOS33</data>
-                    <data>4</data>
-                    <data>NONE</data>
-                    <data>FAST</data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                </row>
-                <row>
                     <data>cmos2_scl</data>
                     <data>inout</data>
-                    <data>F15</data>
+                    <data>E14</data>
                     <data>3.3</data>
                     <data>LVCMOS33</data>
                     <data>8</data>
@@ -10831,7 +10792,7 @@
                 <row>
                     <data>cmos2_sda</data>
                     <data>inout</data>
-                    <data>F21</data>
+                    <data>F16</data>
                     <data>3.3</data>
                     <data>LVCMOS33</data>
                     <data>8</data>
@@ -10994,42 +10955,9 @@
                     <data></data>
                 </row>
                 <row>
-                    <data>go</data>
-                    <data>inout</data>
-                    <data>G17</data>
-                    <data>3.3</data>
-                    <data>LVCMOS33</data>
-                    <data>4</data>
-                    <data>NONE</data>
-                    <data>FAST</data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                    <data></data>
-                </row>
-                <row>
                     <data>left</data>
                     <data>inout</data>
-                    <data>B20</data>
+                    <data>F15</data>
                     <data>3.3</data>
                     <data>LVCMOS33</data>
                     <data>4</data>
@@ -11885,9 +11813,9 @@
                     <data></data>
                 </row>
                 <row>
-                    <data>stop</data>
-                    <data>inout</data>
-                    <data>H13</data>
+                    <data>back</data>
+                    <data>output</data>
+                    <data>J14</data>
                     <data>3.3</data>
                     <data>LVCMOS33</data>
                     <data>4</data>
@@ -11920,7 +11848,7 @@
                 <row>
                     <data>cmos2_reset</data>
                     <data>output</data>
-                    <data>A20</data>
+                    <data>B13</data>
                     <data>3.3</data>
                     <data>LVCMOS33</data>
                     <data>8</data>
@@ -11990,6 +11918,39 @@
                     <data>3.3</data>
                     <data>LVCMOS33</data>
                     <data>8</data>
+                    <data>NONE</data>
+                    <data>FAST</data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                </row>
+                <row>
+                    <data>go</data>
+                    <data>output</data>
+                    <data>G17</data>
+                    <data>3.3</data>
+                    <data>LVCMOS33</data>
+                    <data>4</data>
                     <data>NONE</data>
                     <data>FAST</data>
                     <data></data>
@@ -13040,6 +13001,39 @@
                     <data></data>
                 </row>
                 <row>
+                    <data>stop</data>
+                    <data>output</data>
+                    <data>H13</data>
+                    <data>3.3</data>
+                    <data>LVCMOS33</data>
+                    <data>4</data>
+                    <data>NONE</data>
+                    <data>FAST</data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                    <data></data>
+                </row>
+                <row>
                     <data>RXD</data>
                     <data>input</data>
                     <data>C22</data>
@@ -13108,7 +13102,7 @@
                 <row>
                     <data>cmos2_data[0]</data>
                     <data>input</data>
-                    <data>B18</data>
+                    <data>C19</data>
                     <data>3.3</data>
                     <data>LVCMOS33</data>
                     <data></data>
@@ -13141,7 +13135,7 @@
                 <row>
                     <data>cmos2_data[1]</data>
                     <data>input</data>
-                    <data>B17</data>
+                    <data>B16</data>
                     <data>3.3</data>
                     <data>LVCMOS33</data>
                     <data></data>
@@ -13174,7 +13168,7 @@
                 <row>
                     <data>cmos2_data[2]</data>
                     <data>input</data>
-                    <data>C17</data>
+                    <data>B15</data>
                     <data>3.3</data>
                     <data>LVCMOS33</data>
                     <data></data>
@@ -13207,7 +13201,7 @@
                 <row>
                     <data>cmos2_data[3]</data>
                     <data>input</data>
-                    <data>D17</data>
+                    <data>E13</data>
                     <data>3.3</data>
                     <data>LVCMOS33</data>
                     <data></data>
@@ -13240,7 +13234,7 @@
                 <row>
                     <data>cmos2_data[4]</data>
                     <data>input</data>
-                    <data>F14</data>
+                    <data>C20</data>
                     <data>3.3</data>
                     <data>LVCMOS33</data>
                     <data></data>
@@ -13273,7 +13267,7 @@
                 <row>
                     <data>cmos2_data[5]</data>
                     <data>input</data>
-                    <data>F13</data>
+                    <data>E18</data>
                     <data>3.3</data>
                     <data>LVCMOS33</data>
                     <data></data>
@@ -13306,7 +13300,7 @@
                 <row>
                     <data>cmos2_data[6]</data>
                     <data>input</data>
-                    <data>C15</data>
+                    <data>E16</data>
                     <data>3.3</data>
                     <data>LVCMOS33</data>
                     <data></data>
@@ -13339,7 +13333,7 @@
                 <row>
                     <data>cmos2_data[7]</data>
                     <data>input</data>
-                    <data>C14</data>
+                    <data>D16</data>
                     <data>3.3</data>
                     <data>LVCMOS33</data>
                     <data></data>
@@ -13372,7 +13366,7 @@
                 <row>
                     <data>cmos2_href</data>
                     <data>input</data>
-                    <data>A14</data>
+                    <data>A16</data>
                     <data>3.3</data>
                     <data>LVCMOS33</data>
                     <data></data>
@@ -13405,7 +13399,7 @@
                 <row>
                     <data>cmos2_pclk</data>
                     <data>input</data>
-                    <data>E19</data>
+                    <data>C18</data>
                     <data>3.3</data>
                     <data>LVCMOS33</data>
                     <data></data>
@@ -13438,7 +13432,7 @@
                 <row>
                     <data>cmos2_vsync</data>
                     <data>input</data>
-                    <data>A13</data>
+                    <data>A15</data>
                     <data>3.3</data>
                     <data>LVCMOS33</data>
                     <data></data>

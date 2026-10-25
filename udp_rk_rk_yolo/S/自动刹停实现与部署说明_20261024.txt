@@ -1,0 +1,108 @@
+S 端行人自动刹停：实现与部署说明
+日期：2026-10-24
+
+1. 触发条件
+S 端 YOLO 后处理检查三个输出层的全部候选框，类别名必须精确为 person，
+且未四舍五入的最终置信度 prop 必须严格大于 0.40。40.0% 不触发，
+40.1% 触发；不是 car 等其他类别，也不是只看物体存在概率。
+prop 沿用现有后处理的“物体存在概率 × 类别概率”。
+制动统计独立于前 64 个显示框和绘图去重；第 65 个之后的人员也能触发。
+红色画面特效保留原有显示规则，因此低于制动阈值的人员仍可能显示红色。
+
+2. 信号链路
+YOLO -> person_brake_count/person_brake_result
+     -> main.cpp 在绘图和大段日志输出之前发布制动状态
+     -> System V 共享内存 EmergencyBrakeSharedMemory（键 0x1234567D）
+     -> fspi/build/vehicle_control 周期读取
+     -> fspi_write_data(4, 0)
+     -> FPGA mem4_out[0]，经两级同步后成为 brake_request
+     -> remote_stop_controller 锁存
+     -> stop = ~stop_pressed，H13 / FMC LA19_P 持续输出 0。
+
+必须同时运行 pcie/build/app 与 fspi/build/vehicle_control。
+只有画面红色报警而没有运行车辆控制进程，不会发出 FSPI 制动命令。
+检测按现有间隔每 3 帧执行；普通 FSPI 轮询约 100 ms，转向等待中约每 20 ms
+检查一次。实际延迟还取决于摄像头帧率、模型推理、调度和 SPI 传输。
+
+3. FPGA 锁存与人工强制解除
+brake_latched：当前是否锁存制动。
+brake_event_armed：是否允许当前软件报警触发一个新锁存。
+
+第一次有效制动请求 -> brake_latched=1，STOP 持续为低，四个方向全部释放。
+软件随后写寄存器 4=1，或行人消失，都不会自动清除 brake_latched。
+人工重新按下 REARM（30 90 04 0E）时清除该锁存。
+REARM 本身仍保留手动刹车行为：按住时 STOP=0，松开帧 30 90 04 00 后 STOP=1。
+所以操作方式是“按一下 REARM 并松开”，然后重新按方向键。
+
+按用户选择，REARM 允许在画面仍有行人时强制解锁。
+此时 FPGA 消耗当前持续报警，不会在下一拍立即重新锁死。
+只有当前报警清除、随后再出现一次新报警，才重新触发自动锁存。
+软件保留“连续两秒有效无人”作为清除软件报警的防抖条件；它不自动解锁 STOP。
+因此，强制解除后要连续两秒有效无人，之后再检出人员，才重新触发本次自动保护。
+若 REARM 已经按住时才出现一个新报警，仍然锁存；需要松开后重新按 REARM。
+
+解除后旧 FSPI 方向命令不会自动恢复：四个方向寄存器先全部为 1 才重新接收
+新的 FSPI 方向命令。HMI 用 REARM 代码覆盖原方向，松开后需重新按 GO/BACK 等。
+GO/BACK/LEFT/RIGHT 的现有按下、松开操作保持原样。
+
+4. 启动、异常与软件请求的区别
+现有软件在启动、检测缺失/超时、推理失败、退出时会发布制动请求。
+这些请求同样能触发 FPGA 锁存；启动后可能先需要按一次 REARM 才能运动。
+FPGA 复位后五个控制寄存器初始为 1，未收到请求时 STOP 默认高。
+共享内存和软件日志表示“制动请求”，并没有读回 FPGA 实际锁存状态。
+强制解锁时软件请求可以仍为 0，FPGA 按上述规则忽略当前已消耗的报警；
+手动 HMI 控制可恢复，软件自动转向仍遵循自身的行人请求策略。
+
+5. 部署步骤
+本机未连接板卡执行部署，也未烧录硬件。
+需要同时更新 FPGA 固件和 RK3568 上的 S 端程序，仅更新其中一侧不足以实现新功能。
+
+FPGA：在 PDS 配置工具中选择本次文件名包含 person_latch_40_20261024 的
+.sbit 临时下载，或相同前缀的 .sfc 固化到 Flash。
+不要误用之前 hmi_momentary_20261024 的旧固件。
+
+RK3568：将本次修改后的 udp_rk_rk_yolo/S 目录同步至板卡工程，进入 S 目录。
+在车辆停止时先停止旧进程，然后执行：
+    make stop
+    make shared
+    make -C pcie -B
+    make -C fspi -B
+    make run
+
+如果只启动车控与检测，分别从 S/pcie 和 S/fspi 目录运行：
+    sudo ./build/app
+    sudo ./build/vehicle_control
+两者要并行运行，且应先启动检测进程。
+后处理结果结构体新增字段，必须重新编译全部 PCIe 相关对象。
+Makefile 已补齐依赖，部署示例使用 -B 确保不保留旧对象。
+
+本机已用 Linux GCC/G++ 检查软件语法并运行策略/后处理测试；
+本机没有 ARM Linux 交叉编译器，不能把本机测试程序作为 RK3568 可执行文件使用。
+
+6. 验收步骤
+先确认手动 GO/BACK/LEFT/RIGHT/REARM 都仍按预期工作。
+人员置信度 <=40%：不由人员条件触发刹停（启动/故障制动另计）。
+人员置信度 >40%：H13/LA19_P 变低，四个方向无效。
+保持报警超过 250 ms：H13 仍应为低，不再只是一个短脉冲。
+行人离开并等待超过两秒：H13 仍为低，直到人工 REARM。
+按 REARM 并松开：H13 恢复高电平，重新按 GO 可前进。
+画面仍有人时强制 REARM：松开后可以手动控制，当前持续报警不立即重锁。
+连续两秒有效无人后再次出现人员：H13 再次变低并锁存。
+
+7. 修改位置
+S/include/person_brake_trigger.h：严格 40% 条件。
+S/pcie/include/postprocess.h、csrc/postprocess.cpp：全部候选框的独立制动统计。
+S/pcie/csrc/main.cpp：绘图前发布状态。
+S/pcie/csrc/yolo_integration.c：每次清空结果，传播推理/后处理失败。
+S/pcie/Makefile：结果结构体和阈值头文件的编译依赖。
+FPGA source/image_pcie_capture.v：STOP 锁存、强制解除、重复报警抑制和方向隔离。
+共享内存/FSPI 的注释和日志：区分软件请求清除与 FPGA 锁存解除。
+
+8. 验证与限制
+已通过置信度边界/全部候选框/后处理失败清零测试（含 ASan/UBSan）、
+共享内存放行策略测试、FSPI 请求策略测试、FSPI 写寄存器仿真、
+STOP 锁存仿真以及真实 UART 字节到控制输出的集成仿真。
+新版 FPGA 比特流和 SFC 已由 PDS 2022.2-SP6.4 成功生成，未烧录实机。
+本次布局布线成功，但时序摘要仍为 Some Constraints Violated：
+摄像头到 DDR 最差 setup 裕量 -7.055 ns；pclk 域内 setup 裕量 -1.191 ns。
+不能把文件生成成功等同于整个工程时序已收敛；需结合报告处理并完成实机验收。

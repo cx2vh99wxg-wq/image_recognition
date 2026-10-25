@@ -3,7 +3,8 @@
 
 #include <stdint.h>
 
-/* 行人一出现就制动；只有连续两秒有效、无人的检测结果才能解除制动。 */
+/* 行人一出现就发布制动请求；连续两秒有效无人只清除软件请求。
+ * FPGA 的 STOP 锁存由人工 REARM 解除，人工也可强制解除当前仍有效的报警。 */
 #define BRAKE_RELEASE_HOLD_MS UINT64_C(2000)
 
 typedef struct {
@@ -19,7 +20,7 @@ static inline void brake_release_reset(BrakeReleaseState *state)
     }
 }
 
-/* 返回 1 表示必须制动。模型失败或时钟异常会重新开始无人确认期。 */
+/* 返回 1 表示软件请求有效。模型失败或时钟异常会重新开始无人确认期。 */
 static inline int brake_release_required(BrakeReleaseState *state,
                                          int person_detected, int detection_valid,
                                          int clock_valid, uint64_t now_ms)

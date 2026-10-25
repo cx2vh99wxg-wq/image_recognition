@@ -136,6 +136,9 @@ int yolo_engine_init(YOLOEngine* engine, const char* model_path, const char* lab
 
 int yolo_engine_detect(YOLOEngine* engine, const uint8_t* rgb_data, int width, int height, 
                       detect_result_group_t* results) {
+    if (results) {
+        memset(results, 0, sizeof(*results));
+    }
     if (!engine || !rgb_data || !results || !engine->is_initialized) {
         return -1;
     }
@@ -185,13 +188,13 @@ int yolo_engine_detect(YOLOEngine* engine, const uint8_t* rgb_data, int width, i
                                       0.25f, 0.45f, letterbox_pads, scale, scale, results);
     
     if (post_ret != 0) {
-        results->count = 0;
+        memset(results, 0, sizeof(*results));
     }
     
     // 释放输出
     rknn_outputs_release(engine->ctx, engine->io_num.n_output, engine->outputs);
     
-    return 0;
+    return post_ret;
 }
 
 void yolo_engine_cleanup(YOLOEngine* engine) {

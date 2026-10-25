@@ -5,9 +5,10 @@ module uart_lcd #(
     // Four bytes at 115200 baud take about 0.35 ms. Discard an incomplete
     // frame after 10 ms so a later touch release cannot complete old data.
     parameter integer FRAME_GAP_CYCLES = 500_000,
-    // The screen sends one press and one release frame. If the release is
-    // lost entirely, a traction key must still stop after a finite time.
-    parameter integer TRACTION_LEASE_CYCLES = 100_000_000
+    // page0 sends one press and one release frame, without a held-key
+    // heartbeat. Zero disables the optional lease so GO/BACK remain pressed
+    // until release, just like LEFT/RIGHT. A nonzero value enables a timeout.
+    parameter integer TRACTION_LEASE_CYCLES = 0
 ) (
     input             clk,
     input             rst_n,
@@ -92,10 +93,8 @@ module uart_lcd #(
     reg [26:0] traction_lease_count;
 
     // Only complete frames update configuration. A received release 00
-    // opens the remote contacts immediately. If that frame is lost in full,
-    // GO/BACK also expire after two seconds; the next touch must begin with
-    // a new press frame. This bounds unintended motion with the existing
-    // one-shot HMI firmware.
+    // releases the remote contacts. The default has no GO/BACK-only timeout:
+    // holding either key follows the same press/release protocol as steering.
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             mode_reg        <= 8'd8;
@@ -136,7 +135,7 @@ module uart_lcd #(
 
             if (frame_complete && (previous_1 == 8'h04)) begin
                 traction_lease_count <= 27'd0;
-            end else if (traction_active) begin
+            end else if ((TRACTION_LEASE_CYCLES > 0) && traction_active) begin
                 if (traction_lease_count >= TRACTION_LEASE_CYCLES - 1) begin
                     cnn_level_reg <= 4'h0;
                     traction_lease_count <= 27'd0;

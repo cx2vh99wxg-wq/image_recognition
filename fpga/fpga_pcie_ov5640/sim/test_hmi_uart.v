@@ -10,6 +10,14 @@ module test_hmi_uart;
     wire [7:0] blc, awb, liangdu, baohedu, binarization, sobel;
     wire [7:0] cb_min, cb_max, cr_min, cr_max;
     wire awb_en, isp_judge;
+    wire [3:0] default_cnn_level;
+
+    // The page0 firmware sends no heartbeat while held. The board default
+    // must preserve a press, while an explicitly enabled lease still works.
+    uart_lcd u_default_hmi (
+        .clk(clk), .rst_n(rst_n), .uart_rx(uart_rx),
+        .uart_rx_valid(uart_rx_valid), .cnn_level(default_cnn_level)
+    );
 
     uart_lcd #(.FRAME_GAP_CYCLES(24), .TRACTION_LEASE_CYCLES(64)) u_hmi (
         .clk(clk), .rst_n(rst_n), .uart_rx(uart_rx),
@@ -118,6 +126,23 @@ module test_hmi_uart;
         expect_direction(4'ha);
         repeat (70) @(negedge clk);
         expect_direction(4'h0);
+        if (u_default_hmi.TRACTION_LEASE_CYCLES !== 0 || default_cnn_level !== 4'ha)
+            $fatal(1, "FAIL default GO hold must not expire without release");
+        // 50 MHz * 2 seconds: exercise the previous board-default cutoff,
+        // rather than only checking the disabled-timeout parameter value.
+        repeat (100_000_050) @(negedge clk);
+        if (default_cnn_level !== 4'ha)
+            $fatal(1, "FAIL default GO expired during a hold longer than two seconds");
+        send_direction(8'h00);
+        if (default_cnn_level !== 4'h0)
+            $fatal(1, "FAIL default GO release");
+        send_direction(8'h0b);
+        repeat (100_000_050) @(negedge clk);
+        if (default_cnn_level !== 4'hb)
+            $fatal(1, "FAIL default BACK hold must not expire without release");
+        send_direction(8'h00);
+        if (default_cnn_level !== 4'h0)
+            $fatal(1, "FAIL default BACK release");
 
         // The framing repair must preserve all camera-setting function IDs.
         send_config(8'h01, 8'h09);

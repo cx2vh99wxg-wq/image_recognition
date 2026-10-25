@@ -74,8 +74,9 @@ typedef struct {
 } DisplayControlSharedMemory;
 
 typedef struct {
-    /* 检测到人员时 person_detected=1。brake_enable=0 表示应保持制动，
-     * 包括检出人员或本次模型推理失败；仅检测有效且无人时才为 1。 */
+    /* 超过行人阈值时 person_detected=1。brake_enable=0 表示软件制动请求有效，
+     * 包括检出人员或本次模型推理失败；连续两秒有效无人后才为 1。
+     * 请求清除不会解除 FPGA 的 STOP 锁存；人工 REARM 可强制解除当前报警。 */
     volatile uint32_t person_detected;
     volatile uint32_t brake_enable;
     volatile uint32_t last_update;
@@ -165,10 +166,10 @@ int display_control_shm_init(DisplayControlSharedMemory** shm_ptr, int is_writer
 /* 写端清除有效位并删除段；读端只分离映射。 */
 void display_control_shm_cleanup(DisplayControlSharedMemory* shm_ptr, int is_writer);
 
-/* 连接紧急制动段；写端在首帧有效检测前保持制动。 */
+/* 连接紧急制动段；写端在首帧有效检测前发布制动请求。 */
 int emergency_brake_shm_init(EmergencyBrakeSharedMemory** shm_ptr, int is_writer);
 
-/* 发布人员状态及边界框；检测失败时 detection_valid=0，制动保持有效。 */
+/* 发布人员状态及边界框；检测失败时 detection_valid=0，制动请求保持有效。 */
 int emergency_brake_update_status(EmergencyBrakeSharedMemory* shm_ptr, int person_detected,
                                  int detection_valid, int box_left, int box_top,
                                  int box_right, int box_bottom);

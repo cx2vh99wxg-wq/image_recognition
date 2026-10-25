@@ -1,4 +1,5 @@
 #include "postprocess.h"
+#include "person_brake_trigger.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -124,8 +125,8 @@ static int process_yolo_layer(int8_t *input, const int *anchor, int grid_h, int 
     return validCount;
 }
 
-/* 依次解码三个输出层并将最多 64 个候选框映回原图坐标。
- * 保留固定量化参数和现有的直接截断行为；nms_threshold 目前不参与筛选。 */
+/* 依次解码三个输出层。显示保留原有的前 64 个候选框，制动检查全部候选框。
+ * 保留固定量化参数；nms_threshold 目前不参与筛选。 */
 int post_process_simple(int8_t *input0, int8_t *input1, int8_t *input2,
                        int model_in_h, int model_in_w,
                        float conf_threshold, float nms_threshold,
@@ -134,6 +135,10 @@ int post_process_simple(int8_t *input0, int8_t *input1, int8_t *input2,
     if (!group) return -1;
 
     memset(group, 0, sizeof(detect_result_group_t));
+    if (!input0 || !input1 || !input2 || model_in_h <= 0 || model_in_w <= 0 ||
+        !isfinite(scale_w) || !isfinite(scale_h) || scale_w <= 0 || scale_h <= 0) {
+        return -1;
+    }
 
     int32_t default_zp = -128;
     float default_scale = 0.003921569;
@@ -142,7 +147,7 @@ int post_process_simple(int8_t *input0, int8_t *input1, int8_t *input2,
     std::vector<float> objProbs;
     std::vector<int> classId;
 
-    /* 三个输出层按 8、16、32 的原有顺序解码；扫描顺序也决定结果截断顺序。 */
+    /* 三个输出层按 8、16、32 的原有顺序解码。 */
     int8_t *const inputs[3] = {input0, input1, input2};
     const int *const anchors[3] = {anchor0, anchor1, anchor2};
     const int strides[3] = {8, 16, 32};
@@ -161,7 +166,9 @@ int post_process_simple(int8_t *input0, int8_t *input1, int8_t *input2,
     }
 
     int final_count = 0;
-    for (int i = 0; i < validCount && final_count < OBJ_NUMB_MAX_SIZE; i++) {
+    for (int i = 0; i < validCount; i++) {
+
+        detect_result_t result = {};
 
         float box_x = filterBoxes[i * 4 + 0];
         float box_y = filterBoxes[i * 4 + 1];
@@ -183,20 +190,30 @@ int post_process_simple(int8_t *input0, int8_t *input1, int8_t *input2,
         if (x2 < 0) x2 = 0;
         if (y2 < 0) y2 = 0;
 
-        group->results[final_count].box.left = (int)x1;
-        group->results[final_count].box.top = (int)y1;
-        group->results[final_count].box.right = (int)x2;
-        group->results[final_count].box.bottom = (int)y2;
-        group->results[final_count].prop = objProbs[i];
+        result.box.left = (int)x1;
+        result.box.top = (int)y1;
+        result.box.right = (int)x2;
+        result.box.bottom = (int)y2;
+        result.prop = objProbs[i];
 
         if (classId[i] < OBJ_CLASS_NUM && labels_loaded) {
-            strncpy(group->results[final_count].name, labels[classId[i]], OBJ_NAME_MAX_SIZE-1);
-            group->results[final_count].name[OBJ_NAME_MAX_SIZE-1] = '\0';
+            strncpy(result.name, labels[classId[i]], OBJ_NAME_MAX_SIZE-1);
+            result.name[OBJ_NAME_MAX_SIZE-1] = '\0';
         } else {
-            snprintf(group->results[final_count].name, OBJ_NAME_MAX_SIZE, "class_%d", classId[i]);
+            snprintf(result.name, OBJ_NAME_MAX_SIZE, "class_%d", classId[i]);
         }
 
-        final_count++;
+        if (person_brake_should_trigger(result.name, result.prop)) {
+            group->person_brake_count++;
+            if (group->person_brake_count == 1 ||
+                result.prop > group->person_brake_result.prop) {
+                group->person_brake_result = result;
+            }
+        }
+
+        if (final_count < OBJ_NUMB_MAX_SIZE) {
+            group->results[final_count++] = result;
+        }
     }
 
     group->count = final_count;

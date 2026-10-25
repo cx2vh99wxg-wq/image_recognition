@@ -1,0 +1,15 @@
+S-end person >40% latched automatic STOP
+PDS 2022.2-SP6.4 build 146967; PG2L100H-6 FBG484
+Compressed bitstream; configuration clock 40M
+PDS gen_bit_stream exit code 0; completed 2026-10-24 18:59:21 Asia/Shanghai
+SFC conversion cfg_gen_sfc -opcode 59 exit code 0
+No hardware flashed; S-end ARM programs still require rebuild on RK3568.
+Behavior: first brake request holds STOP low; new E press clears latch; releasing E returns STOP high. Forced unlock consumes current high alarm until clear and reappearance.
+Timing: Some Constraints Violated. Camera/DDR setup WNS -7.055 ns; pclk-to-pclk setup WNS -1.191 ns.
+Tests passed: confidence/all-proposal decoding+ASan/UBSan, software brake policies, FSPI writes, STOP latch/forced override, UART integration; Linux C/C++ syntax checks.
+
+SHA256:
+9F68ACC344259E14BA0115C4227B78C32139097973347EA94BB7BB4547DB6BC8  D:\Study_Object\image_recognition\image_recognition\fpga\fpga_pcie_ov5640\project\generate_bitstream\image_pcie_capture_person_latch_40_20261024.sbit
+731EC6953DA0B601D6C7C153370A12482F6E7C8DFF1D814F59F91FAB7C863002  D:\Study_Object\image_recognition\image_recognition\fpga\fpga_pcie_ov5640\project\generate_bitstream\image_pcie_capture_person_latch_40_20261024.sfc
+EEE69A5B5350A70DF0FF66CEBF9C7D06493AA618C54FC4D76F3CB0BFA68040F2  D:\Study_Object\image_recognition\image_recognition\udp_rk_rk_yolo\S\S_person_latch_40_update_20261024.zip
+959059511E9A2370558E4026C23D78303F046663A47460483571CCD4134C12C9  D:\Study_Object\image_recognition\image_recognition\fpga\fpga_pcie_ov5640\source\image_pcie_capture.v

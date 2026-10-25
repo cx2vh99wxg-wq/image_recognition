@@ -8,33 +8,30 @@ module test_remote_stop_controller;
   reg brake_request = 1'b0;
   reg rearm_command = 1'b0;
   reg fspi_directions_idle = 1'b1;
-  wire stop_pressed;
-  wire movement_blocked;
-  wire fspi_direction_armed;
+  wire stop_pressed, movement_blocked, fspi_direction_armed;
   reg [3:0] hmi_raw_code = 4'h0;
   wire [3:0] hmi_code_sync;
   wire hmi_rearm_filtered;
+  wire cdc_stop_pressed, cdc_movement_blocked;
 
   hmi_control_synchronizer hmi_cdc (
-      .clk(clk),
-      .rst_n(rst_n),
-      .async_code(hmi_raw_code),
-      .code_sync(hmi_code_sync),
-      .rearm_command(hmi_rearm_filtered)
+      .clk(clk), .rst_n(rst_n), .async_code(hmi_raw_code),
+      .code_sync(hmi_code_sync), .rearm_command(hmi_rearm_filtered)
   );
 
-  remote_stop_controller #(
-      .STOP_PULSE_CYCLES(5),
-      .STOP_GAP_CYCLES  (3)
-  ) dut (
-      .clk(clk),
-      .rst_n(rst_n),
-      .brake_request(brake_request),
-      .rearm_command(rearm_command),
-      .fspi_directions_idle(fspi_directions_idle),
-      .stop_pressed(stop_pressed),
-      .movement_blocked(movement_blocked),
+  remote_stop_controller dut (
+      .clk(clk), .rst_n(rst_n), .brake_request(brake_request),
+      .rearm_command(rearm_command), .fspi_directions_idle(fspi_directions_idle),
+      .stop_pressed(stop_pressed), .movement_blocked(movement_blocked),
       .fspi_direction_armed(fspi_direction_armed)
+  );
+
+  // Also prove that a rejected CDC glitch cannot clear an actual brake latch.
+  remote_stop_controller cdc_dut (
+      .clk(clk), .rst_n(rst_n), .brake_request(brake_request),
+      .rearm_command(hmi_rearm_filtered), .fspi_directions_idle(1'b1),
+      .stop_pressed(cdc_stop_pressed), .movement_blocked(cdc_movement_blocked),
+      .fspi_direction_armed()
   );
 
   task step;
@@ -44,121 +41,150 @@ module test_remote_stop_controller;
     end
   endtask
 
-  task check;
-    input condition;
-    input [8*100-1:0] description;
+  task check(input condition, input [8*120-1:0] description);
     begin
-      if (condition !== 1'b1) begin
-        $display("FAIL: %0s at t=%0t state=%0d", description, $time, dut.state);
-        $finish;
-      end
+      if (condition !== 1'b1)
+        $fatal(1, "FAIL: %0s at t=%0t STOP=%b BLOCK=%b FSPI_ARMED=%b",
+               description, $time, stop_pressed, movement_blocked, fspi_direction_armed);
     end
   endtask
 
   integer i;
   initial begin
     step();
+    check(!stop_pressed && !movement_blocked && fspi_direction_armed,
+          "reset releases STOP and directions");
     @(negedge clk);
     rst_n = 1'b1;
     step();
-    check(!stop_pressed && !movement_blocked && fspi_direction_armed,
-          "released and direction-ready after reset");
 
-    // Startup's STOP=0 and a detected person have the same one-shot action.
+    // Manual E remains a momentary STOP when no alarm is latched.
     @(negedge clk);
-    brake_request = 1'b1;
+    rearm_command = 1'b1;
     #1;
-    check(movement_blocked && !stop_pressed, "direction blocks immediately");
+    check(stop_pressed && movement_blocked, "manual E presses STOP immediately");
     step();
-    check(stop_pressed, "first brake press begins");
-    for (i = 0; i < 4; i = i + 1) begin
-      step();
-      check(stop_pressed, "brake press duration");
-    end
-    step();
-    check(!stop_pressed && movement_blocked, "brake press releases into lock");
+    check(!fspi_direction_armed, "manual E disarms FSPI");
     repeat (12) begin
       step();
-      check(!stop_pressed && movement_blocked, "persistent alarm must not toggle STOP again");
+      check(stop_pressed && movement_blocked, "manual E stays active while held");
     end
-
-    // An E press while a person remains detected is ignored even after the
-    // detection later clears; release and press E anew to rearm.
-    @(negedge clk);
-    rearm_command = 1'b1;
-    step();
-    check(!stop_pressed, "E ignored during active brake request");
-    @(negedge clk);
-    brake_request = 1'b0;
-    repeat (3) step();
-    check(!stop_pressed && movement_blocked, "old held E must not rearm");
     @(negedge clk);
     rearm_command = 1'b0;
-    fspi_directions_idle = 1'b0; // stale FSPI direction remains asserted
+    #1;
+    check(!stop_pressed && !movement_blocked, "manual E release has no timed tail");
     step();
+    check(fspi_direction_armed, "idle FSPI can rearm after manual E release");
+
+    // STOP must stay active beyond the old 250 ms automatic pulse timer.
     @(negedge clk);
-    rearm_command = 1'b1;
+    brake_request = 1'b1;
+    fspi_directions_idle = 1'b0;
     step();
     check(stop_pressed && movement_blocked && !fspi_direction_armed,
-          "fresh E starts rearm pulse and discards stale direction");
-    repeat (4) begin
+          "first alarm latches STOP and rejects stale directions");
+    repeat (6_250_010) begin
       step();
-      check(stop_pressed, "rearm press duration");
-    end
-    step();
-    check(!stop_pressed && movement_blocked, "rearm release gap");
-    repeat (3) step();
-    check(!stop_pressed && movement_blocked, "held E blocks motion after gap");
-    repeat (8) begin
-      step();
-      check(!stop_pressed, "held E must never retrigger STOP");
+      check(stop_pressed && movement_blocked, "automatic STOP holds beyond 250 ms");
     end
     @(negedge clk);
-    rearm_command = 1'b0;
+    brake_request = 1'b0;
+    repeat (12) begin
+      step();
+      check(stop_pressed && movement_blocked, "alarm disappearing never unlocks STOP");
+    end
+    @(negedge clk);
+    rearm_command = 1'b1;
     step();
-    check(!movement_blocked && !fspi_direction_armed,
-          "stale FSPI direction cannot move car after E release");
+    check(stop_pressed && movement_blocked, "fresh E clears latch but still presses manual STOP");
+    @(negedge clk);
+    rearm_command = 1'b0;
+    #1;
+    check(!stop_pressed && !movement_blocked, "E release releases automatically latched STOP");
+    repeat (8) begin
+      step();
+      check(!fspi_direction_armed, "stale FSPI command remains disarmed after unlock");
+    end
     @(negedge clk);
     fspi_directions_idle = 1'b1;
     step();
-    check(fspi_direction_armed, "fresh idle FSPI state rearms its directions");
+    check(fspi_direction_armed, "all-idle FSPI rearms after unlock");
 
-    // If detection recurs during an E pulse, finish that press, release for
-    // the debounce gap, and issue exactly one new braking press.
+    // The user chose forced unlock while the same person alarm remains high.
     @(negedge clk);
     brake_request = 1'b1;
     step();
-    check(stop_pressed, "second independent brake event");
-    repeat (5) step();
-    check(!stop_pressed && movement_blocked, "second event release gap");
-    repeat (3) step();
-    check(!stop_pressed && movement_blocked, "second event locked");
+    check(stop_pressed && movement_blocked, "new alarm locks again");
     @(negedge clk);
-    brake_request = 1'b0;
     rearm_command = 1'b1;
     step();
-    check(stop_pressed, "second E begins rearm");
+    @(negedge clk);
+    rearm_command = 1'b0;
+    #1;
+    check(!stop_pressed && !movement_blocked, "forced unlock works with alarm still high");
+    repeat (16) begin
+      step();
+      check(!stop_pressed && !movement_blocked, "same high alarm does not immediately relock");
+    end
+    @(negedge clk);
+    brake_request = 1'b0;
+    step();
     @(negedge clk);
     brake_request = 1'b1;
     step();
+    check(stop_pressed && movement_blocked, "clear then re-detect creates another brake event");
+
+    // Holding E before a new alarm cannot acknowledge that future event.
+    @(negedge clk);
+    rearm_command = 1'b1;
+    step(); // Acknowledge the currently latched event first.
     @(negedge clk);
     brake_request = 1'b0;
-    repeat (3) step();
-    check(stop_pressed, "rearm pulse completes after transient detection");
     step();
-    check(!stop_pressed && movement_blocked, "rearm release starts");
-    repeat (2) begin
+    @(negedge clk);
+    brake_request = 1'b1;
+    step();
+    check(stop_pressed && movement_blocked, "alarm arriving during held E latches");
+    @(negedge clk);
+    rearm_command = 1'b0;
+    repeat (8) begin
       step();
-      check(!stop_pressed, "minimum release gap before renewed braking");
+      check(stop_pressed && movement_blocked, "old E release cannot unlock a later alarm");
     end
+    @(negedge clk);
+    rearm_command = 1'b1;
     step();
-    check(stop_pressed && movement_blocked, "transient person requires a new brake press");
-    repeat (5) step();
-    repeat (3) step();
-    check(!stop_pressed && movement_blocked, "remain locked after renewed brake");
+    @(negedge clk);
+    rearm_command = 1'b0;
+    step();
+    check(!stop_pressed && !movement_blocked, "fresh E recovers from alarm during E hold");
 
-    // A multi-bit direction change may transiently pass through E after
-    // synchronization; a single E sample must never become a rearm event.
+    // A first E edge coincident with a new alarm cannot acknowledge a latch
+    // that was not yet present when the operator pressed the button.
+    @(negedge clk);
+    brake_request = 1'b0;
+    step();
+    @(negedge clk);
+    brake_request = 1'b1;
+    rearm_command = 1'b1;
+    step();
+    @(negedge clk);
+    rearm_command = 1'b0;
+    step();
+    check(stop_pressed && movement_blocked, "simultaneous first E and new alarm retain brake latch");
+
+    // Reset explicitly clears the latch and restarts event detection.
+    @(negedge clk);
+    rst_n = 1'b0;
+    #1;
+    check(!stop_pressed && !movement_blocked, "reset clears latched brake");
+    step();
+    @(negedge clk);
+    rst_n = 1'b1;
+    step();
+    check(stop_pressed && movement_blocked, "active request after reset is detected again");
+
+    // Direction CDC can briefly pass through E; glitches must not unlock.
     @(negedge clk);
     hmi_raw_code = 4'ha;
     repeat (4) step();
@@ -167,11 +193,11 @@ module test_remote_stop_controller;
     step();
     @(negedge clk);
     hmi_raw_code = 4'hc;
-    for (i = 0; i < 10; i = i + 1) begin
+    for (i = 0; i < 12; i = i + 1) begin
       step();
-      check(!hmi_rearm_filtered, "A-to-C transient E rejected");
+      check(!hmi_rearm_filtered && cdc_stop_pressed && cdc_movement_blocked,
+            "A-to-C transient E cannot unlock brake");
     end
-
     @(negedge clk);
     hmi_raw_code = 4'hb;
     repeat (4) step();
@@ -180,21 +206,27 @@ module test_remote_stop_controller;
     step();
     @(negedge clk);
     hmi_raw_code = 4'hd;
-    for (i = 0; i < 10; i = i + 1) begin
+    for (i = 0; i < 12; i = i + 1) begin
       step();
-      check(!hmi_rearm_filtered, "B-to-D transient E rejected");
+      check(!hmi_rearm_filtered && cdc_stop_pressed && cdc_movement_blocked,
+            "B-to-D transient E cannot unlock brake");
     end
-
     @(negedge clk);
     hmi_raw_code = 4'he;
     repeat (12) step();
-    check(hmi_rearm_filtered, "held E accepted after stable sampling");
+    check(hmi_rearm_filtered && cdc_stop_pressed, "stable E accepted while alarm remains high");
     @(negedge clk);
     hmi_raw_code = 4'h0;
-    repeat (3) step();
-    check(!hmi_rearm_filtered, "E release clears rearm command");
+    repeat (5) step();
+    check(!hmi_rearm_filtered && !cdc_stop_pressed && !cdc_movement_blocked,
+          "filtered E release completes forced unlock");
 
-    $display("PASS: STOP one-shot, E rearm, stale-direction gate, detection race and HMI CDC");
+    $display("PASS: persistent automatic STOP, forced REARM, re-detection, stale FSPI and CDC");
     $finish;
+  end
+
+  initial begin
+    #300_000_000;
+    $fatal(1, "FAIL STOP controller test timed out");
   end
 endmodule

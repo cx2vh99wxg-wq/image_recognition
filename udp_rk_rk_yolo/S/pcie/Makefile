@@ -71,7 +71,11 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp | $(BUILDDIR)
 	@echo "编译C++文件: $<"
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-$(BUILDDIR)/main.o: $(INCDIR)/camera_orientation.h
+$(BUILDDIR)/main.o: $(INCDIR)/camera_orientation.h $(INCDIR)/yolo_integration.h \
+                   $(INCDIR)/postprocess.h ../include/person_brake_trigger.h
+$(BUILDDIR)/postprocess.o: $(INCDIR)/postprocess.h ../include/person_brake_trigger.h
+$(BUILDDIR)/yolo_integration.o: $(INCDIR)/yolo_integration.h $(INCDIR)/postprocess.h
+$(BUILDDIR)/person_alert_effects.o: $(INCDIR)/person_alert_effects.h $(INCDIR)/postprocess.h
 
 # 创建build目录
 $(BUILDDIR):
