@@ -1,0 +1,203 @@
+--- a/udp_rk_rk_yolo/S/x11/csrc/main.cpp
++++ b/udp_rk_rk_yolo/S/x11/csrc/main.cpp
+@@ -129,6 +129,8 @@
+     unsigned long shm_pending_serial;
+     Drawable shm_pending_drawable;
+     uint64_t profile_reuse_wait_ns, profile_upload_completions;
++    uint64_t profile_upload_bytes, profile_upload_rects;
++    int upload_initialized, uploaded_this_frame;
+ #ifdef PERCEPTION_HAVE_XRENDER
+     Picture source_picture, window_picture;
+ #endif
+@@ -1026,7 +1028,7 @@
+ static void wait_for_shared_image(RenderEngine* engine) {
+     if (!engine->shm_pending) return;
+     const uint64_t started = display_clock_ns();
+-    const uint64_t deadline = started + 100000000ULL;
++    const uint64_t deadline = started + 250000000ULL;
+     XEvent event;
+     while (engine->shm_pending) {
+         if (XCheckIfEvent(engine->display, &event, pending_shm_completion,
+@@ -1059,30 +1061,100 @@
+     engine->profile_reuse_wait_ns += display_clock_ns() - started;
+ }
+ 
+-static int put_presentation_image(RenderEngine* engine, Drawable target, int width, int height) {
++struct UploadRegion { int x, y, width, height; };
++
++static bool partial_upload_requested() {
++    static const char* value = getenv("VISION_PARTIAL_UPLOAD");
++    static const bool enabled = value && !strcmp(value, "1");
++    return enabled;
++}
++
++// Regions cover every dynamic Dashboard pixel and do not overlap. Static
++// layout/theme changes must rebuild this image or update these bounds.
++static void prepare_xrender_upload(RenderEngine* engine, const uint32_t* pixels,
++                                   bool partial, std::vector<UploadRegion>& regions) {
++    XImage* image = engine->presentation_image;
++    regions.clear();
++    if (!partial || !engine->upload_initialized) {
++        for (int y = 0; y < perception_ui::HEIGHT; ++y)
++            memcpy(image->data + y * image->bytes_per_line,
++                   pixels + y * perception_ui::WIDTH, perception_ui::WIDTH * 4);
++        regions.push_back({0, 0, perception_ui::WIDTH, perception_ui::HEIGHT});
++        return;
++    }
++    static const UploadRegion areas[] = {
++        {0, 180, 1600, 44}, {72, 224, 1092, 504},
++        {0, 728, 1600, 152}, {1188, 230, 412, 498}
++    };
++    bool changed[4] = {};
++    for (int area_index = 0; area_index < 4; ++area_index) {
++        const UploadRegion& area = areas[area_index];
++        int first_row = -1;
++        for (int row = 0; row < area.height; ++row) {
++            char* destination = image->data + (area.y + row) * image->bytes_per_line + area.x * 4;
++            const uint32_t* source = pixels + (area.y + row) * perception_ui::WIDTH + area.x;
++            bool differs = memcmp(destination, source, area.width * 4) != 0;
++            if (differs) {
++                memcpy(destination, source, area.width * 4);
++                changed[area_index] = true;
++                if (first_row < 0) first_row = row;
++            } else if (first_row >= 0) {
++                regions.push_back({area.x, area.y + first_row, area.width, row - first_row});
++                first_row = -1;
++            }
++        }
++        if (first_row >= 0)
++            regions.push_back({area.x, area.y + first_row, area.width, area.height - first_row});
++    }
++    // Avoid hundreds of tiny protocol requests on alternating changed rows.
++    if (regions.size() > 64) {
++        regions.clear();
++        for (int i = 0; i < 4; ++i) if (changed[i]) regions.push_back(areas[i]);
++    }
++}
++
++static int put_presentation_region(RenderEngine* engine, Drawable target,
++                                   const UploadRegion& area, bool last_region) {
++    const bool completion = engine->use_shm_completion && last_region;
+     if (engine->use_shm) {
+-        if (engine->use_shm_completion) {
+-            // XShmPutImage flushes dirty GC values before its image request.
+-            // Submit that GC request first so this serial tags the upload.
++        if (completion) {
++            // XShmPutImage may first flush a dirty GC. Tag the upload itself.
+             XFlushGC(engine->display, engine->gc);
+             engine->shm_pending_serial = NextRequest(engine->display);
+             engine->shm_pending_drawable = target;
+             engine->shm_pending = 1;
+         }
+         if (!XShmPutImage(engine->display, target, engine->gc, engine->presentation_image,
+-                          0, 0, 0, 0, width, height,
+-                          engine->use_shm_completion ? True : False)) {
++                          area.x, area.y, area.x, area.y, area.width, area.height,
++                          completion ? True : False)) {
+             engine->shm_pending = 0;
+             return -1;
+         }
+     } else XPutImage(engine->display, target, engine->gc, engine->presentation_image,
+-                     0, 0, 0, 0, width, height);
++                     area.x, area.y, area.x, area.y, area.width, area.height);
++    engine->uploaded_this_frame = 1;
++    engine->profile_upload_bytes += uint64_t(area.width) * area.height *
++                                    ((engine->presentation_image->bits_per_pixel + 7) / 8);
++    ++engine->profile_upload_rects;
+     return 0;
+ }
+ 
+-static void flush_presentation(RenderEngine* engine) {
+-    if (engine->use_shm_completion) XFlush(engine->display);
+-    else { XSync(engine->display, False); ++engine->profile_upload_completions; }
++static int put_presentation_image(RenderEngine* engine, Drawable target, int width, int height) {
++    return put_presentation_region(engine, target, {0, 0, width, height}, true);
++}
++
++static void flush_presentation(RenderEngine* engine, bool warmup = false) {
++    if (warmup) {
++        // First full image/scale may initialize GPU resources. Complete it
++        // before pipelining; no shader warmup can expire a reuse deadline.
++        XSync(engine->display, False);
++        if (engine->shm_pending) wait_for_shared_image(engine);
++        else if (engine->uploaded_this_frame) ++engine->profile_upload_completions;
++    } else if (engine->use_shm_completion) XFlush(engine->display);
++    else {
++        XSync(engine->display, False);
++        if (engine->uploaded_this_frame) ++engine->profile_upload_completions;
++    }
+ }
+ 
+ static void release_presentation(RenderEngine* engine) {
+@@ -1117,6 +1189,8 @@
+     engine->pixmap = 0;
+     engine->use_shm = 0;
+     engine->use_shm_completion = 0;
++    engine->upload_initialized = 0;
++    engine->uploaded_this_frame = 0;
+ }
+ 
+ int resize_presentation(RenderEngine* engine, int width, int height) {
+@@ -1261,7 +1335,7 @@
+         engine->pcie_shown_fps = engine->profile_s_shown / seconds;
+         engine->udp_shown_fps = engine->profile_m_shown / seconds;
+         double divisor = engine->profile_frames * 1e6;
+-        printf("[PERF DISPLAY] render_fps=%.2f S_input_fps=%.2f M_input_fps=%.2f S_shown_fps=%.2f M_shown_fps=%.2f compose_ms=%.2f legacy_ms=%.2f car_ms=%.2f dashboard_ms=%.2f car_redraw_pct=%.1f scale_ms=%.2f present_ms=%.2f reuse_wait_ms=%.2f upload_done_fps=%.2f backend=%s/%s sync=%s\n",
++        printf("[PERF DISPLAY] render_fps=%.2f S_input_fps=%.2f M_input_fps=%.2f S_shown_fps=%.2f M_shown_fps=%.2f compose_ms=%.2f legacy_ms=%.2f car_ms=%.2f dashboard_ms=%.2f car_redraw_pct=%.1f scale_ms=%.2f present_ms=%.2f reuse_wait_ms=%.2f upload_done_fps=%.2f upload_MB=%.2f upload_rects=%.1f partial=%d backend=%s/%s sync=%s\n",
+                engine->display_fps,
+                (uint32_t)(engine->pcie_frame_id - engine->profile_pcie_start) / seconds,
+                (uint32_t)(engine->udp_frame_id - engine->profile_udp_start) / seconds,
+@@ -1271,6 +1345,9 @@
+                100.0 * engine->profile_car_redraws / engine->profile_frames, engine->profile_scale_ns / divisor,
+                engine->profile_present_ns / divisor, engine->profile_reuse_wait_ns / divisor,
+                engine->profile_upload_completions / seconds,
++               engine->profile_upload_bytes / double(engine->profile_frames) / 1e6,
++               engine->profile_upload_rects / double(engine->profile_frames),
++               engine->use_xrender && engine->use_shm && partial_upload_requested(),
+                engine->use_xrender ? "xrender" : "cpu", engine->use_shm ? "shm" : "putimage",
+                engine->use_shm_completion ? "completion" : "sync");
+         engine->profile_start = end;
+@@ -1280,6 +1357,7 @@
+         engine->profile_compose_ns = engine->profile_scale_ns = engine->profile_present_ns = 0;
+         engine->profile_layout_ns = engine->profile_car_ns = engine->profile_dashboard_ns = engine->profile_car_redraws = 0;
+         engine->profile_reuse_wait_ns = engine->profile_upload_completions = 0;
++        engine->profile_upload_bytes = engine->profile_upload_rects = 0;
+     }
+ }
+ 
+@@ -1320,6 +1398,7 @@
+     XImage* image = engine->presentation_image;
+     if (!image) return -1;
+     wait_for_shared_image(engine);
++    engine->uploaded_this_frame = 0;
+     int draw_w = engine->window_width;
+     int draw_h = draw_w * perception_ui::HEIGHT / perception_ui::WIDTH;
+     if (draw_h > engine->window_height) {
+@@ -1335,11 +1414,14 @@
+         if (image->bits_per_pixel != 32 || image->byte_order != LSBFirst ||
+             image->red_mask != 0xff0000 || image->green_mask != 0xff00 || image->blue_mask != 0xff)
+             return -1;
+-        for (int y = 0; y < perception_ui::HEIGHT; ++y)
+-            memcpy(image->data + y * image->bytes_per_line,
+-                   pixels + y * perception_ui::WIDTH, perception_ui::WIDTH * 4);
++        const bool partial = engine->use_shm && partial_upload_requested();
++        const bool warmup = partial && !engine->upload_initialized;
++        static thread_local std::vector<UploadRegion> regions;
++        prepare_xrender_upload(engine, pixels, partial, regions);
+         uint64_t scale_done = display_clock_ns();
+-        if (put_presentation_image(engine, engine->pixmap, perception_ui::WIDTH, perception_ui::HEIGHT) != 0) return -1;
++        for (size_t i = 0; i < regions.size(); ++i)
++            if (put_presentation_region(engine, engine->pixmap, regions[i], i + 1 == regions.size()) != 0) return -1;
++        engine->upload_initialized = 1;
+         XTransform transform = {};
+         transform.matrix[0][0] = XDoubleToFixed((double)perception_ui::WIDTH / draw_w);
+         transform.matrix[1][1] = XDoubleToFixed((double)perception_ui::HEIGHT / draw_h);
+@@ -1350,7 +1432,7 @@
+                        engine->window_width, engine->window_height);
+         XRenderComposite(engine->display, PictOpSrc, engine->source_picture, None,
+                          engine->window_picture, 0, 0, 0, 0, offset_x, offset_y, draw_w, draw_h);
+-        flush_presentation(engine);
++        flush_presentation(engine, warmup);
+         record_display_perf(engine, render_started, car_done, compose_done, scale_done, display_clock_ns(), car_redrawn);
+         return 0;
+     }

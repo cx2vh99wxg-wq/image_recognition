@@ -1,0 +1,32 @@
+libEGL warning: DRI3 error: Could not get DRI3 device
+libEGL warning: Ensure your X server supports DRI3 to get accelerated rendering
+[GLES] EGL vendor=Mesa Project version=1.5
+[GLES] configs=50 target_visual=0x23 native_visual_ids=0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,...
+[GLES] renderer=llvmpipe (LLVM 20.1.2, 256 bits) GL=OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2 canvas=1600x900 swap_interval=0
+1600x900 nonuniform 1px texture BGRA/orientation byte-identical PASS
+GPU linear letterbox/canvas resize/window landscape+portrait resize PASS
+libEGL warning: DRI3 error: Could not get DRI3 device
+libEGL warning: Ensure your X server supports DRI3 to get accelerated rendering
+[GLES] EGL vendor=Mesa Project version=1.5
+[GLES] configs=50 target_visual=0x23 native_visual_ids=0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,...
+[GLES] shader: 
+libEGL warning: DRI3 error: Could not get DRI3 device
+libEGL warning: Ensure your X server supports DRI3 to get accelerated rendering
+[GLES] EGL vendor=Mesa Project version=1.5
+[GLES] configs=50 target_visual=0x23 native_visual_ids=0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,...
+[GLES] link: 
+libEGL warning: DRI3 error: Could not get DRI3 device
+libEGL warning: Ensure your X server supports DRI3 to get accelerated rendering
+[GLES] EGL vendor=Mesa Project version=1.5
+[GLES] configs=50 target_visual=0xabcdef native_visual_ids=0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,...
+libEGL warning: DRI3 error: Could not get DRI3 device
+libEGL warning: Ensure your X server supports DRI3 to get accelerated rendering
+[GLES] EGL vendor=Mesa Project version=1.5
+[GLES] configs=50 target_visual=0x23 native_visual_ids=0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,...
+[GLES] renderer=llvmpipe (LLVM 20.1.2, 256 bits) GL=OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2 canvas=64x32 swap_interval=0
+libEGL warning: DRI3 error: Could not get DRI3 device
+libEGL warning: Ensure your X server supports DRI3 to get accelerated rendering
+[GLES] EGL vendor=Mesa Project version=1.5
+[GLES] configs=50 target_visual=0x23 native_visual_ids=0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23,...
+[GLES] renderer=llvmpipe (LLVM 20.1.2, 256 bits) GL=OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2 canvas=64x32 swap_interval=0
+shader/link/config/swap failure clean fallback + repeated init/cleanup PASS

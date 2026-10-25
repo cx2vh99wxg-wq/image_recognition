@@ -20,7 +20,7 @@ module test_fspi_control;
 
     fspi_slave u_slave (
         .spi_clk(spi_clk), .spi_cs(spi_cs), .spi_data(spi_data),
-        .rst_n(rst_n), .select_rearview(4'ha), .cmd(cmd),
+        .rst_n(rst_n), .select_rearview(4'ha), .auto_brake_enable(1'b0), .cmd(cmd),
         .rx_data(rx_data), .rx_data_valid(rx_data_valid),
         .tx_data(tx_data), .tx_data_valid(tx_data_valid)
     );

@@ -81,10 +81,15 @@ typedef struct {
     size_t shm_size;
     int is_writer;
     SharedMemoryType type;
+    sem_t* image_sem;       /* Local handle; not part of the shared segment ABI. */
+    uint32_t last_frame_id; /* Each reader independently follows the latest frame. */
 } SharedMemoryManager;
 
 /* 按类型连接共享段。写端可创建或复用并初始化控制头；成功返回 0，失败返回 -1。 */
 int shared_memory_init(SharedMemoryManager* manager, SharedMemoryType type, int is_writer);
+
+/* Producer generation lives in reserved bytes; shared header ABI stays 104 bytes. */
+uint64_t shared_memory_image_generation(const SharedMemoryManager* manager);
 
 /* 写端清除活跃标志并删除段，读端只分离映射；传入空指针时直接返回。 */
 void shared_memory_cleanup(SharedMemoryManager* manager);
@@ -130,6 +135,15 @@ int curve_detection_update(uint32_t frame_id, CurveType curve_type,
 /* 读出最新弯道结果到四个非空输出指针；未初始化时返回 -1。 */
 int curve_detection_read(uint32_t* frame_id, CurveType* curve_type,
                         uint32_t* confidence, uint32_t* curve_angle);
+
+/* Coherent NN result plus the input capture CLOCK_MONOTONIC timestamp (ns).
+ * Bounded read returns -1 on contention/inactive writer; zero timestamp is legacy. */
+int curve_detection_update_source(uint32_t frame_id, CurveType curve_type,
+                                  uint32_t confidence, uint32_t curve_angle,
+                                  uint64_t capture_monotonic_ns);
+int curve_detection_read_source(uint32_t* frame_id, CurveType* curve_type,
+                                uint32_t* confidence, uint32_t* curve_angle,
+                                uint64_t* capture_monotonic_ns);
 
 #ifdef __cplusplus
 }

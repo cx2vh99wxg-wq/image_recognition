@@ -1,0 +1,88 @@
+=== Perception Engine / S-End Surround Vision ===
+Six-view dashboard, eight selectable cameras, F11 fullscreen, Q exit
+Source streams remain 640x480; dashboard canvas is 1600x900
+
+=== 初始化PCIe共享内存连接 ===
+正在初始化PCIe共享内存 (key=0x5c0013f1, size=614504 bytes)
+*** 致命错误: PCIe共享内存创建/连接失败 ***
+*** 错误原因: No such file or directory ***
+*** 错误码: 2 ***
+*** 共享内存不存在 (读取者需要写入者先创建) ***
+PCIe共享内存暂不可用，继续显示UDP图像
+
+=== 初始化UDP共享内存连接 ===
+正在初始化UDP共享内存 (key=0x5c0013f2, size=614504 bytes)
+*** 致命错误: UDP共享内存创建/连接失败 ***
+*** 错误原因: No such file or directory ***
+*** 错误码: 2 ***
+*** 共享内存不存在 (读取者需要写入者先创建) ***
+UDP共享内存暂不可用，等待网络接收进程
+
+=== 加载car.png图像 ===
+警告: 无法加载car.png,将使用原始摄像头画面
+
+=== 连接可选显示元数据；未启动的数据源每秒重试 ===
+
+=== 初始化渲染引擎 ===
+[RENDER] scale=XRender upload=MIT-SHM image=1600x900 window=1440x810
+Perception Engine: 1440x810, F11 fullscreen, Q exit
+PERCEPTION_WINDOW_ID=0x600001
+
+=== 开始双通道渲染 ===
+按 Q/Esc 键或关闭窗口退出
+正在初始化显示控制共享内存 (key=0x5c0013f4, size=64 bytes, is_writer=0)
+显示控制共享内存连接成功 (读取者模式)
+正在初始化紧急制动共享内存 (key=0x5c0013f5, size=60 bytes, is_writer=0)
+角色: 读取者(FSPI-制动控制)
+紧急制动共享内存连接成功 (读取者模式)
+正在初始化弯道检测共享内存 (key=0x5c0013f6, size=72 bytes)
+弯道检测共享内存初始化成功 (id=10, ptr=0x7146e6d79000)
+正在初始化PCIe共享内存 (key=0x5c0013f1, size=614504 bytes)
+Shared memory initialized successfully (is_writer: 0)
+[DISPLAY] PCIe image source attached (shmid=11)
+正在初始化UDP共享内存 (key=0x5c0013f2, size=614504 bytes)
+Shared memory initialized successfully (is_writer: 0)
+[DISPLAY] UDP image source attached (shmid=12)
+显示控制共享内存清理完成
+紧急制动共享内存清理完成
+弯道检测共享内存已清理
+Shared memory cleaned up
+Shared memory cleaned up
+[PERF DASHBOARD] copy_ms=0.61 clear_ms=0.13 video_fit_ms=0.38 car_fit_ms=0.15 ui_ms=0.02 fast=0
+[PERF DISPLAY] render_fps=15.20 S_input_fps=11.84 M_input_fps=11.84 S_shown_fps=9.08 M_shown_fps=9.08 compose_ms=1.31 legacy_ms=0.43 car_ms=0.01 dashboard_ms=1.30 car_redraw_pct=3.9 scale_ms=0.57 present_ms=2.42 reuse_wait_ms=0.00 upload_done_fps=15.20 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+正在初始化显示控制共享内存 (key=0x5c0013f4, size=64 bytes, is_writer=0)
+显示控制共享内存连接成功 (读取者模式)
+正在初始化紧急制动共享内存 (key=0x5c0013f5, size=60 bytes, is_writer=0)
+角色: 读取者(FSPI-制动控制)
+紧急制动共享内存连接成功 (读取者模式)
+正在初始化弯道检测共享内存 (key=0x5c0013f6, size=72 bytes)
+弯道检测共享内存初始化成功 (id=15, ptr=0x7146e6d79000)
+正在初始化PCIe共享内存 (key=0x5c0013f1, size=614504 bytes)
+Shared memory initialized successfully (is_writer: 0)
+[DISPLAY] PCIe image source attached (shmid=16)
+正在初始化UDP共享内存 (key=0x5c0013f2, size=614504 bytes)
+Shared memory initialized successfully (is_writer: 0)
+[DISPLAY] UDP image source attached (shmid=17)
+
+接收到信号 15，正在关闭渲染程序...
+
+=== 性能统计结果 ===
+总渲染帧数: 142
+总时间: 7.12秒
+平均渲染FPS: 19.9
+最终PCIe帧ID: 60
+最终UDP帧ID: 60
+最终显示模式: 153
+
+=== 保存最后一帧合成图像 ===
+合成图像已保存为: combined_last_frame.ppm
+
+=== 系统清理 ===
+X11渲染引擎已清理
+显示控制共享内存清理完成
+紧急制动共享内存清理完成
+弯道检测共享内存已清理
+Shared memory cleaned up
+Shared memory cleaned up
+
+=== 双通道渲染程序执行完成 ===

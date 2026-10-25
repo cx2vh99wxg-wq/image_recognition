@@ -29,6 +29,9 @@ typedef struct {
     int model_width;
     int model_height;
     int is_initialized;
+    /* Request only the two segmentation outputs. Cache a full-output fallback
+     * for RKNN runtimes that require all output tensors in one call. */
+    uint32_t requested_output_count;
 
     // 输出数据缓冲区（用于保存检测结果）
     float* lane_line_buffer;      // 车道线数据缓冲区
@@ -48,6 +51,19 @@ int yolo_engine_init(YOLOEngine* engine, const char* model_path, const char* lab
 int yolo_engine_detect(YOLOEngine* engine, const uint8_t* rgb_data, int width, int height,
                       yolopv2_result_t* results);
 void yolo_engine_cleanup(YOLOEngine* engine);
+
+typedef struct {
+    uint32_t curve_type;
+    uint32_t confidence;
+    uint32_t angle;
+} YOLOCurveResult;
+
+/* Pure helpers: neither function changes shared-memory curve metadata.
+ * This allows display masks to be reused without inventing new NN results. */
+int yolo_overlay_lane_and_drivable(uint8_t* rgb_data, int width, int height,
+                                 const yolopv2_result_t* results);
+int yolo_analyze_annotated_curve(const uint8_t* rgb_data, int width, int height,
+                               int lane_pixel_count, YOLOCurveResult* curve);
 
 // 绘制车道线和可行驶区域到图像上
 void draw_lane_and_drivable(uint8_t* rgb_data, int width, int height,

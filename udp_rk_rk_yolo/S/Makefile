@@ -58,7 +58,7 @@ all: shared pcie udp x11 fspi
 	@echo "使用 'make stop' 停止系统"
 
 # 启动后台程序（PCIe + UDP）
-run-background: all
+run-background: all tune-network
 	@echo "=== 启动FPGA双通道后台程序 ==="
 	@echo "系统: $(UNAME) $(ARCH)"
 	@echo "时间: $(shell date)"
@@ -127,7 +127,7 @@ run-display: all
 	@cd x11/csrc && ./build/eight_camera_renderer
 
 # 启动完整系统（后台 + FSPI控制 + 显示）
-run: all
+run: all tune-network
 	@echo "=== 启动FPGA八摄像头视频显示系统 (带视角切换) ==="
 	@echo "系统: $(UNAME) $(ARCH)"
 	@echo "时间: $(shell date)"
@@ -206,7 +206,7 @@ run: all
 	@echo "退出时将自动停止所有后台程序"
 	@echo ""
 	@# 设置陷阱，确保退出时清理
-	@trap 'make stop' EXIT; cd x11/csrc && ./build/eight_camera_renderer
+	@trap '$(MAKE) -C "$(CURDIR)" stop' EXIT; cd x11/csrc && ./build/eight_camera_renderer
 
 # 停止系统
 stop:
@@ -295,7 +295,7 @@ $(BUILD_DIR)/$(SHARED_LIB): $(SHARED_OBJECTS) | $(BUILD_DIR)
 	$(AR) $(ARFLAGS) $@ $^
 
 # 编译共享库对象文件
-$(BUILD_DIR)/shared_memory.o: $(SHARED_INC_DIR)/brake_release_policy.h
+$(BUILD_DIR)/shared_memory.o: $(SHARED_INC_DIR)/shared_memory.h $(SHARED_INC_DIR)/brake_release_policy.h
 
 $(BUILD_DIR)/%.o: $(SHARED_SRC_DIR)/%.c | $(BUILD_DIR)
 	@echo "编译共享库: $<"
@@ -543,3 +543,22 @@ $(BUILD_DIR)/$(SHARED_LIB): $(SHARED_OBJECTS)
 
 # 对象文件依赖于头文件
 $(SHARED_OBJECTS): $(wildcard $(SHARED_INC_DIR)/*.h)
+
+# Two complete raw frames need more than the kernel's 212 KiB default limit.
+# Raise limits only; VISION_NET_TUNE=0 leaves the host settings unchanged.
+.PHONY: tune-network
+tune-network:
+	@if [ "$${VISION_NET_TUNE:-1}" != "0" ]; then \
+		for setting in rmem_max wmem_max; do \
+			current=$$(cat /proc/sys/net/core/$$setting 2>/dev/null || echo 0); \
+			if [ "$$current" -lt 4194304 ]; then \
+				if [ "$$(id -u)" = 0 ]; then \
+					sysctl -q -w net.core.$$setting=4194304; \
+				else \
+					sudo -n sysctl -q -w net.core.$$setting=4194304 || \
+					echo "Video socket limit unchanged: run make tune-network as root"; \
+				fi; \
+			fi; \
+		done; \
+	fi
+

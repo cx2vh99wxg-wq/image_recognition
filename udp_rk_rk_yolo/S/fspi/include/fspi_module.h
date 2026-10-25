@@ -18,6 +18,14 @@ int fspi_write_data(uint16_t addr, uint8_t data);
  * 0x00 为前视镜，0x11 为后视镜，其余值按异常状态记录。 */
 int fspi_read_data(uint16_t addr, uint8_t *data);
 
+/* 独立持久开关：同一次片选发送四线 81 00 05，再四线读取 A1(开)/A0(关)。
+ * 只接受带签名的状态，旧 FPGA、无效响应或总线失败返回 -1，且不改输出值。 */
+int fspi_read_auto_brake_switch(int *enabled);
+
+/* 获取最近一次独立开关读取的诊断，不进行SPI访问；可空参。
+ * errno=0表示成功，transfer_result为消息返回长度，raw_status为原始响应。 */
+void fspi_get_auto_brake_diagnostic(int *error_number, int *transfer_result, uint8_t *raw_status);
+
 /* 不预先发送地址，直接读取一字节；同样通过重复采样筛选结果。 */
 int fspi_read_direct(uint8_t *data);
 
@@ -32,7 +40,7 @@ int vehicle_backward(int enable);
 int vehicle_turn_left(int enable);
 int vehicle_turn_right(int enable);
 
-/* 向地址 4 写入 0 并保持 stop 按键有效；写入 1 才会解除。 */
+/* 向地址4写0发布STOP请求；写1只清软件请求，已有FPGA锁存仍须人工REARM解除。 */
 int vehicle_emergency_stop(void);
 
 /* 关闭已打开的设备句柄并清空内部句柄状态；可安全重复调用。 */

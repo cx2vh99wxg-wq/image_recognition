@@ -1,3 +1,6 @@
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -8,6 +11,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "shared_memory.h"
+#include "video_transport_v2.h"
+#include <errno.h>
+#include <signal.h>
+#include <sys/uio.h>
 
 //=========================================================================
 // *作   者：科研轮转（UDP模块）
@@ -16,6 +23,8 @@
 // *传输格式：支持同步的帧传输，包含帧头、行头、行数据、帧尾
 //=========================================================================
 
+static_assert(sizeof(SharedMemoryControl) == 104, "Image control ABI must remain 104 bytes");
+static_assert(sizeof(CurveDetectionSharedMemory) == 72, "Curve shared ABI must remain 72 bytes");
 #define IMAGE_WIDTH  640
 #define IMAGE_HEIGHT 480
 #define UDP_PORT 8888
@@ -61,7 +70,30 @@ typedef struct {
 typedef struct {
     int socket_fd;
     struct sockaddr_in target_addr;
+    unsigned bitrate_mbit;
+    uint32_t wire_sequence, session_id;
+    uint64_t report_start, sent_frames, sent_bytes, failed_frames, send_ns;
 } NetworkManager;
+
+static volatile sig_atomic_t sender_running = 1;
+static void sender_signal_handler(int) { sender_running = 0; }
+static uint64_t monotonic_ns() {
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    return (uint64_t)now.tv_sec * 1000000000ULL + now.tv_nsec;
+}
+static void report_sender(NetworkManager* manager) {
+    uint64_t now = monotonic_ns();
+    if (!manager->report_start) manager->report_start = now;
+    if (now - manager->report_start < 5000000000ULL) return;
+    double seconds = (now - manager->report_start) / 1e9;
+    printf("[UDP_TX] fps=%.2f payload_mbps=%.2f send_ms=%.2f failed=%llu pacing_mbps=%u\n",
+           manager->sent_frames / seconds, manager->sent_bytes * 8.0 / seconds / 1e6,
+           manager->sent_frames ? manager->send_ns / 1e6 / manager->sent_frames : 0.0,
+           (unsigned long long)manager->failed_frames, manager->bitrate_mbit);
+    manager->report_start = now;
+    manager->sent_frames = manager->sent_bytes = manager->failed_frames = manager->send_ns = 0;
+}
 
 //=========================================================================
 // 函数声明
@@ -85,6 +117,17 @@ int network_manager_init(NetworkManager* net_mgr, const char* target_ip) {
         return -1;
     }
     
+    memset(net_mgr, 0, sizeof(*net_mgr));
+    net_mgr->socket_fd = -1;
+    net_mgr->session_id = (uint32_t)(monotonic_ns() ^ ((uint64_t)getpid() << 17));
+    if (!net_mgr->session_id) net_mgr->session_id = 1;
+    net_mgr->bitrate_mbit = 200;
+    const char* rate = getenv("VIDEO_UDP_MBIT");
+    if (rate && *rate) {
+        char* end = NULL;
+        unsigned long value = strtoul(rate, &end, 10);
+        if (end && !*end && value <= 1000) net_mgr->bitrate_mbit = (unsigned)value;
+    }
     printf("正在初始化UDP网络传输...\n");
     
     // 创建UDP socket
@@ -103,11 +146,14 @@ int network_manager_init(NetworkManager* net_mgr, const char* target_ip) {
     }
     
     // 设置发送缓冲区大小
-    int send_buf_size = 2 * 1024 * 1024; // 2MB
+    int send_buf_size = 256 * 1024; // bounded queue; paced batches, not old frames
     if (setsockopt(net_mgr->socket_fd, SOL_SOCKET, SO_SNDBUF, &send_buf_size, sizeof(send_buf_size)) < 0) {
         perror("设置发送缓冲区大小失败");
     }
     
+    struct timeval timeout = {0, 10000};
+    setsockopt(net_mgr->socket_fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+
     // 配置目标地址
     memset(&net_mgr->target_addr, 0, sizeof(net_mgr->target_addr));
     net_mgr->target_addr.sin_family = AF_INET;
@@ -140,7 +186,7 @@ uint32_t calculate_checksum(const uint8_t* data, size_t size) {
 /**************************************************************************
 ** 函数名称:    network_send_frame_with_sync - 发送带同步的640*480帧
 ****************************************************************************/
-int network_send_frame_with_sync(NetworkManager* net_mgr, const uint8_t* frame_data, uint32_t frame_id,
+static int network_send_legacy(NetworkManager* net_mgr, const uint8_t* frame_data, uint32_t frame_id,
                                  uint32_t curve_type, uint32_t curve_confidence, uint32_t curve_angle) {
     if (!net_mgr || !frame_data) return -1;
 
@@ -199,6 +245,83 @@ int network_send_frame_with_sync(NetworkManager* net_mgr, const uint8_t* frame_d
     return PCIE_FRAME_SIZE;
 }
 
+static int network_send_frame_source(NetworkManager* net_mgr, const uint8_t* frame_data,
+                                     video_v2::Metadata meta) {
+    if (!net_mgr || !frame_data || net_mgr->socket_fd < 0) return -1;
+    uint64_t started = monotonic_ns();
+    meta.frame_id = ++net_mgr->wire_sequence;
+    meta.session_id = net_mgr->session_id;
+    const char* legacy = getenv("VIDEO_UDP_LEGACY");
+    if (legacy && *legacy == '1') {
+        int result = network_send_legacy(net_mgr, frame_data, meta.frame_id,
+                                         meta.curve_type, 0, meta.curve_angle);
+        if (result > 0) { ++net_mgr->sent_frames; net_mgr->sent_bytes += result;
+                         net_mgr->send_ns += monotonic_ns() - started; }
+        else ++net_mgr->failed_frames;
+        return result;
+    }
+    uint32_t line_sums[IMAGE_HEIGHT];
+    for (unsigned row = 0; row < IMAGE_HEIGHT; ++row) {
+        line_sums[row] = video_v2::checksum(frame_data + row * video_v2::LINE_BYTES,
+                                          video_v2::LINE_BYTES);
+        meta.checksum += line_sums[row];
+    }
+    uint64_t wire_bytes = 0;
+    for (unsigned first = 0; first < IMAGE_HEIGHT && sender_running; first += video_v2::BATCH) {
+        unsigned count = std::min(video_v2::BATCH, IMAGE_HEIGHT - first);
+        video_v2::WireHeader headers[video_v2::BATCH];
+        struct iovec vectors[video_v2::BATCH][2] = {};
+        struct mmsghdr messages[video_v2::BATCH] = {};
+        for (unsigned i = 0; i < count; ++i) {
+            unsigned row = first + i;
+            headers[i] = video_v2::make_header(meta, row, line_sums[row]);
+            vectors[i][0].iov_base = &headers[i];
+            vectors[i][0].iov_len = sizeof(headers[i]);
+            vectors[i][1].iov_base = (void*)(frame_data + row * video_v2::LINE_BYTES);
+            vectors[i][1].iov_len = video_v2::LINE_BYTES;
+            messages[i].msg_hdr.msg_name = &net_mgr->target_addr;
+            messages[i].msg_hdr.msg_namelen = sizeof(net_mgr->target_addr);
+            messages[i].msg_hdr.msg_iov = vectors[i];
+            messages[i].msg_hdr.msg_iovlen = 2;
+        }
+        unsigned sent = 0;
+        while (sent < count && sender_running) {
+            int result = sendmmsg(net_mgr->socket_fd, messages + sent, count - sent, 0);
+            if (result < 0 && errno == EINTR) continue;
+            if (result <= 0) { ++net_mgr->failed_frames; return -1; }
+            for (int i = 0; i < result; ++i) {
+                if (messages[sent + i].msg_len != sizeof(video_v2::WireHeader) + video_v2::LINE_BYTES) {
+                    ++net_mgr->failed_frames; return -1;
+                }
+            }
+            sent += result;
+        }
+        if (!sender_running) return 0;
+        wire_bytes += count * (sizeof(video_v2::WireHeader) + video_v2::LINE_BYTES + 66);
+        if (net_mgr->bitrate_mbit) {
+            uint64_t deadline = started + wire_bytes * 8000ULL / net_mgr->bitrate_mbit;
+            struct timespec wake = {(time_t)(deadline / 1000000000ULL),
+                                    (long)(deadline % 1000000000ULL)};
+            while (sender_running && clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &wake, NULL) == EINTR) {}
+        }
+    }
+    if (!sender_running) return 0;
+    ++net_mgr->sent_frames;
+    net_mgr->sent_bytes += video_v2::FRAME_BYTES;
+    net_mgr->send_ns += monotonic_ns() - started;
+    return video_v2::FRAME_BYTES;
+}
+
+// Source-compatible helper for standalone transport diagnostics.
+int network_send_frame_with_sync(NetworkManager* net_mgr, const uint8_t* frame_data,
+                                 uint32_t frame_id, uint32_t curve_type,
+                                 uint32_t curve_confidence, uint32_t curve_angle) {
+    video_v2::Metadata meta;
+    meta.source_frame_id = frame_id; meta.curve_type = curve_type;
+    meta.curve_confidence = curve_confidence; meta.curve_angle = curve_angle;
+    return network_send_frame_source(net_mgr, frame_data, meta);
+}
+
 /**************************************************************************
 ** 函数名称:    network_manager_cleanup - 清理网络资源
 ****************************************************************************/
@@ -214,187 +337,102 @@ void network_manager_cleanup(NetworkManager* net_mgr) {
 // 主函数 - UDP传输测试
 //=========================================================================
 
+// Producer image/curve handles are renewed together after a capture-only restart.
+// A named semaphore may have been recreated even when the SysV id was reused.
+struct SourceConnection {
+    SharedMemoryManager image = {};
+    bool attached = false, curve_attached = false, have_generation = false, have_input = false;
+    uint64_t generation = 0, last_probe = 0, last_success = 0, curve_failure_since = 0;
+    uint32_t last_input = 0;
+    video_v2::CurveSenderState curve;
+};
+static void detach_source(SourceConnection& source) {
+    if (source.attached) shared_memory_cleanup(&source.image);
+    if (source.curve_attached) curve_detection_shm_cleanup();
+    source.attached = source.curve_attached = false;
+}
+static void probe_source(SourceConnection& source, NetworkManager& net, uint64_t now) {
+    if (source.last_probe && now - source.last_probe < 100000000ULL) return;
+    source.last_probe = now;
+    const int current_id = shmget(SHM_PCIE_IMAGE_KEY, sizeof(PCIeSharedMemory), 0666);
+    uint64_t current_generation = source.attached ? shared_memory_image_generation(&source.image) : 0;
+    bool renew = !source.attached || current_id != source.image.shm_id;
+    if (source.attached) {
+        const SharedMemoryControl* control = &((PCIeSharedMemory*)source.image.shm_ptr)->control;
+        renew = renew || !__atomic_load_n(&control->writer_active, __ATOMIC_ACQUIRE) ||
+                (source.have_generation && current_generation != source.generation);
+        // Legacy producers lack a generation marker. A changing header with no
+        // coherent snapshot for 500ms can indicate an obsolete semaphore handle.
+        if (!current_generation && source.last_success && now - source.last_success > 500000000ULL &&
+            control->frame_ready && control->frame_id != source.image.last_frame_id) renew = true;
+    }
+    if (!renew) {
+        if (!source.curve_attached) source.curve_attached = curve_detection_shm_init(0) == 0;
+        return;
+    }
+    const int previous_id = source.attached ? source.image.shm_id : -1;
+    detach_source(source);
+    if (current_id < 0 || shared_memory_init(&source.image, SHM_TYPE_PCIE, 0)) return;
+    source.attached = true;
+    current_generation = shared_memory_image_generation(&source.image);
+    bool changed = !source.have_generation || current_generation != source.generation ||
+                   (!current_generation && previous_id != source.image.shm_id);
+    if (changed) {
+        source.generation = current_generation; source.have_generation = true;
+        source.have_input = false; source.curve.reset();
+        if (++net.session_id == 0) ++net.session_id;
+        printf("[UDP_TX] producer_session=%u generation=%llu shmid=%d wire_sequence=%u\n",
+               net.session_id, (unsigned long long)source.generation, source.image.shm_id, net.wire_sequence);
+    }
+    source.last_success = now; source.curve_failure_since = 0;
+    source.curve_attached = curve_detection_shm_init(0) == 0;
+}
 int main(int argc, char* argv[]) {
-    NetworkManager network_manager;
-    SharedMemoryManager pcie_shm_manager;
-    const char* target_ip = TARGET_IP;
-
-    printf("\n==============================\n");
-    printf("UDP网络传输模块\n");
-    printf("==============================\n");
-    printf("编译时间: %s %s\n", __DATE__, __TIME__);
-    printf("功能: 从PCIe共享内存读取图像并发送到S端\n");
-    printf("==============================\n\n");
-
-    // 如果提供了命令行参数，使用它作为目标IP
-    if (argc > 1) {
-        target_ip = argv[1];
-    }
-
-    // 初始化PCIe共享内存（作为读取者）
-    printf("=== 初始化PCIe共享内存 ===\n");
-    if (shared_memory_init(&pcie_shm_manager, SHM_TYPE_PCIE, 0) != 0) {
-        printf("PCIe共享内存初始化失败！\n");
-        return -1;
-    }
-    printf("PCIe共享内存连接成功\n");
-
-    // 初始化弯道检测共享内存（作为读取者）- 可选功能
-    printf("\n=== 初始化弯道检测共享内存 ===\n");
-    int curve_detection_available = 0;  // 弯道检测是否可用
-    if (curve_detection_shm_init(0) != 0) {
-        printf("警告: 弯道检测共享内存初始化失败，将不发送弯道信息\n");
-        printf("提示: 确保PCIe程序正在运行并已创建弯道检测共享内存\n");
-        curve_detection_available = 0;
-    } else {
-        printf("弯道检测共享内存连接成功\n");
-        curve_detection_available = 1;
-    }
-
-    // 初始化网络管理器
-    printf("\n=== 初始化网络传输 ===\n");
-    if (network_manager_init(&network_manager, target_ip) != 0) {
-        printf("网络传输初始化失败！\n");
-        if (curve_detection_available) {
-            curve_detection_shm_cleanup();
+    setvbuf(stdout, NULL, _IOLBF, 0);
+    signal(SIGINT, sender_signal_handler); signal(SIGTERM, sender_signal_handler);
+    NetworkManager network;
+    if (network_manager_init(&network, argc > 1 ? argv[1] : TARGET_IP)) return 1;
+    uint8_t* pixels = (uint8_t*)malloc(PCIE_FRAME_SIZE);
+    if (!pixels) { network_manager_cleanup(&network); return 1; }
+    SourceConnection source;
+    printf("[UDP_TX] protocol=V3 packet=%zu curve_ttl_ms=500 (legacy/V2 video has no trusted NN identity)\n",
+           sizeof(video_v2::WireHeader) + video_v2::LINE_BYTES);
+    while (sender_running) {
+        uint64_t now = monotonic_ns();
+        report_sender(&network); probe_source(source, network, now);
+        if (!source.attached) { usleep(10000); continue; }
+        uint32_t width = 0, height = 0, frame_id = 0;
+        const uint64_t generation_before = shared_memory_image_generation(&source.image);
+        int result = pcie_shared_memory_read_frame(&source.image, pixels, &width, &height, &frame_id);
+        if (result || generation_before != shared_memory_image_generation(&source.image) ||
+            generation_before != source.generation) { usleep(1000); continue; }
+        source.last_success = now;
+        if (source.have_input && frame_id == source.last_input) { usleep(1000); continue; }
+        if (!generation_before && source.have_input && !video_v2::newer(frame_id, source.last_input)) {
+            // Old producers can still reset their frame counter without restarting UDP.
+            if (++network.session_id == 0) ++network.session_id;
+            source.curve.reset();
         }
-        shared_memory_cleanup(&pcie_shm_manager);
-        return -1;
-    }
-    printf("网络传输初始化成功\n");
-    
-    // 分配图像缓冲区
-    uint8_t* image_buffer = (uint8_t*)malloc(PCIE_FRAME_SIZE);
-    if (!image_buffer) {
-        printf("图像缓冲区分配失败！\n");
-        network_manager_cleanup(&network_manager);
-        if (curve_detection_available) {
-            curve_detection_shm_cleanup();
-        }
-        shared_memory_cleanup(&pcie_shm_manager);
-        return -1;
-    }
-    
-    printf("\n=== 开始UDP传输 ===\n");
-    printf("图像尺寸: %dx%d\n", IMAGE_WIDTH, IMAGE_HEIGHT);
-    printf("目标地址: %s:%d\n", target_ip, UDP_PORT);
-    printf("数据源: PCIe共享内存\n");
-    printf("按Ctrl+C停止传输\n\n");
-    
-    // 主传输循环
-    uint32_t frame_id = 0;
-    uint32_t last_frame_id = 0;
-    uint32_t width, height;
-    int no_new_frame_count = 0;
-    int read_error_count = 0;
-    int consecutive_errors = 0;
-
-    // 弯道检测变量
-    uint32_t curve_frame_id = 0;
-    CurveType curve_type = CURVE_NONE;
-    uint32_t curve_confidence = 0;
-    uint32_t curve_angle = 0;
-
-    while (1) {
-        // 从PCIe共享内存读取图像帧
-        int read_result = pcie_shared_memory_read_frame(&pcie_shm_manager,
-                                                       image_buffer,
-                                                       &width, &height,
-                                                       &frame_id);
-
-        if (read_result == 0 && frame_id != last_frame_id) {
-            // 成功读取到新帧
-            no_new_frame_count = 0;
-            consecutive_errors = 0;  // 重置连续错误计数
-            last_frame_id = frame_id;
-
-            // 从共享内存读取弯道检测结果
-            if (curve_detection_available) {
-                int curve_read_result = curve_detection_read(&curve_frame_id, &curve_type,
-                                                             &curve_confidence, &curve_angle);
-                if (curve_read_result != 0) {
-                    // 如果读取失败，使用默认值
-                    curve_type = CURVE_NONE;
-                    curve_confidence = 0;
-                    curve_angle = 0;
+        source.last_input = frame_id; source.have_input = true;
+        if (width != IMAGE_WIDTH || height != IMAGE_HEIGHT) continue;
+        if (source.curve_attached) {
+            uint32_t id, confidence, angle; CurveType type; uint64_t capture_ns;
+            if (!curve_detection_read_source(&id, &type, &confidence, &angle, &capture_ns)) {
+                source.curve.observe(id, (uint32_t)type, confidence, angle, capture_ns, now);
+                source.curve_failure_since = 0;
+            } else {
+                // Contended seqlocks do not block video or refresh stale curve metadata.
+                if (!source.curve_failure_since) source.curve_failure_since = now;
+                if (now - source.curve_failure_since > 1000000000ULL) {
+                    curve_detection_shm_cleanup(); source.curve_attached = false;
+                    source.curve_failure_since = 0;
                 }
-            } else {
-                // 弯道检测不可用，使用默认值
-                curve_type = CURVE_NONE;
-                curve_confidence = 0;
-                curve_angle = 0;
-            }
-
-            // 发送图像帧(包含弯道检测信息)
-            if (width != IMAGE_WIDTH || height != IMAGE_HEIGHT) {
-                fprintf(stderr, "跳过尺寸不匹配的帧: %ux%u\n", width, height);
-                continue;
-            }
-            int send_result = network_send_frame_with_sync(&network_manager, image_buffer, frame_id,
-                                                          (uint32_t)curve_type, curve_confidence, curve_angle);
-
-            if (send_result > 0) {
-                // 每1000帧打印一次发送成功信息，避免刷屏
-                if (frame_id % 1000 == 0) {
-                    const char* curve_name = "未知";
-                    switch(curve_type) {
-                        case CURVE_NONE: curve_name = "直道"; break;
-                        case CURVE_LEFT: curve_name = "左弯"; break;
-                        case CURVE_RIGHT: curve_name = "右弯"; break;
-                        case CURVE_BOTH: curve_name = "左右弯"; break;
-                    }
-                    printf("帧%d发送成功: %d字节 (尺寸: %dx%d, 弯道: %s, 置信度: %u%%)\n",
-                           frame_id, send_result, width, height, curve_name, curve_confidence);
-                }
-            } else {
-                printf("帧%d发送失败\n", frame_id);
-            }
-
-            // 每100帧输出一次统计
-            if (frame_id % 100 == 0) {
-                printf("累计发送: %d帧, 读取错误: %d次\n", frame_id, read_error_count);
-            }
-            
-        } else if (read_result == 1) {
-            // 没有新帧，稍微等待
-            no_new_frame_count++;
-            consecutive_errors = 0;  // 重置连续错误计数
-            if (no_new_frame_count % 1000 == 0) {
-                printf("等待新帧中... (计数: %d)\n", no_new_frame_count);
-            }
-            usleep(1000); // 1ms延时
-        } else {
-            // 读取失败
-            read_error_count++;
-            consecutive_errors++;
-            
-            // 只在连续错误较少时输出详细信息
-            if (consecutive_errors <= 3) {
-                printf("从共享内存读取帧失败 (错误计数: %d)\n", read_error_count);
-            } else if (consecutive_errors % 100 == 0) {
-                printf("持续读取失败中... (连续错误: %d次)\n", consecutive_errors);
-            }
-            
-            // 根据连续错误次数调整延时
-            if (consecutive_errors < 10) {
-                usleep(1000);   // 1ms延时
-            } else if (consecutive_errors < 100) {
-                usleep(5000);   // 5ms延时
-            } else {
-                usleep(10000);  // 10ms延时
             }
         }
+        video_v2::Metadata meta; meta.source_frame_id = frame_id;
+        source.curve.fill(meta, monotonic_ns());
+        network_send_frame_source(&network, pixels, meta);
     }
-    
-    // 清理资源
-    printf("\n=== 清理资源 ===\n");
-    free(image_buffer);
-    network_manager_cleanup(&network_manager);
-    if (curve_detection_available) {
-        curve_detection_shm_cleanup();
-    }
-    shared_memory_cleanup(&pcie_shm_manager);
-
-    printf("\nUDP传输结束\n");
+    detach_source(source); free(pixels); network_manager_cleanup(&network);
     return 0;
 }

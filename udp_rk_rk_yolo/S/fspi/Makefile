@@ -17,6 +17,7 @@ BUILDDIR = build
 # 目标程序
 TARGET_APP = $(BUILDDIR)/vehicle_control
 TARGET_TEST = $(BUILDDIR)/test_brake_control
+TARGET_SWITCH_TEST = $(BUILDDIR)/test_auto_brake_switch
 
 # 源文件（添加共享内存源文件）
 FSPI_SOURCES = $(SRCDIR)/fspi_module.c
@@ -60,6 +61,9 @@ $(BUILDDIR)/%.o: ../csrc/%.c | $(BUILDDIR)
 	@echo "编译共享内存文件: $<"
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
+$(BUILDDIR)/main.o: $(INCDIR)/fspi_module.h $(INCDIR)/brake_policy.h ../include/shared_memory.h
+$(BUILDDIR)/fspi_module.o: $(INCDIR)/fspi_module.h
+
 # 创建目录
 $(BUILDDIR):
 	@echo "创建build目录"
@@ -74,7 +78,10 @@ clean:
 $(TARGET_TEST): test_brake_control.c $(INCDIR)/brake_policy.h | $(BUILDDIR)
 	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $@
 
-test: app $(TARGET_TEST)
+$(TARGET_SWITCH_TEST): test_auto_brake_switch.c $(SRCDIR)/main.c $(SRCDIR)/fspi_module.c $(INCDIR)/fspi_module.h $(INCDIR)/brake_policy.h ../include/shared_memory.h | $(BUILDDIR)
+	$(CC) $(CFLAGS) -Wextra -ffunction-sections -fdata-sections $(INCLUDES) $< -Wl,--gc-sections -o $@
+
+test: app $(TARGET_TEST) $(TARGET_SWITCH_TEST)
 	@echo "=== 编译测试完成 ==="
 	@echo "可执行文件: $(TARGET_APP)"
 	@if [ -f "$(TARGET_APP)" ]; then \
@@ -85,6 +92,7 @@ test: app $(TARGET_TEST)
 		exit 1; \
 	fi
 	./$(TARGET_TEST)
+	./$(TARGET_SWITCH_TEST)
 
 # 运行程序 (需要管理员权限访问SPI设备)
 run: app

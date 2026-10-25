@@ -1,0 +1,181 @@
+S capture and display local validation record (2026-10-25).
+This file records observed test results; host timings are not board FPS.
+
+Final production hashes:
+S/pcie/csrc/main.cpp: B04D273371891DAD2480C15BDE7688965EA6D99BD2B8DEB4C3FB7381EB2B3167
+S/x11/csrc/main.cpp: 700A6D534DF1483FE5710B29E9781217CF6053E180217853B7A32BB8D8C14F9C
+S/x11/csrc/include/dashboard_ui.h: 60AE02C12D39353B18E93EF1640459D0598291C0543AA01B17704B5A90F4DB2F
+S/x11/csrc/include/gles_presenter.h: 3ADE342517EA99C06B58BF723064E2B441C9484FF7CBC6701983CCB3190BD6A6
+S/x11/csrc/Makefile: 878EA45F4E24F9327DC830E39D16F8D63FBE9FB33A54A91055154AB4C2311E78
+
+Latest default: auto/unset use XRender/MIT-SHM with synchronous/full upload.
+GLES requires explicit VISION_RENDER_BACKEND=gles, following native jitter
+and slower measurements. FAST background restoration is opt-in, default 0.
+Earlier completion/partial sections below record experimental checkpoints.
+
+Capture:
+S_MAIN_OBJECT_PASS
+RAW_FINGERPRINT_PASS edges/reset sampled2048 host_ms=0.001725 check=0
+DMA rows are fixed at 1. Multi-row mock equivalence is not hardware proof.
+Raw fingerprint counts changed sampled raw images, not strict sensor FPS.
+
+Initial fit/fill optimization:
+PIXEL_EQUAL cases=64 host_baseline_ms=0.741736 host_optimized_ms=0.527752
+PIXEL_EQUAL cases=64 host_baseline_ms=5.61387 host_optimized_ms=3.77487
+The second run used ASan/UBSan.
+ATLAS_PIXEL_EQUAL cases=36
+WINDOW_QA_PASS modes=9 transitions=6 resizes=5 pixels=30 F11=2 Q=1
+putimage/shm/xrender actual binaries: --windowed --frames 5, exit 0.
+Physical XGetImage camera-center and letterbox checks passed at
+400x300, 600x340, 320x420, 320x180, 480x360.
+Resize physical pixels were read after waiting for the window manager.
+
+Vehicle layer cache:
+O3: VEHICLE_PIXEL_EQUAL cases=180 changes=180 cache_hits=180 png_revision=PASS blink_phase=PASS host_before_ms=0.550667 host_cached_ms=0.000042825
+ASan/UBSan: VEHICLE_PIXEL_EQUAL cases=180 changes=180 cache_hits=180 png_revision=PASS blink_phase=PASS host_before_ms=1.34198 host_cached_ms=0.00020874
+True PNG, random RGBA PNG, missing PNG, four bbox/edge directions,
+blink transitions, all lane types and confidence 59/60/93 were compared.
+
+Completion prototype:
+COMPLETION_BUILD_SMOKE_PASS (sync/completion x putimage/shm/xrender)
+COMPLETION_STRESS_PASS frames120 events_serial_filtered resize2 pixels8
+Both CPU-SHM and XRender passed continuous event consumption/reuse tests.
+MISSING_COMPLETION_SYNC_FALLBACK_PASS (completion events suppressed)
+PUT_FAILURE_SAFE_CLEANUP_PASS (XShmPutImage returned False)
+COMPLETION_STRESS_FAULT_CLEANUP_ALL_PASS
+Each test process left no SysV shared-memory segment created by its PID.
+NO_XRENDER_BUILD_FALLBACK 0
+
+Dirty-GC regression discovered during native testing and reproduced locally:
+old shm: DIRTY_GC tagged_serial=26 actual_serial=27 difference=1
+old xrender: DIRTY_GC tagged_serial=34 actual_serial=35 difference=1
+OLD_DIRTY_GC_SERIAL_BUG_REPRODUCED
+fixed shm: DIRTY_GC tagged_serial=27 actual_serial=27 difference=0
+fixed xrender: DIRTY_GC tagged_serial=35 actual_serial=35 difference=0
+FIXED_DIRTY_GC_COMPLETION_PASS frames150 (both backends)
+DIRTY_GC_REAL_XSERVER_REGRESSION_ALL_PASS
+The old source is retained only as perf_shm_completion_before_gcfix_20261025.cpp.
+Do not deploy that regression fixture.
+
+Dashboard partial background restoration:
+O3 0 0 DASHBOARD_PIXEL_EQUAL cases=1200 fast=0
+O3 1 0 DASHBOARD_PIXEL_EQUAL cases=1200 fast=1
+asan 0 0 DASHBOARD_PIXEL_EQUAL cases=1200 fast=0
+asan 1 0 DASHBOARD_PIXEL_EQUAL cases=1200 fast=1
+DIRTY_RESTORE_FONTS_STATES_SANITIZERS_PASS
+Four fonts include real atlas, no atlas, and two extreme valid metadata cases.
+Tests include sequential mode changes, NaN zoom, long/short/invalid labels,
+missing inputs, invalid strides, and person/live/recorded/FPS changes.
+HOST_COMPOSE fast=0 mean_ms=0.522719 check=51352597512000
+HOST_COMPOSE fast=1 mean_ms=0.314435 check=51352597512000
+FINAL_COMBINED_SMOKE fast0/1 x putimage/shm/xrender: exit 0.
+
+Board measurements and final A/B choices are owned by the parent task.
+
+Partial-upload implementation experiment (now opt-in after native A/B):
+REGION_UNIT_PASS cases180 fragmented=23 empty=20 padded_stride=PASS
+The unit test also passed ASan/UBSan.
+REAL_MULTI_REGION_PASS frames100 partial=0 multi=0 full=100 empty=0 dirty_GC=PASS final_event=PASS recreate=PASS
+REAL_MULTI_REGION_PASS frames100 partial=1 multi=98 full=2 empty=0 dirty_GC=PASS final_event=PASS recreate=PASS
+Every rendered source pixmap pixel was compared with the complete Dashboard.
+Only the last region generated a completion; matching serial/segment/drawable
+and offset were checked. The two full uploads were initial and pixmap recreate.
+Five-second FPS and blink clocks are frozen only for the zero-change test.
+
+Independent transport-agent ROI audit:
+FAST=0/1, 5922 total extreme font/mode/progress/input/status scenarios,
+zero changed pixels outside the four non-overlapping upload regions.
+
+Default-unset test (FAST/PARTIAL/SHM_SYNC all absent):
+DEFAULT_UNSET 0
+REAL_MULTI_REGION_PASS frames100 partial=1 multi=98 full=2 empty=0 dirty_GC=PASS final_event=PASS recreate=PASS
+FINAL_SMOKE putimage defaults 0
+FINAL_SMOKE putimage fallback 0
+FINAL_SMOKE shm defaults 0
+FINAL_SMOKE shm fallback 0
+FINAL_SMOKE xrender defaults 0
+FINAL_SMOKE xrender fallback 0
+Fallback explicitly sets FAST=0, PARTIAL=0, SHM_SYNC=sync.
+FINAL_FAULT NOEVENT 0
+[RENDER] SHM completion wait timed out; using synchronized fallback
+FINAL_FAULT NOATTACH 0
+[RENDER] scale=XRender upload=XPutImage image=1600x900 window=1440x810
+FINAL_DEFAULTS_FALLBACKS_ALL_PASS
+
+Failure after a prior partial region has already been submitted:
+INJECTED_UPLOAD_FAILURE call=3 x=72 y=224 w=1092 h=273 completion=0
+MULTI_REGION_MIDDLE_FAILURE_SAFE_CLEANUP_PASS
+NO_IPC_LEAK_AFTER_PARTIAL_FAILURE
+
+Final GLES integration:
+INTEGRATED_BUILD_PASS True (Make detected EGL/GLES2 and enabled its macro)
+GLES_INTEGRATION_BUILD_SMOKE_PASS: gles/auto/xrender/shm/putimage each 5 frames.
+GLES/auto selected an actual Mesa EGL context with highp shader.
+This WSL runtime is llvmpipe and is not a board GPU performance benchmark.
+
+FAIL_EGL_INIT 0
+[RENDER] GLES initialization unavailable (cannot initialize an X11 EGL display); keeping X11 fallback
+FAIL_EGL_SWAP 0
+[RENDER] GLES presentation failed (eglSwapBuffers (EGL 0x3000)); rebuilding X11 fallback
+Both fault-injected programs continued for seven frames and exited cleanly;
+neither process leaked a SysV segment.
+no-gles 0 (actual build without PERCEPTION_HAVE_GLES, XRender fallback)
+no-optionals 0 (actual build without GLES or XRender, CPU-SHM fallback)
+GLES_INTEGRATION_FAILURES_OPTIONAL_BUILDS_PASS
+
+INTEGRATED_GLES_WINDOW_QA_PASS modes9 resizes5 camera_pixels30 letterbox F11x2 Q cleanup
+GLES_STARTUP_LEGACY_SHM_RELEASE_NO_LEAK_PASS
+Physical window pixels were checked with XGetImage after resize completion.
+The successful GPU path had no remaining XImage/pixmap/SHM resource.
+Independent GLES-header QA verified fine-grid glReadPixels bytes, BGRA and
+orientation, highp coordinates, shader/link/visual/swap failure cleanup,
+reinitialization, repeated cleanup, canvas/window resize and letterbox.
+
+Stable-default rollback and display-reader recovery:
+STABLE_DEFAULT None 0
+[PERF DASHBOARD] fast=0
+[PERF DISPLAY] partial=0 backend=xrender/shm sync=sync
+STABLE_DEFAULT auto 0
+EXPLICIT_GLES_OPTIN_PASS
+STABLE_DEFAULTS_NO_EGL_CALLS_FULLSYNC_FAST0_PASS
+The default and auto runs used a preload guard aborting on eglInitialize;
+neither invoked EGL. Source/capture/network code was not changed.
+
+PCIE_REATTACH_GENERATION_SEMAPHORE_PASS
+UDP_REATTACH_GENERATION_SEMAPHORE_PASS
+HELPER_WINDOW_EVENTS_IGNORED_REAL_RESIZE_PASS
+LIVE_IGNORES_EXISTING_RECORDED_PPM_PASS
+These used real SysV segments and named semaphores with isolated test keys.
+Both image types covered missing source, bounded retry, writer_active=0,
+new shmid while the old active mapping remained attached, producer ID reset,
+and a lock on the new producer semaphore preventing reader copies.
+Helper Configure/Destroy/Q events were ignored; the real main resize worked.
+A live viewer beside an existing magenta PPM remained black without writers.
+
+Full viewer late-start/stop/restart test:
+[DISPLAY] PCIe image source attached (shmid=2)
+[DISPLAY] UDP image source attached (shmid=3)
+[DISPLAY] PCIe image source attached (shmid=4)
+[DISPLAY] UDP image source attached (shmid=5)
+Final PCIe frame ID: 60
+Final UDP frame ID: 60
+Snapshot upper camera (0,252,0), lower camera (248,0,0): second producer colors.
+Detailed proof: perf_display_reconnect_debug_20261025.log and .ppm.
+The first failed harness used an undrained stdout pipe, which blocked the
+viewer on startup/reattach logs until the second producer had stopped.
+The corrected harness logged directly to a file and verified the viewer
+remained alive across both one-second health checks and producer generations.
+
+Final optional metadata-reader defense:
+METADATA_LATE_START_GENERATION_READER_ONLY_PASS
+FULL_GUI_METADATA_LATE_START_RESTART_REALTIME_PASS
+UNINITIALIZED_CURVE_ERRORS 0 LOG_LINES 88 PIXELS (0,252,0) (248,0,0)
+METADATA_FINAL_READER_ONLY_QA_ALL_PASS
+Display mode, emergency-alert visualization and curve readers were initially
+absent, started later, replaced with new shmid, and removed again. Their raw
+writer contents remained byte-identical after all reader operations, including
+brake_enable/valid. The second display source reused last_update=1 and was
+accepted after reconnect. Curve getter returned new frame/type 42/LEFT -> 1/RIGHT.
+The live GUI continued receiving the second generation of image producers.
+Source/log/snapshot: perf_metadata_reader_qa_20261025.cpp and
+perf_metadata_reader_20261025.log/.ppm. No shared library or writer was edited.

@@ -1,0 +1,187 @@
+--- a/udp_rk_rk_yolo/S/x11/csrc/main.cpp
++++ b/udp_rk_rk_yolo/S/x11/csrc/main.cpp
+@@ -74,6 +74,24 @@
+     uint64_t text_start_time;   /* 文字显示开始时间 */
+     uint64_t text_duration_ms;  /* 文字显示持续时间(毫秒) */
+ } TransitionAnimation;
++
++// Pixels in the fixed vehicle layer depend only on this immutable snapshot.
++// The same snapshot supplies both the cache key and the renderer.
++struct VehicleLayerState {
++    const uint8_t* png;
++    uint64_t png_revision;
++    int png_width, png_height;
++    int person, box_left, box_top, box_right, box_bottom, blink;
++    CurveType curve;
++    uint32_t confidence;
++    bool operator==(const VehicleLayerState& other) const {
++        return png == other.png && png_revision == other.png_revision &&
++            png_width == other.png_width && png_height == other.png_height &&
++            person == other.person && box_left == other.box_left && box_top == other.box_top &&
++            box_right == other.box_right && box_bottom == other.box_bottom && blink == other.blink &&
++            curve == other.curve && confidence == other.confidence;
++    }
++};
+ 
+ //=========================================================================
+ // 渲染引擎结构体
+@@ -103,6 +121,8 @@
+     float display_fps;
+     int preview_recorded;
+     int use_xrender;
++    VehicleLayerState vehicle_state;
++    int vehicle_cached;
+ #ifdef PERCEPTION_HAVE_XRENDER
+     Picture source_picture, window_picture;
+ #endif
+@@ -127,6 +147,7 @@
+ static int car_png_width = 0;
+ static int car_png_height = 0;
+ static int car_png_channels = 0;
++static uint64_t car_png_revision = 0;
+ 
+ // 红光闪烁状态
+ static uint64_t last_blink_time = 0;
+@@ -447,6 +468,7 @@
+         printf("无法加载PNG图像: %s\n", filename);
+         return -1;
+     }
++    ++car_png_revision;
+     printf("成功加载PNG图像: %s (%dx%d, %d通道)\n", filename, car_png_width, car_png_height, car_png_channels);
+     return 0;
+ }
+@@ -558,52 +580,60 @@
+ }
+ 
+ // 渲染car.png到指定位置，带红光闪烁效果
+-void render_car_png(uint32_t* display_pixels, int dst_x, int dst_y, int dst_width, int dst_height) {
+-    if (!car_png_data) return;
+-
+-    // 更新闪烁状态
++static VehicleLayerState snapshot_vehicle_state() {
+     uint64_t current_time = get_current_time_ms();
+-    if (current_time - last_blink_time >= 300) {  // 300ms闪烁间隔
++    if (car_png_data && current_time - last_blink_time >= 300) {
+         blink_state = !blink_state;
+         last_blink_time = current_time;
+     }
+-
+-    // 检查是否有人员检测
+-    int person_detected = 0;
+-    int box_left = 0, box_top = 0, box_right = 0, box_bottom = 0;
++    VehicleLayerState state = {};
++    state.png = car_png_data;
++    state.png_revision = car_png_revision;
++    state.png_width = car_png_width;
++    state.png_height = car_png_height;
+     if (emergency_brake_shm && emergency_brake_shm->valid && emergency_brake_shm->person_detected) {
+-        person_detected = 1;
+-        box_left = emergency_brake_shm->box_left;
+-        box_top = emergency_brake_shm->box_top;
+-        box_right = emergency_brake_shm->box_right;
+-        box_bottom = emergency_brake_shm->box_bottom;
+-    }
++        state.person = 1;
++        state.box_left = emergency_brake_shm->box_left;
++        state.box_top = emergency_brake_shm->box_top;
++        state.box_right = emergency_brake_shm->box_right;
++        state.box_bottom = emergency_brake_shm->box_bottom;
++    }
++    // Blink and coordinates do not affect pixels while person is absent.
++    state.blink = state.person ? blink_state : 0;
++    state.curve = current_curve_type;
++    state.confidence = current_curve_confidence;
++    return state;
++}
++
++static void render_car_png_with_state(uint32_t* display_pixels, int dst_x, int dst_y,
++                                     int dst_width, int dst_height, const VehicleLayerState& state) {
++    if (!state.png) return;
+ 
+     // 计算边缘位置
+     int edge_type = 0;
+     float edge_position = 0.5f;
+-    if (person_detected) {
+-        calculate_car_edge_position(box_left, box_top, box_right, box_bottom, &edge_type, &edge_position);
++    if (state.person) {
++        calculate_car_edge_position(state.box_left, state.box_top, state.box_right, state.box_bottom, &edge_type, &edge_position);
+     }
+ 
+     // 计算缩放比例
+-    float scale_x = (float)car_png_width / dst_width;
+-    float scale_y = (float)car_png_height / dst_height;
++    float scale_x = (float)state.png_width / dst_width;
++    float scale_y = (float)state.png_height / dst_height;
+ 
+     const int edge_width = 80;  // 红光渐变宽度
+-    float blink_intensity = blink_state ? 0.8f : 0.3f;
++    float blink_intensity = state.blink ? 0.8f : 0.3f;
+ 
+     for (int y = 0; y < dst_height; y++) {
+         for (int x = 0; x < dst_width; x++) {
+             int src_x = (int)(x * scale_x);
+             int src_y = (int)(y * scale_y);
+ 
+-            if (src_x >= 0 && src_x < car_png_width && src_y >= 0 && src_y < car_png_height) {
+-                int src_idx = (src_y * car_png_width + src_x) * 4;
+-                uint8_t r = car_png_data[src_idx];
+-                uint8_t g = car_png_data[src_idx + 1];
+-                uint8_t b = car_png_data[src_idx + 2];
+-                uint8_t a = car_png_data[src_idx + 3];
++            if (src_x >= 0 && src_x < state.png_width && src_y >= 0 && src_y < state.png_height) {
++                int src_idx = (src_y * state.png_width + src_x) * 4;
++                uint8_t r = state.png[src_idx];
++                uint8_t g = state.png[src_idx + 1];
++                uint8_t b = state.png[src_idx + 2];
++                uint8_t a = state.png[src_idx + 3];
+ 
+                 int dst_px = dst_x + x;
+                 int dst_py = dst_y + y;
+@@ -611,7 +641,7 @@
+                 if (dst_px >= 0 && dst_px < COMBINED_IMAGE_WIDTH && dst_py >= 0 && dst_py < COMBINED_IMAGE_HEIGHT) {
+                     // 计算红光效果
+                     float red_intensity = 0.0f;
+-                    if (person_detected) {
++                    if (state.person) {
+                         float dist = 1000.0f;
+                         if (edge_type == 0) {  // 上边缘（车头）
+                             int target_x = (int)(edge_position * dst_width);
+@@ -659,6 +689,25 @@
+             }
+         }
+     }
++}
++
++void render_car_png(uint32_t* display_pixels, int dst_x, int dst_y, int dst_width, int dst_height) {
++    const VehicleLayerState state = snapshot_vehicle_state();
++    render_car_png_with_state(display_pixels, dst_x, dst_y, dst_width, dst_height, state);
++}
++
++static bool update_vehicle_layer(RenderEngine* engine) {
++    const VehicleLayerState state = snapshot_vehicle_state();
++    if (engine->vehicle_cached && engine->vehicle_state == state) return false;
++    // Its 320x480 target, 1280-pixel stride and background are fixed by the
++    // logical dashboard, independently of physical window resizing.
++    for (int y = 0; y < 480; ++y)
++        std::fill_n(engine->vehicle_layer + y * COMBINED_IMAGE_WIDTH, 320, 0xff080b20u);
++    render_car_png_with_state(engine->vehicle_layer, 0, 0, 320, 480, state);
++    draw_lane_lines(engine->vehicle_layer, 0, 0, 320, 480, state.curve, state.confidence);
++    engine->vehicle_state = state;
++    engine->vehicle_cached = 1;
++    return true;
+ }
+ 
+ //=========================================================================
+@@ -1126,11 +1175,7 @@
+     if (!engine || !engine->dashboard || !engine->display_buffer) return -1;
+     uint64_t render_started = display_clock_ns();
+     uint64_t now = get_current_time_ms();
+-    for (int y = 0; y < 480; ++y)
+-        std::fill_n(engine->vehicle_layer + y * COMBINED_IMAGE_WIDTH, 320, 0xff080b20u);
+-    render_car_png(engine->vehicle_layer, 0, 0, 320, 480);
+-    draw_lane_lines(engine->vehicle_layer, 0, 0, 320, 480,
+-                    current_curve_type, current_curve_confidence);
++    update_vehicle_layer(engine);
+     perception_ui::ViewStatus status;
+     status.recorded = engine->preview_recorded != 0;
+     status.pcie_live = engine->pcie_last_seen && now >= engine->pcie_last_seen &&

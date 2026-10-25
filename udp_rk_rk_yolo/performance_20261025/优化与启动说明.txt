@@ -1,0 +1,70 @@
+辅助驾驶图像通路优化与显示故障修复（2026-10-25）
+
+已直接更新电脑本地的 udp_rk_rk_yolo/M、udp_rk_rk_yolo/S，以及两块板内 /home/linaro/M、/home/linaro/S。运行程序已在对应 ARM 板内编译、安装，两端生产源码 SHA256 与本地一致。
+
+实机测量
+----------
+优化前（10秒）：M图像发布7.18 FPS，M→S完整帧接收4.96 FPS，S本地发布14.28 FPS。
+最终（30秒）：M发布29.97 FPS，S接收远端30.00 FPS，S本地发布16.67 FPS。
+最终显示后端：XRender/MIT-SHM，同步完整上传。最近6个5秒窗口平均渲染12.02 FPS，M画面可见新帧11.72 FPS，S画面可见新帧9.81 FPS。
+恢复过程中曾观测到约20 FPS；最后稳定采样段约12 FPS。报告采用最后实际记录，不把30 FPS接收速度当作30 FPS显示速度。
+本次30秒接口RX/TX丢弃、UDP缓冲错误及校验错误计数均为0。应用接收日志记录incomplete=0、corrupt=0。
+原始数据与显示分段耗时见同目录 measurements.json，生产源码哈希见 source_manifest.sha256。
+
+保留的优化
+----------
+1. M采集、发布和识别解耦：单识别工作线程，单个可替换待处理帧，持续发布最新视频；模型推理次数单独统计。默认目标30 FPS，仍使用原模型和每3次采集提交策略。
+2. 车道mask使用不可变结果快照；传输真实识别源帧号和输入年龄，500ms过期后置信度置零，旧结果不会随视频刷新伪装成新结果。
+3. UDP V3按行打包：每帧480包、单包1344字节，32包批处理；默认200Mbps节奏，固定双帧重组，完整帧校验后才发布最新帧。保留旧协议视频兼容；旧流缺少真实NN身份时不发布有效车道置信度。
+4. 图像共享内存完整快照互斥保护，取消读端10ms等待和逐帧日志，修复root/linaro信号量权限；图像共享头104字节及RGB565帧格式保持不变。M发送端支持采集进程重启后重新连接图像、锁和车道数据。
+5. S预处理和告警绘制做等价优化：保持混色、闪烁和叠加顺序，跳过必为零强度的区域。S行人检测、两秒有效无人确认和人工REARM的控制流程保持原流程。
+6. M本地预览启用MIT-SHM并安全回退。S默认保留稳定的XRender+MIT-SHM完整同步显示；原界面、640×480源图和2560×1440显示模式保留。
+
+上下抖动和定格修复
+------------------
+默认不再自动启用新GLES显示路径，也不默认启用局部上传或异步SHM完成事件。ConfigureNotify、Destroy和输入事件只处理主窗口，避免辅助窗口事件影响画面尺寸。
+图像读端每秒检查当前共享段及writer状态；断开或换代时释放旧映射/信号量并重新连接，源帧号从1重新开始也能恢复。
+显示模式、行人报警显示和车道元数据均支持晚启动、换代重新连接；未初始化时不调用getter，避免每毫秒错误日志刷屏导致阻塞。
+实时模式不自动进入离线预览。缺少采集/接收进程时不会产生新的实时帧，需要恢复完整S端链路。只有新帧通过校验后才更新在线时间和输入计数。
+现场已恢复完整链路，用户确认实时更新且不抖动；最终修复也已编译上板。
+
+重新启动
+----------
+当前两端均已运行，无需立即重启。
+重新上电后先启动M，再启动S。分别在板卡终端执行：
+
+M端：
+  cd /home/linaro/M
+  make stop
+  make -j2
+  make run
+
+S端：
+  cd /home/linaro/S
+  make stop
+  make -j2
+  make run
+
+make run负责完整启动；只运行显示程序不会启动采集、UDP接收和FSPI。
+通过S端make run启动时，退出主窗口会执行整套S端清理；需要恢复时重新启动完整S端。
+本轮为ARM软件更新，FPGA RTL和位流没有在本轮修改。DMA固定为匹配现有RTL的单行请求，不能直接将DMA_ROWS设为2。
+
+日志与复测
+----------
+S板：/home/linaro/S/perf_logs/20261025/s_display_final.log
+     /home/linaro/S/perf_logs/20261025/s_capture_live.log
+     /home/linaro/S/perf_logs/20261025/s_udp_live.log
+两板：/home/linaro/M或S/perf_logs/20261025/final_live.json
+
+只读复测：
+  python3 tools/measure_pipeline.py --seconds 30 --output perf_measurement.json
+
+PC端采样器：udp_rk_rk_yolo/tools/measure_pipeline.py。
+[PERF DISPLAY]中render_fps、S_input/M_input、S_shown/M_shown含义不同；[PERF M]和[PERF S-PCIE]分别报告真实完成的模型推理次数。
+raw_changed_fps是抽样像素指纹变化率，不能当作传感器硬件曝光计数。当前剩余主要耗时在S界面合成和送显，以及S同步模型推理。
+
+验证与回退材料
+--------------
+两板原源码/程序备份：/home/linaro/vision-perf-backup-20261025/before-source 和 before-bin。
+本地保留协议乱序/损坏/重启测试、工作线程ASan/UBSan测试、GUI像素/窗口事件/断流/元数据换代测试日志（tmp内）。
+S读端恢复验证中，两代writer恢复后已读取第二代图像，缺曲线元数据的未初始化错误日志为0，且元数据写端字段逐字节保持不变。

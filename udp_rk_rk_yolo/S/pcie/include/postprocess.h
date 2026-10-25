@@ -48,7 +48,8 @@ extern "C" {
 int initPostProcess(const char* label_file_path);
 
 /* C 接口：解码三个量化输出层，按原扫描顺序返回最多 64 个显示候选框，
- * 同时统计全部候选框中置信度严格大于 40% 的 person 制动结果。
+ * 同时统计全部候选框中置信度不低于 15% 的 person 制动结果；
+ * 制动候选扫描门限独立降低，显示筛选仍使用 conf_threshold。
  * nms_threshold 当前仅保留在接口中，现有实现不执行非极大值抑制。 */
 int post_process_simple(int8_t *input0, int8_t *input1, int8_t *input2, 
                        int model_in_h, int model_in_w,

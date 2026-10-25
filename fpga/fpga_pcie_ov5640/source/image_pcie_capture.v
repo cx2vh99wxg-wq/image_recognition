@@ -284,6 +284,7 @@ module image_pcie_capture #(
   wire uart_rx_valid;
   wire [7:0] mode;
   wire [3:0] select_rearview;
+  wire hmi_auto_brake_enable;
   //wire [5:0] cnn_data;
 
   // Debug signal assignments for waveform capture
@@ -362,10 +363,20 @@ module image_pcie_capture #(
   wire stop_pressed;
   wire movement_blocked;
   wire fspi_direction_armed;
+  wire auto_brake_enabled;
+  wire auto_brake_request;
+  auto_brake_enable_gate u_auto_brake_enable_gate (
+      .clk                  (free_clk),
+      .rst_n                (board_rst_n),
+      .async_enable         (hmi_auto_brake_enable),
+      .brake_request_in     (~fspi_button_sync[4]),
+      .enable_sync          (auto_brake_enabled),
+      .brake_request_out    (auto_brake_request)
+  );
   remote_stop_controller u_remote_stop_controller (
       .clk                  (free_clk),
       .rst_n                (board_rst_n),
-      .brake_request        (~fspi_button_sync[4]),
+      .brake_request        (auto_brake_request),
       .rearm_command        (hmi_rearm),
       .fspi_directions_idle (&fspi_button_sync[3:0]),
       .stop_pressed         (stop_pressed),
@@ -407,6 +418,7 @@ module image_pcie_capture #(
       .spi_cs         (spi_cs),
       .spi_data       (spi_data),
       .select_rearview(select_rearview),             // 传递select_rearview信号
+      .auto_brake_enable(auto_brake_enabled),
       .mem0_out       (mem0_out),
       .mem1_out       (mem1_out),
       .mem2_out       (mem2_out),
@@ -445,7 +457,8 @@ module image_pcie_capture #(
       .uart_rx      (uart_rx_data),
       .uart_rx_valid(uart_rx_valid),
       .mode         (mode),
-      .cnn_level    (select_rearview)
+      .cnn_level    (select_rearview),
+      .auto_brake_enable(hmi_auto_brake_enable)
   );
 
   wire [5:0] level;
@@ -1262,6 +1275,29 @@ module remote_direction_arbiter (
   assign back_released  = movement_blocked | (hmi_owns_direction ? ~hmi_back  : (fspi_blocked | fspi_released[1]));
   assign left_released  = movement_blocked | (hmi_owns_direction ? ~hmi_left  : (fspi_blocked | fspi_released[2]));
   assign right_released = movement_blocked | (hmi_owns_direction ? ~hmi_right : (fspi_blocked | fspi_released[3]));
+endmodule
+
+// Only the new persistent enable bit crosses into the existing STOP domain.
+module auto_brake_enable_gate (
+    input  wire clk,
+    input  wire rst_n,
+    input  wire async_enable,
+    input  wire brake_request_in,
+    output wire enable_sync,
+    output wire brake_request_out
+);
+  (* ASYNC_REG = "TRUE" *) reg [1:0] enable_pipe;
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      enable_pipe <= 2'b00;
+    end else begin
+      enable_pipe <= {enable_pipe[0], async_enable};
+    end
+  end
+  // Disabling only prevents new requests. Existing STOP latch state remains
+  // in remote_stop_controller and still requires the original REARM action.
+  assign enable_sync = enable_pipe[1];
+  assign brake_request_out = enable_sync && brake_request_in;
 endmodule
 
 // A new automatic brake request holds STOP low until a fresh manual E press.

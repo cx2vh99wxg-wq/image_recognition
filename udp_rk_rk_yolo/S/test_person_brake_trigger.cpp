@@ -33,10 +33,11 @@ int main(int argc, char **argv)
         return 2;
     }
 
-    expect(!person_brake_should_trigger("person", 0.399f), "below 40% stays clear");
-    expect(!person_brake_should_trigger("person", 0.40f), "exactly 40% stays clear");
-    expect(person_brake_should_trigger("person", nextafterf(0.40f, 1.0f)),
-           "first representable value above 40% triggers");
+    expect(!person_brake_should_trigger("person", nextafterf(0.15f, 0.0f)),
+           "last representable value below 15% stays clear");
+    expect(person_brake_should_trigger("person", 0.15f), "exactly 15% triggers");
+    expect(person_brake_should_trigger("person", nextafterf(0.15f, 1.0f)),
+           "first representable value above 15% triggers");
     expect(!person_brake_should_trigger("car", 0.99f), "other class stays clear");
     expect(!person_brake_should_trigger("person_extra", 0.99f), "class must match exactly");
     expect(!person_brake_should_trigger(NULL, 0.99f), "null class stays clear");
@@ -80,20 +81,75 @@ int main(int argc, char **argv)
            "brake box belongs to the highest-confidence person");
 
     std::fill(tensor0.begin(), tensor0.end(), -128);
-    put_candidate(tensor0, grid0, 0, 0, 127, -27);  // 101/255 < 0.40
+    for (int i = 0; i < OBJ_NUMB_MAX_SIZE; ++i) {
+        put_candidate(tensor0, grid0, i, 0, 127, -89);  // Brake-only candidates.
+        put_candidate(tensor0, grid0, OBJ_NUMB_MAX_SIZE + i, 2, 127, 127);
+    }
+    expect(post_process_simple(tensor0.data(), tensor1.data(), tensor2.data(),
+                               640, 640, 0.25f, 0.45f, pads, 1.0f, 1.0f, &result) == 0,
+           "brake-only candidates before visible candidates decode");
+    expect(result.count == OBJ_NUMB_MAX_SIZE &&
+           std::strcmp(result.results[0].name, "car") == 0 &&
+           std::strcmp(result.results[OBJ_NUMB_MAX_SIZE - 1].name, "car") == 0,
+           "brake-only candidates do not consume any of the 64 display slots");
+    expect(result.person_brake_count == OBJ_NUMB_MAX_SIZE,
+           "all brake-only candidates contribute to the summary");
+
+    std::fill(tensor0.begin(), tensor0.end(), -128);
+    put_candidate(tensor0, grid0, 0, 0, -39, -39);  // (89/255)^2 < 0.15
     expect(post_process_simple(tensor0.data(), tensor1.data(), tensor2.data(),
                                640, 640, 0.25f, 0.45f, pads, 1.0f, 1.0f, &result) == 0,
            "low-confidence person frame decodes");
     expect(result.count == 1 && result.person_brake_count == 0,
-           "display can show a person below 40% without triggering brake");
+           "display can show a person below 15% without triggering brake");
 
     std::fill(tensor0.begin(), tensor0.end(), -128);
     put_candidate(tensor0, grid0, 0, 0, 25, 25);  // 0.60 * 0.60 = 0.36
     expect(post_process_simple(tensor0.data(), tensor1.data(), tensor2.data(),
                                640, 640, 0.25f, 0.45f, pads, 1.0f, 1.0f, &result) == 0,
            "joint confidence frame decodes");
-    expect(result.count == 1 && result.person_brake_count == 0,
+    expect(result.count == 1 && result.person_brake_count == 1,
            "threshold uses objectness times class probability");
+
+    std::fill(tensor0.begin(), tensor0.end(), -128);
+    put_candidate(tensor0, grid0, 0, 0, 127, -89);  // 39/255 > 0.15, class < 0.25
+    expect(post_process_simple(tensor0.data(), tensor1.data(), tensor2.data(),
+                               640, 640, 0.25f, 0.45f, pads, 1.0f, 1.0f, &result) == 0,
+           "person below original class display gate decodes");
+    expect(result.count == 0 && result.person_brake_count == 1,
+           "class factor just above 15% triggers without changing display gate");
+
+    std::fill(tensor0.begin(), tensor0.end(), -128);
+    put_candidate(tensor0, grid0, 0, 0, -89, 127);  // objectness < 0.25
+    expect(post_process_simple(tensor0.data(), tensor1.data(), tensor2.data(),
+                               640, 640, 0.25f, 0.45f, pads, 1.0f, 1.0f, &result) == 0,
+           "person below original objectness display gate decodes");
+    expect(result.count == 0 && result.person_brake_count == 1,
+           "objectness factor just above 15% triggers without changing display gate");
+
+    std::fill(tensor0.begin(), tensor0.end(), -128);
+    put_candidate(tensor0, grid0, 0, 0, 127, -90);  // 38/255 < 0.15
+    expect(post_process_simple(tensor0.data(), tensor1.data(), tensor2.data(),
+                               640, 640, 0.25f, 0.45f, pads, 1.0f, 1.0f, &result) == 0,
+           "person below 15% decodes");
+    expect(result.person_brake_count == 0, "quantized confidence below 15% stays clear");
+
+    std::fill(tensor0.begin(), tensor0.end(), -128);
+    put_candidate(tensor0, grid0, 0, 0, 127, 76);  // 204/255 = 0.80
+    expect(post_process_simple(tensor0.data(), tensor1.data(), tensor2.data(),
+                               640, 640, 0.25f, 0.45f, pads, 1.0f, 1.0f, &result) == 0,
+           "80% person frame decodes");
+    expect(result.count == 1 && result.person_brake_count == 1 &&
+           result.results[0].prop == result.person_brake_result.prop,
+           "80% drawing score and brake score are identical and trigger");
+
+    std::fill(tensor0.begin(), tensor0.end(), -128);
+    put_candidate(tensor0, grid0, 0, 2, 127, 76);
+    expect(post_process_simple(tensor0.data(), tensor1.data(), tensor2.data(),
+                               640, 640, 0.25f, 0.45f, pads, 1.0f, 1.0f, &result) == 0,
+           "80% nonperson frame decodes");
+    expect(result.count == 1 && result.person_brake_count == 0,
+           "high confidence other class cannot trigger person brake");
 
     std::fill(tensor0.begin(), tensor0.end(), -128);
     put_candidate(tensor1, 40 * 40, 0, 0, 127, 64);

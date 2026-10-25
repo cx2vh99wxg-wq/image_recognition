@@ -33,6 +33,17 @@ void letterbox_simple(const uint8_t *src_rgb, uint8_t *dst_rgb,
         memset(dst_rgb, 128, (size_t)canvas_bytes);
     }
 
+    /* The production 640x480 -> 640x640 letterbox has scale exactly one.
+     * Row copies preserve every source byte and padding byte, avoiding a
+     * floating point division and coordinate reconstruction per pixel. */
+    if (*scale == 1.0f && new_w == src_w && new_h == src_h) {
+        for (int y = 0; y < src_h; ++y) {
+            memcpy(dst_rgb + ((y + pad_h) * dst_w + pad_w) * 3,
+                   src_rgb + y * src_w * 3, (size_t)src_w * 3);
+        }
+        return;
+    }
+
     for (int y = 0; y < new_h; ++y) {
         for (int x = 0; x < new_w; ++x) {
             int src_x = (int)(x / (*scale));

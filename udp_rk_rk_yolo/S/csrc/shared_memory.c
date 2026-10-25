@@ -116,8 +116,10 @@ int shared_memory_init(SharedMemoryManager* manager, SharedMemoryType type, int 
         sem_unlink(sem_name_write);
         sem_unlink(sem_name_read);
 
+        mode_t previous_mask = umask(0);
         manager->write_sem = sem_open(sem_name_write, O_CREAT | O_EXCL, 0666, 1);
         manager->read_sem = sem_open(sem_name_read, O_CREAT | O_EXCL, 0666, 0);
+        umask(previous_mask);
     } else {
 
         manager->write_sem = sem_open(sem_name_write, 0);
@@ -125,11 +127,11 @@ int shared_memory_init(SharedMemoryManager* manager, SharedMemoryType type, int 
     }
 
     if (manager->write_sem == SEM_FAILED || manager->read_sem == SEM_FAILED) {
-        fprintf(stderr, "Warning: sem_open failed: %s\n", strerror(errno));
-        fprintf(stderr, "Continuing without semaphores (no synchronization protection)\n");
-        manager->write_sem = SEM_FAILED;
-        manager->read_sem = SEM_FAILED;
-
+        int saved_error = errno;
+        fprintf(stderr, "Image semaphore open failed: %s\n", strerror(saved_error));
+        shared_memory_cleanup(manager);
+        errno = saved_error;
+        return -1;
     }
 
     printf("Shared memory initialized successfully (is_writer: %d)\n", is_writer);
@@ -161,18 +163,19 @@ int shared_memory_write_image(SharedMemoryManager* manager,
         return -1;
     }
 
-    size_t image_size = width * height * 2;
+    if (!width || !height || width > 640 || height > 480) return -1;
+    size_t image_size = (size_t)width * height * 2;
     if (image_size > max_image_size) {
         fprintf(stderr, "Error: Image size too large: %zu > %zu\n",
                 image_size, max_image_size);
         return -1;
     }
 
-    if (manager->write_sem != SEM_FAILED) {
-        if (sem_wait(manager->write_sem) != 0) {
-            return -1;
-        }
-    }
+    uint32_t checksum = calculate_data_checksum(image_data, image_size);
+    if (!manager->write_sem || manager->write_sem == SEM_FAILED) return -1;
+    int lock_result;
+    do { lock_result = sem_wait(manager->write_sem); } while (lock_result && errno == EINTR);
+    if (lock_result) return -1;
 
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -184,7 +187,7 @@ int shared_memory_write_image(SharedMemoryManager* manager,
 
     memcpy(image_buffer, image_data, image_size);
 
-    control->checksum = calculate_data_checksum(image_data, image_size);
+    control->checksum = checksum;
 
     __sync_fetch_and_add(&control->frame_id, 1);
     __sync_bool_compare_and_swap(&control->frame_ready, 0, 1);
@@ -192,15 +195,17 @@ int shared_memory_write_image(SharedMemoryManager* manager,
     if (manager->write_sem != SEM_FAILED) {
         sem_post(manager->write_sem);
     }
-    if (manager->read_sem != SEM_FAILED) {
-        sem_post(manager->read_sem);
+    if (manager->read_sem && manager->read_sem != SEM_FAILED) {
+        int pending = 0;
+        if (sem_getvalue(manager->read_sem, &pending) == 0 && pending <= 0)
+            sem_post(manager->read_sem);
     }
 
     return 0;
 }
 
-/* 只有出现就绪帧时才尝试读取；读锁最多等待 10 ms。复制图像后核对校验值，
- * 成功时写出尺寸与帧号并返回字节数，无新帧返回 0，失败返回 -1。 */
+/* 非阻塞取得写端同一把互斥锁，复制最新且尚未读过的完整帧。
+ * 校验在本地快照上完成；每个读端独立记录帧号，不清除其他读端的就绪位。 */
 int shared_memory_read_image(SharedMemoryManager* manager,
                             uint8_t* image_data,
                             size_t max_size,
@@ -224,54 +229,29 @@ int shared_memory_read_image(SharedMemoryManager* manager,
         return -1;
     }
 
-    if (!control->writer_active) {
-        return -1;
+    if (!manager->write_sem || manager->write_sem == SEM_FAILED) return -1;
+    if (sem_trywait(manager->write_sem))
+        return errno == EAGAIN || errno == EINTR ? 0 : -1;
+    if (!control->writer_active) { sem_post(manager->write_sem); return -1; }
+    if (!control->frame_ready || control->frame_id == manager->last_frame_id) {
+        sem_post(manager->write_sem); return 0;
     }
-
-    if (!control->frame_ready) {
-        return 0;
+    uint32_t w = control->frame_width, h = control->frame_height;
+    uint32_t id = control->frame_id, expected = control->checksum;
+    if (!w || !h || w > 640 || h > 480 || (size_t)w * h * 2 > max_size) {
+        sem_post(manager->write_sem); return -1;
     }
-
-    if (manager->read_sem != SEM_FAILED) {
-        struct timespec timeout;
-        clock_gettime(CLOCK_REALTIME, &timeout);
-        timeout.tv_nsec += 10000000;
-        if (timeout.tv_nsec >= 1000000000) {
-            timeout.tv_sec += 1;
-            timeout.tv_nsec -= 1000000000;
-        }
-
-        if (sem_timedwait(manager->read_sem, &timeout) != 0) {
-            return 0;
-        }
-    }
-
-    uint32_t img_width = control->frame_width;
-    uint32_t img_height = control->frame_height;
-    uint32_t current_frame_id = control->frame_id;
-    uint32_t expected_checksum = control->checksum;
-
-    size_t image_size = img_width * img_height * 2;
-    if (image_size > max_size) {
-        fprintf(stderr, "Error: Buffer too small: %zu > %zu\n", image_size, max_size);
-        return -1;
-    }
-
-    memcpy(image_data, image_buffer, image_size);
-
-    uint32_t actual_checksum = calculate_data_checksum(image_data, image_size);
-    if (actual_checksum != expected_checksum) {
-        fprintf(stderr, "Warning: Checksum mismatch (expected: 0x%08X, actual: 0x%08X)\n",
-                expected_checksum, actual_checksum);
-    }
-
-    __sync_bool_compare_and_swap(&control->frame_ready, 1, 0);
-
-    if (width) *width = img_width;
-    if (height) *height = img_height;
-    if (frame_id) *frame_id = current_frame_id;
-
-    return image_size;
+    size_t size = (size_t)w * h * 2;
+    memcpy(image_data, image_buffer, size);
+    sem_post(manager->write_sem);
+    if (manager->read_sem && manager->read_sem != SEM_FAILED)
+        sem_trywait(manager->read_sem); /* Coalesced notification, never an image mutex. */
+    if (calculate_data_checksum(image_data, size) != expected) return -1;
+    manager->last_frame_id = id;
+    if (width) *width = w;
+    if (height) *height = h;
+    if (frame_id) *frame_id = id;
+    return (int)size;
 }
 
 /* 用就绪位、写端活跃状态和传入帧号判断是否有新帧，不复制图像数据。 */
@@ -294,7 +274,7 @@ int shared_memory_has_new_frame(SharedMemoryManager* manager, uint32_t last_fram
     }
 
     uint32_t current_frame_id = control->frame_id;
-    return (current_frame_id > last_frame_id && control->frame_ready) ? 1 : 0;
+    return (current_frame_id != last_frame_id && control->frame_ready) ? 1 : 0;
 }
 
 /* 按角色更新控制头并分离映射；写端删除共享段和命名信号量，
@@ -367,9 +347,16 @@ uint32_t calculate_data_checksum(const uint8_t* data, size_t size) {
     }
 
     uint32_t checksum = 0;
-    for (size_t i = 0; i < size; i++) {
-        checksum = ((checksum << 1) | (checksum >> 31)) ^ data[i];
+    while (size >= 8) {
+        checksum = ((checksum << 8) | (checksum >> 24)) ^
+            ((uint32_t)data[0] << 7) ^ ((uint32_t)data[1] << 6) ^
+            ((uint32_t)data[2] << 5) ^ ((uint32_t)data[3] << 4) ^
+            ((uint32_t)data[4] << 3) ^ ((uint32_t)data[5] << 2) ^
+            ((uint32_t)data[6] << 1) ^ data[7];
+        data += 8;
+        size -= 8;
     }
+    while (size--) checksum = ((checksum << 1) | (checksum >> 31)) ^ *data++;
     return checksum;
 }
 

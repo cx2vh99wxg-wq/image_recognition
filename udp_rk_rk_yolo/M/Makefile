@@ -28,8 +28,8 @@ SHARED_MEMORY_OBJ = $(BUILDDIR)/shared_memory.o
 # 编译器设置
 CC = gcc
 CXX = g++
-CFLAGS = -Wall -Wextra -std=c99 -fPIC
-CXXFLAGS = -Wall -Wextra -std=c++11 -fPIC
+CFLAGS = -Wall -Wextra -std=c99 -O3 -march=native -pthread -fPIC
+CXXFLAGS = -Wall -Wextra -std=c++11 -O3 -march=native -pthread -fPIC
 INCLUDES = -I$(INCDIR)
 
 #############################################################################
@@ -128,12 +128,12 @@ run-pcie: pcie
 	@echo "Running PCIe capture module..."
 	cd $(PCIE_DIR) && ./build/pcie_capture
 
-run-udp: udp
+run-udp: udp tune-network
 	@echo "Running UDP sender module..."
 	cd $(UDP_DIR) && ./build/udp_sender
 
 # 启动完整M端系统
-run: all
+run: all tune-network
 	@echo "=== 启动M端FPGA系统 ==="
 	@echo "系统: $$(uname -s) $$(uname -m)"
 	@echo "时间: $$(date)"
@@ -146,6 +146,9 @@ run: all
 	@if [ ! -f "$(UDP_DIR)/build/udp_sender" ]; then \
 		echo "错误: UDP程序不存在，请先运行 make"; \
 		exit 1; \
+	fi
+	@if pgrep -x pcie_capture >/dev/null || pgrep -x udp_sender >/dev/null; then \
+		echo "M端已有采集/发送进程，请先 make stop，避免重复占用DMA和图像共享段"; exit 1; \
 	fi
 	@# 清理之前的共享内存
 	@echo "清理共享内存..."
@@ -184,7 +187,7 @@ run: all
 	@cd $(UDP_DIR) && ./build/udp_sender
 
 # 启动后台程序（PCIe + UDP后台）
-run-background: all
+run-background: all tune-network
 	@echo "=== 启动M端后台程序 ==="
 	@echo "系统: $$(uname -s) $$(uname -m)"
 	@echo "时间: $$(date)"
@@ -197,6 +200,9 @@ run-background: all
 	@if [ ! -f "$(UDP_DIR)/build/udp_sender" ]; then \
 		echo "错误: UDP程序不存在，请先运行 make"; \
 		exit 1; \
+	fi
+	@if pgrep -x pcie_capture >/dev/null || pgrep -x udp_sender >/dev/null; then \
+		echo "M端已有采集/发送进程，请先 make stop，避免重复占用DMA和图像共享段"; exit 1; \
 	fi
 	@# 清理之前的共享内存
 	@echo "清理共享内存..."
@@ -433,3 +439,22 @@ status:
 	else \
 		echo "✗ 未安装"; \
 	fi
+
+# Two complete raw frames need more than the kernel's 212 KiB default limit.
+# Raise limits only; VISION_NET_TUNE=0 leaves the host settings unchanged.
+.PHONY: tune-network
+tune-network:
+	@if [ "$${VISION_NET_TUNE:-1}" != "0" ]; then \
+		for setting in rmem_max wmem_max; do \
+			current=$$(cat /proc/sys/net/core/$$setting 2>/dev/null || echo 0); \
+			if [ "$$current" -lt 4194304 ]; then \
+				if [ "$$(id -u)" = 0 ]; then \
+					sysctl -q -w net.core.$$setting=4194304; \
+				else \
+					sudo -n sysctl -q -w net.core.$$setting=4194304 || \
+					echo "Video socket limit unchanged: run make tune-network as root"; \
+				fi; \
+			fi; \
+		done; \
+	fi
+

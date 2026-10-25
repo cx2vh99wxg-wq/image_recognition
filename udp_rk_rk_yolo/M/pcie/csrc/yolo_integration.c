@@ -4,6 +4,32 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <stdarg.h>
+#include <time.h>
+
+/* Verbose lane diagnostics redraw the terminal dozens of times per inference.
+ * Keep them opt-in; summary timing remains available in the capture program. */
+static int lane_debug_enabled(void) {
+    static int enabled = -1;
+    if (enabled < 0) {
+        const char* value = getenv("VISION_VERBOSE");
+        enabled = value && atoi(value) != 0;
+    }
+    return enabled;
+}
+#define LANE_TRACE(...) do { if (lane_debug_enabled()) printf(__VA_ARGS__); } while (0)
+#define LANE_FLUSH() do { if (lane_debug_enabled()) fflush(stdout); } while (0)
+
+static void lane_error(const char* format, ...) {
+    static time_t last = 0;
+    time_t now = time(NULL);
+    if (!lane_debug_enabled() && last && now >= last && now - last < 5) return;
+    last = now;
+    va_list args;
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+}
 
 // 弯道类型定义
 typedef enum {
@@ -15,8 +41,8 @@ typedef enum {
 // 弯道检测函数：基于绘制的红色车道线进行垂直投影分析（多区域采样+加权计算）
 static TurnType detect_turn_direction_from_image(const uint8_t* rgb_data, int width, int height) {
     if (!rgb_data) {
-        printf(">>> 图像数据指针为空 <<<\n");
-        fflush(stdout);
+        LANE_TRACE(">>> 图像数据指针为空 <<<\n");
+        LANE_FLUSH();
         return TURN_STRAIGHT;
     }
 
@@ -80,12 +106,12 @@ static TurnType detect_turn_direction_from_image(const uint8_t* rgb_data, int wi
     }
 
     // 打印每个区域的统计信息
-    printf(">>> 多区域采样结果:\n");
+    LANE_TRACE(">>> 多区域采样结果:\n");
     for (int r = 0; r < NUM_REGIONS; r++) {
-        printf("    区域%d (Y=%d-%d): %d像素, 权重%.1f\n",
+        LANE_TRACE("    区域%d (Y=%d-%d): %d像素, 权重%.1f\n",
                r, region_y[r], region_y[r] + region_height, totals[r], weights[r]);
     }
-    fflush(stdout);
+    LANE_FLUSH();
 
     // 计算每个区域的重心
     int valid_regions = 0;
@@ -102,8 +128,8 @@ static TurnType detect_turn_direction_from_image(const uint8_t* rgb_data, int wi
     }
 
     if (valid_regions < 2) {
-        printf(">>> 有效区域不足 (仅%d个) <<<\n", valid_regions);
-        fflush(stdout);
+        LANE_TRACE(">>> 有效区域不足 (仅%d个) <<<\n", valid_regions);
+        LANE_FLUSH();
         return TURN_STRAIGHT;
     }
 
@@ -136,14 +162,14 @@ static TurnType detect_turn_direction_from_image(const uint8_t* rgb_data, int wi
         }
     }
 
-    printf(">>> 最远区域重心: %.1f (Y=%d)\n",
+    LANE_TRACE(">>> 最远区域重心: %.1f (Y=%d)\n",
            far_region >= 0 ? centers[far_region] : -1,
            far_region >= 0 ? region_y[far_region] : -1);
-    printf(">>> 最近区域重心: %.1f (Y=%d)\n",
+    LANE_TRACE(">>> 最近区域重心: %.1f (Y=%d)\n",
            near_region >= 0 ? centers[near_region] : -1,
            near_region >= 0 ? region_y[near_region] : -1);
-    printf(">>> 加权偏移量: %.2f <<<\n", weighted_shift);
-    fflush(stdout);
+    LANE_TRACE(">>> 加权偏移量: %.2f <<<\n", weighted_shift);
+    LANE_FLUSH();
 
     // 动态阈值：根据总像素数调整
     int total_pixels = 0;
@@ -158,8 +184,8 @@ static TurnType detect_turn_direction_from_image(const uint8_t* rgb_data, int wi
         threshold = 6.0f;   // 像素多时降低阈值，提高灵敏度
     }
 
-    printf(">>> 总像素: %d, 使用阈值: %.1f <<<\n", total_pixels, threshold);
-    fflush(stdout);
+    LANE_TRACE(">>> 总像素: %d, 使用阈值: %.1f <<<\n", total_pixels, threshold);
+    LANE_FLUSH();
 
     // 判断弯道方向
     if (weighted_shift > threshold) {
@@ -175,6 +201,12 @@ static TurnType detect_turn_direction_from_image(const uint8_t* rgb_data, int wi
 static void preprocess_image(const uint8_t* rgb_data, uint8_t* input_data,
                             int src_width, int src_height,
                             int model_width, int model_height) {
+    // The deployed model already consumes 640x480. Avoid per-pixel float
+    // multiply/address work when resizing is the identity operation.
+    if (src_width == model_width && src_height == model_height) {
+        memcpy(input_data, rgb_data, (size_t)src_width * src_height * 3);
+        return;
+    }
     // 简单的resize + RGB转换 + NHWC格式
     float scale_w = (float)src_width / model_width;
     float scale_h = (float)src_height / model_height;
@@ -274,26 +306,26 @@ int yolo_engine_init(YOLOEngine* engine, const char* model_path, const char* lab
     memset(engine->outputs, 0, engine->io_num.n_output * sizeof(rknn_output));
 
     // 查询输入属性
-    for (int i = 0; i < engine->io_num.n_input; i++) {
+    for (uint32_t i = 0; i < engine->io_num.n_input; i++) {
         engine->input_attrs[i].index = i;
         ret = rknn_query(engine->ctx, RKNN_QUERY_INPUT_ATTR, &engine->input_attrs[i], sizeof(rknn_tensor_attr));
         if (ret < 0) {
-            printf("查询输入属性%d失败: %d\n", i, ret);
+            printf("查询输入属性%u失败: %d\n", i, ret);
             yolo_engine_cleanup(engine);
             return -1;
         }
     }
 
     // 查询输出属性
-    for (int i = 0; i < engine->io_num.n_output; i++) {
+    for (uint32_t i = 0; i < engine->io_num.n_output; i++) {
         engine->output_attrs[i].index = i;
         ret = rknn_query(engine->ctx, RKNN_QUERY_OUTPUT_ATTR, &engine->output_attrs[i], sizeof(rknn_tensor_attr));
         if (ret < 0) {
-            printf("查询输出属性%d失败: %d\n", i, ret);
+            printf("查询输出属性%u失败: %d\n", i, ret);
             yolo_engine_cleanup(engine);
             return -1;
         }
-        printf("输出 %d: %s\n", i, engine->output_attrs[i].name);
+        printf("输出 %u: %s\n", i, engine->output_attrs[i].name);
     }
 
     // 设置模型输入尺寸
@@ -327,156 +359,74 @@ int yolo_engine_init(YOLOEngine* engine, const char* model_path, const char* lab
     printf("输出缓冲区: 车道线=%zu bytes, 可行驶区域=%zu bytes\n", lane_size, drivable_size);
 
     printf("YOLOPv2引擎初始化成功\n");
+    engine->requested_output_count = 2;
     engine->is_initialized = 1;
     return 0;
 }
 
 int yolo_engine_detect(YOLOEngine* engine, const uint8_t* rgb_data, int width, int height,
                       yolopv2_result_t* results) {
-    if (!engine || !rgb_data || !results || !engine->is_initialized) {
-        // printf("[DEBUG] detect参数检查失败\n");
-        return -1;
-    }
+    if (!engine || !rgb_data || !results || !engine->is_initialized ||
+        width <= 0 || height <= 0 || engine->io_num.n_output < 2 ||
+        !engine->lane_line_buffer || !engine->drivable_area_buffer) return -1;
 
-    // printf("[DEBUG] detect开始: width=%d, height=%d\n", width, height);
-
-    // 预处理：将输入图像调整到模型输入尺寸
+    memset(results, 0, sizeof(*results));
     preprocess_image(rgb_data, engine->input_data, width, height,
-                    engine->model_width, engine->model_height);
-    // printf("[DEBUG] 预处理完成\n");
-
-    // 设置输入
+                     engine->model_width, engine->model_height);
     engine->inputs[0].index = 0;
     engine->inputs[0].type = RKNN_TENSOR_UINT8;
     engine->inputs[0].size = engine->model_width * engine->model_height * 3;
-    engine->inputs[0].fmt = RKNN_TENSOR_NHWC;  // 使用NHWC格式
+    engine->inputs[0].fmt = RKNN_TENSOR_NHWC;
     engine->inputs[0].buf = engine->input_data;
+    int ret = rknn_inputs_set(engine->ctx, engine->io_num.n_input, engine->inputs);
+    if (ret < 0) { lane_error("YOLOP inputs_set failed: %d\n", ret); return -1; }
+    ret = rknn_run(engine->ctx, NULL);
+    if (ret < 0) { lane_error("YOLOP inference failed: %d\n", ret); return -1; }
 
-    // 设置输出（获取浮点数输出）
-    for (int i = 0; i < engine->io_num.n_output; i++) {
+    /* All model computation is retained. Only unused object-detection heads
+     * are omitted from CPU output conversion; lanes and drivable area remain
+     * full-resolution float tensors with exactly the same thresholds. */
+    uint32_t count = engine->requested_output_count;
+    if (count != engine->io_num.n_output) count = 2;
+    memset(engine->outputs, 0, engine->io_num.n_output * sizeof(*engine->outputs));
+    for (uint32_t i = 0; i < count; ++i) {
+        engine->outputs[i].index = i;
         engine->outputs[i].want_float = 1;
     }
-    // printf("[DEBUG] 输入输出设置完成\n");
+    ret = rknn_outputs_get(engine->ctx, count, engine->outputs, NULL);
+    if (ret < 0 && count == 2 && engine->io_num.n_output > 2) {
+        /* Some deployed runtimes require a full request. Probe just once,
+         * then cache the compatible count and release that same count. */
+        count = engine->io_num.n_output;
+        engine->requested_output_count = count;
+        memset(engine->outputs, 0, count * sizeof(*engine->outputs));
+        for (uint32_t i = 0; i < count; ++i) {
+            engine->outputs[i].index = i;
+            engine->outputs[i].want_float = 1;
+        }
+        fprintf(stderr, "YOLOP runtime requires all %u outputs; caching fallback\n", count);
+        ret = rknn_outputs_get(engine->ctx, count, engine->outputs, NULL);
+    }
+    if (ret < 0) { lane_error("YOLOP outputs_get failed: %d\n", ret); return -1; }
 
-    // 执行推理
-    int ret = rknn_inputs_set(engine->ctx, engine->io_num.n_input, engine->inputs);
-    if (ret < 0) {
-        printf("设置输入失败: %d\n", ret);
+    size_t drivable_size = (size_t)engine->model_width * engine->model_height * 2 * sizeof(float);
+    size_t lane_size = (size_t)engine->model_width * engine->model_height * sizeof(float);
+    int valid = engine->outputs[0].buf && engine->outputs[1].buf &&
+                engine->outputs[0].size >= drivable_size &&
+                engine->outputs[1].size >= lane_size;
+    if (valid) {
+        memcpy(engine->drivable_area_buffer, engine->outputs[0].buf, drivable_size);
+        memcpy(engine->lane_line_buffer, engine->outputs[1].buf, lane_size);
+    }
+    int release_result = rknn_outputs_release(engine->ctx, count, engine->outputs);
+    if (!valid || release_result < 0) {
+        lane_error("YOLOP invalid segmentation tensors or release failure\n");
         return -1;
     }
-    // printf("[DEBUG] inputs_set完成\n");
-
-    ret = rknn_run(engine->ctx, NULL);
-    if (ret < 0) {
-        printf("模型推理失败: %d\n", ret);
-        return -1;
-    }
-    // printf("[DEBUG] rknn_run完成\n");
-
-    ret = rknn_outputs_get(engine->ctx, engine->io_num.n_output, engine->outputs, NULL);
-    if (ret < 0) {
-        printf("获取输出失败: %d\n", ret);
-        return -1;
-    }
-    // printf("[DEBUG] outputs_get完成\n");
-    // fflush(stdout);
-
-    // 检查输出数量
-    if (engine->io_num.n_output < 5) {
-        printf("[DEBUG] ERROR: n_output=%d, 需要至少5个输出!\n", engine->io_num.n_output);
-        fflush(stdout);
-        return -1;
-    }
-
-    // 打印所有输出的大小
-    // for (int i = 0; i < engine->io_num.n_output; i++) {
-    //     printf("[DEBUG] outputs[%d].size=%u bytes\n", i, engine->outputs[i].size);
-    // }
-    // fflush(stdout);
-
-    // 实际输出节点顺序（根据size分析）:
-    // outputs[0] = seg  : (1, 2, 480, 640) = 2457600 bytes - 可行驶区域分割
-    // outputs[1] = ll   : (1, 1, 480, 640) = 1228800 bytes - 车道线
-    // outputs[2] = pred0: (1, 255, 60, 80) - 大物体检测（跳过）
-    // outputs[3] = pred1: (1, 255, 30, 40) - 中物体检测（跳过）
-    // outputs[4] = pred2: (1, 255, 15, 20) - 小物体检测（跳过）
-
-    // 复制可行驶区域数据到缓冲区（输出0）
-    size_t expected_drivable_size = engine->model_width * engine->model_height * 2 * sizeof(float);
-    size_t actual_drivable_size = engine->outputs[0].size;
-
-    // printf("[DEBUG] 可行驶区域数据: expected=%zu bytes, actual=%u bytes\n",
-    //        expected_drivable_size, (unsigned int)actual_drivable_size);
-    // fflush(stdout);
-
-    // 检查指针有效性
-    if (!engine->drivable_area_buffer) {
-        printf("[DEBUG] ERROR: drivable_area_buffer is NULL!\n");
-        fflush(stdout);
-        return -1;
-    }
-    if (!engine->outputs[0].buf) {
-        printf("[DEBUG] ERROR: outputs[0].buf is NULL!\n");
-        fflush(stdout);
-        return -1;
-    }
-
-    // 使用实际大小进行复制，防止缓冲区溢出
-    size_t drivable_copy_size = (actual_drivable_size < expected_drivable_size) ? actual_drivable_size : expected_drivable_size;
-    if (actual_drivable_size != expected_drivable_size) {
-        printf("[DEBUG] WARNING: 可行驶区域大小不匹配，使用 %zu bytes\n", drivable_copy_size);
-        fflush(stdout);
-    }
-
-    memcpy(engine->drivable_area_buffer, engine->outputs[0].buf, drivable_copy_size);
-    // printf("[DEBUG] 可行驶区域数据复制完成\n");
-    // fflush(stdout);
-
-    // 复制车道线数据到缓冲区（输出1）
-    size_t expected_lane_size = engine->model_width * engine->model_height * sizeof(float);
-    size_t actual_lane_size = engine->outputs[1].size;
-
-    // printf("[DEBUG] 车道线数据: expected=%zu bytes, actual=%u bytes\n",
-    //        expected_lane_size, (unsigned int)actual_lane_size);
-    // fflush(stdout);
-
-    // 检查指针有效性
-    if (!engine->lane_line_buffer) {
-        printf("[DEBUG] ERROR: lane_line_buffer is NULL!\n");
-        fflush(stdout);
-        return -1;
-    }
-    if (!engine->outputs[1].buf) {
-        printf("[DEBUG] ERROR: outputs[1].buf is NULL!\n");
-        fflush(stdout);
-        return -1;
-    }
-
-    // 使用实际大小进行复制，防止缓冲区溢出
-    size_t lane_copy_size = (actual_lane_size < expected_lane_size) ? actual_lane_size : expected_lane_size;
-    if (actual_lane_size != expected_lane_size) {
-        printf("[DEBUG] WARNING: 车道线大小不匹配，使用 %zu bytes\n", lane_copy_size);
-        fflush(stdout);
-    }
-
-    memcpy(engine->lane_line_buffer, engine->outputs[1].buf, lane_copy_size);
-    // printf("[DEBUG] 车道线数据复制完成\n");
-    // fflush(stdout);
-
-    // 释放RKNN输出（数据已复制到缓冲区）
-    // printf("[DEBUG] 准备释放RKNN输出, n_output=%d\n", engine->io_num.n_output);
-    // fflush(stdout);
-    rknn_outputs_release(engine->ctx, engine->io_num.n_output, engine->outputs);
-    // printf("[DEBUG] RKNN输出释放完成\n");
-    // fflush(stdout);
-
-    // 设置结果指针指向内部缓冲区
     results->lane_line_data = engine->lane_line_buffer;
     results->drivable_area_data = engine->drivable_area_buffer;
     results->width = engine->model_width;
     results->height = engine->model_height;
-
-    printf("[DEBUG] detect完成\n");
     return 0;
 }
 
@@ -528,77 +478,47 @@ void yolo_engine_cleanup(YOLOEngine* engine) {
     engine->is_initialized = 0;
 }
 
-void draw_lane_and_drivable(uint8_t* rgb_data, int width, int height,
+int yolo_overlay_lane_and_drivable(uint8_t* rgb_data, int width, int height,
                            const yolopv2_result_t* results) {
-    if (!rgb_data || !results || !results->lane_line_data || !results->drivable_area_data) {
-        // printf("[DEBUG] draw参数检查失败\n");
-        // fflush(stdout);
-        return;
-    }
-
-    // printf("[DEBUG] draw开始: width=%d, height=%d, result_width=%d, result_height=%d\n",
-    //        width, height, results->width, results->height);
-    // fflush(stdout);
-
+    if (!rgb_data || !results || !results->lane_line_data || !results->drivable_area_data ||
+        width <= 0 || height <= 0 || results->width <= 0 || results->height <= 0) return -1;
     float ratiow = (float)width / results->width;
     float ratioh = (float)height / results->height;
-
     int area = results->height * results->width;
+    int same_size = width == results->width && height == results->height;
+    int lane_pixel_count = 0;
 
-    // printf("[DEBUG] draw可行驶区域开始...\n");
-    // fflush(stdout);
-    // 绘制可行驶区域（绿色半透明）
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            const int x = (int)(j / ratiow);
-            const int y = (int)(i / ratioh);
-
-            if (x >= 0 && x < results->width && y >= 0 && y < results->height) {
-                // 比较两个通道，选择可行驶区域
-                float channel0 = results->drivable_area_data[y * results->width + x];
-                float channel1 = results->drivable_area_data[area + y * results->width + x];
-
-                if (channel0 < channel1) {
-                    // 可行驶区域 - 绿色半透明叠加
-                    int idx = (i * width + j) * 3;
-                    rgb_data[idx] = (uint8_t)(rgb_data[idx] * 0.6 + 0 * 0.4);       // R
-                    rgb_data[idx + 1] = (uint8_t)(rgb_data[idx + 1] * 0.6 + 255 * 0.4); // G
-                    rgb_data[idx + 2] = (uint8_t)(rgb_data[idx + 2] * 0.6 + 0 * 0.4);   // B
-                }
+    /* One pass instead of two. On the deployed same-size path no floating
+     * division is needed. The original blend expression and lane threshold
+     * are retained, so the rendered pixels and curve classification match. */
+    for (int i = 0; i < height; ++i) {
+        int y = same_size ? i : (int)(i / ratioh);
+        for (int j = 0; j < width; ++j) {
+            int x = same_size ? j : (int)(j / ratiow);
+            if (x < 0 || x >= results->width || y < 0 || y >= results->height) continue;
+            int mask = y * results->width + x;
+            int idx = (i * width + j) * 3;
+            if (results->drivable_area_data[mask] < results->drivable_area_data[area + mask]) {
+                rgb_data[idx] = (uint8_t)(rgb_data[idx] * 0.6 + 0 * 0.4);
+                rgb_data[idx + 1] = (uint8_t)(rgb_data[idx + 1] * 0.6 + 255 * 0.4);
+                rgb_data[idx + 2] = (uint8_t)(rgb_data[idx + 2] * 0.6 + 0 * 0.4);
+            }
+            if (results->lane_line_data[mask] > 0.3) {
+                rgb_data[idx] = 0;
+                rgb_data[idx + 1] = 0;
+                rgb_data[idx + 2] = 255;
+                ++lane_pixel_count;
             }
         }
     }
-    // printf("[DEBUG] draw可行驶区域完成\n");
-    // fflush(stdout);
+    LANE_TRACE("绘制 %d 个红色车道线像素\n", lane_pixel_count);
 
-    // printf("[DEBUG] draw车道线开始...\n");
-    // fflush(stdout);
+    return lane_pixel_count;
+}
 
-    int lane_pixel_count = 0;  // 统计绘制了多少车道线像素
-
-    // 绘制车道线（纯红色）
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            const int x = (int)(j / ratiow);
-            const int y = (int)(i / ratioh);
-
-            if (x >= 0 && x < results->width && y >= 0 && y < results->height) {
-                float lane_prob = results->lane_line_data[y * results->width + x];
-
-                if (lane_prob > 0.3) {  // 降低阈值从0.5到0.3
-                    // 车道线 - 纯红色 (BGR格式)
-                    int idx = (i * width + j) * 3;
-                    rgb_data[idx] = 0;       // B
-                    rgb_data[idx + 1] = 0;   // G
-                    rgb_data[idx + 2] = 255; // R
-                    lane_pixel_count++;
-                }
-            }
-        }
-    }
-    printf("绘制 %d 个红色车道线像素\n", lane_pixel_count);
-    fflush(stdout);
-
+int yolo_analyze_annotated_curve(const uint8_t* rgb_data, int width, int height,
+                                 int lane_pixel_count, YOLOCurveResult* curve) {
+    if (!rgb_data || !curve || width <= 0 || height <= 0 || lane_pixel_count < 0) return -1;
     // 弯道检测（基于绘制后的红色车道线）
     TurnType turn = detect_turn_direction_from_image(rgb_data, width, height);
 
@@ -634,31 +554,21 @@ void draw_lane_and_drivable(uint8_t* rgb_data, int width, int height,
             break;
     }
 
-    // 更新弯道检测共享内存
-    static uint32_t curve_frame_id = 0;
-    curve_frame_id++;
-    curve_detection_update(curve_frame_id, curve_type_shm, confidence, angle);
+    curve->curve_type = curve_type_shm;
+    curve->confidence = confidence;
+    curve->angle = angle;
+    return 0;
+}
 
-    printf("\n");
-    printf("========================================\n");
-    switch (turn) {
-        case TURN_LEFT:
-            printf("       *** 左弯道 *** (置信度:%u%%, 角度:%u°)\n", confidence, angle);
-            printf("       <<<  LEFT TURN  <<<\n");
-            break;
-        case TURN_RIGHT:
-            printf("       *** 右弯道 *** (置信度:%u%%, 角度:%u°)\n", confidence, angle);
-            printf("       >>>  RIGHT TURN  >>>\n");
-            break;
-        case TURN_STRAIGHT:
-        default:
-            printf("       === 直道 === (置信度:%u%%)\n", confidence);
-            printf("       |||  STRAIGHT  |||\n");
-            break;
-    }
-    printf("========================================\n");
-    printf("\n");
-    fflush(stdout);
+void draw_lane_and_drivable(uint8_t* rgb_data, int width, int height,
+                           const yolopv2_result_t* results) {
+    int lane_pixel_count = yolo_overlay_lane_and_drivable(rgb_data, width, height, results);
+    YOLOCurveResult curve;
+    if (yolo_analyze_annotated_curve(rgb_data, width, height, lane_pixel_count, &curve) != 0) return;
+    static uint32_t curve_frame_id = 0;
+    curve_detection_update(++curve_frame_id, (CurveType)curve.curve_type, curve.confidence, curve.angle);
+    LANE_TRACE("Lane result: source=%u type=%u confidence=%u angle=%u\n",
+               curve_frame_id, curve.curve_type, curve.confidence, curve.angle);
 }
 
 void rgb565_to_rgb888_yolo(const uint16_t* rgb565_data, uint8_t* rgb888_data,

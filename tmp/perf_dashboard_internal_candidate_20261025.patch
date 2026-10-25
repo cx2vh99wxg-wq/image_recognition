@@ -1,0 +1,117 @@
+--- a/udp_rk_rk_yolo/S/x11/csrc/include/dashboard_ui.h
++++ b/udp_rk_rk_yolo/S/x11/csrc/include/dashboard_ui.h
+@@ -7,6 +7,8 @@
+ #include <cstdio>
+ #include <cstring>
+ #include <vector>
++#include <chrono>
++#include <cstdlib>
+ 
+ // Display-only compositor. It never reads or changes vehicle control state.
+ namespace perception_ui {
+@@ -30,6 +32,7 @@
+         : background_(WIDTH * HEIGHT), frame_(WIDTH * HEIGHT) {
+         loadFont(atlas, atlas_width, atlas_height);
+         buildBackground();
++        frame_ = background_;
+     }
+ 
+     const uint32_t* pixels() const { return frame_.data(); }
+@@ -41,9 +44,24 @@
+                             const uint32_t* vehicle, int vehicle_stride,
+                             bool overview, float transition_progress,
+                             const char* mode_label, const ViewStatus& status) {
+-        std::copy(background_.begin(), background_.end(), frame_.begin());
++        const uint64_t started = compositorClock();
++        const bool fast = fastComposition();
++        if (fast) {
++            // All changing text lies in these bands. Font metadata validates
++            // the fixed 20/28px cells; restoring the whole width also covers
++            // a long or clipped mode label. The remaining frame is static.
++            restoreBackground({0, 180, WIDTH, 44});
++            restoreBackground({0, 728, WIDTH, 80});
++            restoreBackground({0, 808, WIDTH, 72});
++            restoreBackground({1188, 230, 412, 500});
++        } else std::copy(background_.begin(), background_.end(), frame_.begin());
++        const uint64_t copied = compositorClock();
+         const Rect video = {72, 224, 1092, 546};
+-        fill(frame_, video.x, video.y, video.w, video.h, 0xFF02060D);
++        const bool full_overview = legacy && legacy_stride >= 1280 && overview && transition_progress < 0;
++        // The six 364x273 cells exactly cover the 1092x546 video rectangle.
++        if (!fast || !full_overview)
++            fill(frame_, video.x, video.y, video.w, video.h, 0xFF02060D);
++        const uint64_t cleared = compositorClock();
+ 
+         if (legacy && legacy_stride >= 1280) {
+             if (overview && transition_progress < 0) {
+@@ -73,6 +91,7 @@
+             centeredText(frame_, "WAITING FOR VIDEO", video, 2, 0xFF5B7795);
+         }
+ 
++        const uint64_t video_done = compositorClock();
+         // Keep the source car artwork and its existing red alert unchanged.
+         if (vehicle && vehicle_stride >= 320) {
+             fit(frame_, vehicle, vehicle_stride, {0, 0, 320, 480},
+@@ -81,6 +100,7 @@
+             drawVehiclePlaceholder();
+         }
+ 
++        const uint64_t car_done = compositorClock();
+         const char* label = safeLabel(mode_label, overview);
+         text(frame_, 1162 - textWidth(label, 1), 204, label, 1, 0xFFA1C4DA);
+         if (overview && transition_progress < 0) {
+@@ -111,6 +131,7 @@
+         }
+         text(frame_, 486, 844, performance, 2,
+              status.recorded ? 0xFFD5B97B : 0xFF93B1CB);
++        reportComposition(started, copied, cleared, video_done, car_done, compositorClock(), fast);
+         return frame_.data();
+     }
+ 
+@@ -124,6 +145,46 @@
+     std::vector<uint32_t> frame_;
+     std::vector<uint8_t> font_atlas_;
+     FontMetrics font_metrics_[3] = {};
++
++    uint64_t compositor_profile_start_ = 0, compositor_profile_calls_ = 0;
++    uint64_t compositor_copy_ = 0, compositor_clear_ = 0, compositor_video_ = 0;
++    uint64_t compositor_car_ = 0, compositor_ui_ = 0;
++
++    static uint64_t compositorClock() {
++        return std::chrono::duration_cast<std::chrono::nanoseconds>(
++            std::chrono::steady_clock::now().time_since_epoch()).count();
++    }
++
++    static bool fastComposition() {
++        static const char* value = std::getenv("VISION_DASHBOARD_FAST");
++        static const bool enabled = value && !std::strcmp(value, "1");
++        return enabled;
++    }
++
++    void restoreBackground(Rect area) {
++        for (int y = area.y; y < area.y + area.h; ++y)
++            std::copy_n(background_.data() + y * WIDTH + area.x, area.w,
++                        frame_.data() + y * WIDTH + area.x);
++    }
++
++    void reportComposition(uint64_t started, uint64_t copied, uint64_t cleared,
++                           uint64_t video, uint64_t car, uint64_t ended, bool fast) {
++        if (!compositor_profile_start_) compositor_profile_start_ = started;
++        ++compositor_profile_calls_;
++        compositor_copy_ += copied - started;
++        compositor_clear_ += cleared - copied;
++        compositor_video_ += video - cleared;
++        compositor_car_ += car - video;
++        compositor_ui_ += ended - car;
++        if (ended - compositor_profile_start_ < 5000000000ULL) return;
++        const double divisor = compositor_profile_calls_ * 1e6;
++        std::printf("[PERF DASHBOARD] copy_ms=%.2f clear_ms=%.2f video_fit_ms=%.2f car_fit_ms=%.2f ui_ms=%.2f fast=%d\n",
++                    compositor_copy_ / divisor, compositor_clear_ / divisor,
++                    compositor_video_ / divisor, compositor_car_ / divisor, compositor_ui_ / divisor, fast);
++        compositor_profile_start_ = ended;
++        compositor_profile_calls_ = compositor_copy_ = compositor_clear_ = 0;
++        compositor_video_ = compositor_car_ = compositor_ui_ = 0;
++    }
+ 
+     // The optional PNG is a grayscale opacity atlas, loaded with stbi's
+     // requested_channels=1. Copy it so the caller may release its image.

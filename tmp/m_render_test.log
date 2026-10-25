@@ -1,0 +1,6 @@
+渲染引擎清理完成
+渲染引擎清理完成
+M renderer MIT-SHM pixel/fence/double-cleanup PASS
+渲染引擎清理完成
+渲染引擎清理完成
+M renderer XPutImage fallback pixel/fence/double-cleanup PASS

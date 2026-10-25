@@ -10,6 +10,23 @@
 #include <sys/stat.h>
 #include <time.h>
 
+typedef char image_header_abi_must_stay_104[(sizeof(SharedMemoryControl) == 104) ? 1 : -1];
+typedef char curve_header_abi_must_stay_72[(sizeof(CurveDetectionSharedMemory) == 72) ? 1 : -1];
+#define IMAGE_GENERATION_MAGIC 0x494D4733u
+#define CURVE_SOURCE_MAGIC 0x43525633u
+static uint32_t* reserved_word(uint8_t* reserved, unsigned index) {
+    return (uint32_t*)(void*)(reserved + index * sizeof(uint32_t));
+}
+uint64_t shared_memory_image_generation(const SharedMemoryManager* manager) {
+    if (!manager || !manager->shm_ptr || manager->shm_ptr == (void*)-1) return 0;
+    SharedMemoryControl* control = (SharedMemoryControl*)manager->shm_ptr;
+    if (!__atomic_load_n(&control->writer_active, __ATOMIC_ACQUIRE) ||
+        __atomic_load_n(reserved_word(control->reserved, 0), __ATOMIC_ACQUIRE) != IMAGE_GENERATION_MAGIC) return 0;
+    uint32_t lo = __atomic_load_n(reserved_word(control->reserved, 1), __ATOMIC_RELAXED);
+    uint32_t hi = __atomic_load_n(reserved_word(control->reserved, 2), __ATOMIC_RELAXED);
+    return ((uint64_t)hi << 32) | lo;
+}
+
 /* RGB565 帧按字节累加为 32 位校验值；溢出行为与原有四处循环相同。 */
 static uint32_t sum_rgb565_bytes(const uint8_t *data, size_t byte_count) {
     uint32_t checksum = 0;
@@ -28,6 +45,7 @@ int shared_memory_init(SharedMemoryManager* manager, SharedMemoryType type, int 
 
     memset(manager, 0, sizeof(SharedMemoryManager));
     manager->is_writer = is_writer;
+    manager->image_sem = SEM_FAILED;
     manager->type = type;
 
     size_t shm_size;
@@ -87,6 +105,24 @@ int shared_memory_init(SharedMemoryManager* manager, SharedMemoryType type, int 
     printf("%s shared memory initialized successfully (id=%d, ptr=%p)\n",
            type_name, manager->shm_id, manager->shm_ptr);
 
+    char image_sem_name[64];
+    snprintf(image_sem_name, sizeof(image_sem_name), "/M_%s_image_%08X", type_name, shm_key);
+    if (is_writer) {
+        sem_unlink(image_sem_name);
+        mode_t previous_mask = umask(0);
+        manager->image_sem = sem_open(image_sem_name, O_CREAT | O_EXCL, 0666, 1);
+        umask(previous_mask);
+    } else {
+        manager->image_sem = sem_open(image_sem_name, 0);
+    }
+    if (manager->image_sem == SEM_FAILED) {
+        perror("Image semaphore open failed (restart producer and consumer together)");
+        shmdt(manager->shm_ptr);
+        manager->shm_ptr = (void*)-1;
+        if (is_writer) shmctl(manager->shm_id, IPC_RMID, NULL);
+        return -1;
+    }
+
     if (is_writer) {
         SharedMemoryControl* control = NULL;
         if (type == SHM_TYPE_PCIE) {
@@ -97,9 +133,15 @@ int shared_memory_init(SharedMemoryManager* manager, SharedMemoryType type, int 
 
         if (control) {
             memset(control, 0, sizeof(SharedMemoryControl));
-            control->writer_active = 1;
             control->frame_width = (type == SHM_TYPE_PCIE) ? PCIE_IMAGE_WIDTH : UDP_IMAGE_WIDTH;
             control->frame_height = (type == SHM_TYPE_PCIE) ? PCIE_IMAGE_HEIGHT : UDP_IMAGE_HEIGHT;
+            struct timespec generation;
+            clock_gettime(CLOCK_MONOTONIC, &generation);
+            uint64_t epoch = (uint64_t)generation.tv_sec * 1000000000ULL + generation.tv_nsec;
+            __atomic_store_n(reserved_word(control->reserved, 1), (uint32_t)epoch, __ATOMIC_RELAXED);
+            __atomic_store_n(reserved_word(control->reserved, 2), (uint32_t)(epoch >> 32), __ATOMIC_RELAXED);
+            __atomic_store_n(reserved_word(control->reserved, 0), IMAGE_GENERATION_MAGIC, __ATOMIC_RELEASE);
+            __atomic_store_n(&control->writer_active, 1, __ATOMIC_RELEASE);
             printf("Initialized control structure for %s\n", type_name);
         }
     }
@@ -111,7 +153,7 @@ int shared_memory_init(SharedMemoryManager* manager, SharedMemoryType type, int 
 void shared_memory_cleanup(SharedMemoryManager* manager) {
     if (!manager) return;
 
-    if (manager->is_writer && manager->shm_ptr != (void*)-1) {
+    if (manager->is_writer && manager->shm_ptr && manager->shm_ptr != (void*)-1) {
         SharedMemoryControl* control = NULL;
         if (manager->type == SHM_TYPE_PCIE) {
             control = &((PCIeSharedMemory*)manager->shm_ptr)->control;
@@ -124,7 +166,7 @@ void shared_memory_cleanup(SharedMemoryManager* manager) {
         }
     }
 
-    if (manager->shm_ptr != (void*)-1) {
+    if (manager->shm_ptr && manager->shm_ptr != (void*)-1) {
         if (shmdt(manager->shm_ptr) == -1) {
             perror("Failed to detach from shared memory");
         }
@@ -137,232 +179,96 @@ void shared_memory_cleanup(SharedMemoryManager* manager) {
         }
     }
 
+    if (manager->image_sem && manager->image_sem != SEM_FAILED) {
+        sem_close(manager->image_sem);
+        if (manager->is_writer) {
+            char name[64];
+            const char* kind = manager->type == SHM_TYPE_PCIE ? "PCIe" : "UDP";
+            key_t key = manager->type == SHM_TYPE_PCIE ? SHM_PCIE_IMAGE_KEY : SHM_UDP_IMAGE_KEY;
+            snprintf(name, sizeof(name), "/M_%s_image_%08X", kind, key);
+            sem_unlink(name);
+        }
+        manager->image_sem = SEM_FAILED;
+    }
+
     manager->shm_id = -1;
     printf("Shared memory cleaned up\n");
 }
 
-/* 将 RGB565 PCIe 帧复制到共享区，累加校验值，更新元数据，最后置位就绪标志。 */
-int pcie_shared_memory_write_frame(SharedMemoryManager* manager,
-                                  const uint8_t* image_data,
+/* One protected image slot: publishing replaces the previous image, never queues it.
+ * The checksum is computed before taking the lock; readers copy a coherent snapshot. */
+static int write_image_frame(SharedMemoryManager* manager, SharedMemoryType type,
+                             const uint8_t* data, uint32_t width, uint32_t height) {
+    if (!manager || manager->type != type || !data || !manager->is_writer ||
+        !manager->shm_ptr || manager->shm_ptr == (void*)-1 ||
+        !manager->image_sem || manager->image_sem == SEM_FAILED ||
+        !width || !height || width > 640 || height > 480) return -1;
+    SharedMemoryControl* control = type == SHM_TYPE_PCIE ?
+        &((PCIeSharedMemory*)manager->shm_ptr)->control :
+        &((UDPSharedMemory*)manager->shm_ptr)->control;
+    uint8_t* target = type == SHM_TYPE_PCIE ?
+        ((PCIeSharedMemory*)manager->shm_ptr)->image_data :
+        ((UDPSharedMemory*)manager->shm_ptr)->image_data;
+    size_t size = (size_t)width * height * 2;
+    uint32_t checksum = sum_rgb565_bytes(data, size);
+    int result;
+    do { result = sem_wait(manager->image_sem); } while (result && errno == EINTR);
+    if (result) return -1;
+    memcpy(target, data, size);
+    control->frame_width = width;
+    control->frame_height = height;
+    control->timestamp = (uint64_t)time(NULL) * 1000000;
+    control->checksum = checksum;
+    control->frame_id++;
+    control->frame_ready = 1;
+    sem_post(manager->image_sem);
+    return 0;
+}
+
+static int read_image_frame(SharedMemoryManager* manager, SharedMemoryType type,
+                            uint8_t* data, uint32_t* width, uint32_t* height,
+                            uint32_t* frame_id) {
+    if (!manager || manager->type != type || !data || !width || !height || !frame_id ||
+        manager->is_writer || !manager->shm_ptr || manager->shm_ptr == (void*)-1 ||
+        !manager->image_sem || manager->image_sem == SEM_FAILED) return -1;
+    SharedMemoryControl* control = type == SHM_TYPE_PCIE ?
+        &((PCIeSharedMemory*)manager->shm_ptr)->control :
+        &((UDPSharedMemory*)manager->shm_ptr)->control;
+    const uint8_t* source = type == SHM_TYPE_PCIE ?
+        ((PCIeSharedMemory*)manager->shm_ptr)->image_data :
+        ((UDPSharedMemory*)manager->shm_ptr)->image_data;
+    if (sem_trywait(manager->image_sem)) return errno == EAGAIN || errno == EINTR ? 1 : -1;
+    if (!control->writer_active) { sem_post(manager->image_sem); return -1; }
+    if (!control->frame_ready || control->frame_id == manager->last_frame_id) {
+        sem_post(manager->image_sem); return 1;
+    }
+    uint32_t w = control->frame_width, h = control->frame_height;
+    uint32_t id = control->frame_id, expected = control->checksum;
+    if (!w || !h || w > 640 || h > 480) { sem_post(manager->image_sem); return -1; }
+    size_t size = (size_t)w * h * 2;
+    memcpy(data, source, size);
+    sem_post(manager->image_sem);
+    if (sum_rgb565_bytes(data, size) != expected) return -1;
+    manager->last_frame_id = id;
+    *width = w; *height = h; *frame_id = id;
+    return 0;
+}
+
+int pcie_shared_memory_write_frame(SharedMemoryManager* manager, const uint8_t* data,
                                   uint32_t width, uint32_t height) {
-    if (!manager || !image_data || manager->type != SHM_TYPE_PCIE) {
-        fprintf(stderr, "Error: invalid parameters for PCIe frame write\n");
-        return -1;
-    }
-
-    if (manager->shm_ptr == (void*)-1) {
-        fprintf(stderr, "Error: shared memory not attached\n");
-        return -1;
-    }
-
-    PCIeSharedMemory* shm = (PCIeSharedMemory*)manager->shm_ptr;
-
-    if (width > PCIE_IMAGE_WIDTH || height > PCIE_IMAGE_HEIGHT) {
-        fprintf(stderr, "Error: image size too large (%dx%d > %dx%d)\n",
-                width, height, PCIE_IMAGE_WIDTH, PCIE_IMAGE_HEIGHT);
-        return -1;
-    }
-
-    shm->control.frame_ready = 0;
-
-    size_t data_size = width * height * 2;
-    memcpy(shm->image_data, image_data, data_size);
-
-    uint32_t checksum = sum_rgb565_bytes(shm->image_data, data_size);
-
-    shm->control.frame_id++;
-    shm->control.frame_width = width;
-    shm->control.frame_height = height;
-    shm->control.timestamp = (uint64_t)time(NULL) * 1000000;
-    shm->control.checksum = checksum;
-
-    shm->control.frame_ready = 1;
-
-    printf("PCIe frame written: id=%u, size=%dx%d, checksum=0x%x\n",
-           shm->control.frame_id, width, height, checksum);
-
-    return 0;
+    return write_image_frame(manager, SHM_TYPE_PCIE, data, width, height);
 }
-
-/* 跳过未就绪或重复的 PCIe 帧；复制后复查帧号和就绪标志，再核对校验值。 */
-int pcie_shared_memory_read_frame(SharedMemoryManager* manager,
-                                 uint8_t* image_data,
-                                 uint32_t* width, uint32_t* height,
-                                 uint32_t* frame_id) {
-    if (!manager || !image_data || !width || !height || !frame_id ||
-        manager->type != SHM_TYPE_PCIE) {
-        fprintf(stderr, "Error: invalid parameters for PCIe frame read\n");
-        return -1;
-    }
-
-    if (manager->shm_ptr == (void*)-1) {
-        fprintf(stderr, "Error: shared memory not attached\n");
-        return -1;
-    }
-
-    PCIeSharedMemory* shm = (PCIeSharedMemory*)manager->shm_ptr;
-
-    static uint32_t last_read_frame_id = 0;
-
-    if (!shm->control.frame_ready) {
-        return 1;
-    }
-
-    if (!shm->control.writer_active) {
-        fprintf(stderr, "Warning: writer is not active\n");
-        return -1;
-    }
-
-    uint32_t current_frame_id = shm->control.frame_id;
-
-    if (current_frame_id == last_read_frame_id) {
-        return 1;
-    }
-
-    if (!shm->control.frame_ready) {
-        return 1;
-    }
-
-    *frame_id = current_frame_id;
-    *width = shm->control.frame_width;
-    *height = shm->control.frame_height;
-    uint32_t expected_checksum = shm->control.checksum;
-
-    size_t data_size = (*width) * (*height) * 2;
-    memcpy(image_data, shm->image_data, data_size);
-
-    if (!shm->control.frame_ready || shm->control.frame_id != current_frame_id) {
-
-        return -1;
-    }
-
-    uint32_t checksum = sum_rgb565_bytes(image_data, data_size);
-
-    if (checksum != expected_checksum) {
-        fprintf(stderr, "Warning: checksum mismatch (expected=0x%x, actual=0x%x)\n",
-                expected_checksum, checksum);
-        return -1;
-    }
-
-    last_read_frame_id = current_frame_id;
-
-    if (current_frame_id % 1000 == 0) {
-        printf("PCIe frame read: id=%u, size=%dx%d, checksum=0x%x\n",
-               *frame_id, *width, *height, checksum);
-    }
-
-    return 0;
+int pcie_shared_memory_read_frame(SharedMemoryManager* manager, uint8_t* data,
+                                 uint32_t* width, uint32_t* height, uint32_t* id) {
+    return read_image_frame(manager, SHM_TYPE_PCIE, data, width, height, id);
 }
-
-/* 将 RGB565 UDP 帧写入对应共享区；元数据与校验值写完后才置位就绪标志。 */
-int udp_shared_memory_write_frame(SharedMemoryManager* manager,
-                                 const uint8_t* image_data,
+int udp_shared_memory_write_frame(SharedMemoryManager* manager, const uint8_t* data,
                                  uint32_t width, uint32_t height) {
-    if (!manager || !image_data || manager->type != SHM_TYPE_UDP) {
-        fprintf(stderr, "Error: invalid parameters for UDP frame write\n");
-        return -1;
-    }
-
-    if (manager->shm_ptr == (void*)-1) {
-        fprintf(stderr, "Error: shared memory not attached\n");
-        return -1;
-    }
-
-    UDPSharedMemory* shm = (UDPSharedMemory*)manager->shm_ptr;
-
-    if (width > UDP_IMAGE_WIDTH || height > UDP_IMAGE_HEIGHT) {
-        fprintf(stderr, "Error: image size too large (%dx%d > %dx%d)\n",
-                width, height, UDP_IMAGE_WIDTH, UDP_IMAGE_HEIGHT);
-        return -1;
-    }
-
-    shm->control.frame_ready = 0;
-
-    size_t data_size = width * height * 2;
-    memcpy(shm->image_data, image_data, data_size);
-
-    uint32_t checksum = sum_rgb565_bytes(shm->image_data, data_size);
-
-    shm->control.frame_id++;
-    shm->control.frame_width = width;
-    shm->control.frame_height = height;
-    shm->control.timestamp = (uint64_t)time(NULL) * 1000000;
-    shm->control.checksum = checksum;
-
-    shm->control.frame_ready = 1;
-
-    printf("UDP frame written: id=%u, size=%dx%d, checksum=0x%x\n",
-           shm->control.frame_id, width, height, checksum);
-
-    return 0;
+    return write_image_frame(manager, SHM_TYPE_UDP, data, width, height);
 }
-
-/* 读取新的 UDP 帧并校验完整性；每次成功读取均保留原有日志输出。 */
-int udp_shared_memory_read_frame(SharedMemoryManager* manager,
-                                uint8_t* image_data,
-                                uint32_t* width, uint32_t* height,
-                                uint32_t* frame_id) {
-    if (!manager || !image_data || !width || !height || !frame_id ||
-        manager->type != SHM_TYPE_UDP) {
-        fprintf(stderr, "Error: invalid parameters for UDP frame read\n");
-        return -1;
-    }
-
-    if (manager->shm_ptr == (void*)-1) {
-        fprintf(stderr, "Error: shared memory not attached\n");
-        return -1;
-    }
-
-    UDPSharedMemory* shm = (UDPSharedMemory*)manager->shm_ptr;
-
-    static uint32_t last_read_frame_id = 0;
-
-    if (!shm->control.frame_ready) {
-        return 1;
-    }
-
-    if (!shm->control.writer_active) {
-        fprintf(stderr, "Warning: writer is not active\n");
-        return -1;
-    }
-
-    uint32_t current_frame_id = shm->control.frame_id;
-
-    if (current_frame_id == last_read_frame_id) {
-        return 1;
-    }
-
-    if (!shm->control.frame_ready) {
-        return 1;
-    }
-
-    *frame_id = current_frame_id;
-    *width = shm->control.frame_width;
-    *height = shm->control.frame_height;
-    uint32_t expected_checksum = shm->control.checksum;
-
-    size_t data_size = (*width) * (*height) * 2;
-    memcpy(image_data, shm->image_data, data_size);
-
-    if (!shm->control.frame_ready || shm->control.frame_id != current_frame_id) {
-
-        return -1;
-    }
-
-    uint32_t checksum = sum_rgb565_bytes(image_data, data_size);
-
-    if (checksum != expected_checksum) {
-        fprintf(stderr, "Warning: checksum mismatch (expected=0x%x, actual=0x%x)\n",
-                expected_checksum, checksum);
-        return -1;
-    }
-
-    last_read_frame_id = current_frame_id;
-
-    printf("UDP frame read: id=%u, size=%dx%d, checksum=0x%x\n",
-           *frame_id, *width, *height, checksum);
-
-    return 0;
+int udp_shared_memory_read_frame(SharedMemoryManager* manager, uint8_t* data,
+                                uint32_t* width, uint32_t* height, uint32_t* id) {
+    return read_image_frame(manager, SHM_TYPE_UDP, data, width, height, id);
 }
 
 /* 按共享区类型选取控制头并输出帧号、状态、尺寸、校验值及映射信息。 */
@@ -485,7 +391,8 @@ int curve_detection_shm_init(int is_writer) {
 
     if (is_writer) {
         memset(g_curve_shm_ptr, 0, sizeof(CurveDetectionSharedMemory));
-        g_curve_shm_ptr->writer_active = 1;
+        __atomic_store_n(reserved_word(g_curve_shm_ptr->reserved, 0), CURVE_SOURCE_MAGIC, __ATOMIC_RELEASE);
+        __atomic_store_n(&g_curve_shm_ptr->writer_active, 1, __ATOMIC_RELEASE);
         g_curve_shm_ptr->curve_type = CURVE_NONE;
         printf("初始化弯道检测控制结构\n");
     }
@@ -517,57 +424,55 @@ void curve_detection_shm_cleanup(void) {
     printf("弯道检测共享内存已清理\n");
 }
 
-/* 仅写端可以发布弯道结果；保留帧号、分类、置信度、角度和原有时间戳更新顺序。 */
-int curve_detection_update(uint32_t frame_id, CurveType curve_type,
-                          uint32_t confidence, uint32_t curve_angle) {
-    if (g_curve_shm_ptr == NULL) {
-        fprintf(stderr, "错误: 弯道检测共享内存未初始化\n");
-        return -1;
-    }
-
-    if (!g_curve_is_writer) {
-        fprintf(stderr, "错误: 只有写入者可以更新弯道检测结果\n");
-        return -1;
-    }
-
-    g_curve_shm_ptr->frame_id = frame_id;
-    g_curve_shm_ptr->curve_type = curve_type;
-    g_curve_shm_ptr->confidence = confidence;
-    g_curve_shm_ptr->curve_angle = curve_angle;
+/* Reserved words are naturally 32-bit aligned even though reserved starts at byte 28.
+ * Do not cast capture timestamp to atomic uint64_t on AArch64's unaligned offset. */
+int curve_detection_update_source(uint32_t frame_id, CurveType curve_type,
+                                  uint32_t confidence, uint32_t curve_angle,
+                                  uint64_t capture_monotonic_ns) {
+    if (!g_curve_shm_ptr || !g_curve_is_writer) return -1;
+    uint32_t* seq = reserved_word(g_curve_shm_ptr->reserved, 1);
+    __atomic_fetch_add(seq, 1u, __ATOMIC_ACQ_REL);
+    __atomic_store_n(&g_curve_shm_ptr->frame_id, frame_id, __ATOMIC_RELAXED);
+    __atomic_store_n(&g_curve_shm_ptr->curve_type, (uint32_t)curve_type, __ATOMIC_RELAXED);
+    __atomic_store_n(&g_curve_shm_ptr->confidence, confidence, __ATOMIC_RELAXED);
+    __atomic_store_n(&g_curve_shm_ptr->curve_angle, curve_angle, __ATOMIC_RELAXED);
+    __atomic_store_n(reserved_word(g_curve_shm_ptr->reserved, 2), (uint32_t)capture_monotonic_ns, __ATOMIC_RELAXED);
+    __atomic_store_n(reserved_word(g_curve_shm_ptr->reserved, 3), (uint32_t)(capture_monotonic_ns >> 32), __ATOMIC_RELAXED);
     g_curve_shm_ptr->timestamp = (uint64_t)time(NULL) * 1000000;
-
-    if (frame_id % 100 == 0) {
-        const char* curve_name = "未知";
-        switch(curve_type) {
-            case CURVE_NONE: curve_name = "直道"; break;
-            case CURVE_LEFT: curve_name = "左弯"; break;
-            case CURVE_RIGHT: curve_name = "右弯"; break;
-            case CURVE_BOTH: curve_name = "左右弯"; break;
-        }
-        printf("弯道检测更新: frame=%u, type=%s, confidence=%u%%, angle=%u度\n",
-               frame_id, curve_name, confidence, curve_angle);
-    }
-
+    __atomic_fetch_add(seq, 1u, __ATOMIC_RELEASE);
     return 0;
 }
-
-/* 从已附加的弯道共享段读出四个字段；初始化和输出参数均须有效。 */
+int curve_detection_update(uint32_t frame_id, CurveType curve_type,
+                          uint32_t confidence, uint32_t curve_angle) {
+    return curve_detection_update_source(frame_id, curve_type, confidence, curve_angle, 0);
+}
+int curve_detection_read_source(uint32_t* frame_id, CurveType* curve_type,
+                                uint32_t* confidence, uint32_t* curve_angle,
+                                uint64_t* capture_monotonic_ns) {
+    if (!g_curve_shm_ptr || !frame_id || !curve_type || !confidence || !curve_angle || !capture_monotonic_ns ||
+        !__atomic_load_n(&g_curve_shm_ptr->writer_active, __ATOMIC_ACQUIRE)) return -1;
+    uint32_t* seq = reserved_word(g_curve_shm_ptr->reserved, 1);
+    int modern = __atomic_load_n(reserved_word(g_curve_shm_ptr->reserved, 0), __ATOMIC_ACQUIRE) == CURVE_SOURCE_MAGIC;
+    for (unsigned attempt = 0; attempt < 4; ++attempt) {
+        uint32_t before = modern ? __atomic_load_n(seq, __ATOMIC_ACQUIRE) : 0;
+        if (before & 1u) continue;
+        uint32_t id = __atomic_load_n(&g_curve_shm_ptr->frame_id, __ATOMIC_RELAXED);
+        uint32_t type = __atomic_load_n(&g_curve_shm_ptr->curve_type, __ATOMIC_RELAXED);
+        uint32_t conf = __atomic_load_n(&g_curve_shm_ptr->confidence, __ATOMIC_RELAXED);
+        uint32_t angle = __atomic_load_n(&g_curve_shm_ptr->curve_angle, __ATOMIC_RELAXED);
+        uint32_t lo = modern ? __atomic_load_n(reserved_word(g_curve_shm_ptr->reserved, 2), __ATOMIC_RELAXED) : 0;
+        uint32_t hi = modern ? __atomic_load_n(reserved_word(g_curve_shm_ptr->reserved, 3), __ATOMIC_RELAXED) : 0;
+        __atomic_thread_fence(__ATOMIC_ACQUIRE);
+        if (modern && before != __atomic_load_n(seq, __ATOMIC_RELAXED)) continue;
+        if (!__atomic_load_n(&g_curve_shm_ptr->writer_active, __ATOMIC_ACQUIRE)) return -1;
+        *frame_id = id; *curve_type = (CurveType)type; *confidence = conf; *curve_angle = angle;
+        *capture_monotonic_ns = ((uint64_t)hi << 32) | lo;
+        return 0;
+    }
+    return -1;
+}
 int curve_detection_read(uint32_t* frame_id, CurveType* curve_type,
                         uint32_t* confidence, uint32_t* curve_angle) {
-    if (g_curve_shm_ptr == NULL) {
-        fprintf(stderr, "错误: 弯道检测共享内存未初始化\n");
-        return -1;
-    }
-
-    if (!frame_id || !curve_type || !confidence || !curve_angle) {
-        fprintf(stderr, "错误: 弯道检测读取参数为空\n");
-        return -1;
-    }
-
-    *frame_id = g_curve_shm_ptr->frame_id;
-    *curve_type = (CurveType)g_curve_shm_ptr->curve_type;
-    *confidence = g_curve_shm_ptr->confidence;
-    *curve_angle = g_curve_shm_ptr->curve_angle;
-
-    return 0;
+    uint64_t capture_ns;
+    return curve_detection_read_source(frame_id, curve_type, confidence, curve_angle, &capture_ns);
 }

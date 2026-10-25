@@ -1,3 +1,6 @@
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
 #include "yolo_integration.h"
 #include "preprocess.h"
 #include "person_alert_effects.h"
@@ -6,6 +9,35 @@
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
+#include <time.h>
+
+static uint64_t inference_clock_ns(void) {
+    struct timespec now;
+    if (clock_gettime(CLOCK_MONOTONIC, &now) != 0) return 0;
+    return (uint64_t)now.tv_sec * 1000000000ULL + (uint64_t)now.tv_nsec;
+}
+
+static void record_inference_profile(uint64_t start, uint64_t preprocessed,
+                                     uint64_t input_set, uint64_t output_ready,
+                                     uint64_t finished) {
+    static uint64_t window_start, jobs, preprocess_ns, input_ns, npu_ns, post_ns;
+    if (!window_start) window_start = start;
+    jobs++;
+    preprocess_ns += preprocessed - start;
+    input_ns += input_set - preprocessed;
+    npu_ns += output_ready - input_set;
+    post_ns += finished - output_ready;
+    if (finished && finished - window_start >= 5000000000ULL) {
+        printf("[PERF S-YOLO] jobs=%llu preprocess_ms=%.2f input_ms=%.2f npu_ms=%.2f post_ms=%.2f\n",
+               (unsigned long long)jobs, preprocess_ns / (double)jobs / 1e6,
+               input_ns / (double)jobs / 1e6, npu_ns / (double)jobs / 1e6,
+               post_ns / (double)jobs / 1e6);
+        fflush(stdout);
+        window_start = finished;
+        jobs = preprocess_ns = input_ns = npu_ns = post_ns = 0;
+    }
+}
+
 
 int yolo_engine_init(YOLOEngine* engine, const char* model_path, const char* labels_path) {
     if (!engine || !model_path || !labels_path) {
@@ -143,12 +175,14 @@ int yolo_engine_detect(YOLOEngine* engine, const uint8_t* rgb_data, int width, i
         return -1;
     }
     
+    uint64_t profile_start = inference_clock_ns();
     // 预处理：将输入图像调整到模型输入尺寸
     BOX_RECT letterbox_pads;
     float scale;
     letterbox_simple(rgb_data, engine->input_data, width, height, 
                     engine->model_width, engine->model_height, &letterbox_pads, &scale);
     
+    uint64_t preprocessed = inference_clock_ns();
     // 设置输入
     engine->inputs[0].index = 0;
     engine->inputs[0].type = RKNN_TENSOR_UINT8;
@@ -168,6 +202,7 @@ int yolo_engine_detect(YOLOEngine* engine, const uint8_t* rgb_data, int width, i
         return -1;
     }
     
+    uint64_t input_set = inference_clock_ns();
     ret = rknn_run(engine->ctx, NULL);
     if (ret < 0) {
         printf("模型推理失败: %d\n", ret);
@@ -180,6 +215,7 @@ int yolo_engine_detect(YOLOEngine* engine, const uint8_t* rgb_data, int width, i
         return -1;
     }
     
+    uint64_t output_ready = inference_clock_ns();
     // 后处理 - 使用letterbox参数进行正确的坐标映射
     int post_ret = post_process_simple((int8_t*)engine->outputs[0].buf,
                                       (int8_t*)engine->outputs[1].buf, 
@@ -194,6 +230,7 @@ int yolo_engine_detect(YOLOEngine* engine, const uint8_t* rgb_data, int width, i
     // 释放输出
     rknn_outputs_release(engine->ctx, engine->io_num.n_output, engine->outputs);
     
+    record_inference_profile(profile_start, preprocessed, input_set, output_ready, inference_clock_ns());
     return post_ret;
 }
 

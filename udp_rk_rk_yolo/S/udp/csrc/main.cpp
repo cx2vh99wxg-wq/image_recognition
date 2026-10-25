@@ -1,537 +1,303 @@
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
 #include "shared_memory.h"
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
+#include "video_transport_v2.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cerrno>
+#include <csignal>
+#include <new>
 #include <unistd.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <time.h>
-#include <sys/time.h>
-#include <signal.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
 #include <sys/socket.h>
+#include <sys/uio.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <errno.h>
+#include <time.h>
 
-/* 为了使用aligned_alloc，需要定义_ISOC11_SOURCE */
-#ifndef _ISOC11_SOURCE
-#define _ISOC11_SOURCE
-#endif
-
-//=========================================================================
-// *作   者：科研轮转（C语言重构版：UDP网络接收后台程序）
-// *完成时间：2025年10月14日
-// *实现功能：480p视频流UDP行同步接收并写入共享内存（网络接收端）
-// *性能优化：去除X11显示功能，专注于网络接收和共享内存写入
-//=========================================================================
-
-//=========================================================================
-// UDP网络接收配置
-//=========================================================================
-#define UDP_PORT 8888
-#define MAX_PACKET_SIZE 1400
-#define FRAME_BUFFER_SIZE (IMAGE_WIDTH * IMAGE_HEIGHT * 2)  // RGB565格式
-#define RECEIVE_TIMEOUT_SEC 5
-
-#define IMAGE_WIDTH  640
+static_assert(sizeof(SharedMemoryControl) == 104, "Image control ABI must remain 104 bytes");
+static_assert(sizeof(CurveDetectionSharedMemory) == 72, "Curve shared ABI must remain 72 bytes");
+#define IMAGE_WIDTH 640
 #define IMAGE_HEIGHT 480
-#define LEADING_PIXELS 120   /* 每行前导像素数量 */
-#define EXTRA_SKIP_PIXELS 0  /* 额外需要跳过的前导像素（微调） */
-
-/* 列重排配置：将第n列到第m列移动到行末 */
-#define COLUMN_REARRANGE_START 0   /* 起始列n (0-based索引，0表示第一列) */
-#define COLUMN_REARRANGE_END   0   /* 结束列m (0-based索引，包含此列) */
-#define COLUMN_SHIFT_UP_ROWS   0   /* 移动到末尾的列向上移动k行 (0表示不移动) */
-
-/* 控制是否显示前导像素 */
-#define SHOW_LEADING_PIXELS 0  /* 0=不显示前导像素(默认), 1=显示前导像素 */
-
-#if SHOW_LEADING_PIXELS
-    #define DISPLAY_WIDTH  IMAGE_WIDTH   /* 显示前导像素时，保持显示宽度为640 */
-    #define ACTUAL_WIDTH   IMAGE_WIDTH   /* 实际复制的像素宽度 */
-    #define SKIP_PIXELS    0             /* 从前导像素开始 */
-#else
-    #define DISPLAY_WIDTH  IMAGE_WIDTH   /* 不显示前导像素，显示宽度为640 */
-    #define ACTUAL_WIDTH   IMAGE_WIDTH   /* 实际复制的像素宽度 */
-    #define SKIP_PIXELS    (LEADING_PIXELS + EXTRA_SKIP_PIXELS) /* 跳过前导像素+额外偏移 */
-#endif
-
-#define DISPLAY_HEIGHT IMAGE_HEIGHT  /* 直接使用原始图像尺寸 */
-
-//=========================================================================
-// 帧同步和行同步结构定义 - 增强版
-//=========================================================================
-#define FRAME_HEADER_MAGIC 0xFF00FF00  /* 帧头魔数 */
-#define FRAME_TRAILER_MAGIC 0x00FF00FF /* 帧尾魔数 */
-#define LINE_HEADER_MAGIC 0xAA55AA55   /* 行头魔数 */
-#define SYNC_TIMEOUT_MS 1000           /* 同步超时(毫秒) - 改为1秒 */
-#define MAX_RESYNC_ATTEMPTS 10         /* 最大重同步次数 */
-#define LINE_DATA_MAX_SIZE (IMAGE_WIDTH * 2 + 100) /* 行数据最大大小 */
-
-typedef struct {
-    uint32_t magic;        /* 魔数: FRAME_HEADER_MAGIC */
-    uint32_t frame_id;     /* 帧ID */
-    uint32_t width;        /* 图像宽度 */
-    uint32_t height;       /* 图像高度 */
-    uint32_t data_size;    /* 帧数据大小 */
-    uint32_t line_count;   /* 行数 */
-    uint32_t checksum;     /* 帧校验和 */
-    uint32_t timestamp;    /* 时间戳 */
-    uint32_t curve_type;   /* 弯道类型: 0=无, 1=左弯, 2=右弯, 3=左右弯 */
-    uint32_t curve_confidence; /* 弯道检测置信度 (0-100) */
-    uint32_t curve_angle;  /* 弯道角度 (度数) */
-    uint32_t reserved;     /* 预留字段 */
-} FrameHeader;
-
-typedef struct {
-    uint32_t magic;        /* 魔数: FRAME_TRAILER_MAGIC */
-    uint32_t frame_id;     /* 帧ID */
-    uint32_t checksum;     /* 帧校验和 */
-    uint32_t total_lines;  /* 总行数 */
-} FrameTrailer;
-
-typedef struct {
-    uint32_t magic;        /* 魔数: LINE_HEADER_MAGIC */
-    uint16_t line_id;      /* 行号 */
-    uint16_t line_size;    /* 行数据大小 */
-    uint32_t line_checksum;/* 行校验和 */
-} LineHeader;
-
-//=========================================================================
-// 同步状态枚举
-//=========================================================================
-typedef enum {
-    SYNC_STATE_IDLE,           /* 空闲状态 */
-    SYNC_STATE_WAIT_FRAME,     /* 等待帧头 */
-    SYNC_STATE_RECV_LINES,     /* 接收行数据 */
-    SYNC_STATE_WAIT_TRAILER,   /* 等待帧尾 */
-    SYNC_STATE_ERROR           /* 错误状态 */
-} SyncState;
-
-//=========================================================================
-// 同步控制结构
-//=========================================================================
-typedef struct {
-    SyncState state;
-    uint32_t current_frame_id;
-    uint16_t expected_line_id;
-    uint32_t received_lines;
-    uint32_t frame_checksum;
-    struct timeval sync_start_time;
-    int resync_count;
-    uint32_t lost_frames;
-    uint32_t corrupted_frames;
-    uint32_t recovered_frames;
-    uint32_t total_frames;
-} SyncController;
-
-//=========================================================================
-// 网络接收器结构体
-//=========================================================================
-typedef struct {
+#define UDP_PORT 8888
+#define FRAME_BUFFER_SIZE (640 * 480 * 2)
+#define MAX_PACKET_SIZE 1400
+#define FRAME_HEADER_MAGIC 0xFF00FF00u
+#define FRAME_TRAILER_MAGIC 0x00FF00FFu
+#define LINE_HEADER_MAGIC 0xAA55AA55u
+struct FrameHeader {
+    uint32_t magic, frame_id, width, height, data_size, line_count, checksum, timestamp;
+    uint32_t curve_type, curve_confidence, curve_angle, reserved;
+};
+struct FrameTrailer { uint32_t magic, frame_id, checksum, total_lines; };
+struct LineHeader { uint32_t magic; uint16_t line_id, line_size; uint32_t line_checksum; };
+struct Datagram { uint8_t data[MAX_PACKET_SIZE]; sockaddr_in source; unsigned size; uint64_t received_ns; };
+struct NetworkReceiver {
     int socket_fd;
-    struct sockaddr_in server_addr;
-    struct sockaddr_in client_addr;
-    socklen_t client_len;
-    uint8_t* frame_buffer;
-    size_t buffer_size;
-    SyncController sync_ctrl;   /* 同步控制器 */
-} NetworkReceiver;
-
-//=========================================================================
-// 全局变量
-//=========================================================================
-static volatile int keep_running = 1;
+    uint8_t *frame_buffer, *legacy_buffer;
+    video_v2::Assembler* assembler;
+    video_v2::CurveReceiverState curve;
+    bool compatibility_logged;
+    uint64_t active_source, last_peer_ns;
+    bool have_source;
+    unsigned protocol;
+    bool legacy_active, legacy_pending, legacy_ready, legacy_have_id;
+    uint32_t legacy_id, legacy_line, legacy_sum, pending_sum;
+    FrameHeader legacy_header;
+    video_v2::Metadata legacy_metadata;
+    uint64_t legacy_started, legacy_complete, legacy_incomplete, legacy_corrupt, legacy_assembly_ns;
+    uint64_t report_start, report_bytes, report_published;
+    uint64_t previous_complete, previous_incomplete, previous_corrupt, previous_assembly_ns;
+    uint64_t previous_duplicates, previous_skipped, kernel_drops;
+};
+static volatile sig_atomic_t keep_running = 1;
 static SharedMemoryManager shm_manager;
 static int curve_detection_available = 0;
-
-//=========================================================================
-// 函数声明
-//=========================================================================
-// 网络接收函数
-int network_receiver_init(NetworkReceiver* receiver);
-int network_receive_with_sync(NetworkReceiver* receiver);
-void network_receiver_cleanup(NetworkReceiver* receiver);
-
-// 同步相关函数
-uint32_t calculate_checksum(const uint8_t* data, size_t size);
-void reset_sync_state(NetworkReceiver* receiver);
-int set_socket_timeout(int sockfd, int timeout_ms);
-void print_sync_statistics(const NetworkReceiver* receiver);
-
-// 信号处理函数
-void signal_handler(int sig);
-
-// 工具函数
-double get_time_diff(struct timeval start, struct timeval end);
-void save_frame_to_ppm(const uint8_t* rgb565_data, const char* filename);
-void rgb565_to_rgb888(const uint16_t* rgb565_data, uint8_t* rgb888_data, size_t pixel_count);
-
-//=========================================================================
-// 信号处理函数
-//=========================================================================
-void signal_handler(int sig) {
-    keep_running = 0;
+static uint64_t monotonic_ns() {
+    timespec t; clock_gettime(CLOCK_MONOTONIC, &t);
+    return (uint64_t)t.tv_sec * 1000000000ULL + t.tv_nsec;
 }
-
-//=========================================================================
-// 工具函数实现
-//=========================================================================
-double get_time_diff(struct timeval start, struct timeval end) {
-    return (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
+void signal_handler(int) { keep_running = 0; }
+void network_receiver_cleanup(NetworkReceiver* r) {
+    if (!r) return;
+    if (r->socket_fd >= 0) close(r->socket_fd);
+    free(r->frame_buffer); free(r->legacy_buffer); delete r->assembler;
+    r->socket_fd = -1; r->frame_buffer = r->legacy_buffer = nullptr; r->assembler = nullptr;
 }
-
-uint32_t calculate_checksum(const uint8_t* data, size_t size) {
-    uint32_t checksum = 0;
-    for (size_t i = 0; i < size; ++i) {
-        checksum += data[i];
+int network_receiver_init(NetworkReceiver* r) {
+    if (!r) return -1;
+    *r = NetworkReceiver{}; r->socket_fd = -1;
+    r->frame_buffer = (uint8_t*)std::malloc(FRAME_BUFFER_SIZE);
+    r->legacy_buffer = (uint8_t*)std::malloc(FRAME_BUFFER_SIZE);
+    try { r->assembler = new video_v2::Assembler(); }
+    catch (const std::bad_alloc&) { network_receiver_cleanup(r); return -1; }
+    if (!r->frame_buffer || !r->legacy_buffer) { network_receiver_cleanup(r); return -1; }
+    r->socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (r->socket_fd < 0) { network_receiver_cleanup(r); return -1; }
+    int one = 1, buffer = 2 * FRAME_BUFFER_SIZE;
+    setsockopt(r->socket_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+    setsockopt(r->socket_fd, SOL_SOCKET, SO_RCVBUF, &buffer, sizeof(buffer));
+#ifdef SO_RXQ_OVFL
+    setsockopt(r->socket_fd, SOL_SOCKET, SO_RXQ_OVFL, &one, sizeof(one));
+#endif
+    setsockopt(r->socket_fd, SOL_SOCKET, SO_TIMESTAMPNS, &one, sizeof(one));
+    timeval timeout = {0, 100000};
+    setsockopt(r->socket_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+    sockaddr_in address = {};
+    address.sin_family = AF_INET; address.sin_addr.s_addr = INADDR_ANY; address.sin_port = htons(UDP_PORT);
+    if (bind(r->socket_fd, (sockaddr*)&address, sizeof(address))) {
+        perror("UDP bind"); network_receiver_cleanup(r); return -1;
     }
-    return checksum;
+    socklen_t size = sizeof(buffer);
+    getsockopt(r->socket_fd, SOL_SOCKET, SO_RCVBUF, &buffer, &size);
+    printf("[UDP_RX] socket_rcvbuf=%d batch=%u max_inflight=2 protocol=V3/V2/legacy curve_ttl_ms=500\n", buffer, video_v2::BATCH);
+    r->report_start = monotonic_ns(); return 0;
 }
-
-void rgb565_to_rgb888(const uint16_t* rgb565_data, uint8_t* rgb888_data, size_t pixel_count) {
-    for (size_t i = 0; i < pixel_count; i++) {
-        uint16_t pixel = rgb565_data[i];
-        
-        // 提取RGB分量 (大端格式：RRRRRGGGGGGBBBBB)
-        uint8_t r = (pixel >> 11) & 0x1F;
-        uint8_t g = (pixel >> 5) & 0x3F;
-        uint8_t b = pixel & 0x1F;
-        
-        // 扩展到8位
-        rgb888_data[i * 3 + 0] = (r << 3) | (r >> 2);  // R
-        rgb888_data[i * 3 + 1] = (g << 2) | (g >> 4);  // G
-        rgb888_data[i * 3 + 2] = (b << 3) | (b >> 2);  // B
+static void report_receiver(NetworkReceiver* r) {
+    uint64_t now = monotonic_ns();
+    if (now - r->report_start < 5000000000ULL) return;
+    const video_v2::Statistics& v2 = r->assembler->statistics();
+    uint64_t complete = v2.complete + r->legacy_complete;
+    uint64_t incomplete = v2.incomplete + r->legacy_incomplete;
+    uint64_t corrupt = v2.corrupt + r->legacy_corrupt;
+    uint64_t assembly = v2.assembly_ns + r->legacy_assembly_ns;
+    uint64_t completed = complete - r->previous_complete;
+    double seconds = (now - r->report_start) / 1e9;
+    printf("[UDP_RX] publish_fps=%.2f complete_fps=%.2f udp_mbps=%.2f assembly_ms=%.2f incomplete=%llu corrupt=%llu duplicate=%llu skip_complete=%llu kernel_drop_total=%llu\n",
+           r->report_published / seconds, completed / seconds, r->report_bytes * 8.0 / seconds / 1e6,
+           completed ? (assembly - r->previous_assembly_ns) / 1e6 / completed : 0.0,
+           (unsigned long long)(incomplete - r->previous_incomplete),
+           (unsigned long long)(corrupt - r->previous_corrupt),
+           (unsigned long long)(v2.duplicates - r->previous_duplicates),
+           (unsigned long long)(v2.skipped_complete - r->previous_skipped),
+           (unsigned long long)r->kernel_drops);
+    r->previous_complete = complete; r->previous_incomplete = incomplete;
+    r->previous_corrupt = corrupt; r->previous_assembly_ns = assembly;
+    r->previous_duplicates = v2.duplicates; r->previous_skipped = v2.skipped_complete;
+    r->report_start = now; r->report_bytes = r->report_published = 0;
+}
+static bool legacy_header(const uint8_t* data, size_t size, FrameHeader& h) {
+    if (size != sizeof(h)) return false;
+    std::memcpy(&h, data, sizeof(h));
+    return h.magic == FRAME_HEADER_MAGIC && h.width == IMAGE_WIDTH && h.height == IMAGE_HEIGHT &&
+           h.data_size == FRAME_BUFFER_SIZE && h.line_count == IMAGE_HEIGHT &&
+           h.curve_type <= 3 && h.curve_confidence <= 100;
+}
+static void reset_legacy(NetworkReceiver* r, bool failed) {
+    if (failed && r->legacy_active) ++r->legacy_incomplete;
+    r->legacy_active = r->legacy_pending = false; r->legacy_line = r->legacy_sum = 0;
+}
+static void ingest_legacy(NetworkReceiver* r, const uint8_t* data, size_t size,
+                           uint64_t now, bool header_found, const FrameHeader& header) {
+    if (header_found) {
+        reset_legacy(r, true);
+        if (r->legacy_have_id && !video_v2::newer(header.frame_id, r->legacy_id)) return;
+        r->legacy_header = header; r->legacy_started = now; r->legacy_active = true; return;
     }
+    if (!r->legacy_active) return;
+    if (now - r->legacy_started > video_v2::FRAME_TIMEOUT_NS) { reset_legacy(r, true); return; }
+    if (r->legacy_line == IMAGE_HEIGHT && size == sizeof(FrameTrailer)) {
+        FrameTrailer trailer; std::memcpy(&trailer, data, sizeof(trailer));
+        if (trailer.magic == FRAME_TRAILER_MAGIC && trailer.frame_id == r->legacy_header.frame_id &&
+            trailer.total_lines == IMAGE_HEIGHT && trailer.checksum == r->legacy_sum) {
+            std::memcpy(r->frame_buffer, r->legacy_buffer, FRAME_BUFFER_SIZE);
+            r->legacy_metadata.frame_id = trailer.frame_id; r->legacy_metadata.checksum = trailer.checksum;
+            r->legacy_metadata.curve_type = r->legacy_header.curve_type;
+            r->legacy_metadata.version = 1; r->legacy_metadata.curve_confidence = 0;
+            r->legacy_metadata.curve_angle = r->legacy_header.curve_angle;
+            r->legacy_ready = true; r->legacy_have_id = true; r->legacy_id = trailer.frame_id;
+            ++r->legacy_complete; r->legacy_assembly_ns += now - r->legacy_started;
+            reset_legacy(r, false); return;
+        }
+    } else if (!r->legacy_pending && r->legacy_line < IMAGE_HEIGHT && size == sizeof(LineHeader)) {
+        LineHeader line; std::memcpy(&line, data, sizeof(line));
+        if (line.magic == LINE_HEADER_MAGIC && line.line_id == r->legacy_line &&
+            line.line_size == video_v2::LINE_BYTES) {
+            r->pending_sum = line.line_checksum; r->legacy_pending = true; return;
+        }
+    } else if (r->legacy_pending && size == video_v2::LINE_BYTES &&
+               video_v2::checksum(data, size) == r->pending_sum) {
+        std::memcpy(r->legacy_buffer + r->legacy_line * video_v2::LINE_BYTES, data, size);
+        r->legacy_sum += r->pending_sum; ++r->legacy_line; r->legacy_pending = false; return;
+    }
+    ++r->legacy_corrupt; reset_legacy(r, true);
 }
-
-void save_frame_to_ppm(const uint8_t* rgb565_data, const char* filename) {
-    FILE* fp = fopen(filename, "wb");
-    if (!fp) {
-        perror("无法创建PPM文件");
+static void ingest_datagram(NetworkReceiver* r, const Datagram& packet) {
+    if (!packet.size || packet.size > MAX_PACKET_SIZE) return;
+    uint64_t now = monotonic_ns();
+    FrameHeader old_header = {};
+    bool v2 = video_v2::is_packet(packet.data, packet.size);
+    bool old = !v2 && legacy_header(packet.data, packet.size, old_header);
+    uint64_t source = ((uint64_t)packet.source.sin_addr.s_addr << 16) | packet.source.sin_port;
+    if (v2) {
+        if (r->protocol == 1 && r->have_source && now - r->last_peer_ns < video_v2::FRAME_TIMEOUT_NS) return;
+        // The assembler owns V2/V3 session transitions and retired-session rejection.
+        r->protocol = 2;
+        if (r->assembler->ingest(packet.data, packet.size, source, now, packet.received_ns) >= 0)
+            r->last_peer_ns = now;
         return;
     }
-    
-    // 转换为RGB888格式
-    uint8_t* rgb888_buffer = (uint8_t*)malloc(IMAGE_WIDTH * IMAGE_HEIGHT * 3);
-    if (!rgb888_buffer) {
-        fclose(fp);
-        return;
+    if (r->protocol == 2) {
+        if (!old || now - r->last_peer_ns < video_v2::FRAME_TIMEOUT_NS) return;
+        r->assembler->reset_session(); r->have_source = false;
     }
-    
-    rgb565_to_rgb888((const uint16_t*)rgb565_data, rgb888_buffer, IMAGE_WIDTH * IMAGE_HEIGHT);
-    
-    // 写入PPM头
-    fprintf(fp, "P6\n%d %d\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
-    
-    // 写入像素数据
-    fwrite(rgb888_buffer, 3, IMAGE_WIDTH * IMAGE_HEIGHT, fp);
-    
-    fclose(fp);
-    free(rgb888_buffer);
+    if (!r->have_source || source != r->active_source) {
+        if (!old || (r->have_source && now - r->last_peer_ns < video_v2::FRAME_TIMEOUT_NS)) return;
+        reset_legacy(r, true); r->legacy_have_id = r->legacy_ready = false;
+        r->active_source = source; r->have_source = true;
+    }
+    r->protocol = 1; r->last_peer_ns = now;
+    ingest_legacy(r, packet.data, packet.size, now, old, old_header);
+}
+static void publish_curve(const video_v2::CurveEvent& event) {
+    if (curve_detection_available)
+        curve_detection_update(event.frame_id, (CurveType)event.type, event.confidence, event.angle);
 }
 
-int set_socket_timeout(int sockfd, int timeout_ms) {
-    struct timeval timeout;
-    timeout.tv_sec = timeout_ms / 1000;
-    timeout.tv_usec = (timeout_ms % 1000) * 1000;
-    
-    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
-        perror("设置socket超时失败");
-        return -1;
-    }
-    
-    return 0;
-}
-
-//=========================================================================
-// 网络接收器函数实现
-//=========================================================================
-int network_receiver_init(NetworkReceiver* receiver) {
-    if (!receiver) {
-        return -1;
-    }
-    
-    memset(receiver, 0, sizeof(NetworkReceiver));
-    receiver->socket_fd = -1;
-    
-    // 分配缓冲区
-    receiver->buffer_size = FRAME_BUFFER_SIZE;
-    receiver->frame_buffer = (uint8_t*)malloc(receiver->buffer_size);
-    
-    if (!receiver->frame_buffer) {
-        network_receiver_cleanup(receiver);
-        return -1;
-    }
-    
-    memset(receiver->frame_buffer, 0, receiver->buffer_size);
-    
-    // 初始化同步控制器
-    reset_sync_state(receiver);
-    
-    // 创建UDP socket
-    receiver->socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (receiver->socket_fd < 0) {
-        perror("UDP Socket创建失败");
-        network_receiver_cleanup(receiver);
-        return -1;
-    }
-    
-    // 设置socket选项
-    int reuse = 1;
-    if (setsockopt(receiver->socket_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0) {
-        perror("设置SO_REUSEADDR失败");
-    }
-    
-    // 设置接收缓冲区大小
-    int recv_buf_size = 8 * 1024 * 1024;  // 8MB
-    if (setsockopt(receiver->socket_fd, SOL_SOCKET, SO_RCVBUF, &recv_buf_size, sizeof(recv_buf_size)) < 0) {
-        perror("设置接收缓冲区大小失败");
-    }
-    
-    // 使用阻塞接收与超时，等待每个数据报到达。
-    // 绑定到端口
-    receiver->server_addr.sin_family = AF_INET;
-    receiver->server_addr.sin_addr.s_addr = INADDR_ANY;
-    receiver->server_addr.sin_port = htons(UDP_PORT);
-    
-    if (bind(receiver->socket_fd, (struct sockaddr*)&receiver->server_addr, sizeof(receiver->server_addr)) < 0) {
-        perror("UDP绑定失败");
-        network_receiver_cleanup(receiver);
-        return -1;
-    }
-    
-    // 设置超时
-    if (set_socket_timeout(receiver->socket_fd, SYNC_TIMEOUT_MS) != 0) {
-        // 非致命错误，继续执行
-    }
-    
-    receiver->client_len = sizeof(receiver->client_addr);
-    
-    return 0;
-}
-
-void reset_sync_state(NetworkReceiver* receiver) {
-    if (!receiver) {
-        return;
-    }
-    
-    receiver->sync_ctrl.state = SYNC_STATE_WAIT_FRAME;
-    receiver->sync_ctrl.current_frame_id = 0;
-    receiver->sync_ctrl.expected_line_id = 0;
-    receiver->sync_ctrl.received_lines = 0;
-    receiver->sync_ctrl.frame_checksum = 0;
-    receiver->sync_ctrl.resync_count = 0;
-    
-    gettimeofday(&receiver->sync_ctrl.sync_start_time, NULL);
-}
-
-void print_sync_statistics(const NetworkReceiver* receiver) {
-    if (!receiver) return;
-    
-    // 统计信息已移除，减少输出
-}
-
-//=========================================================================
-// 按数据报接收完整帧，并在包丢失时重新同步到下一帧头
-//=========================================================================
-// 读取一个UDP数据报。超时返回0，让主循环及时处理停止信号。
-static ssize_t receive_packet(NetworkReceiver* receiver, uint8_t* packet, size_t capacity) {
-    while (keep_running) {
-        receiver->client_len = sizeof(receiver->client_addr);
-        ssize_t size = recvfrom(receiver->socket_fd, packet, capacity, 0,
-                                (struct sockaddr*)&receiver->client_addr, &receiver->client_len);
-        if (size >= 0) return size;
-        if (errno == EINTR) continue;
-        if (errno == EAGAIN || errno == EWOULDBLOCK) return 0;
-        perror("UDP接收失败");
-        return -1;
-    }
-    return 0;
-}
-
-int network_receive_with_sync(NetworkReceiver* receiver) {
-    if (!receiver || !receiver->frame_buffer) return -1;
-
-    uint8_t packet[MAX_PACKET_SIZE];
-    FrameHeader header;
-    // 启动在半帧或发生丢包时，扫描到下一个有效帧头。
-    while (keep_running) {
-        ssize_t size = receive_packet(receiver, packet, sizeof(packet));
-        if (size <= 0) return (int)size;
-        if (size != (ssize_t)sizeof(header)) continue;
-        memcpy(&header, packet, sizeof(header));
-        if (header.magic == FRAME_HEADER_MAGIC &&
-            header.width == IMAGE_WIDTH && header.height == IMAGE_HEIGHT &&
-            header.data_size == FRAME_BUFFER_SIZE && header.line_count == IMAGE_HEIGHT) {
+int network_receive_with_sync(NetworkReceiver* r) {
+    if (!r || r->socket_fd < 0 || !r->assembler) return -1;
+    report_receiver(r);
+    video_v2::CurveEvent curve_event;
+    if (r->curve.expire(monotonic_ns(), curve_event)) publish_curve(curve_event);
+    unsigned processed = 0;
+    while (keep_running && processed < 2048) {
+        Datagram packets[video_v2::BATCH] = {};
+        iovec vectors[video_v2::BATCH] = {};
+        mmsghdr messages[video_v2::BATCH] = {};
+        alignas(cmsghdr) unsigned char controls[video_v2::BATCH][CMSG_SPACE(sizeof(uint32_t)) + CMSG_SPACE(sizeof(timespec))] = {};
+        for (unsigned i = 0; i < video_v2::BATCH; ++i) {
+            vectors[i].iov_base = packets[i].data; vectors[i].iov_len = sizeof(packets[i].data);
+            messages[i].msg_hdr.msg_name = &packets[i].source;
+            messages[i].msg_hdr.msg_namelen = sizeof(packets[i].source);
+            messages[i].msg_hdr.msg_iov = &vectors[i]; messages[i].msg_hdr.msg_iovlen = 1;
+            messages[i].msg_hdr.msg_control = controls[i];
+            messages[i].msg_hdr.msg_controllen = sizeof(controls[i]);
+        }
+        int count = recvmmsg(r->socket_fd, messages, video_v2::BATCH,
+                            processed ? MSG_DONTWAIT : MSG_WAITFORONE, nullptr);
+        if (count < 0) {
+            if (errno == EINTR && keep_running) continue;
+            if (errno != EAGAIN && errno != EWOULDBLOCK && errno != EINTR) { perror("UDP receive"); return -1; }
             break;
         }
+        if (!count) break;
+        for (int i = 0; i < count; ++i) {
+            r->report_bytes += messages[i].msg_len;
+            if (messages[i].msg_hdr.msg_flags & MSG_TRUNC) { ++r->legacy_corrupt; continue; }
+            const uint64_t processed_at = monotonic_ns();
+            packets[i].received_ns = processed_at;
+            for (cmsghdr* c = CMSG_FIRSTHDR(&messages[i].msg_hdr); c; c = CMSG_NXTHDR(&messages[i].msg_hdr, c)) {
+#ifdef SO_RXQ_OVFL
+                if (c->cmsg_level == SOL_SOCKET && c->cmsg_type == SO_RXQ_OVFL &&
+                    c->cmsg_len >= CMSG_LEN(sizeof(uint32_t))) {
+                    uint32_t drops; std::memcpy(&drops, CMSG_DATA(c), sizeof(drops)); r->kernel_drops = drops;
+                }
+#endif
+                if (c->cmsg_level == SOL_SOCKET && c->cmsg_type == SO_TIMESTAMPNS &&
+                    c->cmsg_len >= CMSG_LEN(sizeof(timespec))) {
+                    timespec queued, real_now; std::memcpy(&queued, CMSG_DATA(c), sizeof(queued));
+                    clock_gettime(CLOCK_REALTIME, &real_now);
+                    int64_t age = (int64_t)(real_now.tv_sec - queued.tv_sec) * 1000000000LL +
+                                  real_now.tv_nsec - queued.tv_nsec;
+                    if (age > 0 && (uint64_t)age < processed_at) packets[i].received_ns = processed_at - age;
+                }
+            }
+            packets[i].size = messages[i].msg_len; ingest_datagram(r, packets[i]);
+        }
+        processed += count;
     }
-    if (!keep_running) return 0;
-
-    const struct sockaddr_in source = receiver->client_addr;
-    uint32_t checksum = 0;
-    for (uint16_t line = 0; line < IMAGE_HEIGHT; ++line) {
-        ssize_t size = receive_packet(receiver, packet, sizeof(packet));
-        LineHeader line_header;
-        if (size != (ssize_t)sizeof(line_header) ||
-            receiver->client_addr.sin_addr.s_addr != source.sin_addr.s_addr ||
-            receiver->client_addr.sin_port != source.sin_port) {
-            receiver->sync_ctrl.corrupted_frames++;
-            return 0;
-        }
-        memcpy(&line_header, packet, sizeof(line_header));
-        if (line_header.magic != LINE_HEADER_MAGIC ||
-            line_header.line_id != line || line_header.line_size != IMAGE_WIDTH * 2) {
-            receiver->sync_ctrl.corrupted_frames++;
-            return 0;
-        }
-
-        size = receive_packet(receiver, packet, sizeof(packet));
-        if (size != line_header.line_size ||
-            receiver->client_addr.sin_addr.s_addr != source.sin_addr.s_addr ||
-            receiver->client_addr.sin_port != source.sin_port ||
-            calculate_checksum(packet, line_header.line_size) != line_header.line_checksum) {
-            receiver->sync_ctrl.corrupted_frames++;
-            return 0;
-        }
-        memcpy(receiver->frame_buffer + (size_t)line * IMAGE_WIDTH * 2,
-               packet, line_header.line_size);
-        checksum += line_header.line_checksum;
-    }
-
-    ssize_t size = receive_packet(receiver, packet, sizeof(packet));
-    FrameTrailer trailer;
-    if (size != (ssize_t)sizeof(trailer) ||
-        receiver->client_addr.sin_addr.s_addr != source.sin_addr.s_addr ||
-        receiver->client_addr.sin_port != source.sin_port) {
-        receiver->sync_ctrl.corrupted_frames++;
+    video_v2::Metadata meta;
+    bool ready = r->protocol == 2 ? r->assembler->take_latest(r->frame_buffer, meta) : r->legacy_ready;
+    if (!ready) {
+        if (r->curve.expire(monotonic_ns(), curve_event)) publish_curve(curve_event);
         return 0;
     }
-    memcpy(&trailer, packet, sizeof(trailer));
-    // 旧版M端没有初始化帧头校验字段；帧尾与逐行校验足以验证完整数据。
-    if (trailer.magic != FRAME_TRAILER_MAGIC ||
-        trailer.frame_id != header.frame_id ||
-        trailer.total_lines != IMAGE_HEIGHT ||
-        trailer.checksum != checksum) {
-        receiver->sync_ctrl.corrupted_frames++;
-        return 0;
+    if (r->protocol == 1) { meta = r->legacy_metadata; r->legacy_ready = false; }
+    if (meta.version < 3 && !r->compatibility_logged) {
+        printf("[UDP_RX] legacy/V2 video accepted; curve confidence forced to zero (no NN identity/age)\n");
+        r->compatibility_logged = true;
     }
-
-    receiver->sync_ctrl.total_frames++;
-    if (curve_detection_available &&
-        curve_detection_update(header.frame_id, (CurveType)header.curve_type,
-                               header.curve_confidence, header.curve_angle) != 0) {
-        fprintf(stderr, "警告: 弯道信息写入共享内存失败\n");
-    }
-    if (receiver->sync_ctrl.total_frames % 30 == 1) {
-        fprintf(stderr, "UDP帧%u接收完成，累计%u帧，丢弃%u帧\n",
-                header.frame_id, receiver->sync_ctrl.total_frames,
-                receiver->sync_ctrl.corrupted_frames);
-    }
-    return FRAME_BUFFER_SIZE;
+    if (r->curve.observe(meta, monotonic_ns(), curve_event)) publish_curve(curve_event);
+    ++r->report_published; return FRAME_BUFFER_SIZE;
 }
-
-void network_receiver_cleanup(NetworkReceiver* receiver) {
-    if (!receiver) {
-        return;
+static void save_frame(const uint8_t* pixels, const char* name) {
+    FILE* file = std::fopen(name, "wb"); if (!file) return;
+    std::fprintf(file, "P6\n640 480\n255\n");
+    std::vector<uint8_t> row(640 * 3);
+    for (unsigned y = 0; y < 480; ++y) {
+        for (unsigned x = 0; x < 640; ++x) {
+            uint16_t pixel; std::memcpy(&pixel, pixels + (y * 640 + x) * 2, 2);
+            row[x * 3] = ((pixel >> 11) & 31) * 255 / 31;
+            row[x * 3 + 1] = ((pixel >> 5) & 63) * 255 / 63;
+            row[x * 3 + 2] = (pixel & 31) * 255 / 31;
+        }
+        std::fwrite(row.data(), 1, row.size(), file);
     }
-    
-    if (receiver->socket_fd >= 0) {
-        close(receiver->socket_fd);
-        receiver->socket_fd = -1;
-    }
-    
-    if (receiver->frame_buffer) {
-        free(receiver->frame_buffer);
-        receiver->frame_buffer = NULL;
-    }
-    
-
+    std::fclose(file);
 }
-
-//=========================================================================
-// 主函数
-//=========================================================================
 int main() {
-    NetworkReceiver network_receiver;
-    struct timeval stream_start, current_time;
-    int frame_count = 0;
-    double total_time = 0.0;
-    
-    // 设置信号处理
-    signal(SIGINT, signal_handler);
-    signal(SIGTERM, signal_handler);
-
-    // 初始化UDP共享内存
-    if (shared_memory_init_udp(&shm_manager, 1) != 0) {  // 1表示写入者
-        return -1;
-    }
-
-    // 初始化弯道检测共享内存（S端UDP作为写入者）
-    if (curve_detection_shm_init(1) == 0) {
-        curve_detection_available = 1;
-        printf("弯道检测共享内存初始化成功\n");
-    } else {
-        fprintf(stderr, "弯道检测共享内存不可用，继续接收图像\n");
-    }
-
-    // 初始化网络接收器
-    if (network_receiver_init(&network_receiver) != 0) {
+    setvbuf(stdout, nullptr, _IOLBF, 0);
+    signal(SIGINT, signal_handler); signal(SIGTERM, signal_handler);
+    if (shared_memory_init_udp(&shm_manager, 1)) return 1;
+    curve_detection_available = curve_detection_shm_init(1) == 0;
+    NetworkReceiver receiver;
+    if (network_receiver_init(&receiver)) {
         if (curve_detection_available) curve_detection_shm_cleanup();
-        shared_memory_cleanup(&shm_manager);
-        return -1;
+        shared_memory_cleanup(&shm_manager); return 1;
     }
-    
-    gettimeofday(&stream_start, NULL);
-    
-    // 主接收循环
+    uint64_t frames = 0;
     while (keep_running) {
-        int received_size = network_receive_with_sync(&network_receiver);
-        
-        if (received_size <= 0) {
-            // 接收失败但不是严重错误，直接继续
-            continue;
+        int result = network_receive_with_sync(&receiver);
+        if (result < 0) break;
+        if (!result) continue;
+        if (shared_memory_write_image(&shm_manager, receiver.frame_buffer, IMAGE_WIDTH, IMAGE_HEIGHT)) {
+            fprintf(stderr, "UDP image publication failed\n"); break;
         }
-        
-        // 写入共享内存 (直接写入RGB565数据)
-        if (shared_memory_write_image(&shm_manager,
-                                     network_receiver.frame_buffer,
-                                     IMAGE_WIDTH, IMAGE_HEIGHT) != 0) {
-            printf("UDP共享内存写入失败\n");
-            break;
-        }
-        
-        // 添加调试信息：确认写入的是UDP共享内存
-        static int udp_debug_count = 0;
-        if (++udp_debug_count % 100 == 0) {
-            printf("UDP程序写入帧%d到共享内存类型:%d (应该是2)\n", udp_debug_count, shm_manager.type);
-        }
-        
-        frame_count++;
-        
-        // 实时FPS计算和性能分析 - 已移除输出
+        ++frames;
     }
-    
-    // 性能统计
-    gettimeofday(&current_time, NULL);
-    total_time = get_time_diff(stream_start, current_time);
-    
-    print_sync_statistics(&network_receiver);
-    
-    // 保存最后一帧为PPM文件
-    if (frame_count > 0) {
-        save_frame_to_ppm(network_receiver.frame_buffer, "udp_last_frame.ppm");
-    }
-    
-    // 系统清理
-    network_receiver_cleanup(&network_receiver);
-    shared_memory_cleanup(&shm_manager);
+    if (frames) save_frame(receiver.frame_buffer, "udp_last_frame.ppm");
+    network_receiver_cleanup(&receiver); shared_memory_cleanup(&shm_manager);
     if (curve_detection_available) curve_detection_shm_cleanup();
-
-
     return 0;
 }

@@ -1,0 +1,226 @@
+--- a/udp_rk_rk_yolo/S/x11/csrc/main.cpp
++++ b/udp_rk_rk_yolo/S/x11/csrc/main.cpp
+@@ -8,6 +8,8 @@
+ #include <time.h>
+ #include <sys/time.h>
+ #include <limits.h>
++#include <poll.h>
++#include <errno.h>
+ #include <new>
+ #include <vector>
+ #include <X11/Xlib.h>
+@@ -123,6 +125,10 @@
+     int use_xrender;
+     VehicleLayerState vehicle_state;
+     int vehicle_cached;
++    int use_shm_completion, shm_completion_disabled, shm_completion_type, shm_pending;
++    unsigned long shm_pending_serial;
++    Drawable shm_pending_drawable;
++    uint64_t profile_reuse_wait_ns, profile_upload_completions;
+ #ifdef PERCEPTION_HAVE_XRENDER
+     Picture source_picture, window_picture;
+ #endif
+@@ -1000,7 +1006,90 @@
+     return 0;
+ }
+ 
++// Only this client's one outstanding upload may release its shared image.
++static Bool pending_shm_completion(Display*, XEvent* event, XPointer context) {
++    RenderEngine* engine = reinterpret_cast<RenderEngine*>(context);
++    if (!engine->shm_pending || event->type != engine->shm_completion_type) return False;
++    const XShmCompletionEvent* completion = reinterpret_cast<XShmCompletionEvent*>(event);
++    return completion->shmseg == engine->shminfo.shmseg &&
++           completion->drawable == engine->shm_pending_drawable &&
++           completion->serial == engine->shm_pending_serial && completion->offset == 0;
++}
++
++static bool consume_shm_completion(RenderEngine* engine, XEvent* event) {
++    if (!pending_shm_completion(engine->display, event, reinterpret_cast<XPointer>(engine))) return false;
++    engine->shm_pending = 0;
++    ++engine->profile_upload_completions;
++    return true;
++}
++
++static void wait_for_shared_image(RenderEngine* engine) {
++    if (!engine->shm_pending) return;
++    const uint64_t started = display_clock_ns();
++    const uint64_t deadline = started + 100000000ULL;
++    XEvent event;
++    while (engine->shm_pending) {
++        if (XCheckIfEvent(engine->display, &event, pending_shm_completion,
++                         reinterpret_cast<XPointer>(engine))) {
++            consume_shm_completion(engine, &event);
++            break;
++        }
++        if (!keep_running || engine->shm_completion_disabled || display_clock_ns() >= deadline) {
++            // No completion means this image must not be reused yet. The
++            // synchronous fallback also covers servers that lose these events.
++            XSync(engine->display, False);
++            if (XCheckIfEvent(engine->display, &event, pending_shm_completion,
++                             reinterpret_cast<XPointer>(engine)))
++                consume_shm_completion(engine, &event);
++            else { engine->shm_pending = 0; ++engine->profile_upload_completions; }
++            engine->use_shm_completion = 0;
++            engine->shm_completion_disabled = 1;
++            fprintf(stderr, "[RENDER] SHM completion unavailable; using synchronous presentation\n");
++            break;
++        }
++        pollfd descriptor = {ConnectionNumber(engine->display), POLLIN, 0};
++        int result = poll(&descriptor, 1, 10);
++        if (result < 0 && errno != EINTR) {
++            // The next iteration safely finishes with XSync rather than
++            // writing a segment whose owner is still the X server.
++            engine->shm_completion_disabled = 1;
++        }
++        if (result > 0) XEventsQueued(engine->display, QueuedAfterReading);
++    }
++    engine->profile_reuse_wait_ns += display_clock_ns() - started;
++}
++
++static int put_presentation_image(RenderEngine* engine, Drawable target, int width, int height) {
++    if (engine->use_shm) {
++        if (engine->use_shm_completion) {
++            engine->shm_pending_serial = NextRequest(engine->display);
++            engine->shm_pending_drawable = target;
++            engine->shm_pending = 1;
++        }
++        if (!XShmPutImage(engine->display, target, engine->gc, engine->presentation_image,
++                          0, 0, 0, 0, width, height,
++                          engine->use_shm_completion ? True : False)) {
++            engine->shm_pending = 0;
++            return -1;
++        }
++    } else XPutImage(engine->display, target, engine->gc, engine->presentation_image,
++                     0, 0, 0, 0, width, height);
++    return 0;
++}
++
++static void flush_presentation(RenderEngine* engine) {
++    if (engine->use_shm_completion) XFlush(engine->display);
++    else { XSync(engine->display, False); ++engine->profile_upload_completions; }
++}
++
+ static void release_presentation(RenderEngine* engine) {
++    if (engine->display && engine->shm_pending) {
++        XSync(engine->display, False);
++        XEvent event;
++        if (XCheckIfEvent(engine->display, &event, pending_shm_completion, reinterpret_cast<XPointer>(engine)))
++            consume_shm_completion(engine, &event);
++        engine->shm_pending = 0;
++    }
+ #ifdef PERCEPTION_HAVE_XRENDER
+     if (engine->display && engine->source_picture)
+         XRenderFreePicture(engine->display, engine->source_picture);
+@@ -1024,6 +1113,7 @@
+     if (engine->pixmap && engine->display) XFreePixmap(engine->display, engine->pixmap);
+     engine->pixmap = 0;
+     engine->use_shm = 0;
++    engine->use_shm_completion = 0;
+ }
+ 
+ int resize_presentation(RenderEngine* engine, int width, int height) {
+@@ -1043,7 +1133,7 @@
+     XImage* image = NULL;
+     const char* backend = getenv("VISION_RENDER_BACKEND");
+     bool allow_shm = !backend || strcmp(backend, "putimage") != 0;
+-    // MIT-SHM is local-only. XSync before reusing its single buffer prevents tearing.
++    // MIT-SHM is local-only. Reuse is gated by completion or XSync.
+     // https://www.x.org/releases/X11R7.5/doc/Xext/mit-shm.pdf
+     if (allow_shm && XShmQueryExtension(engine->display)) {
+         memset(&engine->shminfo, 0, sizeof(engine->shminfo));
+@@ -1122,6 +1212,11 @@
+         XSetErrorHandler(previous);
+     }
+ #endif
++    const char* sync_mode = getenv("VISION_SHM_SYNC");
++    engine->use_shm_completion = engine->use_shm && !engine->shm_completion_disabled &&
++                                 sync_mode && !strcmp(sync_mode, "completion");
++    if (engine->use_shm_completion)
++        engine->shm_completion_type = XShmGetEventBase(engine->display) + ShmCompletion;
+     engine->needs_redraw = 1;
+     printf("[RENDER] scale=%s upload=%s image=%dx%d window=%dx%d\n",
+            engine->use_xrender ? "XRender" : "CPU",
+@@ -1163,7 +1258,7 @@
+         engine->pcie_shown_fps = engine->profile_s_shown / seconds;
+         engine->udp_shown_fps = engine->profile_m_shown / seconds;
+         double divisor = engine->profile_frames * 1e6;
+-        printf("[PERF DISPLAY] render_fps=%.2f S_input_fps=%.2f M_input_fps=%.2f S_shown_fps=%.2f M_shown_fps=%.2f compose_ms=%.2f legacy_ms=%.2f car_ms=%.2f dashboard_ms=%.2f car_redraw_pct=%.1f scale_ms=%.2f present_ms=%.2f backend=%s/%s\n",
++        printf("[PERF DISPLAY] render_fps=%.2f S_input_fps=%.2f M_input_fps=%.2f S_shown_fps=%.2f M_shown_fps=%.2f compose_ms=%.2f legacy_ms=%.2f car_ms=%.2f dashboard_ms=%.2f car_redraw_pct=%.1f scale_ms=%.2f present_ms=%.2f reuse_wait_ms=%.2f upload_done_fps=%.2f backend=%s/%s sync=%s\n",
+                engine->display_fps,
+                (uint32_t)(engine->pcie_frame_id - engine->profile_pcie_start) / seconds,
+                (uint32_t)(engine->udp_frame_id - engine->profile_udp_start) / seconds,
+@@ -1171,14 +1266,17 @@
+                engine->profile_compose_ns / divisor, engine->profile_layout_ns / divisor,
+                engine->profile_car_ns / divisor, engine->profile_dashboard_ns / divisor,
+                100.0 * engine->profile_car_redraws / engine->profile_frames, engine->profile_scale_ns / divisor,
+-               engine->profile_present_ns / divisor,
+-               engine->use_xrender ? "xrender" : "cpu", engine->use_shm ? "shm" : "putimage");
++               engine->profile_present_ns / divisor, engine->profile_reuse_wait_ns / divisor,
++               engine->profile_upload_completions / seconds,
++               engine->use_xrender ? "xrender" : "cpu", engine->use_shm ? "shm" : "putimage",
++               engine->use_shm_completion ? "completion" : "sync");
+         engine->profile_start = end;
+         engine->profile_pcie_start = engine->pcie_frame_id;
+         engine->profile_udp_start = engine->udp_frame_id;
+         engine->profile_frames = engine->profile_s_shown = engine->profile_m_shown = 0;
+         engine->profile_compose_ns = engine->profile_scale_ns = engine->profile_present_ns = 0;
+         engine->profile_layout_ns = engine->profile_car_ns = engine->profile_dashboard_ns = engine->profile_car_redraws = 0;
++        engine->profile_reuse_wait_ns = engine->profile_upload_completions = 0;
+     }
+ }
+ 
+@@ -1218,6 +1316,7 @@
+     if (engine->headless) return 0;
+     XImage* image = engine->presentation_image;
+     if (!image) return -1;
++    wait_for_shared_image(engine);
+     int draw_w = engine->window_width;
+     int draw_h = draw_w * perception_ui::HEIGHT / perception_ui::WIDTH;
+     if (draw_h > engine->window_height) {
+@@ -1237,11 +1336,7 @@
+             memcpy(image->data + y * image->bytes_per_line,
+                    pixels + y * perception_ui::WIDTH, perception_ui::WIDTH * 4);
+         uint64_t scale_done = display_clock_ns();
+-        if (engine->use_shm)
+-            XShmPutImage(engine->display, engine->pixmap, engine->gc, image, 0, 0, 0, 0,
+-                         perception_ui::WIDTH, perception_ui::HEIGHT, False);
+-        else XPutImage(engine->display, engine->pixmap, engine->gc, image, 0, 0, 0, 0,
+-                       perception_ui::WIDTH, perception_ui::HEIGHT);
++        if (put_presentation_image(engine, engine->pixmap, perception_ui::WIDTH, perception_ui::HEIGHT) != 0) return -1;
+         XTransform transform = {};
+         transform.matrix[0][0] = XDoubleToFixed((double)perception_ui::WIDTH / draw_w);
+         transform.matrix[1][1] = XDoubleToFixed((double)perception_ui::HEIGHT / draw_h);
+@@ -1252,7 +1347,7 @@
+                        engine->window_width, engine->window_height);
+         XRenderComposite(engine->display, PictOpSrc, engine->source_picture, None,
+                          engine->window_picture, 0, 0, 0, 0, offset_x, offset_y, draw_w, draw_h);
+-        XSync(engine->display, False);
++        flush_presentation(engine);
+         record_display_perf(engine, render_started, car_done, compose_done, scale_done, display_clock_ns(), car_redrawn);
+         return 0;
+     }
+@@ -1291,14 +1386,10 @@
+     }
+     uint64_t scale_done = display_clock_ns();
+     Drawable target = engine->pixmap ? engine->pixmap : engine->window;
+-    if (engine->use_shm)
+-        XShmPutImage(engine->display, target, engine->gc, image, 0, 0, 0, 0,
+-                     engine->window_width, engine->window_height, False);
+-    else XPutImage(engine->display, target, engine->gc, image, 0, 0, 0, 0,
+-                   engine->window_width, engine->window_height);
++    if (put_presentation_image(engine, target, engine->window_width, engine->window_height) != 0) return -1;
+     if (engine->pixmap) XCopyArea(engine->display, engine->pixmap, engine->window,
+         engine->gc, 0, 0, engine->window_width, engine->window_height, 0, 0);
+-    XSync(engine->display, False);
++    flush_presentation(engine);
+     record_display_perf(engine, render_started, car_done, compose_done, scale_done, display_clock_ns(), car_redrawn);
+     return 0;
+ }
+@@ -1525,6 +1616,7 @@
+     while (XPending(engine->display)) {
+         XEvent event;
+         XNextEvent(engine->display, &event);
++        if (consume_shm_completion(engine, &event)) continue;
+         switch (event.type) {
+             case KeyPress: {
+                 KeySym key = XLookupKeysym(&event.xkey, 0);

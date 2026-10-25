@@ -72,17 +72,22 @@ static int8_t qnt_f32_to_affine(float f32, int32_t zp, float scale) {
 static int process_yolo_layer(int8_t *input, const int *anchor, int grid_h, int grid_w,
                              int height, int width, int stride,
                              std::vector<float> &boxes, std::vector<float> &objProbs,
-                             std::vector<int> &classId, float threshold,
+                             std::vector<int> &classId, std::vector<unsigned char> &displayEligible,
+                             float threshold,
                              int32_t zp, float scale) {
     int validCount = 0;
     int grid_len = grid_h * grid_w;
-    int8_t thres_i8 = qnt_f32_to_affine(threshold, zp, scale);
+    int8_t display_thres_i8 = qnt_f32_to_affine(threshold, zp, scale);
+    /* A person score >= 15% must reach the brake summary even when one factor
+     * is below the original 25% display gate. Preserve that gate for drawing. */
+    int8_t scan_thres_i8 = qnt_f32_to_affine(
+        fminf(threshold, PERSON_BRAKE_CONFIDENCE_THRESHOLD), zp, scale);
 
     for (int a = 0; a < 3; a++) {
         for (int i = 0; i < grid_h; i++) {
             for (int j = 0; j < grid_w; j++) {
                 int8_t box_confidence = input[(PROP_BOX_SIZE * a + 4) * grid_len + i * grid_w + j];
-                if (box_confidence >= thres_i8) {
+                if (box_confidence >= scan_thres_i8) {
                     int offset = (PROP_BOX_SIZE * a) * grid_len + i * grid_w + j;
                     int8_t *in_ptr = input + offset;
 
@@ -108,10 +113,12 @@ static int process_yolo_layer(int8_t *input, const int *anchor, int grid_h, int 
                         }
                     }
 
-                    if (maxClassProbs > thres_i8) {
+                    if (maxClassProbs >= scan_thres_i8) {
                         objProbs.push_back((deqnt_affine_to_f32(maxClassProbs, zp, scale)) *
                                          (deqnt_affine_to_f32(box_confidence, zp, scale)));
                         classId.push_back(maxClassId);
+                        displayEligible.push_back(box_confidence >= display_thres_i8 &&
+                                                  maxClassProbs > display_thres_i8);
                         validCount++;
                         boxes.push_back(box_x);
                         boxes.push_back(box_y);
@@ -146,6 +153,7 @@ int post_process_simple(int8_t *input0, int8_t *input1, int8_t *input2,
     std::vector<float> filterBoxes;
     std::vector<float> objProbs;
     std::vector<int> classId;
+    std::vector<unsigned char> displayEligible;
 
     /* 三个输出层按 8、16、32 的原有顺序解码。 */
     int8_t *const inputs[3] = {input0, input1, input2};
@@ -157,7 +165,7 @@ int post_process_simple(int8_t *input0, int8_t *input1, int8_t *input2,
         validCount += process_yolo_layer(inputs[layer], anchors[layer],
                                          model_in_h / stride, model_in_w / stride,
                                          model_in_h, model_in_w, stride,
-                                         filterBoxes, objProbs, classId,
+                                         filterBoxes, objProbs, classId, displayEligible,
                                          conf_threshold, default_zp, default_scale);
     }
 
@@ -211,7 +219,7 @@ int post_process_simple(int8_t *input0, int8_t *input1, int8_t *input2,
             }
         }
 
-        if (final_count < OBJ_NUMB_MAX_SIZE) {
+        if (displayEligible[i] && final_count < OBJ_NUMB_MAX_SIZE) {
             group->results[final_count++] = result;
         }
     }

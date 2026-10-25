@@ -1,0 +1,5 @@
+212 boxes / all corners / both blink phases / overlap / offscreen / degenerates pixel-identical PASS
+medium person baseline_ms=0.732 candidate_ms=0.557 speedup=1.31
+large person baseline_ms=0.981 candidate_ms=0.679 speedup=1.45
+small person baseline_ms=0.423 candidate_ms=0.318 speedup=1.33
+full frame person baseline_ms=0.881 candidate_ms=0.477 speedup=1.85

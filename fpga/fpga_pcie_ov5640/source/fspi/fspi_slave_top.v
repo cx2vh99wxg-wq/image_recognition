@@ -11,6 +11,7 @@ module fspi_slave_top
     input    wire             spi_cs     ,
     inout    wire    [3:0]    spi_data    ,
     input    wire    [3:0]         select_rearview,  // GPIO接收到的一位值
+    input    wire             auto_brake_enable,
     output   wire    [7:0]    mem0_out,
     output   wire    [7:0]    mem1_out,
     output   wire    [7:0]    mem2_out,
@@ -56,6 +57,7 @@ fspi_slave u_fspi_slave(
     .spi_data          ( spi_data          ),
     .rst_n             ( rst_n             ),
     .select_rearview   ( select_rearview   ),
+    .auto_brake_enable ( auto_brake_enable ),
     .cmd               ( cmd               ),
     .rx_data           ( rx_data           ),
     .rx_data_valid     ( rx_data_valid     ),

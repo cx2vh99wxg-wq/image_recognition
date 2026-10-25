@@ -64,14 +64,34 @@ typedef enum {
     DISPLAY_MODE_ALL_CAMERAS = 0x99
 } DisplayMode;
 
+/* 仅供 S 端仪表盘显示的方向指令提示，不代表轮速或 FPGA 触点读回。 */
+typedef enum {
+    VEHICLE_MOTION_NONE = 0,
+    VEHICLE_MOTION_FORWARD = 1,
+    VEHICLE_MOTION_FORWARD_LEFT = 2,
+    VEHICLE_MOTION_FORWARD_RIGHT = 3,
+    VEHICLE_MOTION_REVERSE = 4,
+    VEHICLE_MOTION_LEFT = 5,
+    VEHICLE_MOTION_RIGHT = 6
+} VehicleMotionHint;
+
 typedef struct {
     /* 显示控制段保存当前模式、最近更新时间、按键次数及有效位。 */
     volatile uint32_t mode;
     volatile uint32_t last_update;
     volatile uint32_t button_count;
     volatile uint32_t valid;
-    uint8_t reserved[48];
+    /* 高 32 位为 CLOCK_MONOTONIC 毫秒，低 8 位为 VehicleMotionHint。
+     * 以一次 64 位原子写入发布；旧读端的字段偏移和段总大小均不变。 */
+    volatile uint64_t motion_snapshot;
+    uint8_t reserved[40];
 } DisplayControlSharedMemory;
+
+#ifdef __cplusplus
+static_assert(sizeof(DisplayControlSharedMemory) == 64, "display control shared-memory ABI changed");
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+_Static_assert(sizeof(DisplayControlSharedMemory) == 64, "display control shared-memory ABI changed");
+#endif
 
 typedef struct {
     /* 超过行人阈值时 person_detected=1。brake_enable=0 表示软件制动请求有效，
@@ -127,6 +147,7 @@ typedef struct {
     sem_t* write_sem;
     sem_t* read_sem;
     int is_writer;
+    uint32_t last_frame_id; /* Local reader cursor; shared image ABI is unchanged. */
 } SharedMemoryManager;
 
 /* 创建或连接指定图像段及其信号量。写端初始化控制头，读端记录自身连接。 */

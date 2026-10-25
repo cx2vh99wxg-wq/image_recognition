@@ -6,7 +6,7 @@
 # 基本配置
 #############################################################################
 TARGET = udp_sender
-TOPDIR = $(shell pwd)
+TOPDIR ?= $(abspath ..)
 BUILD_DIR = build
 SRC_DIR = csrc
 INC_DIR = include
@@ -17,8 +17,8 @@ CXX = g++
 STRIP = strip
 
 # 编译选项
-CFLAGS = -std=c99 -Wall -O2 -g
-CXXFLAGS = -std=c++11 -Wall -O2 -g
+CFLAGS = -std=c99 -Wall -O3 -march=native -MMD -MP
+CXXFLAGS = -std=c++11 -Wall -O3 -march=native -MMD -MP
 
 #############################################################################
 # 包含路径
@@ -55,9 +55,14 @@ endif
 #############################################################################
 # 默认目标
 #############################################################################
-.PHONY: all clean install debug release info test
+.PHONY: all clean install debug release info test test-protocol
 
 all: info $(BUILD_DIR)/$(TARGET)
+
+test-protocol:
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -UNDEBUG -Iinclude tests/test_video_transport_v2.cpp -o $(BUILD_DIR)/test_video_transport_v2
+	$(BUILD_DIR)/test_video_transport_v2
 
 #############################################################################
 # 编译信息
@@ -80,10 +85,14 @@ $(BUILD_DIR)/$(TARGET): $(OBJS)
 	$(CXX) $(OBJS) -o $@ $(LDFLAGS)
 	@echo "Build successful: $@"
 
+$(SHARED_MEMORY_OBJ): $(TOPDIR)/csrc/shared_memory.c $(TOPDIR)/include/shared_memory.h
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -I$(TOPDIR)/include -c $< -o $@
+
 #############################################################################
 # C源文件编译
 #############################################################################
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(wildcard $(INC_DIR)/*.h) $(TOPDIR)/include/shared_memory.h
 	@echo "Compiling C: $<"
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
@@ -91,7 +100,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 #############################################################################
 # C++源文件编译
 #############################################################################
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(wildcard $(INC_DIR)/*.h) $(TOPDIR)/include/shared_memory.h
 	@echo "Compiling C++: $<"
 	@mkdir -p $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
@@ -161,12 +170,3 @@ help:
 # 依赖关系
 #############################################################################
 -include $(OBJS:.o=.d)
-
-# 生成依赖文件
-$(BUILD_DIR)/%.d: $(SRC_DIR)/%.c
-	@mkdir -p $(BUILD_DIR)
-	@$(CC) -MM $(CFLAGS) $(INCLUDES) $< | sed 's,\($*\.o\)[ :]*,$(BUILD_DIR)/\1 $@ : ,g' > $@
-
-$(BUILD_DIR)/%.d: $(SRC_DIR)/%.cpp
-	@mkdir -p $(BUILD_DIR)
-	@$(CXX) -MM $(CXXFLAGS) $(INCLUDES) $< | sed 's,\($*\.o\)[ :]*,$(BUILD_DIR)/\1 $@ : ,g' > $@

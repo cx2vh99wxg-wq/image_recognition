@@ -6,7 +6,7 @@
 # 基本配置
 #############################################################################
 TARGET = pcie_capture
-TOPDIR = $(shell pwd)
+TOPDIR ?= $(abspath ..)
 BUILD_DIR = build
 SRC_DIR = csrc
 INC_DIR = include
@@ -19,8 +19,8 @@ CXX = g++
 STRIP = strip
 
 # 编译选项
-CFLAGS = -std=c99 -Wall -O2 -g
-CXXFLAGS = -std=c++11 -Wall -O2 -g
+CFLAGS = -std=c99 -Wall -O3 -g -MMD -MP
+CXXFLAGS = -std=c++11 -Wall -O3 -g -MMD -MP
 
 # 渲染功能控制
 ENABLE_RENDERING ?= 1
@@ -35,7 +35,7 @@ endif
 #############################################################################
 # 包含路径
 #############################################################################
-INCLUDES = -I$(INC_DIR)
+INCLUDES = -I$(INC_DIR) -I../include
 
 # 如果从顶层构建，包含顶层的include目录
 ifdef TOPDIR
@@ -111,6 +111,11 @@ $(BUILD_DIR)/$(TARGET): $(OBJS)
 	@mkdir -p $(BUILD_DIR)
 	$(CXX) $(OBJS) -o $@ $(LIBS) $(LDFLAGS)
 	@echo "Build successful: $@"
+
+# Also support invoking make directly from M/pcie.
+$(SHARED_MEMORY_OBJ): $(TOPDIR)/csrc/shared_memory.c $(TOPDIR)/include/shared_memory.h
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 #############################################################################
 # C源文件编译

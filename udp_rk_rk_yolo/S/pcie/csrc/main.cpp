@@ -102,6 +102,7 @@ typedef struct {
     int pci_driver_fd;
     COMMAND_OPERATION command_operation;
     DMA_OPERATION dma_operation;
+    int dma_rows;
 } PCIEManager;
 
 // 使用共享内存管理器替换渲染引擎
@@ -148,31 +149,73 @@ uint8_t* image_buf_888;
 YOLOEngine yolo_engine;
 
 // 全局变量用于信号处理
-static volatile int g_running = 1;
+static volatile sig_atomic_t g_running = 1;
 static PCIEManager* g_pcie_manager = NULL;
 static SharedMemoryManager* g_shm_manager = NULL;
 static YOLOEngine* g_yolo_engine = NULL;
 static EmergencyBrakeSharedMemory* g_brake_shm = NULL;
 
+static uint64_t pipeline_clock_ns(void) {
+    struct timespec now;
+    if (clock_gettime(CLOCK_MONOTONIC, &now) != 0) return 0;
+    return (uint64_t)now.tv_sec * 1000000000ULL + (uint64_t)now.tv_nsec;
+}
+
+typedef struct {
+    uint64_t start_ns, frames, infer_jobs, raw_changed;
+    uint64_t capture_ns, orient_ns, color_ns, infer_ns, draw_ns, publish_ns;
+    uint64_t last_raw_sample;
+    int have_raw_sample;
+} PipelineProfile;
+
+// A small raw-only sample distinguishes exact capture repeats from redraws.
+// Scene noise, torn source frames and motion outside the sample prevent this
+// from being a strict sensor-frame counter; it never includes drawn overlays.
+static uint64_t sample_raw_fingerprint(const uint16_t* pixels) {
+    uint64_t hash = 14695981039346656037ULL;
+    for (int row = 0; row < 64; ++row) {
+        const int y = row * (IMAGE_HEIGHT - 1) / 63;
+        for (int column = 0; column < 32; ++column) {
+            const int x = column * (IMAGE_WIDTH - 1) / 31;
+            hash ^= pixels[y * IMAGE_WIDTH + x];
+            hash *= 1099511628211ULL;
+        }
+    }
+    return hash;
+}
+
+static void report_pipeline_profile(PipelineProfile* profile, int dma_rows) {
+    uint64_t now = pipeline_clock_ns();
+    if (!profile->start_ns) profile->start_ns = now;
+    if (!now || now - profile->start_ns < 5000000000ULL || !profile->frames) return;
+    double seconds = (now - profile->start_ns) / 1e9;
+    double frames = (double)profile->frames;
+    double jobs = profile->infer_jobs ? (double)profile->infer_jobs : 1.0;
+    printf("[PERF S-PCIE] capture_loop_fps=%.2f raw_changed_fps=%.2f infer_fps=%.2f dma_ms=%.2f orient_ms=%.2f "
+           "color_ms=%.2f infer_job_ms=%.2f draw_ms=%.2f publish_ms=%.2f rows=%d ioctls_per_frame=%d\n",
+           frames / seconds, profile->raw_changed / seconds, profile->infer_jobs / seconds,
+           profile->capture_ns / frames / 1e6, profile->orient_ns / frames / 1e6,
+           profile->color_ns / frames / 1e6, profile->infer_ns / jobs / 1e6,
+           profile->draw_ns / frames / 1e6, profile->publish_ns / frames / 1e6,
+           dma_rows, 2 * ((IMAGE_HEIGHT + dma_rows - 1) / dma_rows));
+    fflush(stdout);
+    uint64_t last_sample = profile->last_raw_sample;
+    int have_sample = profile->have_raw_sample;
+    memset(profile, 0, sizeof(*profile));
+    profile->last_raw_sample = last_sample;
+    profile->have_raw_sample = have_sample;
+    profile->start_ns = now;
+}
+
+
 //=========================================================================
 // 信号处理函数
 //=========================================================================
 void signal_handler(int signum) {
+    (void)signum;
+    // Only request shutdown here. RKNN, IPC, stdio and free are not
+    // async-signal-safe; the main loop performs their cleanup once.
     g_running = 0;
-    printf("\n收到信号 %d，正在安全退出...\n", signum);
-    
-    if (signum == SIGINT) {
-        emergency_stop("用户中断 (Ctrl+C)", "信号处理");
-    } else if (signum == SIGTERM) {
-        emergency_stop("程序终止信号", "信号处理");
-    } else {
-        emergency_stop("未知信号", "信号处理");
-    }
-    
-    // 执行紧急清理
-    cleanup_all_resources(g_pcie_manager, g_shm_manager, g_yolo_engine);
-    
-    exit(signum);
 }
 
 void setup_signal_handlers() {
@@ -196,6 +239,14 @@ int pcie_manager_init(PCIEManager* manager) {
     
     // 初始化结构体
     manager->pci_driver_fd = -1;
+    // The FPGA inserts the 120-pixel prefix and counts frame rows at each
+    // 95-beat DMA boundary. A larger host buffer does not make two-row DMA safe.
+    manager->dma_rows = 1;
+    const char* rows = getenv("PCIE_DMA_ROWS");
+    if (!rows) rows = getenv("VISION_DMA_ROWS");
+    if (rows && strcmp(rows, "1") != 0) {
+        fprintf(stderr, "Multi-row DMA ignored: current FPGA requires one 1520-byte line per request\n");
+    }
     memset(&manager->command_operation, 0, sizeof(COMMAND_OPERATION));
     memset(&manager->dma_operation, 0, sizeof(DMA_OPERATION));
     
@@ -234,51 +285,37 @@ void pcie_manager_get_device_info(PCIEManager* manager) {
 }
 
 int pcie_manager_capture_frame(PCIEManager* manager, uint8_t* image_buffer, size_t buffer_size) {
-    int i;
-    static uint32_t frame_start_offset = 0;  // 静态变量保存帧起始位置
-    
-    if (!manager || manager->pci_driver_fd < 0) {
-        printf("PCIE设备未初始化\n");
+    const unsigned int row_bytes = (LEADING_PIXELS + IMAGE_WIDTH) * 2;
+    if (!manager || manager->pci_driver_fd < 0 || !image_buffer ||
+        buffer_size < (size_t)row_bytes * IMAGE_HEIGHT) {
+        fprintf(stderr, "Invalid PCIe frame capture arguments\n");
         return -1;
     }
-    
-    if (buffer_size < (LEADING_PIXELS + IMAGE_WIDTH) * IMAGE_HEIGHT * 2) {
-        printf("缓冲区大小不足\n");
-        return -1;
-    }
-    
-    /* 尝试查找帧开始标记（如果需要的话）- 这里可以根据实际硬件接口做调整 */
-    manager->dma_operation.offset_addr = frame_start_offset;
-    
-    /* 逐行读取图像数据，从当前有效的帧起始地址开始 */
-    for (i = 0; i < IMAGE_HEIGHT; i++) {
-        /* 设置当前行的偏移地址，相对于帧起始位置 */
-        manager->dma_operation.offset_addr = frame_start_offset + i * manager->dma_operation.current_len * 4;
-        
-        ioctl(manager->pci_driver_fd, PCI_DMA_WRITE_CMD, &manager->dma_operation);
-        
-        ioctl(manager->pci_driver_fd, PCI_READ_FROM_KERNEL_CMD, &manager->dma_operation);
-        
-#if SHOW_LEADING_PIXELS
-        /* 显示前导像素：从第0个像素开始拷贝ACTUAL_WIDTH个像素(ACTUAL_WIDTH*2字节)，截断后面的图像数据 */
-        memcpy(image_buffer + i * ACTUAL_WIDTH * 2, manager->dma_operation.data.read_buf, ACTUAL_WIDTH * 2);
-#else
-        /* 不显示前导像素：跳过前SKIP_PIXELS个像素(SKIP_PIXELS*2字节)，从第SKIP_PIXELS个像素开始拷贝ACTUAL_WIDTH个像素(ACTUAL_WIDTH*2字节) */
-        memcpy(image_buffer + i * ACTUAL_WIDTH * 2, manager->dma_operation.data.read_buf + SKIP_PIXELS * 2, ACTUAL_WIDTH * 2);
-#endif
-        
-        /* 列重排：如果定义了有效的列范围，则进行列重排 */
-        if (COLUMN_REARRANGE_START >= 0 && COLUMN_REARRANGE_END < ACTUAL_WIDTH && 
-            COLUMN_REARRANGE_START <= COLUMN_REARRANGE_END && 
-            !(COLUMN_REARRANGE_START == 0 && COLUMN_REARRANGE_END == 0)) {
-            /* 对当前行进行列重排（image_buffer中的数据是RGB565格式，每个像素2字节） */
-            rearrange_columns((uint16_t*)(image_buffer + i * ACTUAL_WIDTH * 2), 
-                            ACTUAL_WIDTH, 
-                            COLUMN_REARRANGE_START, 
-                            COLUMN_REARRANGE_END);
+    const int rows_per_transfer = 1; // Hardware line framing, not a tunable throughput knob.
+    for (int row = 0; row < IMAGE_HEIGHT; row += rows_per_transfer) {
+        if (!g_running) { errno = EINTR; return -1; }
+        const int count = IMAGE_HEIGHT - row < rows_per_transfer ?
+                          IMAGE_HEIGHT - row : rows_per_transfer;
+        manager->dma_operation.current_len = row_bytes * count / 4;
+        manager->dma_operation.offset_addr = row * row_bytes;
+        if (ioctl(manager->pci_driver_fd, PCI_DMA_WRITE_CMD, &manager->dma_operation) < 0 ||
+            ioctl(manager->pci_driver_fd, PCI_READ_FROM_KERNEL_CMD, &manager->dma_operation) < 0) {
+            fprintf(stderr, "PCIe DMA failed at row %d/%d: %s\n", row, IMAGE_HEIGHT, strerror(errno));
+            return -1;
+        }
+        for (int local = 0; local < count; ++local) {
+            uint8_t* destination = image_buffer + (row + local) * ACTUAL_WIDTH * 2;
+            const uint8_t* source = manager->dma_operation.data.read_buf + local * row_bytes;
+            memcpy(destination, source + SKIP_PIXELS * 2, ACTUAL_WIDTH * 2);
+            if (COLUMN_REARRANGE_START >= 0 && COLUMN_REARRANGE_END < ACTUAL_WIDTH &&
+                COLUMN_REARRANGE_START <= COLUMN_REARRANGE_END &&
+                !(COLUMN_REARRANGE_START == 0 && COLUMN_REARRANGE_END == 0)) {
+                rearrange_columns((uint16_t*)destination, ACTUAL_WIDTH,
+                                  COLUMN_REARRANGE_START, COLUMN_REARRANGE_END);
+            }
         }
     }
-    
+
     /* 在帧采集完成后，如果需要对移动到末尾的列进行垂直上移 */
     if (COLUMN_REARRANGE_START >= 0 && COLUMN_REARRANGE_END < ACTUAL_WIDTH && 
         COLUMN_REARRANGE_START <= COLUMN_REARRANGE_END && 
@@ -292,9 +329,6 @@ int pcie_manager_capture_frame(PCIEManager* manager, uint8_t* image_buffer, size
         shift_columns_up(image_buffer, ACTUAL_WIDTH, IMAGE_HEIGHT, 
                         moved_col_start, moved_col_end, COLUMN_SHIFT_UP_ROWS);
     }
-    
-    /* 在帧结束后，更新下一帧的起始位置 - 重置为0，确保每次从帧头开始 */
-    frame_start_offset = 0; // 固定从0开始读取下一帧
     
     return 0;
 }
@@ -310,7 +344,7 @@ int pcie_manager_init_streaming(PCIEManager* manager) {
     
     /* 设置DMA操作参数（只需要设置一次） */
     /* 每行需要读取: LEADING_PIXELS(前导) + IMAGE_WIDTH(有效) = (LEADING_PIXELS+IMAGE_WIDTH)个像素 * 2字节 = (LEADING_PIXELS+IMAGE_WIDTH)*2字节 / 4 = (LEADING_PIXELS+IMAGE_WIDTH)*2/4 个dword */
-    manager->dma_operation.current_len = (LEADING_PIXELS + IMAGE_WIDTH)*2/4;
+    manager->dma_operation.current_len = (LEADING_PIXELS + IMAGE_WIDTH) * 2 / 4;
     manager->dma_operation.offset_addr = 0;
     memset(manager->dma_operation.data.write_buf, 0, DMA_MAX_PACKET_SIZE);
     
@@ -712,6 +746,8 @@ void shift_columns_up(uint8_t* image_buffer, int width, int height, int start_co
 //=========================================================================
 
 int main() {
+    setvbuf(stdout, NULL, _IOLBF, 0);
+    PipelineProfile profile = {};
     printf("=== PCIE图像采集 + YOLO目标检测 + 紧急制动整合系统 ===\n");
     
     PCIEManager pcie_manager;
@@ -844,9 +880,12 @@ int main() {
     printf("字体支持: 数字0-9, 字母A-Z, 符号. %% space\n");
     printf("常见COCO类别: bottle, person, car, chair, cup, book等\n");
     
+    profile.start_ns = pipeline_clock_ns();
     while (g_running) {
+        uint64_t phase_started = pipeline_clock_ns();
         /* 步骤1: 从PCIE采集一帧数据 */
         if (pcie_manager_capture_frame(&pcie_manager, image_buf_temp, temp_buffer_size) != 0) {
+            if (!g_running) break;  // Requested shutdown, not a DMA hardware failure.
             emergency_stop("PCIE帧采集失败", "PCIE数据采集");
             printf("!!! 可能的原因: !!!\n");
             printf("!!! 1. PCIE连接中断 !!!\n");
@@ -856,18 +895,33 @@ int main() {
             return -1;
         }
         
+        profile.capture_ns += pipeline_clock_ns() - phase_started;
+        phase_started = pipeline_clock_ns();
+
         /* S端画面按摄像头区块旋转180度，保持视角位置和检测坐标一致。 */
         rotate_rgb565_tiles_180((uint16_t*)image_buf_temp, IMAGE_WIDTH, IMAGE_HEIGHT,
                                 CAMERA_TILE_WIDTH, CAMERA_TILE_HEIGHT);
 
+        uint64_t raw_sample = sample_raw_fingerprint((const uint16_t*)image_buf_temp);
+        if (!profile.have_raw_sample || raw_sample != profile.last_raw_sample)
+            profile.raw_changed++;
+        profile.have_raw_sample = 1;
+        profile.last_raw_sample = raw_sample;
+        profile.orient_ns += pipeline_clock_ns() - phase_started;
+        phase_started = pipeline_clock_ns();
+
         /* 步骤2: 将RGB565转换为RGB888格式 */
         rgb565_to_rgb888((uint16_t*)image_buf_temp, image_buf_888, IMAGE_WIDTH * IMAGE_HEIGHT);
         
+        profile.color_ns += pipeline_clock_ns() - phase_started;
+
         /* 步骤3: 使用YOLO进行目标检测 (通过宏控制检测间隔) */
         static detect_result_group_t cached_results = {0};
         static int detection_valid = 0;
         
         if (frame_count % YOLO_DETECT_INTERVAL == 0) {
+            phase_started = pipeline_clock_ns();
+            profile.infer_jobs++;
             // 按宏定义的间隔执行检测
             memset(&detection_results, 0, sizeof(detection_results));
             if (yolo_engine_detect(&yolo_engine, image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, 
@@ -887,18 +941,18 @@ int main() {
                 printf("警告: YOLO检测失败，车辆保持制动；画面沿用上一次检测结果\n");
                 detection_results = cached_results;
             }
+            profile.infer_ns += pipeline_clock_ns() - phase_started;
         } else {
             // 使用缓存的检测结果
             detection_results = cached_results;
         }
         
         // 制动使用所有候选框的独立统计，不受 64 个显示框或绘图去重限制。
-        // 必须是精确的 person 类别，且未四舍五入的模型置信度严格大于 40%。
+        // 必须是精确的 person 类别，且未四舍五入的模型置信度不低于 15%。
         int person_count = detection_valid ? detection_results.person_brake_count : 0;
         int person_detected = person_count > 0;
         int person_box_left = 0, person_box_top = 0, person_box_right = 0, person_box_bottom = 0;
         static int last_person_detected = -1;  // 记录上次检测状态
-        static int consecutive_person_frames = 0;  // 连续检测到人的帧数
 
         if (person_detected) {
             const BOX_RECT* box = &detection_results.person_brake_result.box;
@@ -915,60 +969,20 @@ int main() {
                                         person_box_right, person_box_bottom);
         }
 
+        phase_started = pipeline_clock_ns();
         if (detection_results.count > 0) {
             // 绘制检测结果
             draw_detection_results(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, &detection_results);
         }
         
-        // 人员检测状态变化时的详细打印
+        profile.draw_ns += pipeline_clock_ns() - phase_started;
         if (person_detected != last_person_detected) {
-            // 获取当前时间
-            time_t current_time = time(NULL);
-            struct tm* tm_info = localtime(&current_time);
-            char time_str[64];
-            strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", tm_info);
-            
-            if (person_detected) {
-                printf("\n🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n");
-                printf("🚨                 人员检测警报                   🚨\n");
-                printf("🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n");
-                printf("⏰ 检测时间: %s\n", time_str);
-                printf("👥 置信度 > %.0f%% 的人员候选框: %d 个\n",
-                       PERSON_BRAKE_CONFIDENCE_THRESHOLD * 100.0f, person_count);
-                printf("📍 检测帧编号: %d\n", frame_count);
-                printf("🎯 YOLO目标总数: %d 个\n", detection_results.count);
-                printf("🚨 紧急制动状态: 已通知FSPI程序触发制动\n");
-                printf("⚠️  安全提醒: 检测区域内发现人员，车辆将自动制动！\n");
-                printf("🔄 监控状态: 持续监控人员位置...\n");
-                printf("🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n\n");
-                consecutive_person_frames = 1;
-            } else {
-                printf("\n✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅\n");
-                printf("✅          当前无置信度 > 40%% 的人员            ✅\n");
-                printf("✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅\n");
-                printf("⏰ 未检出时间: %s\n", time_str);
-                printf("👤 检测状态: 当前无置信度 > 40%% 的人员\n");
-                printf("📍 未检出帧编号: %d\n", frame_count);
-                printf("⏱️  持续检测帧数: %d 帧\n", consecutive_person_frames);
-                printf("🛑 紧急制动状态: FPGA 保持锁定，需人为按下 REARM 解除\n");
-                printf("🚗 车辆状态: 当前检测结果不会自动解除已触发的刹车锁定\n");
-                printf("🔄 监控状态: 继续监控区域安全...\n");
-                printf("✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅\n\n");
-                consecutive_person_frames = 0;
-            }
-        } else if (person_detected) {
-            // 如果连续检测到人员，增加帧计数
-            consecutive_person_frames++;
-            // 每隔50帧打印一次提醒
-            if (consecutive_person_frames % 50 == 0) {
-                printf("⚠️  持续人员检测: 已连续检测到人员 %d 帧 (约%.1f秒)\n", 
-                       consecutive_person_frames, consecutive_person_frames * YOLO_DETECT_INTERVAL / 30.0);
-            }
+            printf("[S-PERSON] frame=%d person=%d candidates=%d detection_valid=%d\n",
+                   frame_count, person_detected, person_count, detection_valid);
         }
-        
-        // 更新上次检测状态
         last_person_detected = person_detected;
-        
+        phase_started = pipeline_clock_ns();
+
         /* 步骤4: 通过共享内存发送带有检测结果的图像 */
         if (shm_manager_send_frame_with_detections(&shm_manager, image_buf_888) != 0) {
             emergency_stop("共享内存发送失败", "共享内存传输");
@@ -986,6 +1000,9 @@ int main() {
         // 由于不使用X11，这里可以添加其他退出条件，例如运行指定帧数后退出
         // 目前保持无限运行，可以通过Ctrl+C终止
         
+        profile.publish_ns += pipeline_clock_ns() - phase_started;
+        profile.frames++;
+        report_pipeline_profile(&profile, pcie_manager.dma_rows);
         frame_count++;
         
         /* 实时FPS计算和性能分析 (通过宏控制报告频率) */
@@ -1012,7 +1029,7 @@ int main() {
     
     /* 保存最后一帧为PPM文件 */
     printf("\n=== 保存最后一帧 ===\n");
-    save_frame_to_ppm(image_buf_888, "last_frame_with_detections.ppm");
+    if (frame_count > 0) save_frame_to_ppm(image_buf_888, "last_frame_with_detections.ppm");
     
     /////////////////////////////////////////////////////////////////////////////
     // 系统清理区域

@@ -27,7 +27,8 @@ module uart_lcd #(
     output     [7:0]  cb_min,
     output     [7:0]  cb_max,
     output     [7:0]  cr_min,
-    output     [7:0]  cr_max
+    output     [7:0]  cr_max,
+    output            auto_brake_enable
 );
 
     reg [7:0] mode_reg = 0;
@@ -38,6 +39,9 @@ module uart_lcd #(
     reg       awb_en_reg = 1'b1;
     reg [7:0] binarization_reg = 127;
     reg [3:0] cnn_level_reg = 0;
+    // Independent persistent switch: 30 90 0F FF enables, EE disables.
+    // The existing 04 direction/REARM selector is not part of this state.
+    reg       auto_brake_enable_reg = 1'b0;
     reg [7:0] sobel_reg = 40;
     reg [7:0] cb_min_reg, cb_max_reg, cr_min_reg, cr_max_reg;
     reg [0:0] isp_judge_reg;
@@ -57,6 +61,7 @@ module uart_lcd #(
     assign cb_max = cb_max_reg;
     assign cr_min = cr_min_reg;
     assign cr_max = cr_max_reg;
+    assign auto_brake_enable = auto_brake_enable_reg;
 
     // Match the complete 30 90 <function> <value> sequence using a sliding
     // window. A stray 30, 30 90, or partial command cannot consume the next
@@ -105,6 +110,7 @@ module uart_lcd #(
             awb_en_reg      <= 1'b1;
             binarization_reg <= 8'd127;
             cnn_level_reg   <= 4'd0;
+            auto_brake_enable_reg <= 1'b0;
             sobel_reg       <= 8'd40;
             isp_judge_reg   <= 1'b0;
             cb_min_reg      <= 8'd77;
@@ -129,6 +135,12 @@ module uart_lcd #(
                     8'h0c: cb_max_reg       <= uart_rx;
                     8'h0d: cr_min_reg       <= uart_rx;
                     8'h0e: cr_max_reg       <= uart_rx;
+                    8'h0f: begin
+                        if (uart_rx == 8'hff)
+                            auto_brake_enable_reg <= 1'b1;
+                        else if (uart_rx == 8'hee)
+                            auto_brake_enable_reg <= 1'b0;
+                    end
                     default: ;
                 endcase
             end

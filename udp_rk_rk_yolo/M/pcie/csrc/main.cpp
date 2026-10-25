@@ -1,6 +1,7 @@
 #include "pcie_dma_read_test.h"
 #include "fspi_module.h"
 #include "yolo_integration.h"
+#include "latest_lane_worker.h"
 #include "shared_memory.h"
 #include <stdio.h>
 #include <stdint.h>
@@ -15,7 +16,9 @@
 #include <errno.h>
 
 // 可选的渲染功能 - 通过宏控制
+#ifndef ENABLE_RENDERING
 #define ENABLE_RENDERING 1  // 1=启用渲染, 0=禁用渲染（仅PCIe采集）
+#endif
 
 #if ENABLE_RENDERING
 #include <X11/Xlib.h>
@@ -106,6 +109,7 @@ typedef struct {
     int pci_driver_fd;
     COMMAND_OPERATION command_operation;
     DMA_OPERATION dma_operation;
+    int dma_rows; // Fixed at one: the current FPGA advances one line per DMA request.
 } PCIEManager;
 
 #if ENABLE_RENDERING
@@ -186,21 +190,10 @@ static RenderEngine* g_render_engine = NULL;
 // 信号处理函数
 //=========================================================================
 void signal_handler(int signum) {
+    (void)signum;
+    // RKNN, Xlib, stdio and DMA cleanup are not async-signal-safe. The main
+    // loop finishes the current call and releases each resource once.
     g_running = 0;
-    printf("\n收到信号 %d，正在安全退出...\n", signum);
-    
-    if (signum == SIGINT) {
-        emergency_stop("用户中断 (Ctrl+C)", "信号处理");
-    } else if (signum == SIGTERM) {
-        emergency_stop("程序终止信号", "信号处理");
-    } else {
-        emergency_stop("未知信号", "信号处理");
-    }
-    
-    // 执行紧急清理
-    cleanup_all_resources(g_pcie_manager, g_shm_manager, g_yolo_engine);
-    
-    exit(signum);
 }
 
 void setup_signal_handlers() {
@@ -224,6 +217,7 @@ int pcie_manager_init(PCIEManager* manager) {
     
     // 初始化结构体
     manager->pci_driver_fd = -1;
+    manager->dma_rows = 1;
     memset(&manager->command_operation, 0, sizeof(COMMAND_OPERATION));
     memset(&manager->dma_operation, 0, sizeof(DMA_OPERATION));
     
@@ -262,51 +256,38 @@ void pcie_manager_get_device_info(PCIEManager* manager) {
 }
 
 int pcie_manager_capture_frame(PCIEManager* manager, uint8_t* image_buffer, size_t buffer_size) {
-    int i;
-    static uint32_t frame_start_offset = 0;  // 静态变量保存帧起始位置
-    
-    if (!manager || manager->pci_driver_fd < 0) {
-        printf("PCIE设备未初始化\n");
-        return -1;
-    }
-    
-    if (buffer_size < (LEADING_PIXELS + IMAGE_WIDTH) * IMAGE_HEIGHT * 2) {
-        printf("缓冲区大小不足\n");
-        return -1;
-    }
-    
-    /* 尝试查找帧开始标记（如果需要的话）- 这里可以根据实际硬件接口做调整 */
-    manager->dma_operation.offset_addr = frame_start_offset;
-    
-    /* 逐行读取图像数据，从当前有效的帧起始地址开始 */
-    for (i = 0; i < IMAGE_HEIGHT; i++) {
-        /* 设置当前行的偏移地址，相对于帧起始位置 */
-        manager->dma_operation.offset_addr = frame_start_offset + i * manager->dma_operation.current_len * 4;
-        
-        ioctl(manager->pci_driver_fd, PCI_DMA_WRITE_CMD, &manager->dma_operation);
-        
-        ioctl(manager->pci_driver_fd, PCI_READ_FROM_KERNEL_CMD, &manager->dma_operation);
-        
+    if (!manager || manager->pci_driver_fd < 0 || !image_buffer ||
+        buffer_size < (LEADING_PIXELS + IMAGE_WIDTH) * IMAGE_HEIGHT * 2) return -1;
+
+    const unsigned int row_bytes = (LEADING_PIXELS + IMAGE_WIDTH) * 2;
+    const unsigned int rows = 1; // Streaming FPGA protocol is not a linear DDR batch read.
+    for (unsigned int i = 0; i < IMAGE_HEIGHT; i += rows) {
+        if (!g_running) { errno = ECANCELED; return -1; }
+        const unsigned int count = (i + rows <= IMAGE_HEIGHT) ? rows : IMAGE_HEIGHT - i;
+        manager->dma_operation.offset_addr = i * row_bytes;
+        manager->dma_operation.current_len = count * row_bytes / 4;
+        if (ioctl(manager->pci_driver_fd, PCI_DMA_WRITE_CMD, &manager->dma_operation) < 0 ||
+            ioctl(manager->pci_driver_fd, PCI_READ_FROM_KERNEL_CMD, &manager->dma_operation) < 0)
+            return -1;
+        for (unsigned int row = 0; row < count; ++row) {
+            const unsigned int target_row = i + row;
 #if SHOW_LEADING_PIXELS
-        /* 显示前导像素：从第0个像素开始拷贝ACTUAL_WIDTH个像素(ACTUAL_WIDTH*2字节)，截断后面的图像数据 */
-        memcpy(image_buffer + i * ACTUAL_WIDTH * 2, manager->dma_operation.data.read_buf, ACTUAL_WIDTH * 2);
+            const unsigned int skip = 0;
 #else
-        /* 不显示前导像素：跳过前SKIP_PIXELS个像素(SKIP_PIXELS*2字节)，从第SKIP_PIXELS个像素开始拷贝ACTUAL_WIDTH个像素(ACTUAL_WIDTH*2字节) */
-        memcpy(image_buffer + i * ACTUAL_WIDTH * 2, manager->dma_operation.data.read_buf + SKIP_PIXELS * 2, ACTUAL_WIDTH * 2);
+            const unsigned int skip = SKIP_PIXELS * 2;
 #endif
-        
-        /* 列重排：如果定义了有效的列范围，则进行列重排 */
-        if (COLUMN_REARRANGE_START >= 0 && COLUMN_REARRANGE_END < ACTUAL_WIDTH && 
-            COLUMN_REARRANGE_START <= COLUMN_REARRANGE_END && 
-            !(COLUMN_REARRANGE_START == 0 && COLUMN_REARRANGE_END == 0)) {
-            /* 对当前行进行列重排（image_buffer中的数据是RGB565格式，每个像素2字节） */
-            rearrange_columns((uint16_t*)(image_buffer + i * ACTUAL_WIDTH * 2), 
-                            ACTUAL_WIDTH, 
-                            COLUMN_REARRANGE_START, 
-                            COLUMN_REARRANGE_END);
+            memcpy(image_buffer + target_row * ACTUAL_WIDTH * 2,
+                   manager->dma_operation.data.read_buf + row * row_bytes + skip,
+                   ACTUAL_WIDTH * 2);
+            if (COLUMN_REARRANGE_START >= 0 && COLUMN_REARRANGE_END < ACTUAL_WIDTH &&
+                COLUMN_REARRANGE_START <= COLUMN_REARRANGE_END &&
+                !(COLUMN_REARRANGE_START == 0 && COLUMN_REARRANGE_END == 0)) {
+                rearrange_columns((uint16_t*)(image_buffer + target_row * ACTUAL_WIDTH * 2),
+                                  ACTUAL_WIDTH, COLUMN_REARRANGE_START, COLUMN_REARRANGE_END);
+            }
         }
     }
-    
+
     /* 在帧采集完成后，如果需要对移动到末尾的列进行垂直上移 */
     if (COLUMN_REARRANGE_START >= 0 && COLUMN_REARRANGE_END < ACTUAL_WIDTH && 
         COLUMN_REARRANGE_START <= COLUMN_REARRANGE_END && 
@@ -322,7 +303,7 @@ int pcie_manager_capture_frame(PCIEManager* manager, uint8_t* image_buffer, size
     }
     
     /* 在帧结束后，更新下一帧的起始位置 - 重置为0，确保每次从帧头开始 */
-    frame_start_offset = 0; // 固定从0开始读取下一帧
+    // Each request above uses an absolute frame offset.
     
     return 0;
 }
@@ -338,6 +319,13 @@ int pcie_manager_init_streaming(PCIEManager* manager) {
     
     /* 设置DMA操作参数（只需要设置一次） */
     /* 每行需要读取: LEADING_PIXELS(前导) + IMAGE_WIDTH(有效) = (LEADING_PIXELS+IMAGE_WIDTH)个像素 * 2字节 = (LEADING_PIXELS+IMAGE_WIDTH)*2字节 / 4 = (LEADING_PIXELS+IMAGE_WIDTH)*2/4 个dword */
+    const char* row_option = getenv("VISION_DMA_ROWS");
+    if (row_option && strcmp(row_option, "1") != 0) {
+        fprintf(stderr, "VISION_DMA_ROWS must be 1: current FPGA counts one line per DMA request\n");
+        return -1;
+    }
+    manager->dma_rows = 1;
+    printf("DMA rows/request=1 (fixed by the current FPGA streaming protocol)\n");
     manager->dma_operation.current_len = (LEADING_PIXELS + IMAGE_WIDTH)*2/4;
     manager->dma_operation.offset_addr = 0;
     memset(manager->dma_operation.data.write_buf, 0, DMA_MAX_PACKET_SIZE);
@@ -400,6 +388,53 @@ void pcie_manager_cleanup(PCIEManager* manager) {
 // 渲染引擎函数实现 - X11图形渲染
 //=========================================================================
 
+static int m_shm_attach_error = 0;
+static int m_shm_error_handler(Display*, XErrorEvent*) {
+    m_shm_attach_error = 1;
+    return 0;
+}
+
+static int try_shared_ximage(RenderEngine* engine, int screen) {
+    if (!XShmQueryExtension(engine->display)) return 0;
+    XShmSegmentInfo memory = {};
+    memory.shmid = -1;
+    XImage* image = XShmCreateImage(engine->display, DefaultVisual(engine->display, screen),
+        DefaultDepth(engine->display, screen), ZPixmap, NULL, &memory, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+    if (!image) return 0;
+    if (image->bits_per_pixel != 32 || image->bytes_per_line < DISPLAY_WIDTH * 4) {
+        XDestroyImage(image); return 0;
+    }
+    memory.shmid = shmget(IPC_PRIVATE, (size_t)image->bytes_per_line * image->height, IPC_CREAT | 0600);
+    if (memory.shmid < 0) { XDestroyImage(image); return 0; }
+    memory.shmaddr = (char*)shmat(memory.shmid, NULL, 0);
+    if (memory.shmaddr == (char*)-1) {
+        shmctl(memory.shmid, IPC_RMID, NULL); XDestroyImage(image); return 0;
+    }
+    image->data = memory.shmaddr;
+    memory.readOnly = False;
+    XSync(engine->display, False);
+    m_shm_attach_error = 0;
+    int (*previous)(Display*, XErrorEvent*) = XSetErrorHandler(m_shm_error_handler);
+    Bool attached = XShmAttach(engine->display, &memory);
+    XSync(engine->display, False);
+    XSetErrorHandler(previous);
+    if (!attached || m_shm_attach_error) {
+        image->data = NULL; XDestroyImage(image);
+        shmdt(memory.shmaddr); shmctl(memory.shmid, IPC_RMID, NULL);
+        return 0;
+    }
+    // Both processes have attached; mark it now so a forced process exit cannot leak it.
+    shmctl(memory.shmid, IPC_RMID, NULL);
+    engine->shminfo = memory;
+    // XShmCreateImage retains this pointer for XShmPutImage; it must outlive
+    // this helper's stack copy and remain valid until the XImage is destroyed.
+    image->obdata = (XPointer)&engine->shminfo;
+    engine->ximage = image;
+    engine->display_buffer = memory.shmaddr;
+    engine->use_shm = 1;
+    return 1;
+}
+
 int render_engine_init(RenderEngine* engine) {
     if (!engine) return -1;
     
@@ -407,6 +442,7 @@ int render_engine_init(RenderEngine* engine) {
     
     // 初始化结构体
     memset(engine, 0, sizeof(RenderEngine));
+    engine->shminfo.shmid = -1;
     
     // 检查DISPLAY环境变量
     char* display_env = getenv("DISPLAY");
@@ -494,31 +530,18 @@ int render_engine_init(RenderEngine* engine) {
                                   DISPLAY_WIDTH, DISPLAY_HEIGHT, 
                                   DefaultDepth(engine->display, screen));
     
-    // 分配显示缓冲区
-    engine->display_buffer = (char*)malloc(DISPLAY_WIDTH * DISPLAY_HEIGHT * 4);
-    if (!engine->display_buffer) {
-        printf("渲染缓冲区分配失败\n");
-        render_engine_cleanup(engine);
-        return -1;
+    if (try_shared_ximage(engine, screen)) {
+        printf("M X11 transfer=MIT-SHM (server-read fence enabled)\n");
+    } else {
+        engine->display_buffer = (char*)malloc(DISPLAY_WIDTH * DISPLAY_HEIGHT * 4);
+        if (!engine->display_buffer) { render_engine_cleanup(engine); return -1; }
+        engine->ximage = XCreateImage(engine->display, DefaultVisual(engine->display, screen),
+            DefaultDepth(engine->display, screen), ZPixmap, 0, engine->display_buffer,
+            DISPLAY_WIDTH, DISPLAY_HEIGHT, 32, DISPLAY_WIDTH * 4);
+        if (!engine->ximage) { render_engine_cleanup(engine); return -1; }
+        printf("M X11 transfer=XPutImage fallback\n");
     }
-    
-    // 创建XImage
-    engine->ximage = XCreateImage(
-        engine->display,
-        DefaultVisual(engine->display, screen),
-        DefaultDepth(engine->display, screen),
-        ZPixmap, 0,
-        engine->display_buffer,
-        DISPLAY_WIDTH, DISPLAY_HEIGHT,
-        32, DISPLAY_WIDTH * 4
-    );
-    
-    if (!engine->ximage) {
-        printf("XImage创建失败\n");
-        render_engine_cleanup(engine);
-        return -1;
-    }
-    
+
     // 加载字体
     engine->font = XLoadQueryFont(engine->display, "fixed");
     if (engine->font) {
@@ -532,24 +555,27 @@ int render_engine_init(RenderEngine* engine) {
 
 int render_engine_render_frame_with_detections(RenderEngine* engine, const uint8_t* rgb888_data) {
     if (!engine || !engine->is_init || !rgb888_data) return -1;
-    
-    // 将RGB888数据转换为X11显示格式（RGBA）
-    for (int i = 0; i < DISPLAY_WIDTH * DISPLAY_HEIGHT; i++) {
-        engine->display_buffer[i * 4 + 0] = rgb888_data[i * 3 + 0]; // R 红色通道
-        engine->display_buffer[i * 4 + 1] = rgb888_data[i * 3 + 1]; // G 绿色通道  
-        engine->display_buffer[i * 4 + 2] = rgb888_data[i * 3 + 2]; // B 蓝色通道
-        engine->display_buffer[i * 4 + 3] = 255; // A 透明度通道
+    for (int y = 0; y < DISPLAY_HEIGHT; ++y) {
+        unsigned char* dst = (unsigned char*)engine->display_buffer + y * engine->ximage->bytes_per_line;
+        const uint8_t* src = rgb888_data + y * DISPLAY_WIDTH * 3;
+        for (int x = 0; x < DISPLAY_WIDTH; ++x) {
+            dst[x * 4] = src[x * 3];
+            dst[x * 4 + 1] = src[x * 3 + 1];
+            dst[x * 4 + 2] = src[x * 3 + 2];
+            dst[x * 4 + 3] = 255;
+        }
     }
-    
-    // 将图像数据绘制到pixmap
-    XPutImage(engine->display, engine->pixmap, engine->gc, engine->ximage,
-              0, 0, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
-    
-    // 将pixmap复制到窗口
+    if (engine->use_shm)
+        XShmPutImage(engine->display, engine->pixmap, engine->gc, engine->ximage,
+                     0, 0, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, False);
+    else XPutImage(engine->display, engine->pixmap, engine->gc, engine->ximage,
+                   0, 0, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
     XCopyArea(engine->display, engine->pixmap, engine->window, engine->gc,
               0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, 0, 0);
-    
-    XFlush(engine->display);
+    if (engine->use_shm) {
+        // Do not overwrite shared pixels until Xorg has finished reading them.
+        XSync(engine->display, False);
+    } else XFlush(engine->display);
     return 0;
 }
 
@@ -575,32 +601,34 @@ int render_engine_check_exit_event(RenderEngine* engine) {
 
 void render_engine_cleanup(RenderEngine* engine) {
     if (!engine) return;
-    
-    if (engine->is_init) {
-        if (engine->font) {
-            XFreeFont(engine->display, engine->font);
-        }
-        if (engine->ximage) {
-            engine->ximage->data = NULL; // 防止XDestroyImage释放我们的缓冲区
-            XDestroyImage(engine->ximage);
-        }
-        if (engine->display_buffer) {
-            free(engine->display_buffer);
-        }
-        if (engine->pixmap) {
-            XFreePixmap(engine->display, engine->pixmap);
-        }
-        if (engine->gc) {
-            XFreeGC(engine->display, engine->gc);
-        }
-        if (engine->window) {
-            XDestroyWindow(engine->display, engine->window);
-        }
-        if (engine->display) {
-            XCloseDisplay(engine->display);
-        }
+    if (engine->use_shm && engine->display) {
+        XShmDetach(engine->display, &engine->shminfo);
+        XSync(engine->display, False);
     }
-    
+    if (engine->ximage) {
+        engine->ximage->data = NULL;
+        XDestroyImage(engine->ximage);
+        engine->ximage = NULL;
+    }
+    if (engine->use_shm) {
+        if (engine->shminfo.shmaddr && engine->shminfo.shmaddr != (char*)-1)
+            shmdt(engine->shminfo.shmaddr);
+        if (engine->shminfo.shmid >= 0) shmctl(engine->shminfo.shmid, IPC_RMID, NULL);
+    } else free(engine->display_buffer);
+    engine->display_buffer = NULL;
+    engine->use_shm = 0;
+    engine->shminfo.shmaddr = NULL;
+    engine->shminfo.shmid = -1;
+    if (engine->font && engine->display) XFreeFont(engine->display, engine->font);
+    engine->font = NULL;
+    if (engine->pixmap && engine->display) XFreePixmap(engine->display, engine->pixmap);
+    engine->pixmap = 0;
+    if (engine->gc && engine->display) XFreeGC(engine->display, engine->gc);
+    engine->gc = NULL;
+    if (engine->window && engine->display) XDestroyWindow(engine->display, engine->window);
+    engine->window = 0;
+    if (engine->display) XCloseDisplay(engine->display);
+    engine->display = NULL;
     engine->is_init = 0;
     printf("渲染引擎清理完成\n");
 }
@@ -862,18 +890,100 @@ void shift_columns_up(uint8_t* image_buffer, int width, int height, int start_co
     free(temp_buffer);
 }
 
+static uint64_t monotonic_ns(void) {
+    struct timespec ts;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) return 0;
+    return (uint64_t)ts.tv_sec * 1000000000ull + ts.tv_nsec;
+}
+
+struct CapturePerf {
+    uint64_t start, frames, raw_changed, inferred, inference_calls, published, renders, overlays;
+    uint64_t dma, colors, inference, overlay, shared, render;
+};
+
+static void report_capture_perf(CapturePerf* stats, int dma_rows, m_lane::LatestWorker* worker) {
+    uint64_t now = monotonic_ns();
+    if (now <= stats->start || now - stats->start < 5000000000ull) return;
+    double seconds = (now - stats->start) / 1000000000.0;
+    double frame_ms = stats->frames ? 1.0 / (stats->frames * 1000000.0) : 0;
+    static m_lane::Totals previous_worker = {};
+    m_lane::Totals totals = worker ? worker->totals() : m_lane::Totals{};
+    uint64_t inferred = worker ? totals.successful - previous_worker.successful : stats->inferred;
+    uint64_t calls = worker ? totals.calls - previous_worker.calls : stats->inference_calls;
+    uint64_t inference = worker ? totals.inference_ns - previous_worker.inference_ns : stats->inference;
+    uint64_t fresh = worker ? totals.fresh_results - previous_worker.fresh_results : stats->inferred;
+    uint64_t stale = worker ? totals.stale_results - previous_worker.stale_results : 0;
+    uint64_t replaced = worker ? totals.replaced - previous_worker.replaced : 0;
+    uint64_t analysis = worker ? totals.analysis_ns - previous_worker.analysis_ns : 0;
+    printf("[PERF M] capture_loop_fps=%.2f raw_changed_fps=%.2f inference_fps=%.2f "
+           "fresh_result_fps=%.2f publish_fps=%.2f dma_ms=%.2f color_ms=%.2f infer_ms=%.2f "
+           "overlay_ms=%.2f analysis_ms=%.2f shm_ms=%.2f render_ms=%.2f "
+           "pending_replaced=%llu stale_results=%llu worker_failed=%d dma_rows=%d\n",
+           stats->frames / seconds, stats->raw_changed / seconds, inferred / seconds,
+           fresh / seconds, stats->published / seconds, stats->dma * frame_ms,
+           stats->colors * frame_ms, calls ? inference / (calls * 1000000.0) : 0,
+           stats->overlays ? stats->overlay / (stats->overlays * 1000000.0) : 0,
+           inferred ? analysis / (inferred * 1000000.0) : 0, stats->shared * frame_ms,
+           stats->renders ? stats->render / (stats->renders * 1000000.0) : 0,
+           (unsigned long long)replaced, (unsigned long long)stale,
+           worker && worker->failed(), dma_rows);
+    previous_worker = totals;
+    fflush(stdout);
+    memset(stats, 0, sizeof(*stats));
+    stats->start = now;
+}
+
+/* A sampled raw fingerprint is telemetry, never a reason to skip NN work.
+ * It distinguishes repeated software reads from sampled image changes, but
+ * is deliberately not advertised as a sensor VSYNC counter. */
+static uint64_t raw_fingerprint(const uint16_t* pixels) {
+    uint64_t hash = 1469598103934665603ULL;
+    for (unsigned y = 0; y < 64; ++y) for (unsigned x = 0; x < 64; ++x) {
+        unsigned sy = y * (IMAGE_HEIGHT - 1) / 63;
+        unsigned sx = x * (IMAGE_WIDTH - 1) / 63;
+        hash ^= pixels[sy * IMAGE_WIDTH + sx];
+        hash *= 1099511628211ULL;
+    }
+    return hash;
+}
+
+static unsigned capture_fps_setting() {
+    const char* value = getenv("VISION_CAPTURE_FPS");
+    if (!value) return 30;
+    int fps = atoi(value);
+    if (fps < 0) return 30;
+    return fps > 60 ? 60 : (unsigned)fps;
+}
+
+static void wait_for_capture_deadline(uint64_t* deadline, unsigned fps) {
+    if (!fps) return;
+    uint64_t now = monotonic_ns();
+    uint64_t period = 1000000000ULL / fps;
+    if (*deadline > now) {
+        struct timespec time = {(time_t)(*deadline / 1000000000ULL),
+                                (long)(*deadline % 1000000000ULL)};
+        while (g_running && clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &time, NULL) == EINTR) {}
+    }
+    now = monotonic_ns();
+    *deadline += period;
+    if (*deadline < now) *deadline = now + period;
+}
+
 //=========================================================================
 // 主函数 - PCIe采集与可选渲染
 //=========================================================================
 
 int main() {
-    PCIEManager pcie_manager;
+    setvbuf(stdout, NULL, _IOLBF, 0);
+    PCIEManager pcie_manager = {};
+    pcie_manager.pci_driver_fd = -1;
 #if ENABLE_RENDERING
-    RenderEngine render_engine;
+    RenderEngine render_engine = {};
 #endif
-    yolopv2_result_t yolopv2_results;
-    SharedMemoryManager pcie_shm_manager;  // PCIe共享内存管理器
+    yolopv2_result_t yolopv2_results = {};
+    SharedMemoryManager pcie_shm_manager = {};  // PCIe共享内存管理器
     
+    std::unique_ptr<m_lane::LatestWorker> lane_worker;
     int frame_count = 0;
     struct timeval stream_start, current_time;
     double total_time;
@@ -1028,25 +1138,37 @@ int main() {
         printf("视频流切换失败，使用默认视频流\n");
     }
     
-    // 性能配置信息
-    printf("=== 性能配置 ===\n");
-    #if PERFORMANCE_PRESET == 1
-        printf("性能模式: 最高精度 (每帧检测)\n");
-    #elif PERFORMANCE_PRESET == 2
-        printf("性能模式: 平衡模式 (每%d帧检测)\n", YOLO_DETECT_INTERVAL);
-    #elif PERFORMANCE_PRESET == 3
-        printf("性能模式: 最高帧率 (每%d帧检测)\n", YOLO_DETECT_INTERVAL);
-    #else
-        printf("性能模式: 自定义 (每%d帧检测)\n", YOLO_DETECT_INTERVAL);
-    #endif
-    printf("高性能模式: %s\n", HIGH_PERFORMANCE_MODE ? "启用" : "禁用");
-    printf("FPS报告间隔: %d帧\n", FPS_REPORT_INTERVAL);
-    printf("检测目标: 车道线和可行驶区域\n");
-    
+    printf("NN submission interval: %d captured frames; completed inference FPS is reported separately\n",
+           YOLO_DETECT_INTERVAL);
+    printf("Performance timing report interval: 5 seconds\n");
+
+    CapturePerf perf = {};
+    perf.start = monotonic_ns();
+    const char* async_option = getenv("VISION_ASYNC");
+    bool asynchronous = !async_option || atoi(async_option) != 0;
+    unsigned capture_fps = capture_fps_setting();
+    uint64_t capture_deadline = monotonic_ns() +
+        (capture_fps ? 1000000000ULL / capture_fps : 0);
+    uint64_t last_raw_hash = 0, last_curve_source = 0, last_curve_capture_ns = 0;
+    bool have_raw_hash = false, curve_fresh = false;
+    if (asynchronous) {
+        try { lane_worker.reset(new m_lane::LatestWorker(&yolo_engine, IMAGE_WIDTH, IMAGE_HEIGHT)); }
+        catch (const std::exception& error) {
+            fprintf(stderr, "Cannot start M inference worker: %s\n", error.what());
+            cleanup_all_resources(&pcie_manager, &pcie_shm_manager, &yolo_engine);
+            return -1;
+        }
+        curve_detection_update_source(0, CURVE_NONE, 0, 0, 0);
+    }
+    printf("M inference=%s, capture target=%u fps (0=unlimited), NN result max age=500ms\n",
+           asynchronous ? "latest-frame worker" : "synchronous", capture_fps);
     while (g_running) {
+        uint64_t mark = monotonic_ns();
         // printf("[DEBUG] ===== 帧 %d 开始 =====\n", frame_count);
         /* 步骤1: 从PCIE采集一帧数据 */
         if (pcie_manager_capture_frame(&pcie_manager, image_buf_temp, temp_buffer_size) != 0) {
+            if (!g_running) break;
+            lane_worker.reset(); // join before RKNN and input buffers are released
             emergency_stop("PCIE帧采集失败", "PCIE数据采集");
             printf("!!! 可能的原因: !!!\n");
             printf("!!! 1. PCIE连接中断 !!!\n");
@@ -1056,65 +1178,126 @@ int main() {
             return -1;
         }
 
+        uint64_t captured_ns = monotonic_ns();
+        perf.dma += captured_ns - mark;
+        uint64_t raw_hash = raw_fingerprint((const uint16_t*)image_buf_temp);
+        if (!have_raw_hash || raw_hash != last_raw_hash) ++perf.raw_changed;
+        have_raw_hash = true;
+        last_raw_hash = raw_hash;
+        mark = monotonic_ns();
+
         /* 步骤2: 将RGB565转换为RGB888格式 */
         // printf("[DEBUG] RGB565转RGB888开始\n");
         rgb565_to_rgb888((uint16_t*)image_buf_temp, image_buf_888, IMAGE_WIDTH * IMAGE_HEIGHT);
         // printf("[DEBUG] RGB565转RGB888完成\n");
 
-        /* 步骤3: 使用YOLOPv2进行车道线和可行驶区域检测 (通过宏控制检测间隔) */
-        static int last_detect_frame = -YOLO_DETECT_INTERVAL; // 上次检测的帧号
+        perf.colors += monotonic_ns() - mark;
 
-        if (frame_count - last_detect_frame >= YOLO_DETECT_INTERVAL) {
-            // printf("[DEBUG] 进入检测逻辑: frame_count=%d\n", frame_count);
-            // 按宏定义的间隔执行检测
-            memset(&yolopv2_results, 0, sizeof(yolopv2_results));
-            // printf("[DEBUG] 调用yolo_engine_detect...\n");
-            if (yolo_engine_detect(&yolo_engine, image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT,
-                                  &yolopv2_results) == 0) {
-
-                #if !HIGH_PERFORMANCE_MODE
-                printf("[帧%d] YOLOPv2检测完成 (间隔%d帧)\n",
-                       frame_count, YOLO_DETECT_INTERVAL);
-                #endif
-
-                // 立即绘制车道线和可行驶区域到RGB888图像上
-                // printf("[DEBUG] 检查结果指针: lane=%p, drivable=%p\n",
-                //        yolopv2_results.lane_line_data, yolopv2_results.drivable_area_data);
-                if (yolopv2_results.lane_line_data && yolopv2_results.drivable_area_data) {
-                    // printf("[DEBUG] 调用draw_lane_and_drivable...\n");
-                    draw_lane_and_drivable(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, &yolopv2_results);
-                    // printf("[DEBUG] draw_lane_and_drivable完成\n");
+        if (lane_worker) {
+            uint64_t source_id = (uint64_t)frame_count + 1;
+            // Submit the unannotated image, never a previous mask overlay.
+            if (frame_count % YOLO_DETECT_INTERVAL == 0)
+                lane_worker->submit(image_buf_888, source_id, captured_ns);
+            std::shared_ptr<const m_lane::Snapshot> result = lane_worker->latest();
+            bool fresh = result && result->fresh(monotonic_ns()) && !lane_worker->failed();
+            if (fresh) {
+                mark = monotonic_ns();
+                yolopv2_result_t masks = result->masks();
+                yolo_overlay_lane_and_drivable(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, &masks);
+                perf.overlay += monotonic_ns() - mark;
+                ++perf.overlays;
+                // A cached mask on another video frame is not a new NN result.
+                if (!curve_fresh || result->source_id != last_curve_source) {
+                    curve_detection_update_source((uint32_t)result->source_id,
+                        (CurveType)result->curve.curve_type, result->curve.confidence,
+                        result->curve.angle, result->captured_ns);
+                    last_curve_source = result->source_id;
+                    last_curve_capture_ns = result->captured_ns;
                 }
-
-                last_detect_frame = frame_count;
-            } else {
-                printf("警告: YOLOPv2检测失败\n");
+                curve_fresh = true;
+            } else if (curve_fresh) {
+                curve_detection_update_source((uint32_t)last_curve_source, CURVE_NONE, 0, 0,
+                                                last_curve_capture_ns);
+                curve_fresh = false;
             }
-            // printf("[DEBUG] 检测逻辑完成\n");
+        } else {
+            /* 步骤3: 使用YOLOPv2进行车道线和可行驶区域检测 (通过宏控制检测间隔) */
+            static int last_detect_frame = -YOLO_DETECT_INTERVAL; // 上次检测的帧号
+    
+            if (frame_count - last_detect_frame >= YOLO_DETECT_INTERVAL) {
+                // printf("[DEBUG] 进入检测逻辑: frame_count=%d\n", frame_count);
+                // 按宏定义的间隔执行检测
+                memset(&yolopv2_results, 0, sizeof(yolopv2_results));
+                // printf("[DEBUG] 调用yolo_engine_detect...\n");
+                mark = monotonic_ns();
+                int detection_result = yolo_engine_detect(&yolo_engine, image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT,
+                                                          &yolopv2_results);
+                perf.inference += monotonic_ns() - mark;
+                ++perf.inference_calls;
+                if (detection_result == 0) {
+                    ++perf.inferred;
+                    mark = monotonic_ns();
+    
+                    #if !HIGH_PERFORMANCE_MODE
+                    printf("[帧%d] YOLOPv2检测完成 (间隔%d帧)\n",
+                           frame_count, YOLO_DETECT_INTERVAL);
+                    #endif
+    
+                    // 立即绘制车道线和可行驶区域到RGB888图像上
+                    // printf("[DEBUG] 检查结果指针: lane=%p, drivable=%p\n",
+                    //        yolopv2_results.lane_line_data, yolopv2_results.drivable_area_data);
+                    if (yolopv2_results.lane_line_data && yolopv2_results.drivable_area_data) {
+                        // printf("[DEBUG] 调用draw_lane_and_drivable...\n");
+                        draw_lane_and_drivable(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, &yolopv2_results);
+                        // printf("[DEBUG] draw_lane_and_drivable完成\n");
+                    }
+    
+                    perf.overlay += monotonic_ns() - mark;
+                    ++perf.overlays;
+                    last_detect_frame = frame_count;
+                } else {
+                    printf("警告: YOLOPv2检测失败\n");
+                }
+                // printf("[DEBUG] 检测逻辑完成\n");
+            }
+            // 注意：如果不在检测间隔，直接使用原始图像，不绘制车道线
+    
         }
-        // 注意：如果不在检测间隔，直接使用原始图像，不绘制车道线
 
         /* 步骤3.5: 将带有车道线和可行驶区域的RGB888数据转换为RGB565格式并写入PCIe共享内存供UDP传输 */
         // 转换RGB888回RGB565格式到专用的输出缓冲区（避免与原始数据缓冲区冲突）
         // printf("[DEBUG] RGB888转RGB565开始\n");
+        mark = monotonic_ns();
         rgb888_to_rgb565(image_buf_888, (uint16_t*)image_buf_565_out, IMAGE_WIDTH * IMAGE_HEIGHT);
+        perf.colors += monotonic_ns() - mark;
         // printf("[DEBUG] RGB888转RGB565完成\n");
 
         // 写入RGB565格式的带检测结果的图像数据到共享内存
         // printf("[DEBUG] 写入共享内存开始\n");
-        if (pcie_shared_memory_write_frame(&pcie_shm_manager,
-                                          image_buf_565_out,
-                                          IMAGE_WIDTH, IMAGE_HEIGHT) != 0) {
-            printf("警告: 写入PCIe共享内存失败，但继续处理下一帧\n");
+        mark = monotonic_ns();
+        if (pcie_shared_memory_write_frame(&pcie_shm_manager, image_buf_565_out,
+                                          IMAGE_WIDTH, IMAGE_HEIGHT) == 0) {
+            ++perf.published;
+        } else {
+            static uint64_t last_write_warning = 0;
+            uint64_t now = monotonic_ns();
+            if (now - last_write_warning >= 5000000000ull) {
+                fprintf(stderr, "M image shared-memory publication failed; retrying next frame\n");
+                last_write_warning = now;
+            }
         }
+        perf.shared += monotonic_ns() - mark;
         // printf("[DEBUG] 写入共享内存完成\n");
 
 #if ENABLE_RENDERING
         /* 步骤4: 渲染带有检测结果的图像 */
         // printf("[DEBUG] 渲染开始\n");
+        mark = monotonic_ns();
         if (render_engine_render_frame_with_detections(&render_engine, image_buf_888) != 0) {
             printf("警告: 渲染失败，但继续处理下一帧\n");
         }
+        perf.render += monotonic_ns() - mark;
+        ++perf.renders;
         // printf("[DEBUG] 渲染完成\n");
 
         /* 步骤5: 检查退出事件 */
@@ -1127,19 +1310,15 @@ int main() {
 #endif
 
         frame_count++;
+        ++perf.frames;
+        report_capture_perf(&perf, pcie_manager.dma_rows, lane_worker.get());
+        wait_for_capture_deadline(&capture_deadline, capture_fps);
         // printf("[DEBUG] ===== 帧 %d 结束 =====\n", frame_count - 1);
 
-        /* 实时FPS计算和性能分析 (通过宏控制报告频率) */
-        if (frame_count % FPS_REPORT_INTERVAL == 0) {
-            gettimeofday(&current_time, NULL);
-            total_time = get_time_diff(stream_start, current_time);
-            double current_fps = frame_count / total_time;
-
-            printf("[视频流%d] [%d帧] FPS: %.1f | 车道线检测中\n",
-                   current_video_stream, frame_count, current_fps);
-        }
     }
     
+    lane_worker.reset(); // no in-flight RKNN calls beyond this point
+
     /////////////////////////////////////////////////////////////////////////////
     // 性能统计和结果保存区域
     /////////////////////////////////////////////////////////////////////////////
@@ -1150,10 +1329,10 @@ int main() {
     printf("总时间: %.2f秒\n", total_time);
     printf("平均FPS: %.1f\n", frame_count / total_time);
     
-    /* 保存最后一帧为PPM文件 */
-    printf("\n=== 保存最后一帧 ===\n");
-    save_frame_to_ppm(image_buf_888, "last_frame_with_lane_detection.ppm");
-    
+    if (getenv("VISION_SAVE_LAST_FRAME") && atoi(getenv("VISION_SAVE_LAST_FRAME")) != 0) {
+        save_frame_to_ppm(image_buf_888, "last_frame_with_lane_detection.ppm");
+    }
+
     /////////////////////////////////////////////////////////////////////////////
     // 系统清理区域
     /////////////////////////////////////////////////////////////////////////////

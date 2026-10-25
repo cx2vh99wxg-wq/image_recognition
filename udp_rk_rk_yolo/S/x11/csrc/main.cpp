@@ -7,13 +7,23 @@
 #include <signal.h>
 #include <time.h>
 #include <sys/time.h>
+#include <limits.h>
+#include <poll.h>
+#include <errno.h>
+#include <new>
+#include <vector>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/extensions/XShm.h>  /* MIT-SHM共享内存扩展 */
+#ifdef PERCEPTION_HAVE_XRENDER
+#include <X11/extensions/Xrender.h>
+#endif
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "dashboard_ui.h"
+#include "gles_presenter.h"
 
 /* 为了使用aligned_alloc，需要定义_ISOC11_SOURCE */
 #ifndef _ISOC11_SOURCE
@@ -68,6 +78,24 @@ typedef struct {
     uint64_t text_duration_ms;  /* 文字显示持续时间(毫秒) */
 } TransitionAnimation;
 
+// Pixels in the fixed vehicle layer depend only on this immutable snapshot.
+// The same snapshot supplies both the cache key and the renderer.
+struct VehicleLayerState {
+    const uint8_t* png;
+    uint64_t png_revision;
+    int png_width, png_height;
+    int person, box_left, box_top, box_right, box_bottom, blink;
+    CurveType curve;
+    uint32_t confidence;
+    bool operator==(const VehicleLayerState& other) const {
+        return png == other.png && png_revision == other.png_revision &&
+            png_width == other.png_width && png_height == other.png_height &&
+            person == other.person && box_left == other.box_left && box_top == other.box_top &&
+            box_right == other.box_right && box_bottom == other.box_bottom && blink == other.blink &&
+            curve == other.curve && confidence == other.confidence;
+    }
+};
+
 //=========================================================================
 // 渲染引擎结构体
 //=========================================================================
@@ -84,12 +112,44 @@ typedef struct {
     XFontStruct *font;       /* 字体结构 */
     int is_init;
     TransitionAnimation transition; /* 切换动画状态 */
+    // 1280x480 is the unchanged video canvas; the dashboard is presented separately.
+    perception_ui::Dashboard* dashboard;
+    XImage* presentation_image;
+    uint32_t* vehicle_layer;
+    int window_width, window_height;
+    int fullscreen, needs_redraw, headless;
+    Atom wm_delete;
+    DisplayMode presented_mode;
+    uint64_t pcie_last_seen, udp_last_seen, last_presented;
+    float display_fps;
+    int preview_recorded;
+    int use_xrender;
+    int use_gles;
+    GlesPresenter* gles;
+    VehicleLayerState vehicle_state;
+    int vehicle_cached;
+    int use_shm_completion, shm_completion_disabled, shm_completion_type, shm_pending;
+    unsigned long shm_pending_serial;
+    Drawable shm_pending_drawable;
+    uint64_t profile_reuse_wait_ns, profile_upload_completions;
+    uint64_t profile_upload_bytes, profile_upload_rects;
+    int upload_initialized, uploaded_this_frame;
+#ifdef PERCEPTION_HAVE_XRENDER
+    Picture source_picture, window_picture;
+#endif
+    uint32_t pcie_frame_id, udp_frame_id, shown_pcie_id, shown_udp_id;
+    uint32_t profile_pcie_start, profile_udp_start;
+    uint64_t profile_start, profile_frames, profile_s_shown, profile_m_shown;
+    uint64_t profile_compose_ns, profile_scale_ns, profile_present_ns;
+    uint64_t last_layout_ns, profile_layout_ns, profile_car_ns, profile_dashboard_ns, profile_car_redraws;
+    float pcie_shown_fps, udp_shown_fps;
 } RenderEngine;
 
 //=========================================================================
 // 全局变量
 //=========================================================================
 static volatile int keep_running = 1;
+static perception_ui::MotionDirection preview_motion = perception_ui::MotionDirection::Idle;
 static SharedMemoryManager pcie_shm_manager;
 static SharedMemoryManager udp_shm_manager;
 static DisplayControlSharedMemory* display_control_shm = NULL;  // 显示控制共享内存
@@ -100,6 +160,7 @@ static uint8_t* car_png_data = NULL;
 static int car_png_width = 0;
 static int car_png_height = 0;
 static int car_png_channels = 0;
+static uint64_t car_png_revision = 0;
 
 // 红光闪烁状态
 static uint64_t last_blink_time = 0;
@@ -108,6 +169,9 @@ static int blink_state = 1;
 // 弯道检测状态
 static CurveType current_curve_type = CURVE_NONE;
 static uint32_t current_curve_confidence = 0;
+static int start_fullscreen = 1;
+static int frame_limit = 0;
+static const char* snapshot_path = NULL;
 
 //=========================================================================
 // 函数声明
@@ -152,7 +216,11 @@ void render_scaled_camera_block(uint32_t* display_pixels, const uint16_t* source
                               int src_x, int src_y, float scale_factor, int center_x, int center_y);
 void get_camera_position(DisplayMode mode, int* src_x, int* src_y);
 const char* get_camera_mode_name(DisplayMode mode);
-void draw_text_overlay(RenderEngine* engine, const char* text);
+int present_dashboard(RenderEngine* engine);
+int resize_presentation(RenderEngine* engine, int width, int height);
+void set_fullscreen(RenderEngine* engine, int enabled);
+static perception_ui::Dashboard* create_dashboard_theme();
+static uint64_t display_clock_ns();
 
 //=========================================================================
 // 信号处理函数
@@ -257,7 +325,8 @@ void render_camera_block(uint32_t* display_pixels, const uint16_t* source_pixels
             
             // 从源图像读取像素
             int source_y = src_y + (src_x < PCIE_IMAGE_WIDTH ? pcie_display_source_row(orig_y) : orig_y);
-            int source_idx = source_y * (src_x >= 640 ? UDP_IMAGE_WIDTH : PCIE_IMAGE_WIDTH) + (src_x + orig_x);
+            int source_idx = source_y * (src_x >= 640 ? UDP_IMAGE_WIDTH : PCIE_IMAGE_WIDTH)
+                             + ((src_x >= 640 ? src_x - 640 : src_x) + orig_x);
             uint16_t pixel = source_pixels[source_idx];
             
             // BGR565转RGB888 (修正颜色通道顺序)
@@ -406,132 +475,6 @@ void draw_screen_flash(RenderEngine* engine, float alpha) {
     }
 }
 
-void draw_text_overlay(RenderEngine* engine, const char* text) {
-    if (!engine || !engine->is_init || !text || !engine->font) {
-        return;
-    }
-    
-    // 设置文字绘制属性（确保颜色稳定，避免闪烁）
-    XSetForeground(engine->display, engine->gc, WhitePixel(engine->display, DefaultScreen(engine->display)));  // 白色文字
-    XSetBackground(engine->display, engine->gc, BlackPixel(engine->display, DefaultScreen(engine->display)));  // 黑色背景
-    XSetFont(engine->display, engine->gc, engine->font->fid);
-    
-    // 计算文字尺寸
-    int text_width = XTextWidth(engine->font, text, strlen(text));
-    int text_height = engine->font->ascent + engine->font->descent;
-    
-    // 左上角位置（带一些边距）
-    int text_x = 10;  // 左边距10像素
-    int text_y = 10 + engine->font->ascent;  // 上边距10像素 + 字体上升高度
-    
-    // 绘制半透明黑色背景矩形（左上角位置）
-    int bg_padding = 5;
-    int bg_x = text_x - bg_padding;
-    int bg_y = text_y - engine->font->ascent - bg_padding/2;
-    int bg_width = text_width + bg_padding * 2;
-    int bg_height = text_height + bg_padding;
-    
-    // 直接在缓冲区中绘制纯黑色背景矩形（避免半透明计算闪烁）
-    uint32_t* display_pixels = (uint32_t*)engine->display_buffer;
-    uint32_t bg_color = 0xFF000000;  // 纯黑色背景，避免闪烁
-    
-    for (int y = bg_y; y < bg_y + bg_height && y < COMBINED_IMAGE_HEIGHT; y++) {
-        if (y >= 0) {
-            for (int x = bg_x; x < bg_x + bg_width && x < COMBINED_IMAGE_WIDTH; x++) {
-                if (x >= 0) {
-                    display_pixels[y * COMBINED_IMAGE_WIDTH + x] = bg_color;
-                }
-            }
-        }
-    }
-    
-    // 先将缓冲区渲染到pixmap
-    if (engine->pixmap) {
-        XPutImage(engine->display, engine->pixmap, engine->gc, engine->ximage,
-                 0, 0, 0, 0, COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT);
-        
-        // 在pixmap上绘制文字
-        XDrawString(engine->display, engine->pixmap, engine->gc, text_x, text_y, text, strlen(text));
-        
-        // 复制到窗口
-        XCopyArea(engine->display, engine->pixmap, engine->window, engine->gc,
-                 0, 0, COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT, 0, 0);
-    } else {
-        // 直接在窗口上绘制
-        XPutImage(engine->display, engine->window, engine->gc, engine->ximage,
-                 0, 0, 0, 0, COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT);
-        XDrawString(engine->display, engine->window, engine->gc, text_x, text_y, text, strlen(text));
-    }
-}
-
-void draw_text_overlay_center(RenderEngine* engine, const char* text) {
-    if (!engine || !engine->is_init || !text || !engine->font) {
-        return;
-    }
-
-    // 设置文字绘制属性
-    XSetForeground(engine->display, engine->gc, 0xFFFFFF);  // 白色文字
-    XSetBackground(engine->display, engine->gc, 0x000000);  // 黑色背景
-    XSetFont(engine->display, engine->gc, engine->font->fid);
-
-    // 计算文字尺寸
-    int text_width = XTextWidth(engine->font, text, strlen(text));
-    int text_height = engine->font->ascent + engine->font->descent;
-
-    // 计算居中位置
-    int text_x = (COMBINED_IMAGE_WIDTH - text_width) / 2;
-    int text_y = COMBINED_IMAGE_HEIGHT / 2 + engine->font->ascent / 2;
-
-    // 绘制黑色背景矩形
-    int bg_padding = 20;
-    int bg_x = text_x - bg_padding;
-    int bg_y = text_y - engine->font->ascent - bg_padding/2;
-    int bg_width = text_width + bg_padding * 2;
-    int bg_height = text_height + bg_padding;
-
-    // 直接在缓冲区中绘制背景矩形
-    uint32_t* display_pixels = (uint32_t*)engine->display_buffer;
-
-    for (int y = bg_y; y < bg_y + bg_height && y < COMBINED_IMAGE_HEIGHT; y++) {
-        if (y >= 0) {
-            for (int x = bg_x; x < bg_x + bg_width && x < COMBINED_IMAGE_WIDTH; x++) {
-                if (x >= 0) {
-                    // 半透明混合
-                    uint32_t original = display_pixels[y * COMBINED_IMAGE_WIDTH + x];
-                    uint8_t orig_r = (original >> 16) & 0xFF;
-                    uint8_t orig_g = (original >> 8) & 0xFF;
-                    uint8_t orig_b = original & 0xFF;
-
-                    // 与黑色背景混合（70%透明度）
-                    uint8_t new_r = orig_r * 0.3f;
-                    uint8_t new_g = orig_g * 0.3f;
-                    uint8_t new_b = orig_b * 0.3f;
-
-                    display_pixels[y * COMBINED_IMAGE_WIDTH + x] = 0xFF000000 | (new_r << 16) | (new_g << 8) | new_b;
-                }
-            }
-        }
-    }
-
-    // 先将缓冲区渲染到pixmap
-    if (engine->pixmap) {
-        XPutImage(engine->display, engine->pixmap, engine->gc, engine->ximage,
-                 0, 0, 0, 0, COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT);
-
-        // 在pixmap上绘制文字
-        XDrawString(engine->display, engine->pixmap, engine->gc, text_x, text_y, text, strlen(text));
-
-        // 复制到窗口
-        XCopyArea(engine->display, engine->pixmap, engine->window, engine->gc,
-                 0, 0, COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT, 0, 0);
-    } else {
-        // 直接在窗口上绘制
-        XPutImage(engine->display, engine->window, engine->gc, engine->ximage,
-                 0, 0, 0, 0, COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT);
-        XDrawString(engine->display, engine->window, engine->gc, text_x, text_y, text, strlen(text));
-    }
-}
-
 // 加载car.png图像
 int load_car_png(const char* filename) {
     car_png_data = stbi_load(filename, &car_png_width, &car_png_height, &car_png_channels, 4);
@@ -539,6 +482,7 @@ int load_car_png(const char* filename) {
         printf("无法加载PNG图像: %s\n", filename);
         return -1;
     }
+    ++car_png_revision;
     printf("成功加载PNG图像: %s (%dx%d, %d通道)\n", filename, car_png_width, car_png_height, car_png_channels);
     return 0;
 }
@@ -650,52 +594,60 @@ void draw_lane_lines(uint32_t* display_pixels, int dst_x, int dst_y, int dst_wid
 }
 
 // 渲染car.png到指定位置，带红光闪烁效果
-void render_car_png(uint32_t* display_pixels, int dst_x, int dst_y, int dst_width, int dst_height) {
-    if (!car_png_data) return;
-
-    // 更新闪烁状态
+static VehicleLayerState snapshot_vehicle_state() {
     uint64_t current_time = get_current_time_ms();
-    if (current_time - last_blink_time >= 300) {  // 300ms闪烁间隔
+    if (car_png_data && current_time - last_blink_time >= 300) {
         blink_state = !blink_state;
         last_blink_time = current_time;
     }
-
-    // 检查是否有人员检测
-    int person_detected = 0;
-    int box_left = 0, box_top = 0, box_right = 0, box_bottom = 0;
+    VehicleLayerState state = {};
+    state.png = car_png_data;
+    state.png_revision = car_png_revision;
+    state.png_width = car_png_width;
+    state.png_height = car_png_height;
     if (emergency_brake_shm && emergency_brake_shm->valid && emergency_brake_shm->person_detected) {
-        person_detected = 1;
-        box_left = emergency_brake_shm->box_left;
-        box_top = emergency_brake_shm->box_top;
-        box_right = emergency_brake_shm->box_right;
-        box_bottom = emergency_brake_shm->box_bottom;
+        state.person = 1;
+        state.box_left = emergency_brake_shm->box_left;
+        state.box_top = emergency_brake_shm->box_top;
+        state.box_right = emergency_brake_shm->box_right;
+        state.box_bottom = emergency_brake_shm->box_bottom;
     }
+    // Blink and coordinates do not affect pixels while person is absent.
+    state.blink = state.person ? blink_state : 0;
+    state.curve = current_curve_type;
+    state.confidence = current_curve_confidence;
+    return state;
+}
+
+static void render_car_png_with_state(uint32_t* display_pixels, int dst_x, int dst_y,
+                                     int dst_width, int dst_height, const VehicleLayerState& state) {
+    if (!state.png) return;
 
     // 计算边缘位置
     int edge_type = 0;
     float edge_position = 0.5f;
-    if (person_detected) {
-        calculate_car_edge_position(box_left, box_top, box_right, box_bottom, &edge_type, &edge_position);
+    if (state.person) {
+        calculate_car_edge_position(state.box_left, state.box_top, state.box_right, state.box_bottom, &edge_type, &edge_position);
     }
 
     // 计算缩放比例
-    float scale_x = (float)car_png_width / dst_width;
-    float scale_y = (float)car_png_height / dst_height;
+    float scale_x = (float)state.png_width / dst_width;
+    float scale_y = (float)state.png_height / dst_height;
 
     const int edge_width = 80;  // 红光渐变宽度
-    float blink_intensity = blink_state ? 0.8f : 0.3f;
+    float blink_intensity = state.blink ? 0.8f : 0.3f;
 
     for (int y = 0; y < dst_height; y++) {
         for (int x = 0; x < dst_width; x++) {
             int src_x = (int)(x * scale_x);
             int src_y = (int)(y * scale_y);
 
-            if (src_x >= 0 && src_x < car_png_width && src_y >= 0 && src_y < car_png_height) {
-                int src_idx = (src_y * car_png_width + src_x) * 4;
-                uint8_t r = car_png_data[src_idx];
-                uint8_t g = car_png_data[src_idx + 1];
-                uint8_t b = car_png_data[src_idx + 2];
-                uint8_t a = car_png_data[src_idx + 3];
+            if (src_x >= 0 && src_x < state.png_width && src_y >= 0 && src_y < state.png_height) {
+                int src_idx = (src_y * state.png_width + src_x) * 4;
+                uint8_t r = state.png[src_idx];
+                uint8_t g = state.png[src_idx + 1];
+                uint8_t b = state.png[src_idx + 2];
+                uint8_t a = state.png[src_idx + 3];
 
                 int dst_px = dst_x + x;
                 int dst_py = dst_y + y;
@@ -703,7 +655,7 @@ void render_car_png(uint32_t* display_pixels, int dst_x, int dst_y, int dst_widt
                 if (dst_px >= 0 && dst_px < COMBINED_IMAGE_WIDTH && dst_py >= 0 && dst_py < COMBINED_IMAGE_HEIGHT) {
                     // 计算红光效果
                     float red_intensity = 0.0f;
-                    if (person_detected) {
+                    if (state.person) {
                         float dist = 1000.0f;
                         if (edge_type == 0) {  // 上边缘（车头）
                             int target_x = (int)(edge_position * dst_width);
@@ -751,6 +703,25 @@ void render_car_png(uint32_t* display_pixels, int dst_x, int dst_y, int dst_widt
             }
         }
     }
+}
+
+void render_car_png(uint32_t* display_pixels, int dst_x, int dst_y, int dst_width, int dst_height) {
+    const VehicleLayerState state = snapshot_vehicle_state();
+    render_car_png_with_state(display_pixels, dst_x, dst_y, dst_width, dst_height, state);
+}
+
+static bool update_vehicle_layer(RenderEngine* engine) {
+    const VehicleLayerState state = snapshot_vehicle_state();
+    if (engine->vehicle_cached && engine->vehicle_state == state) return false;
+    // Its 320x480 target, 1280-pixel stride and background are fixed by the
+    // logical dashboard, independently of physical window resizing.
+    for (int y = 0; y < 480; ++y)
+        std::fill_n(engine->vehicle_layer + y * COMBINED_IMAGE_WIDTH, 320, 0xff080b20u);
+    render_car_png_with_state(engine->vehicle_layer, 0, 0, 320, 480, state);
+    draw_lane_lines(engine->vehicle_layer, 0, 0, 320, 480, state.curve, state.confidence);
+    engine->vehicle_state = state;
+    engine->vehicle_cached = 1;
+    return true;
 }
 
 //=========================================================================
@@ -818,6 +789,7 @@ int render_engine_render_with_transition(RenderEngine* engine,
         return -1;
     }
     
+    engine->presented_mode = current_mode;
     uint32_t* display_pixels = (uint32_t*)engine->display_buffer;
     const uint16_t* pcie_pixels = (const uint16_t*)pcie_data;
     const uint16_t* udp_pixels = (const uint16_t*)udp_data;
@@ -827,6 +799,7 @@ int render_engine_render_with_transition(RenderEngine* engine,
         return render_engine_render_camera_view(engine, pcie_data, udp_data, current_mode);
     }
     
+    uint64_t layout_started = display_clock_ns();
     // 动画渲染
     TransitionAnimation* anim = &engine->transition;
     
@@ -996,136 +969,655 @@ int render_engine_render_with_transition(RenderEngine* engine,
     
     // 更新动画状态
     transition_animation_update(anim);
-    
-    // 渲染到屏幕
-    if (engine->pixmap) {
-        XPutImage(engine->display, engine->pixmap, engine->gc, engine->ximage,
-                 0, 0, 0, 0, COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT);
-        XCopyArea(engine->display, engine->pixmap, engine->window, engine->gc,
-                 0, 0, COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT, 0, 0);
-    } else {
-        XPutImage(engine->display, engine->window, engine->gc, engine->ximage,
-                 0, 0, 0, 0, COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT);
-    }
-    
-    // 在左上角显示视角文字（仅在指定时间内显示）
-    if (anim->show_text) {
-        draw_text_overlay(engine, get_camera_mode_name(anim->to_mode));
-    }
-    
-    XFlush(engine->display);
-    
-    return 0;
+    engine->last_layout_ns = display_clock_ns() - layout_started;
+    return present_dashboard(engine);
 }
 
 //=========================================================================
 // 渲染引擎函数实现
 //=========================================================================
-int render_engine_init(RenderEngine* engine) {
-    if (!engine) {
-        return -1;
+
+void set_fullscreen(RenderEngine* engine, int enabled) {
+    if (!engine || !engine->display) return;
+    XEvent event = {};
+    event.type = ClientMessage;
+    event.xclient.window = engine->window;
+    event.xclient.message_type = XInternAtom(engine->display, "_NET_WM_STATE", False);
+    event.xclient.format = 32;
+    event.xclient.data.l[0] = enabled ? 1 : 0;
+    event.xclient.data.l[1] = XInternAtom(engine->display, "_NET_WM_STATE_FULLSCREEN", False);
+    event.xclient.data.l[3] = 1;
+    XSendEvent(engine->display, DefaultRootWindow(engine->display), False,
+               SubstructureRedirectMask | SubstructureNotifyMask, &event);
+    engine->fullscreen = enabled;
+    engine->needs_redraw = 1;
+    XFlush(engine->display);
+}
+
+static bool display_verbose() {
+    static const char* value = getenv("VISION_VERBOSE");
+    static const bool enabled = value && strcmp(value, "0") != 0;
+    return enabled;
+}
+
+static uint64_t display_clock_ns() {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint64_t)ts.tv_sec * 1000000000ULL + ts.tv_nsec;
+}
+
+static int shm_attach_error = 0;
+static int catch_shm_error(Display*, XErrorEvent* event) {
+    shm_attach_error = event->error_code;
+    return 0;
+}
+
+// Only this client's one outstanding upload may release its shared image.
+static Bool pending_shm_completion(Display*, XEvent* event, XPointer context) {
+    RenderEngine* engine = reinterpret_cast<RenderEngine*>(context);
+    if (!engine->shm_pending || event->type != engine->shm_completion_type) return False;
+    const XShmCompletionEvent* completion = reinterpret_cast<XShmCompletionEvent*>(event);
+    return completion->shmseg == engine->shminfo.shmseg &&
+           completion->drawable == engine->shm_pending_drawable &&
+           completion->serial == engine->shm_pending_serial && completion->offset == 0;
+}
+
+static bool consume_shm_completion(RenderEngine* engine, XEvent* event) {
+    if (!pending_shm_completion(engine->display, event, reinterpret_cast<XPointer>(engine))) return false;
+    engine->shm_pending = 0;
+    ++engine->profile_upload_completions;
+    return true;
+}
+
+static void wait_for_shared_image(RenderEngine* engine) {
+    if (!engine->shm_pending) return;
+    const uint64_t started = display_clock_ns();
+    const uint64_t deadline = started + 250000000ULL;
+    XEvent event;
+    while (engine->shm_pending) {
+        if (XCheckIfEvent(engine->display, &event, pending_shm_completion,
+                         reinterpret_cast<XPointer>(engine))) {
+            consume_shm_completion(engine, &event);
+            break;
+        }
+        if (!keep_running || engine->shm_completion_disabled || display_clock_ns() >= deadline) {
+            // No completion means this image must not be reused yet. The
+            // synchronous fallback also covers servers that lose these events.
+            XSync(engine->display, False);
+            if (XCheckIfEvent(engine->display, &event, pending_shm_completion,
+                             reinterpret_cast<XPointer>(engine)))
+                consume_shm_completion(engine, &event);
+            else { engine->shm_pending = 0; ++engine->profile_upload_completions; }
+            engine->use_shm_completion = 0;
+            engine->shm_completion_disabled = 1;
+            fprintf(stderr, "[RENDER] SHM completion wait timed out; using synchronized fallback\n");
+            break;
+        }
+        pollfd descriptor = {ConnectionNumber(engine->display), POLLIN, 0};
+        int result = poll(&descriptor, 1, 10);
+        if (result < 0 && errno != EINTR) {
+            // The next iteration safely finishes with XSync rather than
+            // writing a segment whose owner is still the X server.
+            engine->shm_completion_disabled = 1;
+        }
+        if (result > 0) XEventsQueued(engine->display, QueuedAfterReading);
     }
-    
-    printf("正在初始化X11渲染引擎...\n");
-    
-    memset(engine, 0, sizeof(RenderEngine));
-    
-    // 连接到X服务器
-    engine->display = XOpenDisplay(NULL);
-    if (!engine->display) {
-        printf("无法连接到X服务器\n");
-        return -1;
+    engine->profile_reuse_wait_ns += display_clock_ns() - started;
+}
+
+struct UploadRegion { int x, y, width, height; };
+
+static bool partial_upload_requested() {
+    static const char* value = getenv("VISION_PARTIAL_UPLOAD");
+    static const bool enabled = value && !strcmp(value, "1");
+    return enabled;
+}
+
+// Regions cover every dynamic Dashboard pixel and do not overlap. Static
+// layout/theme changes must rebuild this image or update these bounds.
+static void prepare_xrender_upload(RenderEngine* engine, const uint32_t* pixels,
+                                   bool partial, std::vector<UploadRegion>& regions) {
+    XImage* image = engine->presentation_image;
+    regions.clear();
+    if (!partial || !engine->upload_initialized) {
+        for (int y = 0; y < perception_ui::HEIGHT; ++y)
+            memcpy(image->data + y * image->bytes_per_line,
+                   pixels + y * perception_ui::WIDTH, perception_ui::WIDTH * 4);
+        regions.push_back({0, 0, perception_ui::WIDTH, perception_ui::HEIGHT});
+        return;
     }
-    
+    static const UploadRegion areas[] = {
+        {0, 180, 1600, 44}, {72, 224, 1092, 504},
+        {0, 728, 1600, 152}, {1188, 230, 412, 498}
+    };
+    bool changed[4] = {};
+    for (int area_index = 0; area_index < 4; ++area_index) {
+        const UploadRegion& area = areas[area_index];
+        int first_row = -1;
+        for (int row = 0; row < area.height; ++row) {
+            char* destination = image->data + (area.y + row) * image->bytes_per_line + area.x * 4;
+            const uint32_t* source = pixels + (area.y + row) * perception_ui::WIDTH + area.x;
+            bool differs = memcmp(destination, source, area.width * 4) != 0;
+            if (differs) {
+                memcpy(destination, source, area.width * 4);
+                changed[area_index] = true;
+                if (first_row < 0) first_row = row;
+            } else if (first_row >= 0) {
+                regions.push_back({area.x, area.y + first_row, area.width, row - first_row});
+                first_row = -1;
+            }
+        }
+        if (first_row >= 0)
+            regions.push_back({area.x, area.y + first_row, area.width, area.height - first_row});
+    }
+    // Avoid hundreds of tiny protocol requests on alternating changed rows.
+    if (regions.size() > 64) {
+        regions.clear();
+        for (int i = 0; i < 4; ++i) if (changed[i]) regions.push_back(areas[i]);
+    }
+}
+
+static int put_presentation_region(RenderEngine* engine, Drawable target,
+                                   const UploadRegion& area, bool last_region) {
+    const bool completion = engine->use_shm_completion && last_region;
+    if (engine->use_shm) {
+        if (completion) {
+            // XShmPutImage may first flush a dirty GC. Tag the upload itself.
+            XFlushGC(engine->display, engine->gc);
+            engine->shm_pending_serial = NextRequest(engine->display);
+            engine->shm_pending_drawable = target;
+            engine->shm_pending = 1;
+        }
+        if (!XShmPutImage(engine->display, target, engine->gc, engine->presentation_image,
+                          area.x, area.y, area.x, area.y, area.width, area.height,
+                          completion ? True : False)) {
+            engine->shm_pending = 0;
+            return -1;
+        }
+    } else XPutImage(engine->display, target, engine->gc, engine->presentation_image,
+                     area.x, area.y, area.x, area.y, area.width, area.height);
+    engine->uploaded_this_frame = 1;
+    engine->profile_upload_bytes += uint64_t(area.width) * area.height *
+                                    ((engine->presentation_image->bits_per_pixel + 7) / 8);
+    ++engine->profile_upload_rects;
+    return 0;
+}
+
+static int put_presentation_image(RenderEngine* engine, Drawable target, int width, int height) {
+    return put_presentation_region(engine, target, {0, 0, width, height}, true);
+}
+
+static void flush_presentation(RenderEngine* engine, bool warmup = false) {
+    if (warmup) {
+        // First full image/scale may initialize GPU resources. Complete it
+        // before pipelining; no shader warmup can expire a reuse deadline.
+        XSync(engine->display, False);
+        if (engine->shm_pending) wait_for_shared_image(engine);
+        else if (engine->uploaded_this_frame) ++engine->profile_upload_completions;
+    } else if (engine->use_shm_completion) XFlush(engine->display);
+    else {
+        XSync(engine->display, False);
+        if (engine->uploaded_this_frame) ++engine->profile_upload_completions;
+    }
+}
+
+static void release_presentation(RenderEngine* engine) {
+    if (engine->display && engine->shm_pending) {
+        XSync(engine->display, False);
+        XEvent event;
+        if (XCheckIfEvent(engine->display, &event, pending_shm_completion, reinterpret_cast<XPointer>(engine)))
+            consume_shm_completion(engine, &event);
+        engine->shm_pending = 0;
+    }
+#ifdef PERCEPTION_HAVE_XRENDER
+    if (engine->display && engine->source_picture)
+        XRenderFreePicture(engine->display, engine->source_picture);
+    if (engine->display && engine->window_picture)
+        XRenderFreePicture(engine->display, engine->window_picture);
+    engine->source_picture = engine->window_picture = 0;
+#endif
+    if (engine->presentation_image) {
+        if (engine->use_shm) {
+            XShmDetach(engine->display, &engine->shminfo);
+            XSync(engine->display, False);
+            engine->presentation_image->data = NULL;
+            XDestroyImage(engine->presentation_image);
+            shmdt(engine->shminfo.shmaddr);
+            // The segment was already marked for removal immediately after attach.
+            engine->shminfo.shmaddr = NULL;
+            engine->shminfo.shmid = -1;
+        } else XDestroyImage(engine->presentation_image);
+        engine->presentation_image = NULL;
+    }
+    if (engine->pixmap && engine->display) XFreePixmap(engine->display, engine->pixmap);
+    engine->pixmap = 0;
+    engine->use_shm = 0;
+    engine->use_shm_completion = 0;
+    engine->upload_initialized = 0;
+    engine->uploaded_this_frame = 0;
+}
+
+static void release_gles(RenderEngine* engine) {
+    if (engine->gles) {
+        engine->gles->cleanup();
+        delete engine->gles;
+        engine->gles = NULL;
+    }
+    engine->use_gles = 0;
+}
+
+int resize_presentation(RenderEngine* engine, int width, int height) {
+    if (!engine || !engine->display || width < 1 || height < 1 ||
+        width > 8192 || height > 8192) return -1;
+    if (engine->use_gles) {
+        engine->window_width = width;
+        engine->window_height = height;
+        engine->needs_redraw = 1;
+        return 0;
+    }
+    if (engine->presentation_image &&
+        (engine->use_xrender ||
+         (width == engine->window_width && height == engine->window_height))) {
+        engine->window_width = width; engine->window_height = height;
+        engine->needs_redraw = 1;
+        return 0;
+    }
+    release_presentation(engine);
     int screen = DefaultScreen(engine->display);
-    Window root = RootWindow(engine->display, screen);
-    
-    // 创建窗口
-    engine->window = XCreateSimpleWindow(engine->display, root,
-                                       100, 100, COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT,
-                                       1, BlackPixel(engine->display, screen),
-                                       WhitePixel(engine->display, screen));
-    
-    if (!engine->window) {
-        printf("无法创建窗口\n");
-        XCloseDisplay(engine->display);
-        return -1;
-    }
-    
-    // 设置窗口属性
-    XStoreName(engine->display, engine->window, "FPGA双通道视频显示 - PCIe + UDP (1280x480)");
-    XSelectInput(engine->display, engine->window, 
-                ExposureMask | KeyPressMask | StructureNotifyMask);
-    
-    // 创建图形上下文
-    engine->gc = XCreateGC(engine->display, engine->window, 0, NULL);
-    if (!engine->gc) {
-        printf("无法创建图形上下文\n");
-        XDestroyWindow(engine->display, engine->window);
-        XCloseDisplay(engine->display);
-        return -1;
-    }
-    
-    // 分配显示缓冲区 (RGB888格式用于X11显示)
-    engine->display_buffer = (char*)aligned_alloc(64, COMBINED_IMAGE_WIDTH * COMBINED_IMAGE_HEIGHT * 4);
-    if (!engine->display_buffer) {
-        printf("显示缓冲区分配失败\n");
-        XFreeGC(engine->display, engine->gc);
-        XDestroyWindow(engine->display, engine->window);
-        XCloseDisplay(engine->display);
-        return -1;
-    }
-    
-    // 创建XImage
-    engine->ximage = XCreateImage(engine->display, 
-                                DefaultVisual(engine->display, screen),
-                                DefaultDepth(engine->display, screen),
-                                ZPixmap, 0, engine->display_buffer,
-                                COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT, 32, 0);
-    
-    if (!engine->ximage) {
-        printf("XImage创建失败\n");
-        free(engine->display_buffer);
-        XFreeGC(engine->display, engine->gc);
-        XDestroyWindow(engine->display, engine->window);
-        XCloseDisplay(engine->display);
-        return -1;
-    }
-    
-    // 创建双缓冲Pixmap
-    engine->pixmap = XCreatePixmap(engine->display, engine->window,
-                                 COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT,
-                                 DefaultDepth(engine->display, screen));
-    
-    // 加载字体
-    engine->font = XLoadQueryFont(engine->display, "-*-*-bold-*-*-*-24-*-*-*-*-*-*-*");
-    if (!engine->font) {
-        engine->font = XLoadQueryFont(engine->display, "fixed");
-        if (!engine->font) {
-            printf("警告: 无法加载字体，文字显示可能不正常\n");
+    int image_w = engine->use_xrender ? perception_ui::WIDTH : width;
+    int image_h = engine->use_xrender ? perception_ui::HEIGHT : height;
+    XImage* image = NULL;
+    const char* backend = getenv("VISION_RENDER_BACKEND");
+    bool allow_shm = !backend || strcmp(backend, "putimage") != 0;
+    // MIT-SHM is local-only. Reuse is gated by completion or XSync.
+    // https://www.x.org/releases/X11R7.5/doc/Xext/mit-shm.pdf
+    if (allow_shm && XShmQueryExtension(engine->display)) {
+        memset(&engine->shminfo, 0, sizeof(engine->shminfo));
+        engine->shminfo.shmid = -1;
+        image = XShmCreateImage(engine->display, DefaultVisual(engine->display, screen),
+            DefaultDepth(engine->display, screen), ZPixmap, NULL, &engine->shminfo,
+            image_w, image_h);
+        if (image) {
+            size_t bytes = (size_t)image->bytes_per_line * image_h;
+            engine->shminfo.shmid = shmget(IPC_PRIVATE, bytes, IPC_CREAT | 0600);
+            if (engine->shminfo.shmid >= 0) {
+                engine->shminfo.shmaddr = (char*)shmat(engine->shminfo.shmid, NULL, 0);
+                if (engine->shminfo.shmaddr != (char*)-1) {
+                    image->data = engine->shminfo.shmaddr;
+                    engine->shminfo.readOnly = True;
+                    XSync(engine->display, False);
+                    shm_attach_error = 0;
+                    XErrorHandler previous = XSetErrorHandler(catch_shm_error);
+                    Bool attached = XShmAttach(engine->display, &engine->shminfo);
+                    XSync(engine->display, False);
+                    XSetErrorHandler(previous);
+                    if (attached && !shm_attach_error) engine->use_shm = 1;
+                }
+            }
+            if (engine->shminfo.shmid >= 0)
+                shmctl(engine->shminfo.shmid, IPC_RMID, NULL);
+            if (!engine->use_shm) {
+                image->data = NULL;
+                XDestroyImage(image); image = NULL;
+                if (engine->shminfo.shmaddr && engine->shminfo.shmaddr != (char*)-1)
+                    shmdt(engine->shminfo.shmaddr);
+                engine->shminfo.shmaddr = NULL;
+                engine->shminfo.shmid = -1;
+            }
         }
     }
-    
-    // 显示窗口
-    XMapWindow(engine->display, engine->window);
-    XFlush(engine->display);
-    
-    // 等待窗口映射完成
-    XEvent event;
-    do {
-        XNextEvent(engine->display, &event);
-    } while (event.type != MapNotify);
-    
-    // 初始化切换动画
+    if (!image) {
+        image = XCreateImage(engine->display, DefaultVisual(engine->display, screen),
+            DefaultDepth(engine->display, screen), ZPixmap, 0, NULL, image_w, image_h, 32, 0);
+        if (!image) return -1;
+        image->data = (char*)calloc((size_t)image->bytes_per_line, image_h);
+        if (!image->data) { XDestroyImage(image); return -1; }
+    }
+    engine->presentation_image = image;
+    if (engine->use_xrender && (image->bits_per_pixel != 32 || image->byte_order != LSBFirst ||
+        image->red_mask != 0xff0000 || image->green_mask != 0xff00 || image->blue_mask != 0xff)) {
+        release_presentation(engine); engine->use_xrender = 0;
+        return resize_presentation(engine, width, height);
+    }
+    engine->pixmap = XCreatePixmap(engine->display, engine->window, image_w, image_h,
+                                  DefaultDepth(engine->display, screen));
+    engine->window_width = width; engine->window_height = height;
+#ifdef PERCEPTION_HAVE_XRENDER
+    if (engine->use_xrender) {
+        XRenderPictFormat* format = XRenderFindVisualFormat(engine->display, DefaultVisual(engine->display, screen));
+        if (!format) {
+            release_presentation(engine); engine->use_xrender = 0;
+            return resize_presentation(engine, width, height);
+        }
+        XSync(engine->display, False);
+        shm_attach_error = 0;
+        XErrorHandler previous = XSetErrorHandler(catch_shm_error);
+        engine->source_picture = XRenderCreatePicture(engine->display, engine->pixmap, format, 0, NULL);
+        engine->window_picture = XRenderCreatePicture(engine->display, engine->window, format, 0, NULL);
+        XRenderSetPictureFilter(engine->display, engine->source_picture, FilterBilinear, NULL, 0);
+        XSync(engine->display, False);
+        if (shm_attach_error) {
+            if (engine->source_picture) XRenderFreePicture(engine->display, engine->source_picture);
+            if (engine->window_picture) XRenderFreePicture(engine->display, engine->window_picture);
+            XSync(engine->display, False);
+            engine->source_picture = engine->window_picture = 0;
+            XSetErrorHandler(previous);
+            release_presentation(engine); engine->use_xrender = 0;
+            return resize_presentation(engine, width, height);
+        }
+        XSetErrorHandler(previous);
+    }
+#endif
+    const char* sync_mode = getenv("VISION_SHM_SYNC");
+    engine->use_shm_completion = engine->use_shm && !engine->shm_completion_disabled &&
+                                 sync_mode && !strcmp(sync_mode, "completion");
+    if (engine->use_shm_completion)
+        engine->shm_completion_type = XShmGetEventBase(engine->display) + ShmCompletion;
+    engine->needs_redraw = 1;
+    printf("[RENDER] scale=%s upload=%s image=%dx%d window=%dx%d\n",
+           engine->use_xrender ? "XRender" : "CPU",
+           engine->use_shm ? "MIT-SHM" : "XPutImage", image_w, image_h, width, height);
+    return 0;
+}
+
+static void record_display_perf(RenderEngine* engine, uint64_t start, uint64_t car_done,
+                                uint64_t compose_done, uint64_t scale_done, uint64_t end, bool car_redrawn) {
+    if (!engine->profile_start) {
+        engine->profile_start = start;
+        engine->profile_pcie_start = engine->pcie_frame_id;
+        engine->profile_udp_start = engine->udp_frame_id;
+    }
+    engine->profile_frames++;
+    engine->profile_compose_ns += compose_done - start;
+    engine->profile_layout_ns += engine->last_layout_ns;
+    engine->last_layout_ns = 0;
+    engine->profile_car_ns += car_done - start;
+    engine->profile_dashboard_ns += compose_done - car_done;
+    engine->profile_car_redraws += car_redrawn;
+    engine->profile_scale_ns += scale_done - compose_done;
+    engine->profile_present_ns += end - scale_done;
+    bool overview = engine->presented_mode == DISPLAY_MODE_ALL_CAMERAS;
+    if (engine->pcie_frame_id != engine->shown_pcie_id) {
+        if (overview || engine->presented_mode <= DISPLAY_MODE_PCIE_BOTTOM_RIGHT)
+            engine->profile_s_shown++;
+        engine->shown_pcie_id = engine->pcie_frame_id;
+    }
+    if (engine->udp_frame_id != engine->shown_udp_id) {
+        if (overview || (engine->presented_mode >= DISPLAY_MODE_UDP_TOP_LEFT && !overview))
+            engine->profile_m_shown++;
+        engine->shown_udp_id = engine->udp_frame_id;
+    }
+    uint64_t span = end - engine->profile_start;
+    if (span >= 5000000000ULL) {
+        double seconds = span / 1e9;
+        engine->display_fps = engine->profile_frames / seconds;
+        engine->pcie_shown_fps = engine->profile_s_shown / seconds;
+        engine->udp_shown_fps = engine->profile_m_shown / seconds;
+        double divisor = engine->profile_frames * 1e6;
+        printf("[PERF DISPLAY] render_fps=%.2f S_input_fps=%.2f M_input_fps=%.2f S_shown_fps=%.2f M_shown_fps=%.2f compose_ms=%.2f legacy_ms=%.2f car_ms=%.2f dashboard_ms=%.2f car_redraw_pct=%.1f scale_ms=%.2f present_ms=%.2f reuse_wait_ms=%.2f upload_done_fps=%.2f upload_MB=%.2f upload_rects=%.1f partial=%d backend=%s/%s sync=%s\n",
+               engine->display_fps,
+               (uint32_t)(engine->pcie_frame_id - engine->profile_pcie_start) / seconds,
+               (uint32_t)(engine->udp_frame_id - engine->profile_udp_start) / seconds,
+               engine->pcie_shown_fps, engine->udp_shown_fps,
+               engine->profile_compose_ns / divisor, engine->profile_layout_ns / divisor,
+               engine->profile_car_ns / divisor, engine->profile_dashboard_ns / divisor,
+               100.0 * engine->profile_car_redraws / engine->profile_frames, engine->profile_scale_ns / divisor,
+               engine->profile_present_ns / divisor, engine->profile_reuse_wait_ns / divisor,
+               engine->profile_upload_completions / seconds,
+               engine->profile_upload_bytes / double(engine->profile_frames) / 1e6,
+               engine->profile_upload_rects / double(engine->profile_frames),
+               !engine->use_gles && engine->use_xrender && engine->use_shm && partial_upload_requested(),
+               engine->use_gles ? "gles" : engine->use_xrender ? "xrender" : "cpu",
+               engine->use_gles ? "texture" : engine->use_shm ? "shm" : "putimage",
+               engine->use_gles ? "swap" : engine->use_shm_completion ? "completion" : "sync");
+        engine->profile_start = end;
+        engine->profile_pcie_start = engine->pcie_frame_id;
+        engine->profile_udp_start = engine->udp_frame_id;
+        engine->profile_frames = engine->profile_s_shown = engine->profile_m_shown = 0;
+        engine->profile_compose_ns = engine->profile_scale_ns = engine->profile_present_ns = 0;
+        engine->profile_layout_ns = engine->profile_car_ns = engine->profile_dashboard_ns = engine->profile_car_redraws = 0;
+        engine->profile_reuse_wait_ns = engine->profile_upload_completions = 0;
+        engine->profile_upload_bytes = engine->profile_upload_rects = 0;
+    }
+}
+
+int present_dashboard(RenderEngine* engine) {
+    if (!engine || !engine->dashboard || !engine->display_buffer) return -1;
+    uint64_t render_started = display_clock_ns();
+    uint64_t now = get_current_time_ms();
+    bool car_redrawn = update_vehicle_layer(engine);
+    uint64_t car_done = display_clock_ns();
+    perception_ui::ViewStatus status;
+    status.recorded = engine->preview_recorded != 0;
+    status.pcie_live = engine->pcie_last_seen && now >= engine->pcie_last_seen &&
+                       now - engine->pcie_last_seen < 2000;
+    status.udp_live = engine->udp_last_seen && now >= engine->udp_last_seen &&
+                      now - engine->udp_last_seen < 2000;
+    status.person = emergency_brake_shm && emergency_brake_shm->valid &&
+                    emergency_brake_shm->person_detected;
+    status.motion = preview_motion;
+    if (!status.recorded) {
+        status.motion = perception_ui::MotionDirection::Idle;
+        // 箭头只表示最近的触摸输入；行人报警或 FPGA STOP 锁存不改变输入提示。
+        const uint32_t monotonic_ms = (uint32_t)(display_clock_ns() / 1000000ULL);
+        if (display_control_shm && display_control_shm->valid) {
+            const uint64_t snapshot = __atomic_load_n(
+                &display_control_shm->motion_snapshot, __ATOMIC_ACQUIRE);
+            const uint32_t updated_ms = (uint32_t)(snapshot >> 32);
+            const uint32_t age_ms = monotonic_ms - updated_ms;
+            if (updated_ms != 0 && age_ms <= 600) {
+                switch ((uint32_t)snapshot & 0xffu) {
+                    case VEHICLE_MOTION_FORWARD:
+                        status.motion = perception_ui::MotionDirection::Forward; break;
+                    case VEHICLE_MOTION_FORWARD_LEFT:
+                        status.motion = perception_ui::MotionDirection::ForwardLeft; break;
+                    case VEHICLE_MOTION_FORWARD_RIGHT:
+                        status.motion = perception_ui::MotionDirection::ForwardRight; break;
+                    case VEHICLE_MOTION_REVERSE:
+                        status.motion = perception_ui::MotionDirection::Reverse; break;
+                    case VEHICLE_MOTION_LEFT:
+                        status.motion = perception_ui::MotionDirection::Left; break;
+                    case VEHICLE_MOTION_RIGHT:
+                        status.motion = perception_ui::MotionDirection::Right; break;
+                    default: break;
+                }
+            }
+        }
+    }
+    status.fps = status.recorded ? 0.0f : engine->display_fps;
+    status.pcie_fps = engine->pcie_shown_fps;
+    status.udp_fps = engine->udp_shown_fps;
+    float progress = engine->transition.is_active ? engine->transition.progress :
+        (engine->presented_mode == DISPLAY_MODE_ALL_CAMERAS ? -1.0f : 1.0f);
+    char mode_label[64];
+    snprintf(mode_label, sizeof(mode_label), "%s", get_camera_mode_name(engine->presented_mode));
+    if (char* suffix = strchr(mode_label, '(')) {
+        while (suffix > mode_label && suffix[-1] == ' ') --suffix;
+        *suffix = 0;
+    }
+    const uint32_t* pixels = engine->dashboard->compose(
+        (const uint32_t*)engine->display_buffer, COMBINED_IMAGE_WIDTH,
+        engine->vehicle_layer, COMBINED_IMAGE_WIDTH,
+        engine->presented_mode == DISPLAY_MODE_ALL_CAMERAS, progress,
+        mode_label, status);
+    uint64_t compose_done = display_clock_ns();
+    engine->last_presented = now;
+    engine->needs_redraw = 0;
+    if (engine->headless) return 0;
+    if (engine->use_gles && engine->gles) {
+        if (engine->gles->present(pixels, perception_ui::WIDTH, perception_ui::HEIGHT,
+                                  engine->window_width, engine->window_height)) {
+            engine->profile_upload_bytes += uint64_t(perception_ui::WIDTH) * perception_ui::HEIGHT * 4;
+            ++engine->profile_upload_rects;
+            ++engine->profile_upload_completions;
+            // GLES owns upload/draw/swap; report that complete interval in
+            // present_ms rather than pretending it is XImage CPU scaling.
+            record_display_perf(engine, render_started, car_done, compose_done, compose_done,
+                                display_clock_ns(), car_redrawn);
+            return 0;
+        }
+        fprintf(stderr, "[RENDER] GLES presentation failed (%s); rebuilding X11 fallback\n",
+                engine->gles->error());
+        release_gles(engine);
+        if (resize_presentation(engine, engine->window_width, engine->window_height) != 0) return -1;
+    }
+    XImage* image = engine->presentation_image;
+    if (!image) return -1;
+    wait_for_shared_image(engine);
+    engine->uploaded_this_frame = 0;
+    int draw_w = engine->window_width;
+    int draw_h = draw_w * perception_ui::HEIGHT / perception_ui::WIDTH;
+    if (draw_h > engine->window_height) {
+        draw_h = engine->window_height;
+        draw_w = draw_h * perception_ui::WIDTH / perception_ui::HEIGHT;
+    }
+    draw_w = std::max(1, draw_w);
+    draw_h = std::max(1, draw_h);
+    int offset_x = (engine->window_width - draw_w) / 2;
+    int offset_y = (engine->window_height - draw_h) / 2;
+#ifdef PERCEPTION_HAVE_XRENDER
+    if (engine->use_xrender) {
+        if (image->bits_per_pixel != 32 || image->byte_order != LSBFirst ||
+            image->red_mask != 0xff0000 || image->green_mask != 0xff00 || image->blue_mask != 0xff)
+            return -1;
+        const bool partial = engine->use_shm && partial_upload_requested();
+        const bool warmup = partial && !engine->upload_initialized;
+        static thread_local std::vector<UploadRegion> regions;
+        prepare_xrender_upload(engine, pixels, partial, regions);
+        uint64_t scale_done = display_clock_ns();
+        for (size_t i = 0; i < regions.size(); ++i)
+            if (put_presentation_region(engine, engine->pixmap, regions[i], i + 1 == regions.size()) != 0) return -1;
+        engine->upload_initialized = 1;
+        XTransform transform = {};
+        transform.matrix[0][0] = XDoubleToFixed((double)perception_ui::WIDTH / draw_w);
+        transform.matrix[1][1] = XDoubleToFixed((double)perception_ui::HEIGHT / draw_h);
+        transform.matrix[2][2] = XDoubleToFixed(1.0);
+        XRenderSetPictureTransform(engine->display, engine->source_picture, &transform);
+        XSetForeground(engine->display, engine->gc, 0x050715);
+        XFillRectangle(engine->display, engine->window, engine->gc, 0, 0,
+                       engine->window_width, engine->window_height);
+        XRenderComposite(engine->display, PictOpSrc, engine->source_picture, None,
+                         engine->window_picture, 0, 0, 0, 0, offset_x, offset_y, draw_w, draw_h);
+        flush_presentation(engine, warmup);
+        record_display_perf(engine, render_started, car_done, compose_done, scale_done, display_clock_ns(), car_redrawn);
+        return 0;
+    }
+#endif
+    bool native32 = image->bits_per_pixel == 32 && image->red_mask == 0xff0000 &&
+                    image->green_mask == 0xff00 && image->blue_mask == 0xff &&
+                    image->byte_order == LSBFirst;
+    static std::vector<int> x_map;
+    if ((int)x_map.size() != draw_w) {
+        x_map.resize(draw_w);
+        for (int x = 0; x < draw_w; ++x) x_map[x] = x * perception_ui::WIDTH / draw_w;
+    }
+    for (int y = 0; y < engine->window_height; ++y) {
+        bool inside = y >= offset_y && y < offset_y + draw_h;
+        const uint32_t* source_row = inside ?
+            pixels + ((y - offset_y) * perception_ui::HEIGHT / draw_h) * perception_ui::WIDTH : NULL;
+        if (native32) {
+            uint32_t* row = (uint32_t*)(image->data + y * image->bytes_per_line);
+            std::fill_n(row, engine->window_width, 0xff050715u);
+            if (inside) {
+                if (draw_w == perception_ui::WIDTH)
+                    memcpy(row + offset_x, source_row, draw_w * sizeof(uint32_t));
+                else for (int x = 0; x < draw_w; ++x) row[offset_x + x] = source_row[x_map[x]];
+            }
+        } else {
+            for (int x = 0; x < engine->window_width; ++x) {
+                uint32_t color = inside && x >= offset_x && x < offset_x + draw_w ?
+                    source_row[x_map[x - offset_x]] : 0xff050715u;
+                unsigned long pixel =
+                    ((((color >> 16) & 255) * image->red_mask / 255) & image->red_mask) |
+                    ((((color >> 8) & 255) * image->green_mask / 255) & image->green_mask) |
+                    (((color & 255) * image->blue_mask / 255) & image->blue_mask);
+                XPutPixel(image, x, y, pixel);
+            }
+        }
+    }
+    uint64_t scale_done = display_clock_ns();
+    Drawable target = engine->pixmap ? engine->pixmap : engine->window;
+    if (put_presentation_image(engine, target, engine->window_width, engine->window_height) != 0) return -1;
+    if (engine->pixmap) XCopyArea(engine->display, engine->pixmap, engine->window,
+        engine->gc, 0, 0, engine->window_width, engine->window_height, 0, 0);
+    flush_presentation(engine);
+    record_display_perf(engine, render_started, car_done, compose_done, scale_done, display_clock_ns(), car_redrawn);
+    return 0;
+}
+
+static void try_gles_presentation(RenderEngine* engine) {
+    const char* backend = getenv("VISION_RENDER_BACKEND");
+    // Native GLES was slower and unstable on the target display driver.
+    // Only an explicit opt-in may select it; auto keeps the X11 path.
+    if (!backend || strcmp(backend, "gles")) return;
+    GlesPresenter* presenter = new (std::nothrow) GlesPresenter();
+    const int screen = DefaultScreen(engine->display);
+    if (presenter && presenter->init(engine->display, engine->window,
+                                     XVisualIDFromVisual(DefaultVisual(engine->display, screen)),
+                                     perception_ui::WIDTH, perception_ui::HEIGHT)) {
+        engine->gles = presenter;
+        engine->use_gles = 1;
+        release_presentation(engine);
+        printf("[RENDER] backend=GLES upload=texture canvas=%dx%d\n",
+               perception_ui::WIDTH, perception_ui::HEIGHT);
+        return;
+    }
+    fprintf(stderr, "[RENDER] GLES initialization unavailable (%s); keeping X11 fallback\n",
+            presenter ? presenter->error() : "allocation failed");
+    if (presenter) { presenter->cleanup(); delete presenter; }
+}
+
+int render_engine_init(RenderEngine* engine) {
+    if (!engine) return -1;
+    memset(engine, 0, sizeof(*engine));
+    engine->display = XOpenDisplay(NULL);
+    if (!engine->display) {
+        fprintf(stderr, "Cannot connect to X11 display\n"); return -1;
+    }
+    int screen = DefaultScreen(engine->display);
+    int screen_w = DisplayWidth(engine->display, screen);
+    int screen_h = DisplayHeight(engine->display, screen);
+    int width = start_fullscreen ? screen_w : std::min(1440, std::max(320, screen_w - 96));
+    int height = start_fullscreen ? screen_h : std::min(width * 9 / 16, std::max(180, screen_h - 96));
+    engine->window = XCreateSimpleWindow(engine->display, RootWindow(engine->display, screen),
+        0, 0, width, height, 0, BlackPixel(engine->display, screen), BlackPixel(engine->display, screen));
+    const char* title = "Perception Engine | Surround Vision";
+    XStoreName(engine->display, engine->window, title);
+    XChangeProperty(engine->display, engine->window,
+        XInternAtom(engine->display, "_NET_WM_NAME", False),
+        XInternAtom(engine->display, "UTF8_STRING", False), 8, PropModeReplace,
+        (const unsigned char*)title, strlen(title));
+    engine->wm_delete = XInternAtom(engine->display, "WM_DELETE_WINDOW", False);
+    XSetWMProtocols(engine->display, engine->window, &engine->wm_delete, 1);
+    XSelectInput(engine->display, engine->window, ExposureMask | KeyPressMask | StructureNotifyMask);
+    XSizeHints hints = {};
+    hints.flags = PMinSize; hints.min_width = 320; hints.min_height = 180;
+    XSetWMNormalHints(engine->display, engine->window, &hints);
+#ifdef PERCEPTION_HAVE_XRENDER
+    const char* backend = getenv("VISION_RENDER_BACKEND");
+    int major = 0, minor = 0;
+    engine->use_xrender = (!backend || !strcmp(backend, "auto") || !strcmp(backend, "gles") || !strcmp(backend, "xrender")) &&
+                         XRenderQueryVersion(engine->display, &major, &minor);
+#endif
+    engine->gc = XCreateGC(engine->display, engine->window, 0, NULL);
+    engine->display_buffer = (char*)calloc(COMBINED_IMAGE_WIDTH * COMBINED_IMAGE_HEIGHT, 4);
+    engine->vehicle_layer = (uint32_t*)calloc(COMBINED_IMAGE_WIDTH * COMBINED_IMAGE_HEIGHT, 4);
+    try { engine->dashboard = create_dashboard_theme(); }
+    catch (const std::bad_alloc&) { render_engine_cleanup(engine); return -1; }
+    if (!engine->gc || !engine->display_buffer || !engine->vehicle_layer ||
+        resize_presentation(engine, width, height) != 0) {
+        render_engine_cleanup(engine); return -1;
+    }
+    engine->presented_mode = DISPLAY_MODE_ALL_CAMERAS;
     transition_animation_init(&engine->transition);
-    
     engine->is_init = 1;
-    
-    printf("X11渲染引擎初始化成功\n");
-    printf("窗口尺寸: %dx%d\n", COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT);
-    printf("显示格式: RGB888 (32位)\n");
-    printf("🎬 切换动画特效已启用\n");
-    
+    XMapWindow(engine->display, engine->window);
+    XEvent event;
+    do { XNextEvent(engine->display, &event); } while (event.type != MapNotify);
+    try_gles_presentation(engine);
+    if (start_fullscreen) set_fullscreen(engine, 1);
+    printf("Perception Engine: %dx%d, F11 fullscreen, Q exit\n", width, height);
+    printf("PERCEPTION_WINDOW_ID=0x%lx\n", engine->window);
     return 0;
 }
 
@@ -1144,6 +1636,8 @@ int render_engine_render_camera_view(RenderEngine* engine,
         return -1;
     }
     
+    uint64_t layout_started = display_clock_ns();
+    engine->presented_mode = mode;
     uint32_t* display_pixels = (uint32_t*)engine->display_buffer;
     const uint16_t* pcie_pixels = (const uint16_t*)pcie_data;
     const uint16_t* udp_pixels = (const uint16_t*)udp_data;
@@ -1279,64 +1773,54 @@ int render_engine_render_camera_view(RenderEngine* engine,
             }
 
             // 渲染car.png到最右边320x480区域
-            render_car_png(display_pixels, 960, 0, 320, 480);
+            // Vehicle artwork and its alert layer are presented in their own dashboard panel.
 
             // 在PNG上方绘制车道线
-            draw_lane_lines(display_pixels, 960, 0, 320, 480, current_curve_type, current_curve_confidence);
+
             break;
         }
     }
     
-    // 使用双缓冲渲染
-    if (engine->pixmap) {
-        // 先渲染到Pixmap
-        XPutImage(engine->display, engine->pixmap, engine->gc, engine->ximage,
-                 0, 0, 0, 0, COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT);
-        
-        // 再从Pixmap复制到窗口
-        XCopyArea(engine->display, engine->pixmap, engine->window, engine->gc,
-                 0, 0, COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT, 0, 0);
-    } else {
-        // 直接渲染到窗口
-        XPutImage(engine->display, engine->window, engine->gc, engine->ximage,
-                 0, 0, 0, 0, COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT);
-    }
-    
-    XFlush(engine->display);
-    
-    return 0;
+    engine->last_layout_ns = display_clock_ns() - layout_started;
+    return present_dashboard(engine);
 }
 
 int render_engine_check_exit_event(RenderEngine* engine) {
-    if (!engine || !engine->is_init) {
-        return 1;  // 错误状态，退出
-    }
-    
-    XEvent event;
-    
-    // 非阻塞检查事件
+    if (!engine || !engine->is_init) return 1;
     while (XPending(engine->display)) {
+        XEvent event;
         XNextEvent(engine->display, &event);
-        
+        if (consume_shm_completion(engine, &event)) continue;
+        // EGL/X11 may queue events for helper windows on this connection.
+        // Only the main window may resize the viewport or close the viewer.
+        if (event.xany.window != engine->window) continue;
         switch (event.type) {
             case KeyPress: {
-                KeySym keysym = XLookupKeysym(&event.xkey, 0);
-                if (keysym == XK_q || keysym == XK_Q || keysym == XK_Escape) {
-                    printf("检测到退出键\n");
-                    return 1;
+                KeySym key = XLookupKeysym(&event.xkey, 0);
+                if (key == XK_q || key == XK_Q) return 1;
+                if (key == XK_F11 || key == XK_f || key == XK_F)
+                    set_fullscreen(engine, !engine->fullscreen);
+                else if (key == XK_Escape) {
+                    if (engine->fullscreen) set_fullscreen(engine, 0);
+                    else return 1;
                 }
                 break;
             }
+            case ConfigureNotify:
+                if (event.xconfigure.window != engine->window) break;
+                if (resize_presentation(engine, event.xconfigure.width, event.xconfigure.height) != 0)
+                    return 1;
+                break;
+            case Expose: engine->needs_redraw = 1; break;
             case ClientMessage:
-                printf("检测到窗口关闭事件\n");
-                return 1;
+                if ((Atom)event.xclient.data.l[0] == engine->wm_delete) return 1;
+                break;
             case DestroyNotify:
-                printf("窗口被销毁\n");
-                return 1;
+                if (event.xdestroywindow.window == engine->window) return 1;
+                break;
         }
     }
-    
-    return 0;  // 继续运行
+    return 0;
 }
 
 void render_engine_cleanup(RenderEngine* engine) {
@@ -1344,6 +1828,13 @@ void render_engine_cleanup(RenderEngine* engine) {
         return;
     }
     
+    release_gles(engine);
+    release_presentation(engine);
+    delete engine->dashboard;
+    engine->dashboard = NULL;
+    free(engine->vehicle_layer);
+    engine->vehicle_layer = NULL;
+
     if (engine->ximage) {
         XDestroyImage(engine->ximage);
         engine->ximage = NULL;
@@ -1386,49 +1877,244 @@ void render_engine_cleanup(RenderEngine* engine) {
 //=========================================================================
 // 主函数
 //=========================================================================
-int main() {
+
+static int find_display_asset(const char* name, char* output, size_t capacity) {
+    const char* prefixes[] = {"../", "", "udp_rk_rk_yolo/S/x11/"};
+    for (const char* prefix : prefixes) {
+        int count = snprintf(output, capacity, "%s%s", prefix, name);
+        if (count > 0 && count < (int)capacity && access(output, R_OK) == 0) return 0;
+    }
+    char executable[PATH_MAX];
+    ssize_t n = readlink("/proc/self/exe", executable, sizeof(executable) - 1);
+    if (n > 0) {
+        executable[n] = 0;
+        if (char* slash = strrchr(executable, '/')) {
+            *slash = 0;
+            int count = snprintf(output, capacity, "%s/../../%s", executable, name);
+            if (count > 0 && count < (int)capacity && access(output, R_OK) == 0) return 0;
+        }
+    }
+    return -1;
+}
+
+static int load_vehicle_artwork() {
+    char path[PATH_MAX];
+    return find_display_asset("car.png", path, sizeof(path)) == 0 ? load_car_png(path) : -1;
+}
+
+static perception_ui::Dashboard* create_dashboard_theme() {
+    char path[PATH_MAX];
+    int width = 0, height = 0, channels;
+    unsigned char* atlas = find_display_asset("dashboard_font.png", path, sizeof(path)) == 0 ?
+        stbi_load(path, &width, &height, &channels, 1) : NULL;
+    perception_ui::Dashboard* result;
+    try { result = new perception_ui::Dashboard(atlas, width, height); }
+    catch (...) { stbi_image_free(atlas); throw; }
+    stbi_image_free(atlas);
+    return result;
+}
+
+static int save_dashboard(RenderEngine* engine, const char* path) {
+    const uint32_t* pixels = engine->dashboard->pixels();
+    FILE* file = fopen(path, "wb");
+    if (!file) { perror(path); return -1; }
+    fprintf(file, "P6\n%d %d\n255\n", perception_ui::WIDTH, perception_ui::HEIGHT);
+    for (int i = 0; i < perception_ui::WIDTH * perception_ui::HEIGHT; ++i) {
+        unsigned char rgb[3] = {(unsigned char)(pixels[i] >> 16),
+                               (unsigned char)(pixels[i] >> 8), (unsigned char)pixels[i]};
+        if (fwrite(rgb, 1, 3, file) != 3) { fclose(file); return -1; }
+    }
+    return fclose(file) == 0 ? 0 : -1;
+}
+
+static int preview_dashboard(const char* output, const char* input, DisplayMode mode, int alarm) {
+    int width, height, channels;
+    unsigned char* rgb = stbi_load(input, &width, &height, &channels, 3);
+    if (!rgb || width != 1280 || height != 480) {
+        fprintf(stderr, "Preview requires an existing 1280x480 combined_last_frame.ppm: %s\n", input);
+        stbi_image_free(rgb); return 1;
+    }
+    std::vector<uint16_t> pcie(640 * 480), udp(640 * 480);
+    for (int y = 0; y < 480; ++y) for (int x = 0; x < 640; ++x) {
+        for (int stream = 0; stream < 2; ++stream) {
+            const unsigned char* c = rgb + (y * 1280 + x + stream * 640) * 3;
+            uint16_t pixel = ((c[0] >> 3) << 11) | ((c[1] >> 2) << 5) | (c[2] >> 3);
+            (stream ? udp : pcie)[y * 640 + x] = pixel;
+        }
+    }
+    stbi_image_free(rgb);
+    RenderEngine engine = {};
+    engine.headless = engine.is_init = engine.preview_recorded = 1;
+    engine.pcie_last_seen = engine.udp_last_seen = get_current_time_ms();
+    engine.display_buffer = (char*)calloc(1280 * 480, 4);
+    engine.vehicle_layer = (uint32_t*)calloc(1280 * 480, 4);
+    engine.dashboard = create_dashboard_theme();
+    transition_animation_init(&engine.transition);
+    if (!engine.display_buffer || !engine.vehicle_layer || load_vehicle_artwork() != 0) {
+        render_engine_cleanup(&engine); return 1;
+    }
+    EmergencyBrakeSharedMemory simulated_alert = {};
+    if (alarm) {
+        simulated_alert.valid = simulated_alert.person_detected = 1;
+        simulated_alert.box_left = 20; simulated_alert.box_top = 70;
+        simulated_alert.box_right = 140; simulated_alert.box_bottom = 300;
+        emergency_brake_shm = &simulated_alert;
+        blink_state = 1; last_blink_time = get_current_time_ms();
+    }
+    int result = render_engine_render_camera_view(&engine, (const uint8_t*)pcie.data(),
+                                                  (const uint8_t*)udp.data(), mode);
+    if (!result) result = save_dashboard(&engine, output);
+    emergency_brake_shm = NULL;
+    render_engine_cleanup(&engine);
+    stbi_image_free(car_png_data); car_png_data = NULL;
+    printf("Dashboard preview: %s\n", output);
+    return result != 0;
+}
+
+// Image writers replace their SysV segment and named semaphores on restart.
+// A reader must release the old generation instead of polling it forever.
+static bool maintain_live_source(SharedMemoryManager* manager, SharedMemoryType type,
+                                 int* available, uint64_t* checked_ms, uint32_t* frame_cursor) {
+    const uint64_t now = display_clock_ns() / 1000000ULL;
+    if (*checked_ms && now - *checked_ms < 1000) return false;
+    *checked_ms = now;
+    const key_t key = type == SHM_TYPE_PCIE ? SHM_PCIE_IMAGE_KEY : SHM_UDP_IMAGE_KEY;
+    const int current_id = shmget(key, 0, 0);
+    SharedMemoryControl* control = NULL;
+    if (*available && manager->shm_ptr.generic_ptr && manager->shm_ptr.generic_ptr != (void*)-1)
+        control = type == SHM_TYPE_PCIE ? &manager->shm_ptr.pcie_ptr->control
+                                       : &manager->shm_ptr.udp_ptr->control;
+    if (control && control->writer_active && current_id == manager->shm_id) return false;
+    if (*available) {
+        shared_memory_cleanup(manager); // Reader: closes its own mapping/semaphores only.
+        *available = 0;
+    }
+    if (current_id < 0) return false;
+    if (shared_memory_init(manager, type, 0) != 0) return false;
+    control = type == SHM_TYPE_PCIE ? &manager->shm_ptr.pcie_ptr->control
+                                   : &manager->shm_ptr.udp_ptr->control;
+    if (!control->writer_active) {
+        shared_memory_cleanup(manager);
+        return false;
+    }
+    *available = 1;
+    *frame_cursor = 0;
+    printf("[DISPLAY] %s image source attached (shmid=%d)\n",
+           type == SHM_TYPE_PCIE ? "PCIe" : "UDP", manager->shm_id);
+    return true;
+}
+
+struct MetadataReaders {
+    uint64_t checked_ms = 0;
+    int display_id = -1, brake_id = -1, curve_id = -1;
+    int curve_available = 0;
+};
+
+// Optional metadata may start after the viewer. These are reader-only
+// attachments: no initialization, release request or writer state is changed.
+static void maintain_metadata_readers(MetadataReaders* state, uint32_t* control_cursor) {
+    const uint64_t now = display_clock_ns() / 1000000ULL;
+    if (state->checked_ms && now - state->checked_ms < 1000) return;
+    state->checked_ms = now;
+    int id = shmget(SHM_DISPLAY_CONTROL_KEY, 0, 0);
+    if (display_control_shm && id != state->display_id) {
+        display_control_shm_cleanup(display_control_shm, 0);
+        display_control_shm = NULL;
+        state->display_id = -1;
+    }
+    if (!display_control_shm && id >= 0) {
+        if (display_control_shm_init(&display_control_shm, 0) == 0) {
+            state->display_id = id;
+            *control_cursor = UINT32_MAX;
+        } else display_control_shm = NULL;
+    }
+
+    id = shmget(SHM_EMERGENCY_BRAKE_KEY, 0, 0);
+    if (emergency_brake_shm && id != state->brake_id) {
+        emergency_brake_shm_cleanup(emergency_brake_shm, 0);
+        emergency_brake_shm = NULL;
+        state->brake_id = -1;
+    }
+    if (!emergency_brake_shm && id >= 0) {
+        if (emergency_brake_shm_init(&emergency_brake_shm, 0) == 0)
+            state->brake_id = id;
+        else emergency_brake_shm = NULL;
+    }
+
+    id = shmget(SHM_CURVE_DETECTION_KEY, 0, 0);
+    if (state->curve_available && id != state->curve_id) {
+        curve_detection_shm_cleanup();
+        state->curve_available = 0;
+        state->curve_id = -1;
+        current_curve_type = CURVE_NONE;
+        current_curve_confidence = 0;
+    }
+    if (!state->curve_available && id >= 0 && curve_detection_shm_init(0) == 0) {
+        state->curve_available = 1;
+        state->curve_id = id;
+    }
+}
+
+int main(int argc, char** argv) {
+    setvbuf(stdout, NULL, _IOLBF, 0);
+    const char* preview_output = NULL;
+    const char* preview_input = "combined_last_frame.ppm";
+    DisplayMode preview_mode = DISPLAY_MODE_ALL_CAMERAS;
+    int preview_alarm = 0;
+    for (int i = 1; i < argc; ++i) {
+        if (!strcmp(argv[i], "--windowed")) start_fullscreen = 0;
+        else if (!strcmp(argv[i], "--fullscreen")) start_fullscreen = 1;
+        else if (!strcmp(argv[i], "--preview") && i + 1 < argc) preview_output = argv[++i];
+        else if (!strcmp(argv[i], "--input") && i + 1 < argc) preview_input = argv[++i];
+        else if (!strcmp(argv[i], "--preview-mode") && i + 1 < argc)
+            preview_mode = (DisplayMode)strtol(argv[++i], NULL, 0);
+        else if (!strcmp(argv[i], "--preview-alarm")) preview_alarm = 1;
+        else if (!strcmp(argv[i], "--preview-motion") && i + 1 < argc) {
+            const char* motion = argv[++i];
+            if (!strcmp(motion, "forward")) preview_motion = perception_ui::MotionDirection::Forward;
+            else if (!strcmp(motion, "left-forward")) preview_motion = perception_ui::MotionDirection::ForwardLeft;
+            else if (!strcmp(motion, "right-forward")) preview_motion = perception_ui::MotionDirection::ForwardRight;
+            else if (!strcmp(motion, "reverse")) preview_motion = perception_ui::MotionDirection::Reverse;
+            else if (!strcmp(motion, "left")) preview_motion = perception_ui::MotionDirection::Left;
+            else if (!strcmp(motion, "right")) preview_motion = perception_ui::MotionDirection::Right;
+            else { fprintf(stderr, "Unknown preview motion: %s\n", motion); return 1; }
+        }
+        else if (!strcmp(argv[i], "--snapshot") && i + 1 < argc) snapshot_path = argv[++i];
+        else if (!strcmp(argv[i], "--frames") && i + 1 < argc) frame_limit = atoi(argv[++i]);
+        else if (!strcmp(argv[i], "--help")) {
+            printf("Perception Engine: [--windowed|--fullscreen] [--snapshot output.ppm] [--frames N]\n");
+            printf("Offline preview: --preview output.ppm [--input combined_last_frame.ppm] [--preview-mode 0x66] [--preview-alarm] [--preview-motion forward|left-forward|right-forward|reverse|left|right]\n");
+            return 0;
+        } else {
+            fprintf(stderr, "Unknown or incomplete option: %s\n", argv[i]); return 1;
+        }
+    }
+    if (preview_output) return preview_dashboard(preview_output, preview_input, preview_mode, preview_alarm);
+
     RenderEngine render_engine;
     struct timeval stream_start, current_time;
     uint8_t* pcie_buffer = NULL;
     uint8_t* udp_buffer = NULL;
     int pcie_available = 0;
     int udp_available = 0;
-    time_t last_pcie_retry = 0;
-    time_t last_udp_retry = 0;
+    uint64_t last_pcie_retry = 0;
+    uint64_t last_udp_retry = 0;
     int frame_count = 0;
     double total_time = 0.0;
     uint32_t last_pcie_frame_id = 0;
     uint32_t last_udp_frame_id = 0;
     DisplayMode current_display_mode = DISPLAY_MODE_ALL_CAMERAS;  // 默认全部显示
     uint32_t last_control_update = 0;
+    MetadataReaders metadata;
     
     // 设置信号处理
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
     
-    printf("=== FPGA双通道视频渲染程序 (8摄像头视角切换 + 特效动画) ===\n");
-    printf("版本: v4.0 (X11渲染 + 8摄像头视角切换 + 切换特效)\n");
-    printf("功能: 读取PCIe和UDP共享内存，支持8个摄像头视角切换，带有炫酷切换动画\n");
-    printf("🎬 特效功能:\n");
-    printf("   - 切换时先显示完整的8摄像头画面(0x99模式)\n");
-    printf("   - 目标摄像头区域高亮并逐步放大移动到屏幕中央\n");
-    printf("   - 其他区域逐渐变暗突出目标摄像头\n");
-    printf("   - 平滑的缓入缓出动画效果\n");
-    printf("Display Modes:\n");
-    printf("  - 0x11: Front Left View (320x240)\n");
-    printf("  - 0x22: Front View (320x240)\n");
-    printf("  - 0x33: Right Side View (320x240)\n");
-    printf("  - 0x44: Front Left View (320x240)\n");
-    printf("  - 0x55: Rear Left View (320x240)\n");
-    printf("  - 0x66: Rear Right View (320x240)\n");
-    printf("  - 0x77: Rear View (320x240)\n");
-    printf("  - 0x88: Rear Left View (320x240)\n");
-    printf("  - 0x99: Surround View (1280x480, PCIe Left + UDP Right)\n");
-    printf("显示尺寸: %dx%d (PCIe:%dx%d + UDP:%dx%d)\n", 
-           COMBINED_IMAGE_WIDTH, COMBINED_IMAGE_HEIGHT,
-           PCIE_IMAGE_WIDTH, PCIE_IMAGE_HEIGHT,
-           UDP_IMAGE_WIDTH, UDP_IMAGE_HEIGHT);
-    
+    printf("=== Perception Engine / S-End Surround Vision ===\n");
+    printf("Six-view dashboard, eight selectable cameras, F11 fullscreen, Q exit\n");
+    printf("Source streams remain 640x480; dashboard canvas is 1600x900\n");
+
     // 分配图像缓冲区
     pcie_buffer = (uint8_t*)aligned_alloc(64, PCIE_IMAGE_WIDTH * PCIE_IMAGE_HEIGHT * 2);
     udp_buffer = (uint8_t*)aligned_alloc(64, UDP_IMAGE_WIDTH * UDP_IMAGE_HEIGHT * 2);
@@ -1461,35 +2147,12 @@ int main() {
 
     // 加载car.png图像
     printf("\n=== 加载car.png图像 ===\n");
-    if (load_car_png("../car.png") != 0) {
+    if (load_vehicle_artwork() != 0) {
         printf("警告: 无法加载car.png,将使用原始摄像头画面\n");
     }
 
-    // 初始化显示控制共享内存（读取者）
-    printf("\n=== 初始化显示控制共享内存连接 ===\n");
-    if (display_control_shm_init(&display_control_shm, 0) != 0) {  // 0表示读取者
-        printf("显示控制共享内存连接失败！继续使用默认显示模式\n");
-        display_control_shm = NULL;
-    } else {
-        printf("显示控制共享内存连接成功\n");
-    }
-
-    // 初始化紧急制动共享内存（读取者）
-    printf("\n=== 初始化紧急制动共享内存连接 ===\n");
-    if (emergency_brake_shm_init(&emergency_brake_shm, 0) != 0) {  // 0表示读取者
-        printf("紧急制动共享内存连接失败！将无法显示人员检测红光效果\n");
-        emergency_brake_shm = NULL;
-    } else {
-        printf("紧急制动共享内存连接成功\n");
-    }
-
-    // 初始化弯道检测共享内存（读取者）
-    printf("\n=== 初始化弯道检测共享内存连接 ===\n");
-    if (curve_detection_shm_init(0) != 0) {  // 0表示读取者
-        printf("弯道检测共享内存连接失败！将无法显示车道线\n");
-    } else {
-        printf("弯道检测共享内存连接成功\n");
-    }
+    printf("\n=== 连接可选显示元数据；未启动的数据源每秒重试 ===\n");
+    maintain_metadata_readers(&metadata, &last_control_update);
     
     // 初始化渲染引擎
     printf("\n=== 初始化渲染引擎 ===\n");
@@ -1501,12 +2164,16 @@ int main() {
         if (emergency_brake_shm) {
             emergency_brake_shm_cleanup(emergency_brake_shm, 0);
         }
+        if (metadata.curve_available) curve_detection_shm_cleanup();
         if (pcie_available) shared_memory_cleanup(&pcie_shm_manager);
         if (udp_available) shared_memory_cleanup(&udp_shm_manager);
         free(pcie_buffer);
         free(udp_buffer);
         return -1;
     }
+    // Cached PPMs are read only by the explicit --preview branch above.
+    // Live startup waits for a writer and never becomes a recorded preview.
+    render_engine.preview_recorded = 0;
     
     printf("\n=== 开始双通道渲染 ===\n");
     printf("按 Q/Esc 键或关闭窗口退出\n");
@@ -1518,15 +2185,16 @@ int main() {
         int pcie_updated = 0, udp_updated = 0;
         uint32_t pcie_width, pcie_height, pcie_frame_id;
         uint32_t udp_width, udp_height, udp_frame_id;
+        maintain_metadata_readers(&metadata, &last_control_update);
 
         // 读取弯道检测信息
         uint32_t curve_frame_id = 0;
         uint32_t curve_angle = 0;
         static int curve_read_count = 0;
-        if (curve_detection_read(&curve_frame_id, &current_curve_type,
+        if (metadata.curve_available && curve_detection_read(&curve_frame_id, &current_curve_type,
                                  &current_curve_confidence, &curve_angle) == 0) {
             // 每30帧打印一次弯道信息
-            if (++curve_read_count % 30 == 0) {
+            if (display_verbose() && ++curve_read_count % 30 == 0) {
                 const char* type_name = (current_curve_type == CURVE_LEFT) ? "LEFT" :
                                        (current_curve_type == CURVE_RIGHT) ? "RIGHT" :
                                        (current_curve_type == CURVE_BOTH) ? "BOTH" : "STRAIGHT";
@@ -1561,14 +2229,12 @@ int main() {
             }
         }
         
-        // 每秒重试连接本地采集进程；远端UDP渲染不依赖其启动顺序。
-        if (!pcie_available && time(NULL) != last_pcie_retry) {
-            last_pcie_retry = time(NULL);
-            if (shared_memory_init_pcie(&pcie_shm_manager, 0) == 0) {
-                pcie_available = 1;
-                printf("PCIe共享内存已连接\n");
-            }
+        if (maintain_live_source(&pcie_shm_manager, SHM_TYPE_PCIE, &pcie_available,
+                                 &last_pcie_retry, &last_pcie_frame_id)) {
+            render_engine.pcie_frame_id = render_engine.shown_pcie_id = render_engine.profile_pcie_start = 0;
+            render_engine.pcie_last_seen = 0;
         }
+        if (!pcie_available) render_engine.pcie_last_seen = 0;
         int pcie_result = pcie_available
             ? shared_memory_read_image(&pcie_shm_manager, pcie_buffer,
                                        PCIE_IMAGE_WIDTH * PCIE_IMAGE_HEIGHT * 2,
@@ -1578,15 +2244,16 @@ int main() {
         if (pcie_result > 0 && pcie_frame_id != last_pcie_frame_id) {
             last_pcie_frame_id = pcie_frame_id;
             pcie_updated = 1;
+            render_engine.pcie_last_seen = get_current_time_ms();
+            render_engine.pcie_frame_id = pcie_frame_id;
         }
         
-        if (!udp_available && time(NULL) != last_udp_retry) {
-            last_udp_retry = time(NULL);
-            if (shared_memory_init_udp(&udp_shm_manager, 0) == 0) {
-                udp_available = 1;
-                printf("UDP共享内存已连接\n");
-            }
+        if (maintain_live_source(&udp_shm_manager, SHM_TYPE_UDP, &udp_available,
+                                 &last_udp_retry, &last_udp_frame_id)) {
+            render_engine.udp_frame_id = render_engine.shown_udp_id = render_engine.profile_udp_start = 0;
+            render_engine.udp_last_seen = 0;
         }
+        if (!udp_available) render_engine.udp_last_seen = 0;
         int udp_result = udp_available
             ? shared_memory_read_image(&udp_shm_manager, udp_buffer,
                                        UDP_IMAGE_WIDTH * UDP_IMAGE_HEIGHT * 2,
@@ -1596,18 +2263,28 @@ int main() {
         if (udp_result > 0 && udp_frame_id != last_udp_frame_id) {
             last_udp_frame_id = udp_frame_id;
             udp_updated = 1;
+            render_engine.udp_last_seen = get_current_time_ms();
+            render_engine.udp_frame_id = udp_frame_id;
         }
         
         // 如果有任意一个通道更新，或者正在播放动画，或者正在显示文字，就重新渲染
-        if (pcie_updated || udp_updated || render_engine.transition.is_active || render_engine.transition.show_text) {
+        if (pcie_updated || udp_updated) render_engine.needs_redraw = 1;
+        uint64_t render_now = get_current_time_ms();
+        unsigned int minimum_interval = render_engine.transition.is_active ? 16 : 33;
+        if ((render_engine.needs_redraw || render_engine.transition.is_active ||
+             render_now - render_engine.last_presented >= 100) &&
+            render_now - render_engine.last_presented >= minimum_interval) {
+            if (!render_engine.transition.is_active)
+                transition_animation_update(&render_engine.transition);
             if (render_engine_render_with_transition(&render_engine, pcie_buffer, udp_buffer, current_display_mode) != 0) {
                 printf("渲染失败！\n");
                 break;
             }
             
             frame_count++;
+            if (frame_limit > 0 && frame_count >= frame_limit) keep_running = 0;
             
-            if (frame_count % 30 == 0) {  // 减少输出频率
+            if (display_verbose() && frame_count % 30 == 0) {  // 减少输出频率
                 const char* mode_name = get_camera_mode_name(current_display_mode);
                 const char* anim_status = render_engine.transition.is_active ? " [🎬动画中]" : "";
                 printf("渲染帧%d [%s%s] (PCIe:%s ID:%u, UDP:%s ID:%u)\n", 
@@ -1618,7 +2295,7 @@ int main() {
         } else {
             // 调试：如果没有任何更新，也打印状态
             static int no_update_count = 0;
-            if (++no_update_count % 100 == 0) {
+            if (display_verbose() && ++no_update_count % 100 == 0) {
                 printf("等待数据更新... PCIe result:%d, UDP result:%d\n", pcie_result, udp_result);
             }
         }
@@ -1627,18 +2304,6 @@ int main() {
         if (render_engine_check_exit_event(&render_engine)) {
             printf("检测到退出事件\n");
             break;
-        }
-        
-        // 实时FPS计算
-        if (frame_count % 100 == 0 && frame_count > 0) {
-            gettimeofday(&current_time, NULL);
-            total_time = get_time_diff(stream_start, current_time);
-            double current_fps = frame_count / total_time;
-            
-            const char* mode_name = get_camera_mode_name(current_display_mode);
-            printf("[%s] [%d帧] 渲染FPS: %.1f | PCIe帧:%u | UDP帧:%u\n", 
-                   mode_name, frame_count, current_fps, 
-                   last_pcie_frame_id, last_udp_frame_id);
         }
         
         // 动画期间提高渲染频率，平时降低CPU占用
@@ -1661,13 +2326,14 @@ int main() {
     printf("最终显示模式: %d\n", current_display_mode);
     
     // 保存最后一帧合成图像
-    if (frame_count > 0) {
+    if (last_pcie_frame_id > 0 || last_udp_frame_id > 0) {
         printf("\n=== 保存最后一帧合成图像 ===\n");
         save_combined_frame_to_ppm(pcie_buffer, udp_buffer, "combined_last_frame.ppm");
     }
     
     // 系统清理
     printf("\n=== 系统清理 ===\n");
+    if (snapshot_path) save_dashboard(&render_engine, snapshot_path);
     render_engine_cleanup(&render_engine);
 
     if (display_control_shm) {
@@ -1678,7 +2344,7 @@ int main() {
         emergency_brake_shm_cleanup(emergency_brake_shm, 0);
     }
 
-    curve_detection_shm_cleanup();
+    if (metadata.curve_available) curve_detection_shm_cleanup();
 
     if (pcie_available) shared_memory_cleanup(&pcie_shm_manager);
     if (udp_available) shared_memory_cleanup(&udp_shm_manager);

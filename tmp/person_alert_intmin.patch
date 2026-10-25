@@ -1,0 +1,135 @@
+--- a/udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c
++++ b/udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c
+@@ -150,19 +150,19 @@
+     switch (corner) {
+         case CORNER_TOP_LEFT:
+ 
+-            min_dist = fminf(pixel_x, pixel_y);
++            min_dist = (pixel_x < pixel_y ? pixel_x : pixel_y);
+             break;
+         case CORNER_TOP_RIGHT:
+ 
+-            min_dist = fminf(SCREEN_WIDTH - 1 - pixel_x, pixel_y);
++            min_dist = (SCREEN_WIDTH - 1 - pixel_x < pixel_y ? SCREEN_WIDTH - 1 - pixel_x : pixel_y);
+             break;
+         case CORNER_BOTTOM_LEFT:
+ 
+-            min_dist = fminf(pixel_x, SCREEN_HEIGHT - 1 - pixel_y);
++            min_dist = (pixel_x < SCREEN_HEIGHT - 1 - pixel_y ? pixel_x : SCREEN_HEIGHT - 1 - pixel_y);
+             break;
+         case CORNER_BOTTOM_RIGHT:
+ 
+-            min_dist = fminf(SCREEN_WIDTH - 1 - pixel_x, SCREEN_HEIGHT - 1 - pixel_y);
++            min_dist = (SCREEN_WIDTH - 1 - pixel_x < SCREEN_HEIGHT - 1 - pixel_y ? SCREEN_WIDTH - 1 - pixel_x : SCREEN_HEIGHT - 1 - pixel_y);
+             break;
+         default:
+             break;
+@@ -269,6 +269,31 @@
+     rgb_data[pixel_idx + 2] = blended.r;
+ }
+ 
++/* Preserve all floating-point expressions and blend order; only skip spans
++ * whose box and corner contributions are both exactly zero. */
++static void draw_box_alert_span(uint8_t* rgb_data, int width, int y, int left, int right,
++                                const BOX_RECT* box, CornerType corner, float blink) {
++    for (int x = left; x <= right; ++x) {
++        float intensity = calculate_red_effect_intensity(x, y, box, corner);
++        intensity *= blink;
++        if (intensity <= 0.01f) continue;
++        blend_red_pixel(rgb_data, (y * width + x) * 3, intensity);
++    }
++}
++
++static void draw_corner_alert_span(uint8_t* rgb_data, int width, int y, int left, int right,
++                                   CornerType corner, float blink) {
++    for (int x = left; x <= right; ++x) {
++        float dist_to_edge = calculate_distance_to_corner_edge(x, y, corner);
++        if (dist_to_edge <= SCREEN_EDGE_GRADIENT_WIDTH) {
++            float intensity = 0.4f * (1.0f - dist_to_edge / SCREEN_EDGE_GRADIENT_WIDTH);
++            intensity *= blink;
++            if (intensity <= 0.01f) continue;
++            blend_red_pixel(rgb_data, (y * width + x) * 3, intensity);
++        }
++    }
++}
++
+ /* 对人员框周围及其最近角的边缘分别叠加红色渐变，亮暗状态控制强度。 */
+ void draw_person_alert_effect(uint8_t* rgb_data, int width, int height,
+                              const BOX_RECT* person_box, AlertEffectState* state) {
+@@ -291,14 +316,37 @@
+     if (box_top < 0) box_top = 0;
+     if (box_bottom >= height) box_bottom = height - 1;
+ 
+-    for (int y = box_top; y <= box_bottom; y++) {
+-        for (int x = box_left; x <= box_right; x++) {
+-            float intensity = calculate_red_effect_intensity(x, y, person_box, nearest_corner);
+-            intensity *= blink_multiplier;
+-
+-            if (intensity <= 0.01f) continue;
+-
+-            blend_red_pixel(rgb_data, (y * width + x) * 3, intensity);
++    const int left_corner = nearest_corner == CORNER_TOP_LEFT || nearest_corner == CORNER_BOTTOM_LEFT;
++    const int top_corner = nearest_corner == CORNER_TOP_LEFT || nearest_corner == CORNER_TOP_RIGHT;
++    const int inner_left = person_box->left + BOX_INNER_GRADIENT_WIDTH;
++    const int inner_right = person_box->right - BOX_INNER_GRADIENT_WIDTH;
++    for (int y = box_top; y <= box_bottom; ++y) {
++        int skip_left = inner_left, skip_right = inner_right;
++        if (y < person_box->top + BOX_INNER_GRADIENT_WIDTH ||
++            y > person_box->bottom - BOX_INNER_GRADIENT_WIDTH) {
++            skip_left = 1; skip_right = 0;
++        } else {
++            /* Inside >=40px: box intensity is zero. Keep the portion that
++             * may still receive the selected corner's <80px edge gradient. */
++            int in_corner_row = top_corner ? y < CORNER_HEIGHT : y >= SCREEN_HEIGHT - CORNER_HEIGHT;
++            if (in_corner_row) {
++                int edge_y = top_corner ? y : SCREEN_HEIGHT - 1 - y;
++                if (left_corner) {
++                    int last_edge_x = edge_y < SCREEN_EDGE_GRADIENT_WIDTH ? CORNER_WIDTH - 1 : SCREEN_EDGE_GRADIENT_WIDTH - 1;
++                    if (skip_left <= last_edge_x) skip_left = last_edge_x + 1;
++                } else {
++                    int first_edge_x = edge_y < SCREEN_EDGE_GRADIENT_WIDTH ? SCREEN_WIDTH - CORNER_WIDTH : SCREEN_WIDTH - SCREEN_EDGE_GRADIENT_WIDTH;
++                    if (skip_right >= first_edge_x) skip_right = first_edge_x - 1;
++                }
++            }
++        }
++        if (skip_left < box_left) skip_left = box_left;
++        if (skip_right > box_right) skip_right = box_right;
++        if (skip_left <= skip_right) {
++            draw_box_alert_span(rgb_data, width, y, box_left, skip_left - 1, person_box, nearest_corner, blink_multiplier);
++            draw_box_alert_span(rgb_data, width, y, skip_right + 1, box_right, person_box, nearest_corner, blink_multiplier);
++        } else {
++            draw_box_alert_span(rgb_data, width, y, box_left, box_right, person_box, nearest_corner, blink_multiplier);
+         }
+     }
+ 
+@@ -325,19 +373,19 @@
+             return;
+     }
+ 
+-    for (int y = corner_top; y <= corner_bottom; y++) {
+-        for (int x = corner_left; x <= corner_right; x++) {
+-            float dist_to_edge = calculate_distance_to_corner_edge(x, y, nearest_corner);
+-
+-            if (dist_to_edge <= SCREEN_EDGE_GRADIENT_WIDTH) {
+-                float intensity = 0.4f * (1.0f - dist_to_edge / SCREEN_EDGE_GRADIENT_WIDTH);
+-                intensity *= blink_multiplier;
+-
+-                if (intensity <= 0.01f) continue;
+-
+-                blend_red_pixel(rgb_data, (y * width + x) * 3, intensity);
++    for (int y = corner_top; y <= corner_bottom; ++y) {
++        int left = corner_left, right = corner_right;
++        int edge_y = top_corner ? y : SCREEN_HEIGHT - 1 - y;
++        if (edge_y >= SCREEN_EDGE_GRADIENT_WIDTH) {
++            /* At distance >=80 the original intensity is exactly zero. */
++            if (left_corner) {
++                if (right >= SCREEN_EDGE_GRADIENT_WIDTH) right = SCREEN_EDGE_GRADIENT_WIDTH - 1;
++            } else {
++                int edge_start = SCREEN_WIDTH - SCREEN_EDGE_GRADIENT_WIDTH;
++                if (left < edge_start) left = edge_start;
+             }
+         }
++        draw_corner_alert_span(rgb_data, width, y, left, right, nearest_corner, blink_multiplier);
+     }
+ }
+ 

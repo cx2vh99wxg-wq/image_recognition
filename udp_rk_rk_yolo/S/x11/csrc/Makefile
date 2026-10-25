@@ -4,6 +4,8 @@
 
 # 项目配置
 TARGET = eight_camera_renderer
+RUN_ARGS ?=
+PREVIEW_OUTPUT ?= /tmp/perception-dashboard.ppm
 CXX = g++
 CC = gcc
 
@@ -36,11 +38,26 @@ CXXFLAGS = $(INCFLAGS) -std=c++14 -O3 -march=native -funroll-loops -pthread
 CFLAGS = $(INCFLAGS) -std=c99 -O3 -march=native -funroll-loops -pthread
 LDFLAGS = $(X11_LIBS) -lrt -lpthread
 
+# XRender is optional; plain X11 and MIT-SHM remain available fallbacks.
+XRENDER_LIBS := $(shell pkg-config --libs xrender 2>/dev/null)
+ifneq ($(strip $(XRENDER_LIBS)),)
+CXXFLAGS += -DPERCEPTION_HAVE_XRENDER=1 $(shell pkg-config --cflags xrender 2>/dev/null)
+LDFLAGS += $(XRENDER_LIBS)
+endif
+
+# Prefer the direct GPU presenter when EGL/GLES2 development libraries exist.
+# The renderer retains XRender, MIT-SHM and XPutImage runtime fallbacks.
+GLES_LIBS := $(shell pkg-config --libs egl glesv2 2>/dev/null)
+ifneq ($(strip $(GLES_LIBS)),)
+CXXFLAGS += -DPERCEPTION_HAVE_GLES=1 $(shell pkg-config --cflags egl glesv2 2>/dev/null)
+LDFLAGS += $(GLES_LIBS)
+endif
+
 # =============================================================================
 # 构建规则
 # =============================================================================
 
-.PHONY: all clean help run
+.PHONY: all clean help run preview
 
 # 默认目标
 all: $(BIN)
@@ -49,7 +66,7 @@ all: $(BIN)
 $(BIN): $(OBJECTS) | $(BUILD_DIR)
 	@echo "链接可执行文件: $@"
 	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
-	@echo "编译完成: $(TARGET) - 8摄像头视频渲染程序"
+	@echo "编译完成: $(TARGET) - Perception Engine 全景界面"
 
 # 编译C++源文件
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCLUDES) | $(BUILD_DIR)
@@ -74,7 +91,11 @@ $(BUILD_DIR):
 # 运行程序
 run: $(BIN)
 	@echo "运行X11八摄像头渲染程序..."
-	./$(BIN)
+	./$(BIN) $(RUN_ARGS)
+
+# 使用已保存的视频帧离线生成真实界面，无需连接采集/车控进程。
+preview: $(BIN)
+	./$(BIN) --preview "$(PREVIEW_OUTPUT)"
 
 # 清理构建文件
 clean:
@@ -89,15 +110,18 @@ help:
 	@echo "  all     - 编译程序 (默认)"
 	@echo "  clean   - 清理构建文件"
 	@echo "  run     - 编译并运行程序"
+	@echo "  preview - 使用 combined_last_frame.ppm 导出完整界面预览"
 	@echo "  help    - 显示此帮助信息"
 	@echo ""
 	@echo "程序功能："
 	@echo "  - 读取PCIe和UDP共享内存"
 	@echo "  - 支持8个独立摄像头显示 (0x11-0x88)"
-	@echo "  - 支持全部摄像头2x4网格显示 (0x99)"
+	@echo "  - 0x99: 六路3x2视频 + 独立车辆/报警面板"
 	@echo "  - 响应FSPI按钮控制的视角切换"
 	@echo "  - 单摄像头320x240放大到640x480显示"
 	@echo "  - X11实时显示"
+	@echo "  - 默认全屏；F11/F切换全屏，Q退出，Esc退出全屏"
+	@echo "  - make run RUN_ARGS=--windowed 以窗口模式启动"
 	@echo ""
 	@echo "依赖："
 	@echo "  - X11开发库"

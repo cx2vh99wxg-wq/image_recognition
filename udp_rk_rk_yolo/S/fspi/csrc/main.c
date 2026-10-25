@@ -15,7 +15,9 @@
  */
 
 #define _POSIX_C_SOURCE 200809L
+#ifndef _DEFAULT_SOURCE
 #define _DEFAULT_SOURCE
+#endif
 #define _BSD_SOURCE
 #include "fspi_module.h"
 #include "brake_policy.h"
@@ -48,25 +50,26 @@ static DisplayControlSharedMemory* display_control_shm = NULL;
 static EmergencyBrakeSharedMemory* emergency_brake_shm = NULL;
 static WheelPosition wheel_position = WHEEL_NEUTRAL;
 
-// 上电后默认启用行人制动；原来的 0xff/0xee 指令仍可切换该功能。
-static int person_detection_brake_enabled = 1;
-static uint8_t last_toggle_command = 0x00;      // 上次处理的切换指令值，避免重复处理
+// S只发布原始检测请求。AUTO开关、实际STOP输出和锁存均由FPGA决定。
 static int last_brake_value = -1;
 static uint32_t next_brake_release_refresh = 0;
-static int brake_active = 1;
+static int raw_request_active = 0;
 static int turn_pulse_active = 0;
 static uint32_t next_brake_attach = 0;
+static int direction_release_failed = 0;
 
 /* 读端只接受检测程序最近两秒写入的状态。检测程序未启动、退出或卡住时保持制动请求。
  * 请求有效时重复写低电平；请求清除时每秒重写高电平，避免无回执的 SPI 写入丢失。
+ * 不依赖81状态读回；默认关闭的HMI开关在FPGA最终门控原始请求。
  * STOP 锁存位于 FPGA，请求清除不自动解锁；人工 REARM 可强制解除当前报警。 */
 static int monitor_emergency_brake(void)
 {
+    // 转向脉冲的20ms等待也持续发布请求，不等待不可靠的开关读回。
     struct timespec ts;
     int clock_ok = clock_gettime(CLOCK_MONOTONIC, &ts) == 0;
     uint32_t now = clock_ok ? (uint32_t)ts.tv_sec : 0;
 
-    if (person_detection_brake_enabled && !emergency_brake_shm &&
+    if (!emergency_brake_shm &&
         clock_ok && now >= next_brake_attach) {
         if (emergency_brake_shm_init(&emergency_brake_shm, 0) == 0) {
             printf("[自动刹停] 已连接行人检测共享内存\n");
@@ -86,15 +89,23 @@ static int monitor_emergency_brake(void)
         last_update = emergency_brake_shm->last_update;
     }
 
-    int required = brake_required(person_detection_brake_enabled,
+    int required = brake_required(1,
                                   status_valid && clock_ok,
                                   person_detected, brake_enable,
                                   last_update, now);
 
+    enum { DETECTOR_UNAVAILABLE, DETECTOR_STALE,
+           PERSON_REQUEST, HOLD_OR_INFERENCE_FAULT, CLEAR_REQUEST, DIRECTION_WRITE_FAULT };
+    int reason = !status_valid || !clock_ok ? DETECTOR_UNAVAILABLE :
+        (last_update == 0 || last_update > now ||
+         now - last_update >= BRAKE_STATUS_TIMEOUT_SECONDS) ? DETECTOR_STALE :
+        person_detected ? PERSON_REQUEST : brake_enable == 0 ? HOLD_OR_INFERENCE_FAULT : CLEAR_REQUEST;
+    static int previous_reason = -1;
+
     /* FPGA 复位时方向寄存器默认高电平。每次清除软件制动请求前仍重写
      * 四个方向为高电平，丢弃旧方向命令；任一路失败就保留请求并在下轮重试。 */
     int refresh_release = !required &&
-        (last_brake_value != 1 ||
+        (last_brake_value != 1 || direction_release_failed ||
          (!turn_pulse_active &&
           (!clock_ok || now >= next_brake_release_refresh)));
     if (refresh_release) {
@@ -104,18 +115,28 @@ static int monitor_emergency_brake(void)
                 directions_released = 0;
             }
         }
+        direction_release_failed = !directions_released;
         if (!directions_released) {
             static uint32_t last_release_error_log = 0;
             if (now != last_release_error_log) {
-                fprintf(stderr, "[自动刹停] 方向键释放失败，保持制动请求并重试\n");
+                fprintf(stderr, "[自动刹停] 方向键释放失败，暂停自动转向并重试；发布原始故障请求，最终由FPGA AUTO门控\n");
                 last_release_error_log = now;
             }
             last_brake_value = -1;
             required = 1;
+            reason = DIRECTION_WRITE_FAULT;
         }
     }
 
-    if (emergency_brake_shm && person_detection_brake_enabled &&
+    if (reason != previous_reason) {
+        const char *names[] = {"检测段/首帧/时钟不可用", "检测数据超时", "有效person请求",
+            "无人确认期或推理故障（详见PCIe日志）", "有效无人、请求清除", "方向寄存器写入故障"};
+        printf("[自动刹停链路] %s: valid=%d person=%d brake_enable=%d raw_request=%d -> reg4=%d；AUTO及实际STOP锁存由FPGA决定\n",
+               names[reason], status_valid && clock_ok, person_detected, brake_enable, required, required ? 0 : 1);
+        previous_reason = reason;
+    }
+
+    if (emergency_brake_shm &&
         (!status_valid || !clock_ok || last_update == 0 ||
          last_update > now || now - last_update >= BRAKE_STATUS_TIMEOUT_SECONDS)) {
         emergency_brake_shm_cleanup(emergency_brake_shm, 0);
@@ -123,23 +144,26 @@ static int monitor_emergency_brake(void)
         next_brake_attach = now + 1;
     }
 
-    if (required != brake_active) {
-        printf("[自动刹停] %s\n", required ? "请求有效：发现行人或检测数据不可用，FPGA 锁存 STOP（人工可强制 REARM）"
-                                           : "请求清除：软件不再请求自动制动，FPGA 锁存仍须人工 REARM 解除");
-        brake_active = required;
+    if (required != raw_request_active) {
+        printf("[自动刹停] %s\n", required ? "原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定"
+                                           : "原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存");
+        raw_request_active = required;
     }
 
     int value_to_write = required ? 0 : 1; // 寄存器4低电平请求制动；高电平只清除请求
+    int request_write_failed = 0;
     if (required || refresh_release) {
         if (fspi_write_data(4, (uint8_t)value_to_write) == 0) {
+            if (value_to_write != last_brake_value) {
+                printf("[自动刹停FSPI] reg4=%d写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定\n", value_to_write);
+            }
             last_brake_value = value_to_write;
             if (!required) {
                 next_brake_release_refresh = now + 1;
             }
         } else {
-            if (!required) {
-                last_brake_value = -1;
-            }
+            request_write_failed = 1;
+            last_brake_value = -1;
             static uint32_t last_error_log = 0;
             if (now != last_error_log) {
                 fprintf(stderr, "[自动刹停] 写制动寄存器失败，下一次轮询将重试\n");
@@ -148,11 +172,12 @@ static int monitor_emergency_brake(void)
         }
     }
 
-    // 软件请求有效或清除请求未成功写入时，不发起自动转向；HMI 解锁由 FPGA 处理。
-    return required || last_brake_value != 1;
+    // 未读到AUTO状态不能阻断关闭状态下的转向。硬件STOP锁存直接门控方向触点；
+    // S只在实际寄存器/方向写入失败时中止软件转向，不把原始请求当作已刹停。
+    return request_write_failed || direction_release_failed;
 }
 
-/* 制动请求出现时立即结束当前转向脉冲；清除请求的刷新等脉冲结束后再做。 */
+/* 转向期间持续发布原始请求；实际写入故障结束软件脉冲，STOP由FPGA门控。 */
 static int wait_with_brake_checks(unsigned int duration_us)
 {
     turn_pulse_active = 1;
@@ -198,12 +223,16 @@ void turn_to_left() {
         vehicle_control(2, 1);
         int completed = wait_with_brake_checks(TIME_LEFT_TO_RIGHT) == 0;
         vehicle_control(2, 0);
-        if (completed) wheel_position = WHEEL_LEFT;
+        if (completed) {
+            wheel_position = WHEEL_LEFT;
+        }
     } else {
         vehicle_control(2, 1);
         int completed = wait_with_brake_checks(TIME_NEUTRAL_TO_LEFT) == 0;
         vehicle_control(2, 0);
-        if (completed) wheel_position = WHEEL_LEFT;
+        if (completed) {
+            wheel_position = WHEEL_LEFT;
+        }
     }
 }
 
@@ -217,12 +246,16 @@ void turn_to_right() {
         vehicle_control(3, 1);
         int completed = wait_with_brake_checks(TIME_LEFT_TO_RIGHT) == 0;
         vehicle_control(3, 0);
-        if (completed) wheel_position = WHEEL_RIGHT;
+        if (completed) {
+            wheel_position = WHEEL_RIGHT;
+        }
     } else {
         vehicle_control(3, 1);
         int completed = wait_with_brake_checks(TIME_NEUTRAL_TO_RIGHT) == 0;
         vehicle_control(3, 0);
-        if (completed) wheel_position = WHEEL_RIGHT;
+        if (completed) {
+            wheel_position = WHEEL_RIGHT;
+        }
     }
 }
 
@@ -261,7 +294,39 @@ void stop_all_vehicle_movement() {
     printf("所有方向控制已释放\n");
 }
 
+/* 复用显示控制共享段的预留字节发布当前 HMI 按键提示。
+ * 每个方向只对应当前按下的键；松开或读取失败时立即发布 NONE。
+ * 该值不是 FPGA 触点或车轮速度反馈，过期后显示端也会自动隐藏。 */
+static void publish_motion_hint(uint8_t hmi_code)
+{
+    if (!display_control_shm || !display_control_shm->valid) return;
+
+    VehicleMotionHint motion = VEHICLE_MOTION_NONE;
+    /* FPGA 的四线读口将 4 位 HMI 选择码重复送出两次，因此
+     * 串口屏功能 04 的 A/B/C/D 在 RK 端分别读作 AA/BB/CC/DD。 */
+    if (hmi_code == 0xaa) {
+        motion = VEHICLE_MOTION_FORWARD;
+    } else if (hmi_code == 0xbb) {
+        motion = VEHICLE_MOTION_REVERSE;
+    } else if (hmi_code == 0xcc) {
+        motion = VEHICLE_MOTION_LEFT;
+    } else if (hmi_code == 0xdd) {
+        motion = VEHICLE_MOTION_RIGHT;
+    }
+
+    struct timespec ts;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) return;
+    uint32_t timestamp_ms = (uint32_t)((uint64_t)ts.tv_sec * 1000u +
+                                       (uint32_t)ts.tv_nsec / 1000000u);
+    uint64_t snapshot = ((uint64_t)timestamp_ms << 32) | (uint32_t)motion;
+    __atomic_store_n(&display_control_shm->motion_snapshot, snapshot, __ATOMIC_RELEASE);
+}
+
 int main(int argc, char *argv[]) {
+    // 调试日志重定向到文件时也逐行输出，便于实机核对制动请求。
+    setvbuf(stdout, NULL, _IOLBF, 0);
+    (void)argc;
+    (void)argv;
     printf("=== 车辆控制程序 (弯道检测自动转向) ===\n");
     printf("版本: 8.0 (弯道检测自动转向 + 紧急制动)\n");
     printf("作者: 科研轮转\n");
@@ -270,9 +335,9 @@ int main(int argc, char *argv[]) {
     printf("- 实时读取: 从FSPI寄存器0读取实际模式值\n");
     printf("- 显示控制: 0x11-0x88对应8个摄像头，0x99对应所有摄像头\n");
     printf("- 左右转向: 完全由弯道检测自动控制\n");
-    printf("- 紧急制动: 默认开启；有人或检测不可用时寄存器4写0，连续两秒无人写1仅清除请求\n");
+    printf("- 原始制动请求: 有人或检测不可用写4=0，连续两秒无人写1仅清除请求\n");
     printf("- STOP锁存: FPGA保持低电平直到人工REARM；允许有人时强制解除当前报警\n");
-    printf("- 制动控制: 预留0xff开启、0xee关闭指令（当前FPGA读回仅4位）\n");
+    printf("- 制动开关: HMI功能0F的FF开启/EE关闭，默认关闭和最终门控由FPGA负责；S不依赖开关读回\n");
     printf("- 弯道检测: 自动读取UDP传来的弯道信息，智能控制车辆转向\n");
     printf("  * 智能转向: 左弯→左转，右弯→右转，直道→回中\n");
     printf("- 检测间隔: 每100ms检测一次模式变化\n");
@@ -296,14 +361,14 @@ int main(int argc, char *argv[]) {
     }
     printf("FSPI初始化成功！\n");
 
-    // 先发布制动请求，再释放四个方向键；请求清除后 STOP 仍须人工 REARM 解锁。
-    printf("初始化控制寄存器: 制动4写0，方向0-3写1\n");
-    if (fspi_write_data(4, 0) != 0) {
-        fprintf(stderr, "无法设置初始制动，停止车辆控制程序\n");
+    // 先初始化原始请求与方向为释放；写1不解除已有的FPGA锁存。
+    printf("初始化控制寄存器: 制动4写1，方向0-3写1\n");
+    if (fspi_write_data(4, 1) != 0) {
+        fprintf(stderr, "无法清除初始软件制动请求，停止车辆控制程序\n");
         fspi_cleanup();
         return -1;
     }
-    last_brake_value = 0;
+    last_brake_value = 1;
     int control_init_ok = 1;
     for (int i = 0; i < 4; i++) {
         if (fspi_write_data(i, 1) == 0) {
@@ -329,7 +394,7 @@ int main(int argc, char *argv[]) {
     }
     printf("显示控制共享内存初始化成功\n\n");
     
-    // 检测程序若尚未启动，轮询函数会继续发布制动请求并定期重连。
+    // 始终连接检测段并发布原始请求，是否生效由FPGA的HMI开关最终决定。
     printf("=== 紧急制动共享内存初始化 ===\n");
     monitor_emergency_brake();
     printf("\n");
@@ -359,16 +424,15 @@ int main(int argc, char *argv[]) {
     printf("支持的指令值:\n");
     printf("  显示控制: 0x11-0x88(单摄像头), 0x99(全部摄像头)\n");
     printf("  左右转向: 完全由弯道检测自动控制\n");
-    printf("  制动功能控制: 默认开启；0xff/0xee为当前FPGA尚不支持的预留指令\n");
+    printf("  制动功能控制: S持续发布原始请求；HMI AUTO开关和实际STOP锁存由FPGA决定\n");
     printf("  紧急制动: 有人或检测失效写0，连续两秒无人写1；STOP锁存仅由人工REARM解除\n");
     printf("  弯道检测: 自动读取UDP传来的弯道信息并控制车辆转向 [置信度≥60%%时执行]\n");
     if (emergency_brake_shm) {
-        printf("  紧急制动状态: 已启用，正在监控PCIe人员检测\n");
+        printf("  检测通道: 已连接PCIe人员检测；FPGA实际AUTO/STOP状态不作软件推断\n");
     } else {
-        printf("  紧急制动状态: 等待PCIe程序，当前软件制动请求有效\n");
+        printf("  检测通道: 等待PCIe程序；发布原始故障请求，最终由FPGA AUTO门控\n");
     }
-    printf("  人员检测停车功能: %s (0xff开启，0xee关闭)\n",
-           person_detection_brake_enabled ? "已开启" : "已关闭");
+    printf("  人员检测停车功能: 开关状态以HMI/FPGA为准，S不伪造开启或关闭状态\n");
     printf("  弯道检测功能: 已启用，自动控制车辆转向\n");
     printf("\n");
     
@@ -446,11 +510,11 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        // 2. 制动请求优先于自动转向；检测程序断线或数据过期也保持软件请求。
-        int braking = monitor_emergency_brake();
+        // 2. 发布原始制动请求。FPGA决定实际STOP；仅实际写故障暂停软件转向。
+        int control_io_failed = monitor_emergency_brake();
 
         // 3. 根据弯道检测结果执行自动转向控制（在读取FSPI指令之前）
-        if (!braking && curve_data_valid) {
+        if (!control_io_failed && curve_data_valid) {
             // 静态变量跟踪上次的弯道类型，用于避免重复执行
             static CurveType last_applied_curve_type = CURVE_NONE;
             static uint32_t last_applied_confidence = 0;
@@ -510,56 +574,18 @@ int main(int argc, char *argv[]) {
         // 4. 实际从FSPI寄存器0读取模式值
         uint8_t current_mode_value = 0;
         if (fspi_read_data(0, &current_mode_value) != 0) {
+            // 读不到最新触摸状态时立即撤销提示，避免继续显示上一次按键。
+            publish_motion_hint(0);
             usleep(100000);  // 失败时等待100ms再重试
             continue;
         }
+        publish_motion_hint(current_mode_value);
 
         // 只在值发生变化时记录
         if (current_mode_value != last_read_value) {
             last_read_value = current_mode_value;
         }
 
-        // 5. 检查是否是人员检测停车功能控制指令
-        if ((current_mode_value == 0xff || current_mode_value == 0xee) && 
-            current_mode_value != last_toggle_command) {
-            
-            printf("\n=== 人员检测停车功能控制 ===\n");
-            printf("接收到指令: 0x%02X", current_mode_value);
-            
-            // 根据不同指令设置功能状态：0xff=开启，0xee=关闭
-            if (current_mode_value == 0xff) {
-                if (!person_detection_brake_enabled) {
-                    person_detection_brake_enabled = 1;
-                    printf(" (开启功能)\n");
-                    printf("✅ 人员检测停车功能已开启\n");
-                    printf("🛡️  提示: 检测到人员时将自动触发紧急制动\n");
-                } else {
-                    printf(" (已经开启)\n");
-                    printf("✅ 人员检测停车功能保持开启状态\n");
-                    printf("🛡️  提示: 功能已经处于开启状态\n");
-                }
-            } else if (current_mode_value == 0xee) {
-                if (person_detection_brake_enabled) {
-                    person_detection_brake_enabled = 0;
-                    printf(" (关闭功能)\n");
-                    printf("🚫 人员检测停车功能已关闭\n");
-                    printf("⚠️  注意: 不再发布新的行人制动请求；已有FPGA锁存仍须人工REARM解除\n");
-                } else {
-                    printf(" (已经关闭)\n");
-                    printf("🚫 人员检测停车功能保持关闭状态\n");
-                    printf("⚠️  提示: 功能已经处于关闭状态；已有FPGA锁存仍须人工REARM解除\n");
-                }
-            }
-            
-            last_toggle_command = current_mode_value;  // 记录当前指令，避免重复处理
-            
-            printf("🔄 当前状态: %s\n", person_detection_brake_enabled ? "已开启" : "已关闭");
-            printf("💡 说明: 发送0xff开启功能，发送0xee关闭功能\n");
-            printf("=== 继续监控指令 ===\n\n");
-            usleep(100000);
-            continue;
-        }
-        
         // 检查是否是有效的显示模式值（非0x00且非车辆控制指令）
         DisplayMode new_mode = DISPLAY_MODE_ALL_CAMERAS;  // 默认值
         const char* mode_name = "未知模式";
@@ -642,10 +668,11 @@ int main(int argc, char *argv[]) {
         usleep(100000);
     }
     
+    publish_motion_hint(0);
     // 程序退出前的清理工作
     printf("\n=== 程序退出清理 ===\n");
 
-    // 车控进程停止监测前发布制动请求；FPGA 保持 STOP 锁存直到人工 REARM。
+    // 退出沿用原始故障请求；AUTO开关与已有STOP锁存均由FPGA决定。
     if (fspi_write_data(4, 0) != 0) {
         fprintf(stderr, "警告: 退出时无法写入制动寄存器，请检查车辆状态\n");
     }
