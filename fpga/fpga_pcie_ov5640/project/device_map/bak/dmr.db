@@ -2603,7 +2603,7 @@
             <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_gpll/u_gpll</data>
             <data>I_ips_ddr_top/u_ddrphy_top/u_sysclk_bufg</data>
             <data>core_clk</data>
-            <data>4056</data>
+            <data>4055</data>
         </row>
         <row>
             <data>CLKOUT</data>
@@ -2635,14 +2635,14 @@
         </row>
         <row>
             <data>O</data>
-            <data>cmos6_pclk_ibuf</data>
+            <data>cmos5_pclk_ibuf</data>
             <data>clkbufg_1</data>
             <data>ntclkbufg_1</data>
             <data>10092</data>
         </row>
         <row>
             <data>O</data>
-            <data>cmos5_pclk_ibuf</data>
+            <data>cmos6_pclk_ibuf</data>
             <data>clkbufg_2</data>
             <data>ntclkbufg_2</data>
             <data>10092</data>
@@ -2666,21 +2666,21 @@
             <data>the_instance_name/u_gpll</data>
             <data>clkbufg_5</data>
             <data>ntclkbufg_5</data>
-            <data>91</data>
-        </row>
-        <row>
-            <data>CLKOUT2</data>
-            <data>u_ov5640_top/u_pll/u_gpll</data>
-            <data>clkbufg_6</data>
-            <data>ntclkbufg_6</data>
-            <data>37</data>
+            <data>92</data>
         </row>
         <row>
             <data>O</data>
             <data>spi_clk_ibuf</data>
+            <data>clkbufg_6</data>
+            <data>ntclkbufg_6</data>
+            <data>42</data>
+        </row>
+        <row>
+            <data>CLKOUT2</data>
+            <data>u_ov5640_top/u_pll/u_gpll</data>
             <data>clkbufg_7</data>
             <data>ntclkbufg_7</data>
-            <data>14</data>
+            <data>37</data>
         </row>
         <row>
             <data>CLKOUT1</data>
@@ -2704,39 +2704,39 @@
             <data>Fanout</data>
         </column_headers>
         <row>
-            <data>N483</data>
-            <data>N483</data>
+            <data>N486</data>
+            <data>N486</data>
             <data>11</data>
         </row>
         <row>
-            <data>N129_0</data>
-            <data>N129_0</data>
+            <data>N132_0</data>
+            <data>N132_0</data>
             <data>555</data>
         </row>
         <row>
-            <data>N477</data>
-            <data>N477</data>
+            <data>N480</data>
+            <data>N480</data>
             <data>12</data>
         </row>
         <row>
             <data>I_ips_ddr_top/u_ddrc_rstn_sync/N0_1_rnmt</data>
             <data>I_ips_ddr_top/u_ddrc_rstn_sync/N0_1</data>
-            <data>1275</data>
+            <data>1281</data>
         </row>
         <row>
-            <data>N225</data>
-            <data>N225</data>
+            <data>N228</data>
+            <data>N228</data>
             <data>97</data>
         </row>
         <row>
-            <data>N213</data>
-            <data>N213</data>
+            <data>N216</data>
+            <data>N216</data>
             <data>24</data>
         </row>
         <row>
             <data>_$$_GND_$$_</data>
             <data>_$$_GND_$$_</data>
-            <data>99</data>
+            <data>101</data>
         </row>
         <row>
             <data>u_axi4_ctrl/N4604</data>
@@ -2789,9 +2789,9 @@
             <data>73</data>
         </row>
         <row>
-            <data>u_fspi_slave_top/u_fspi_slave/N88</data>
-            <data>u_fspi_slave_top/u_fspi_slave/N88</data>
-            <data>3</data>
+            <data>u_fspi_slave_top/u_fspi_slave/N152</data>
+            <data>u_fspi_slave_top/u_fspi_slave/N152</data>
+            <data>33</data>
         </row>
         <row>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_controller/N3</data>
@@ -2806,17 +2806,22 @@
         <row>
             <data>u_ov5640_top/cmos2_reg_config/N4</data>
             <data>u_ov5640_top/cmos2_reg_config/N4</data>
-            <data>34</data>
+            <data>56</data>
+        </row>
+        <row>
+            <data>u_ov5640_top/cmos2_reg_config/N820_1</data>
+            <data>u_ov5640_top/cmos2_reg_config/N820_1</data>
+            <data>66</data>
         </row>
         <row>
             <data>u_ov5640_top/cmos6_reg_config/N820_1</data>
             <data>u_ov5640_top/cmos6_reg_config/N820_1</data>
-            <data>99</data>
+            <data>33</data>
         </row>
         <row>
             <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_calib_top/N10</data>
             <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_calib_top/N10</data>
-            <data>1586</data>
+            <data>1585</data>
         </row>
         <row>
             <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_cpd_ctrl/N0</data>
@@ -2890,12 +2895,12 @@
         </row>
         <row>
             <data>u_axi4_ctrl/N82</data>
-            <data>u_axi4_ctrl/N82_mux4_3</data>
+            <data>u_axi4_ctrl/N4574_7</data>
             <data>118</data>
         </row>
         <row>
             <data>u_axi4_ctrl/N60</data>
-            <data>u_axi4_ctrl/N60_mux4_3</data>
+            <data>u_axi4_ctrl/N4568_7</data>
             <data>104</data>
         </row>
         <row>
@@ -2905,7 +2910,7 @@
         </row>
         <row>
             <data>u_axi4_ctrl/N109</data>
-            <data>u_axi4_ctrl/N109_mux4_3</data>
+            <data>u_axi4_ctrl/N4582_7</data>
             <data>52</data>
         </row>
         <row>
@@ -3021,13 +3026,13 @@
             <data>13523</data>
         </row>
         <row>
-            <data>ntclkbufg_1</data>
-            <data>clkbufg_1</data>
+            <data>ntclkbufg_2</data>
+            <data>clkbufg_2</data>
             <data>10092</data>
         </row>
         <row>
-            <data>ntclkbufg_2</data>
-            <data>clkbufg_2</data>
+            <data>ntclkbufg_1</data>
+            <data>clkbufg_1</data>
             <data>10092</data>
         </row>
         <row>
@@ -3048,7 +3053,7 @@
         <row>
             <data>core_clk</data>
             <data>I_ips_ddr_top/u_ddrphy_top/u_sysclk_bufg</data>
-            <data>4056</data>
+            <data>4055</data>
         </row>
         <row>
             <data>ntclkbufg_3</data>
@@ -3063,7 +3068,7 @@
         <row>
             <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_calib_top/N10</data>
             <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_calib_top/N10</data>
-            <data>1586</data>
+            <data>1585</data>
         </row>
         <row>
             <data>I_ips_ddr_top/u_ips_ddrc_top/mcdq_rdatapath/mcdq_prefetch_fifo/rst</data>
@@ -3073,11 +3078,11 @@
         <row>
             <data>I_ips_ddr_top/u_ddrc_rstn_sync/N0_1_rnmt</data>
             <data>I_ips_ddr_top/u_ddrc_rstn_sync/N0_1</data>
-            <data>1275</data>
+            <data>1281</data>
         </row>
         <row>
-            <data>N129_0</data>
-            <data>N129_0</data>
+            <data>N132_0</data>
+            <data>N132_0</data>
             <data>555</data>
         </row>
         <row>
@@ -3086,19 +3091,19 @@
             <data>297</data>
         </row>
         <row>
-            <data>u_cnn_top/u_gamma_judge/per_data_1 [6]</data>
-            <data>u_cnn_top/u_gamma_judge/per_data_1[6]</data>
-            <data>296</data>
-        </row>
-        <row>
             <data>u_cnn_top/u_gamma_judge/per_data_1 [5]</data>
             <data>u_cnn_top/u_gamma_judge/per_data_1[5]</data>
-            <data>296</data>
+            <data>295</data>
+        </row>
+        <row>
+            <data>u_cnn_top/u_gamma_judge/per_data_1 [6]</data>
+            <data>u_cnn_top/u_gamma_judge/per_data_1[6]</data>
+            <data>291</data>
         </row>
         <row>
             <data>I_ips_ddr_top/u_ddrphy_top/calib_done</data>
             <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_calib_top/ddrphy_main_ctrl/calib_done</data>
-            <data>283</data>
+            <data>286</data>
         </row>
         <row>
             <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/read_frame_href</data>
@@ -3106,18 +3111,8 @@
             <data>270</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [0]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[0]</data>
-            <data>260</data>
-        </row>
-        <row>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [0]</data>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[0]</data>
-            <data>260</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [0]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[0]</data>
             <data>260</data>
         </row>
         <row>
@@ -3126,28 +3121,18 @@
             <data>260</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [3]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[3]</data>
-            <data>259</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [0]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[0]</data>
+            <data>260</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [1]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[1]</data>
-            <data>259</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [0]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[0]</data>
+            <data>260</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [1]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[1]</data>
-            <data>259</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [2]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[2]</data>
-            <data>259</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [1]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[1]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [3]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[3]</data>
             <data>259</data>
         </row>
         <row>
@@ -3156,8 +3141,13 @@
             <data>259</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [3]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[3]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [2]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[2]</data>
+            <data>259</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [1]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[1]</data>
             <data>259</data>
         </row>
         <row>
@@ -3166,8 +3156,8 @@
             <data>259</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [2]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[2]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [3]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[3]</data>
             <data>259</data>
         </row>
         <row>
@@ -3176,8 +3166,8 @@
             <data>259</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [3]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[3]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [1]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[1]</data>
             <data>259</data>
         </row>
         <row>
@@ -3186,8 +3176,23 @@
             <data>259</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [5]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[5]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [1]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[1]</data>
+            <data>259</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [3]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[3]</data>
+            <data>259</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [2]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[2]</data>
+            <data>259</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [4]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[4]</data>
             <data>258</data>
         </row>
         <row>
@@ -3196,8 +3201,8 @@
             <data>258</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [5]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[5]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [4]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[4]</data>
             <data>258</data>
         </row>
         <row>
@@ -3206,23 +3211,23 @@
             <data>258</data>
         </row>
         <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [5]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[5]</data>
+            <data>258</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [5]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[5]</data>
+            <data>258</data>
+        </row>
+        <row>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/wr_addr [5]</data>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/wr_addr[5]</data>
             <data>258</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [4]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[4]</data>
-            <data>258</data>
-        </row>
-        <row>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [5]</data>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[5]</data>
-            <data>258</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/rd_addr [4]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/pgs_pciex4_fifo_ctrl/rd_addr[4]</data>
             <data>258</data>
         </row>
         <row>
@@ -3241,13 +3246,8 @@
             <data>202</data>
         </row>
         <row>
-            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT [4]</data>
-            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT[4]</data>
-            <data>202</data>
-        </row>
-        <row>
-            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT [2]</data>
-            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT[2]</data>
+            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT [6]</data>
+            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT[6]</data>
             <data>202</data>
         </row>
         <row>
@@ -3256,13 +3256,18 @@
             <data>202</data>
         </row>
         <row>
-            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT [6]</data>
-            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT[6]</data>
+            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT [3]</data>
+            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT[3]</data>
             <data>202</data>
         </row>
         <row>
-            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT [3]</data>
-            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT[3]</data>
+            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT [4]</data>
+            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT[4]</data>
+            <data>202</data>
+        </row>
+        <row>
+            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT [2]</data>
+            <data>u_cnn_top/conv_top/conv7/conv1_1/u_Matrix_Generate_3X3_8Bit/u_Line_Shift_RAM/RAMshfit_taps_u1/RAM_CNT[2]</data>
             <data>202</data>
         </row>
         <row>
@@ -3278,22 +3283,17 @@
         <row>
             <data>u_axi4_ctrl/tp_o [11]</data>
             <data>u_axi4_ctrl/cur_ch[1]</data>
-            <data>173</data>
+            <data>175</data>
         </row>
         <row>
             <data>u_axi4_ctrl/tp_o [10]</data>
             <data>u_axi4_ctrl/cur_ch[0]</data>
-            <data>171</data>
+            <data>173</data>
         </row>
         <row>
             <data>I_ips_ddr_top/u_ddrphy_top/rst_clk</data>
             <data>I_ips_ddr_top/u_ddrphy_top/u_rst_clk_bufg</data>
             <data>163</data>
-        </row>
-        <row>
-            <data>u_cnn_top/u_gamma_judge/per_data_1 [7]</data>
-            <data>u_cnn_top/u_gamma_judge/per_data_1[7]</data>
-            <data>156</data>
         </row>
         <row>
             <data>o_dma_write_data_req</data>
@@ -3321,9 +3321,9 @@
             <data>143</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/rd_en</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/N6</data>
-            <data>138</data>
+            <data>u_cnn_top/u_gamma_judge/per_data_1 [7]</data>
+            <data>u_cnn_top/u_gamma_judge/per_data_1[7]</data>
+            <data>142</data>
         </row>
         <row>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_cpld_tx_ctrl/N44</data>
@@ -3333,6 +3333,11 @@
         <row>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/rd_en</data>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/N6</data>
+            <data>137</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/rd_en</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/N6</data>
             <data>137</data>
         </row>
         <row>
@@ -3351,28 +3356,18 @@
             <data>130</data>
         </row>
         <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/N40</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/N40</data>
+            <data>128</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/_N31753</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/mem_0_0_we</data>
+            <data>128</data>
+        </row>
+        <row>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/ips2l_pcie_dma_bar0/U_ipm2l_sdpram_ips2l_pcie_dma_ram/addr_bus_rd_sel [1]</data>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/ips2l_pcie_dma_bar0/U_ipm2l_sdpram_ips2l_pcie_dma_ram/addr_bus_rd_ce[1]</data>
-            <data>128</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_mwr_tx_ctrl/N334</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_mwr_tx_ctrl/N334_inv</data>
-            <data>128</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/_N31549</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/mem_0_0_we</data>
-            <data>128</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/_N31677</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/mem_0_0_we</data>
-            <data>128</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/data_position [1]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/data_position[1]</data>
             <data>128</data>
         </row>
         <row>
@@ -3381,8 +3376,33 @@
             <data>128</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/_N31421</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/_N32009</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/mem_0_0_we</data>
+            <data>128</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/_N31881</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/mem_0_0_we</data>
+            <data>128</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/_N31625</data>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/mem_0_0_we</data>
+            <data>128</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/data_position [1]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/data_position[1]</data>
+            <data>128</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/data_position [1]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/data_position[1]</data>
+            <data>128</data>
+        </row>
+        <row>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/data_position [0]</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/data_position[0]</data>
             <data>128</data>
         </row>
         <row>
@@ -3396,28 +3416,13 @@
             <data>128</data>
         </row>
         <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/data_position [0]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/data_position[0]</data>
-            <data>128</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/data_position [1]</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_cpld_rd_ctrl/u_ips2l_pcie_dma_cpld_rd_ctrl/data_position[1]</data>
-            <data>128</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/N40</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/N40</data>
-            <data>128</data>
-        </row>
-        <row>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/_N31293</data>
-            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_tx_mwr_rd_ctrl/u_ips2l_pcie_dma_mwr_rd_ctrl/u_mwr_data_rd_fifo/genblk1.pgs_pciex4_fifo/ipm_distributed_sdpram_distributed_fifo/mem_0_0_we</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_mwr_tx_ctrl/N334</data>
+            <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_mwr_tx_ctrl/N334_inv</data>
             <data>128</data>
         </row>
         <row>
             <data>u_axi4_ctrl/N82</data>
-            <data>u_axi4_ctrl/N82_mux4_3</data>
+            <data>u_axi4_ctrl/N4574_7</data>
             <data>120</data>
         </row>
         <row>
@@ -3428,12 +3433,12 @@
         <row>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/mwr_tlp_tx</data>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_mwr_tx_ctrl/state_reg[2]</data>
-            <data>111</data>
+            <data>110</data>
         </row>
         <row>
-            <data>u_axi4_ctrl/N60</data>
-            <data>u_axi4_ctrl/N60_mux4_3</data>
-            <data>108</data>
+            <data>u_cnn_top/u_gamma_judge/per_data_1 [0]</data>
+            <data>u_cnn_top/u_gamma_judge/per_data_1[0]</data>
+            <data>110</data>
         </row>
         <row>
             <data>u_ips2l_pcie_dma/u_ips2l_pcie_dma_rx_top/u_ips2l_pcie_dma_tlp_rcv/state_reg [0]</data>
@@ -3441,8 +3446,8 @@
             <data>108</data>
         </row>
         <row>
-            <data>u_cnn_top/u_gamma_judge/per_data_1 [0]</data>
-            <data>u_cnn_top/u_gamma_judge/per_data_1[0]</data>
+            <data>u_axi4_ctrl/N60</data>
+            <data>u_axi4_ctrl/N4568_7</data>
             <data>108</data>
         </row>
         <row>
@@ -3456,23 +3461,18 @@
             <data>102</data>
         </row>
         <row>
-            <data>u_ov5640_top/cmos6_reg_config/N820_1</data>
-            <data>u_ov5640_top/cmos6_reg_config/N820_1</data>
-            <data>99</data>
-        </row>
-        <row>
-            <data>N225</data>
-            <data>N225</data>
+            <data>N228</data>
+            <data>N228</data>
             <data>97</data>
-        </row>
-        <row>
-            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_cpd_ctrl/N0</data>
-            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_cpd_ctrl/N0</data>
-            <data>95</data>
         </row>
         <row>
             <data>I_ips_ddr_top/u_ips_ddrc_top/mcdq_dcp_top/ctrl_back_rdy</data>
             <data>I_ips_ddr_top/u_ips_ddrc_top/mcdq_dcp_top/mcdq_dcp_back_ctrl/ctrl_back_rdy</data>
+            <data>95</data>
+        </row>
+        <row>
+            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_cpd_ctrl/N0</data>
+            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_cpd_ctrl/N0</data>
             <data>95</data>
         </row>
         <row>
@@ -3481,19 +3481,14 @@
             <data>94</data>
         </row>
         <row>
-            <data>u_axi4_ctrl/vsync_pulse_axi [0]</data>
-            <data>u_axi4_ctrl/N4554</data>
-            <data>91</data>
-        </row>
-        <row>
             <data>ntclkbufg_5</data>
             <data>clkbufg_5</data>
-            <data>91</data>
+            <data>92</data>
         </row>
         <row>
-            <data>u_axi4_ctrl/vsync_pulse_axi [1]</data>
-            <data>u_axi4_ctrl/N4556</data>
-            <data>86</data>
+            <data>u_axi4_ctrl/vsync_pulse_axi [0]</data>
+            <data>u_axi4_ctrl/N4554</data>
+            <data>90</data>
         </row>
         <row>
             <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[0].ddrphy_data_slice/debug_data [68]</data>
@@ -3501,7 +3496,7 @@
             <data>84</data>
         </row>
         <row>
-            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[1].ddrphy_data_slice/I_ips_ddr_top/debug_data_alias [137]</data>
+            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[1].ddrphy_data_slice/I_ips_ddr_top/debug_data [137]</data>
             <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[1].ddrphy_data_slice/ddrphy_dqs_rddata_align/ck_dqs_diff[1]</data>
             <data>84</data>
         </row>
@@ -3511,9 +3506,19 @@
             <data>81</data>
         </row>
         <row>
-            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[1].ddrphy_data_slice/I_ips_ddr_top/debug_data_alias [136]</data>
+            <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[1].ddrphy_data_slice/I_ips_ddr_top/debug_data [136]</data>
             <data>I_ips_ddr_top/u_ddrphy_top/ddrphy_slice_top/i_dqs_group[1].ddrphy_data_slice/ddrphy_dqs_rddata_align/ck_dqs_diff[0]</data>
             <data>81</data>
+        </row>
+        <row>
+            <data>u_axi4_ctrl/vsync_pulse_axi [1]</data>
+            <data>u_axi4_ctrl/N4556</data>
+            <data>80</data>
+        </row>
+        <row>
+            <data>u_axi4_ctrl/vsync_pulse_axi [2]</data>
+            <data>u_axi4_ctrl/N4558</data>
+            <data>80</data>
         </row>
     </table>
     <table id="device_map_resource_usage" title="Resource Usage Summary" column_number="4">
@@ -3531,13 +3536,13 @@
         </row>
         <row>
             <data>FF</data>
-            <data>41102</data>
+            <data>41159</data>
             <data>133200</data>
             <data>31</data>
         </row>
         <row>
             <data>LUT</data>
-            <data>11706</data>
+            <data>11735</data>
             <data>66600</data>
             <data>18</data>
         </row>
@@ -3549,7 +3554,7 @@
         </row>
         <row>
             <data>DRM</data>
-            <data>71.5</data>
+            <data>72</data>
             <data>155</data>
             <data>47</data>
         </row>
@@ -3681,8 +3686,8 @@
         <row>
             <data>0h:0m:18s</data>
             <data>0h:0m:19s</data>
-            <data>0h:0m:23s</data>
-            <data>796</data>
+            <data>0h:0m:29s</data>
+            <data>799</data>
             <data>WINDOWS 10 x86_64</data>
             <data>Unknown</data>
             <data>31</data>
@@ -4468,10 +4473,10 @@
             <data message="4">The instance clkbufg_0(GTP_CLKBUFG) has been inserted on the net video2_clk in design, driver pin O(instance cmos2_pclk_ibuf) -&gt; load pin CLK(instance u_axi4_ctrl/fifo_wr_rst_cnt[0][0]).</data>
         </row>
         <row>
-            <data message="4">The instance clkbufg_1(GTP_CLKBUFG) has been inserted on the net nt_cmos6_pclk in design, driver pin O(instance cmos6_pclk_ibuf) -&gt; load pin CLK(instance u_axi4_ctrl/fifo_wr_rst_cnt[2][0]).</data>
+            <data message="4">The instance clkbufg_1(GTP_CLKBUFG) has been inserted on the net nt_cmos5_pclk in design, driver pin O(instance cmos5_pclk_ibuf) -&gt; load pin CLK(instance u_axi4_ctrl/fifo_wr_rst_cnt[1][0]).</data>
         </row>
         <row>
-            <data message="4">The instance clkbufg_2(GTP_CLKBUFG) has been inserted on the net nt_cmos5_pclk in design, driver pin O(instance cmos5_pclk_ibuf) -&gt; load pin CLK(instance u_axi4_ctrl/fifo_wr_rst_cnt[1][0]).</data>
+            <data message="4">The instance clkbufg_2(GTP_CLKBUFG) has been inserted on the net nt_cmos6_pclk in design, driver pin O(instance cmos6_pclk_ibuf) -&gt; load pin CLK(instance u_axi4_ctrl/fifo_wr_rst_cnt[2][0]).</data>
         </row>
         <row>
             <data message="4">The instance clkbufg_3(GTP_CLKBUFG) has been inserted on the net pclk_div2 in design, driver pin P_TCLK2FABRIC(instance u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/x2.GTP_HSST_2LANE_TOP/U_GTP_HSSTLP_WRAPPER/CHANNEL0_ENABLE.U_GTP_HSSTLP_LANE0) -&gt; load pin CLK(instance black_sent_counter[0]).</data>
@@ -4480,16 +4485,16 @@
             <data message="4">The instance clkbufg_4(GTP_CLKBUFG) has been inserted on the net pclk in design, driver pin P_TCLK2FABRIC(instance u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/x2.GTP_HSST_2LANE_TOP/U_GTP_HSSTLP_WRAPPER/CHANNEL1_ENABLE.U_GTP_HSSTLP_LANE1) -&gt; load pin CLK(instance pclk_led).</data>
         </row>
         <row>
-            <data message="4">The instance clkbufg_5(GTP_CLKBUFG) has been inserted on the net true_50M in design, driver pin CLKOUT0(instance the_instance_name/u_gpll) -&gt; load pin CLK(instance u_uart_lcd/bytes_seen[0]).</data>
+            <data message="4">The instance clkbufg_5(GTP_CLKBUFG) has been inserted on the net true_50M in design, driver pin CLKOUT0(instance the_instance_name/u_gpll) -&gt; load pin CLK(instance u_uart_lcd/auto_brake_enable_reg).</data>
         </row>
         <row>
-            <data message="4">The instance clkbufg_6(GTP_CLKBUFG) has been inserted on the net u_ov5640_top/clk_50M in design, driver pin CLKOUT2(instance u_ov5640_top/u_pll/u_gpll) -&gt; load pin CLK(instance u_ov5640_top/cmos1cmos2_power_on_delay/camera_pwnd_reg).</data>
+            <data message="4">The instance clkbufg_6(GTP_CLKBUFG) has been inserted on the net nt_spi_clk in design, driver pin O(instance spi_clk_ibuf) -&gt; load pin I(instance u_fspi_slave_top/u_fspi_slave/N173).</data>
+        </row>
+        <row>
+            <data message="4">The instance clkbufg_7(GTP_CLKBUFG) has been inserted on the net u_ov5640_top/clk_50M in design, driver pin CLKOUT2(instance u_ov5640_top/u_pll/u_gpll) -&gt; load pin CLK(instance u_ov5640_top/cmos1cmos2_power_on_delay/camera_pwnd_reg).</data>
         </row>
         <row>
             <data message="6">DeviceMap-2011: The net nt_free_clk has both clock instance I_ips_ddr_top/u_ddrphy_top/u_clkbufm(GTP_CLKBUFM) loader and other clock pin loader.</data>
-        </row>
-        <row>
-            <data message="4">The instance clkbufg_7(GTP_CLKBUFG) has been inserted on the net nt_spi_clk in design, driver pin O(instance spi_clk_ibuf) -&gt; load pin I(instance u_fspi_slave_top/u_fspi_slave/N105).</data>
         </row>
         <row>
             <data message="4">The instance clkbufg_8(GTP_CLKBUFG) has been inserted on the net u_ov5640_top/clk_25M in design, driver pin CLKOUT1(instance u_ov5640_top/u_pll/u_gpll) -&gt; load pin CLK(instance u_ov5640_top/cmos2_reg_config/clock_20k).</data>
@@ -4498,19 +4503,19 @@
             <data message="4">The instance clkbufg_9(GTP_CLKBUFG) has been inserted on the net u_fspi_slave_top/wr_clk in design, driver pin CLKOUT0(instance u_fspi_slave_top/clk_gen_inst/u_gpll) -&gt; load pin I(instance u_fspi_slave_top/u_spi_ram_crtl/N178).</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: N136_2_1/gateop, insts:24.</data>
+            <data message="4">Infer CARRY group, base inst: N139_2_1/gateop, insts:24.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: N217_0_1/gateop, insts:22.</data>
+            <data message="4">Infer CARRY group, base inst: N220_0_1/gateop, insts:22.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: N229_0_1/gateop, insts:26.</data>
+            <data message="4">Infer CARRY group, base inst: N232_0_1/gateop, insts:26.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: N302_0_1/gateop, insts:11.</data>
+            <data message="4">Infer CARRY group, base inst: N305_0_1/gateop, insts:11.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: N398_5/gateop, insts:2.</data>
+            <data message="4">Infer CARRY group, base inst: N401_5/gateop, insts:2.</data>
         </row>
         <row>
             <data message="4">Infer CARRY group, base inst: u_axi4_ctrl/N214_1_1/gateop, insts:9.</data>
@@ -4585,16 +4590,16 @@
             <data message="4">Infer CARRY group, base inst: u_hmi_control_synchronizer/N21/gateop, insts:2.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: u_hmi_control_synchronizer/N23_8/gateop, insts:2.</data>
-        </row>
-        <row>
             <data message="4">Infer CARRY group, base inst: u_refclk_perstn_debounce/N15_1_1/gateop, insts:15.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: u_remote_direction_arbiter/N12_4/gateop, insts:2.</data>
+            <data message="4">Infer CARRY group, base inst: u_remote_direction_arbiter/N13_3/gateop, insts:2.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: u_remote_stop_controller/N8/gateop, insts:2.</data>
+            <data message="4">Infer CARRY group, base inst: u_remote_direction_arbiter/N17_3/gateop, insts:2.</data>
+        </row>
+        <row>
+            <data message="4">Infer CARRY group, base inst: u_remote_stop_controller/N8_1/gateop, insts:2.</data>
         </row>
         <row>
             <data message="4">Infer CARRY group, base inst: u_uart_lcd/N39_1_1/gateop, insts:18.</data>
@@ -4699,7 +4704,7 @@
             <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_mwr_tx_ctrl/N29.lt_0/gateop, insts:4.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_mwr_tx_ctrl/N35_1.fsub_0/gateop, insts:9.</data>
+            <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_mwr_tx_ctrl/N35_1.fsub_1/gateop, insts:8.</data>
         </row>
         <row>
             <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_dma/u_ips2l_pcie_dma_tx_top/u_ips2l_pcie_dma_mwr_tx_ctrl/N52[5]/gateop, insts:2.</data>
@@ -5074,7 +5079,7 @@
             <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_rx_rst_mcrsw/rx_rst_fsm_multi_sw_lane/N36_1_1/gateop, insts:15.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_rx_rst_mcrsw/rx_rst_fsm_multi_sw_lane/N62_12/gateop, insts:2.</data>
+            <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_rx_rst_mcrsw/rx_rst_fsm_multi_sw_lane/N62_14/gateop, insts:2.</data>
         </row>
         <row>
             <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_rx_rst_mcrsw/rx_rst_fsm_multi_sw_lane/N64_1_0/gateop, insts:10.</data>
@@ -5092,10 +5097,10 @@
             <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_tx_rst_mcrsw/tx_rst_fsm_multi_sw_lane/N19_1_1/gateop, insts:11.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_tx_rst_mcrsw/tx_rst_fsm_multi_sw_lane/N463_46/gateop, insts:2.</data>
+            <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_tx_rst_mcrsw/tx_rst_fsm_multi_sw_lane/N412_8/gateop, insts:2.</data>
         </row>
         <row>
-            <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_tx_rst_mcrsw/tx_rst_fsm_multi_sw_lane/N463_66/gateop, insts:3.</data>
+            <data message="4">Infer CARRY group, base inst: u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_HSSTLP_PCIE_SOFT_PHY/hsst_pciex4_rst/hsst_tx_rst_mcrsw/tx_rst_fsm_multi_sw_lane/hsst_fsm_fsm[3:0]_68/gateop, insts:2.</data>
         </row>
         <row>
             <data message="4">Infer CARRY group, base inst: I_ips_ddr_top/u_ips_ddrc_top/mcdq_dcp_top/mcdq_dcp_buf/A_ips2l_distributed_fifo/u_ips2l_distributed_fifo_distributed_fifo_v1_0/u_ips2l_distributed_fifo_ctr/N24_1.fsub_0/gateop, insts:7.</data>

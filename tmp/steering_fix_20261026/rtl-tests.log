@@ -1,0 +1,30 @@
+Running-test_remote_stop_controller
+PASS: persistent automatic STOP, forced REARM, re-detection, stale FSPI and CDC
+- fpga/fpga_pcie_ov5640/sim/test_remote_stop_controller.v:225: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 250ms; walltime 1.700 s; speed 147.075 ms/s
+- Verilator: cpu 1.700 s on 1 threads; allocated 6 MB
+Running-test_hmi_uart
+PASS: HMI frame 30 90 04 xx decodes A-E and release
+- fpga/fpga_pcie_ov5640/sim/test_hmi_uart.v:170: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 4s; walltime 37.050 s; speed 107.966 ms/s
+- Verilator: cpu 37.049 s on 1 threads; allocated 6 MB
+Running-test_hmi_auto_brake_switch
+PASS: UART FF/EE + SPI81 read + SPI00 register4 write + CDC + latched STOP pad + REARM, with legacy controls
+- fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:328: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 37us; walltime 0.004 s; speed 9.745 ms/s
+- Verilator: cpu 0.004 s on 1 threads; allocated 7 MB
+Running-test_hmi_serial_release
+PASS: serial GO/BACK/LEFT/RIGHT/STOP, persistent brake and forced REARM integration
+- fpga/fpga_pcie_ov5640/sim/test_hmi_serial_release.v:220: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 14ms; walltime 0.182 s; speed 78.873 ms/s
+- Verilator: cpu 0.182 s on 1 threads; allocated 6 MB
+Running-test_fspi_control
+PASS: quad SPI writes update all five control registers
+- fpga/fpga_pcie_ov5640/sim/test_fspi_control.v:110: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 4us; walltime 0.000 s; speed 11.393 ms/s
+- Verilator: cpu 0.000 s on 1 threads; allocated 6 MB

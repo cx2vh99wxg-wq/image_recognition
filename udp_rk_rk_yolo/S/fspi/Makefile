@@ -18,6 +18,8 @@ BUILDDIR = build
 TARGET_APP = $(BUILDDIR)/vehicle_control
 TARGET_TEST = $(BUILDDIR)/test_brake_control
 TARGET_SWITCH_TEST = $(BUILDDIR)/test_auto_brake_switch
+TARGET_LANE_TEST = $(BUILDDIR)/test_lane_steering
+TARGET_TRANSPORT_TEST = $(BUILDDIR)/test_smdt_transport
 
 # 源文件（添加共享内存源文件）
 FSPI_SOURCES = $(SRCDIR)/fspi_module.c
@@ -81,7 +83,13 @@ $(TARGET_TEST): test_brake_control.c $(INCDIR)/brake_policy.h | $(BUILDDIR)
 $(TARGET_SWITCH_TEST): test_auto_brake_switch.c $(SRCDIR)/main.c $(SRCDIR)/fspi_module.c $(INCDIR)/fspi_module.h $(INCDIR)/brake_policy.h ../include/shared_memory.h | $(BUILDDIR)
 	$(CC) $(CFLAGS) -Wextra -ffunction-sections -fdata-sections $(INCLUDES) $< -Wl,--gc-sections -o $@
 
-test: app $(TARGET_TEST) $(TARGET_SWITCH_TEST)
+$(TARGET_LANE_TEST): test_lane_steering.c $(SRCDIR)/main.c $(SRCDIR)/fspi_module.c $(INCDIR)/fspi_module.h $(INCDIR)/brake_policy.h ../include/shared_memory.h | $(BUILDDIR)
+	$(CC) $(CFLAGS) -Wextra -ffunction-sections -fdata-sections $(INCLUDES) $< -Wl,--gc-sections -o $@
+
+$(TARGET_TRANSPORT_TEST): test_smdt_transport.c $(SRCDIR)/fspi_module.c $(INCDIR)/fspi_module.h | $(BUILDDIR)
+	$(CC) $(CFLAGS) -Wextra $(INCLUDES) $< -o $@
+
+test: app $(TARGET_TEST) $(TARGET_SWITCH_TEST) $(TARGET_LANE_TEST) $(TARGET_TRANSPORT_TEST)
 	@echo "=== 编译测试完成 ==="
 	@echo "可执行文件: $(TARGET_APP)"
 	@if [ -f "$(TARGET_APP)" ]; then \
@@ -91,8 +99,10 @@ test: app $(TARGET_TEST) $(TARGET_SWITCH_TEST)
 		echo "编译失败!"; \
 		exit 1; \
 	fi
-	./$(TARGET_TEST)
-	./$(TARGET_SWITCH_TEST)
+	"$(abspath $(TARGET_TEST))"
+	"$(abspath $(TARGET_SWITCH_TEST))"
+	"$(abspath $(TARGET_LANE_TEST))"
+	"$(abspath $(TARGET_TRANSPORT_TEST))"
 
 # 运行程序 (需要管理员权限访问SPI设备)
 run: app

@@ -1,0 +1,3 @@
+Vtest_hmi_auto_brake_switch___024root__Slow.o: \
+ Vtest_hmi_auto_brake_switch___024root__Slow.cpp \
+ Vtest_hmi_auto_brake_switch__pch.h

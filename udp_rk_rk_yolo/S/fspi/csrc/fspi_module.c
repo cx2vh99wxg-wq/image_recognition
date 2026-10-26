@@ -22,7 +22,7 @@
 #define SPI_DEVICE "/dev/spidev4.0"
 #define SPI_SPEED 24000000
 #define SPI_MODE_FLAGS (SPI_CPOL | SPI_CPHA)
-#define SPI_TRANSFER_SIZE 5
+#define SPI_TRANSFER_SIZE 3
 #define SPI_CYCLE_COUNT 1
 #define SPI_BITS_PER_WORD 8
 #define SPI_DELAY_US 0
@@ -135,17 +135,16 @@ static int perform_transfer(int fd, uint8_t *tx_buf, uint8_t *rx_buf, SpiTestCon
     return ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
 }
 
-/* FPGA 首字节是写命令 0x00；地址与数据必须在同一次片选期间跟随。
- * 尾随空字节给跨时钟域的寄存器控制器留出提交写入的时间。 */
+/* 本板SMDT控制器会在写事务前自动发送00命令。
+ * 用户缓冲区只放地址高、地址低、数据，三字节对应线上四字节。
+ * 重复添加00会让FPGA将地址低字节写入reg0，而非目标寄存器。 */
 static int spi_write_register(int fd, uint16_t addr, uint8_t data)
 {
     uint8_t tx_buffer[SPI_TRANSFER_SIZE];
 
-    tx_buffer[0] = 0x00;
-    tx_buffer[1] = (uint8_t)(addr >> 8);
-    tx_buffer[2] = (uint8_t)addr;
-    tx_buffer[3] = data;
-    tx_buffer[4] = 0x00;
+    tx_buffer[0] = (uint8_t)(addr >> 8);
+    tx_buffer[1] = (uint8_t)addr;
+    tx_buffer[2] = data;
 
     g_config.spi_mode |= SPI_TX_QUAD;
     g_config.spi_mode &= ~SPI_RX_QUAD;
@@ -155,8 +154,10 @@ static int spi_write_register(int fd, uint16_t addr, uint8_t data)
         return -1;
     }
 
-    if (perform_transfer(fd, tx_buffer, NULL, &g_config) < 0)
+    int transferred = perform_transfer(fd, tx_buffer, NULL, &g_config);
+    if (transferred != SPI_TRANSFER_SIZE)
     {
+        if (transferred >= 0) errno = EIO;
         perror("Write register failed");
         return -1;
     }
@@ -164,9 +165,8 @@ static int spi_write_register(int fd, uint16_t addr, uint8_t data)
     return 0;
 }
 
-/* 地址 0 用于 HMI 选择码。FPGA 在收到 0x80 后立即驱动四线数据总线，
- * 因此不能再发送地址字节；命令与接收必须保持同一次片选。
- * 其他地址仍走原先的读取路径，以免改变现有接口的非 HMI 用途。 */
+/* 地址0用于HMI选择码。SMDT在接收事务前自动发送80，直接接收即可。
+ * 其他地址保留原有接口；该旧接口不代表真实方向寄存器读回。 */
 static int spi_read_addr_data(int fd, uint16_t addr, uint8_t *data)
 {
     if (!data) {
@@ -174,7 +174,9 @@ static int spi_read_addr_data(int fd, uint16_t addr, uint8_t *data)
         return -1;
     }
 
-    if (addr != 0) {
+    if (addr == 0) return spi_read_direct(fd, data);
+
+    {
         uint8_t tx_buffer[2] = {(uint8_t)(addr >> 8), (uint8_t)addr};
         uint8_t rx_data = 0;
         g_config.spi_mode |= SPI_TX_QUAD;
@@ -205,38 +207,6 @@ static int spi_read_addr_data(int fd, uint16_t addr, uint8_t *data)
         return 0;
     }
 
-    uint8_t command = 0x80;
-    uint8_t response = 0xff;
-    struct spi_ioc_transfer transfers[2] = {{0}, {0}};
-
-    g_config.spi_mode |= SPI_TX_QUAD | SPI_RX_QUAD;
-    if (configure_spi_interface(fd, &g_config) != 0) {
-        return -1;
-    }
-
-    transfers[0].tx_buf = (unsigned long)&command;
-    transfers[0].len = 1;
-    transfers[0].speed_hz = g_config.speed_hz;
-    transfers[0].bits_per_word = g_config.bits_per_word;
-    transfers[0].tx_nbits = 4;
-    transfers[0].delay_usecs = 1;
-    transfers[0].cs_change = 0;
-
-    transfers[1].rx_buf = (unsigned long)&response;
-    transfers[1].len = 1;
-    transfers[1].speed_hz = g_config.speed_hz;
-    transfers[1].bits_per_word = g_config.bits_per_word;
-    transfers[1].rx_nbits = 4;
-    transfers[1].cs_change = 0;
-
-    int transferred = ioctl(fd, SPI_IOC_MESSAGE(2), transfers);
-    if (transferred != 2) {
-        if (transferred >= 0) errno = EIO;
-        return -1;
-    }
-
-    *data = response;
-    return 0;
 }
 
 /* 无需地址阶段，直接切换到四线接收并读取一字节。 */
@@ -254,8 +224,10 @@ static int spi_read_direct(int fd, uint8_t *data)
     uint32_t original_size = g_config.transfer_size;
     g_config.transfer_size = 1;
 
-    if (perform_transfer(fd, NULL, &rx_data, &g_config) < 0)
+    int transferred = perform_transfer(fd, NULL, &rx_data, &g_config);
+    if (transferred != 1)
     {
+        if (transferred >= 0) errno = EIO;
         perror("Direct read failed");
         g_config.transfer_size = original_size;
         return -1;
@@ -412,6 +384,7 @@ int fspi_init(void)
     printf("  Device: %s\n", g_config.device);
     printf("  Speed: %u Hz (%u KHz)\n", g_config.speed_hz, g_config.speed_hz / 1000);
     printf("FSPI initialized successfully\n");
+    printf("  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\n");
     return 0;
 }
 

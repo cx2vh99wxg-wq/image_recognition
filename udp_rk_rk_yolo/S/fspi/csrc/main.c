@@ -31,8 +31,8 @@
 #include <sys/time.h>
 
 // 方向盘转向时间参数(微秒)
-#define TIME_NEUTRAL_TO_LEFT   500000   // 中间→左 (0.8秒)
-#define TIME_NEUTRAL_TO_RIGHT  600000   // 中间→右 (0.8秒)
+#define TIME_NEUTRAL_TO_LEFT   500000   // 中间→左 (0.5秒，保持原参数)
+#define TIME_NEUTRAL_TO_RIGHT  600000   // 中间→右 (0.6秒，保持原参数)
 #define TIME_LEFT_TO_NEUTRAL   400000   // 左→中间 (0.4秒)
 #define TIME_RIGHT_TO_NEUTRAL  400000   // 右→中间 (0.4秒)
 #define TIME_LEFT_TO_RIGHT     1500000  // 左→右 (1.5秒)
@@ -55,6 +55,7 @@ static int last_brake_value = -1;
 static uint32_t next_brake_release_refresh = 0;
 static int raw_request_active = 0;
 static int turn_pulse_active = 0;
+static int turn_pulse_interrupted = 0;
 static uint32_t next_brake_attach = 0;
 static int direction_release_failed = 0;
 
@@ -102,13 +103,14 @@ static int monitor_emergency_brake(void)
         person_detected ? PERSON_REQUEST : brake_enable == 0 ? HOLD_OR_INFERENCE_FAULT : CLEAR_REQUEST;
     static int previous_reason = -1;
 
-    /* FPGA 复位时方向寄存器默认高电平。每次清除软件制动请求前仍重写
-     * 四个方向为高电平，丢弃旧方向命令；任一路失败就保留请求并在下轮重试。 */
+    /* 只在制动请求由有效变清除或释放失败重试时丢弃旧方向。
+     * reg4 的每秒心跳不能顺便写方向0..3，否则会中断转向或外部前进命令。 */
     int refresh_release = !required &&
         (last_brake_value != 1 || direction_release_failed ||
          (!turn_pulse_active &&
           (!clock_ok || now >= next_brake_release_refresh)));
-    if (refresh_release) {
+    if (direction_release_failed || (!required && last_brake_value != 1)) {
+        if (turn_pulse_active) turn_pulse_interrupted = 1;
         int directions_released = 1;
         for (int i = 0; i < 4; ++i) {
             if (fspi_write_data(i, 1) != 0) {
@@ -181,10 +183,11 @@ static int monitor_emergency_brake(void)
 static int wait_with_brake_checks(unsigned int duration_us)
 {
     turn_pulse_active = 1;
+    turn_pulse_interrupted = 0;
     while (duration_us > 0 && g_running) {
         unsigned int slice = duration_us < 20000 ? duration_us : 20000;
         usleep(slice);
-        if (monitor_emergency_brake()) {
+        if (monitor_emergency_brake() || turn_pulse_interrupted) {
             turn_pulse_active = 0;
             return -1;
         }
@@ -213,74 +216,56 @@ void signal_handler(int sig) {
     }
 }
 
-// 转到左边
-void turn_to_left() {
-    if (wheel_position == WHEEL_LEFT) return;
-
+/* 保持原机械标定时长。先释放左右寄存器，再产生一个新的低电平脉冲，
+ * 使FPGA能在STOP/人工接管后重新接受FSPI；失败不得记成已完成转向。
+ * wheel_position只是按脉冲估计的位置，并非方向盘反馈。 */
+static void apply_turn_pulse(int command, unsigned int duration_us, WheelPosition target)
+{
     if (monitor_emergency_brake()) return;
-
-    if (wheel_position == WHEEL_RIGHT) {
-        vehicle_control(2, 1);
-        int completed = wait_with_brake_checks(TIME_LEFT_TO_RIGHT) == 0;
-        vehicle_control(2, 0);
-        if (completed) {
-            wheel_position = WHEEL_LEFT;
-        }
+    int released = vehicle_control(2, 0) == 0;
+    if (vehicle_control(3, 0) != 0) released = 0;
+    if (!released) {
+        direction_release_failed = 1;
+        return;
+    }
+    if (vehicle_control(command, 1) != 0) {
+        // 无回读的写失败不能证明引脚仍为高；立即尝试释放并安排后续重试。
+        vehicle_control(command, 0);
+        direction_release_failed = 1;
+        return;
+    }
+    int completed = wait_with_brake_checks(duration_us) == 0;
+    if (vehicle_control(command, 0) != 0) {
+        direction_release_failed = 1;
+        completed = 0;
+    }
+    if (completed) {
+        wheel_position = target;
+        printf("[转向链路] reg%d低脉冲%ums完成并释放；估计位置=%s（非硬件反馈）\n",
+               command, duration_us / 1000,
+               target == WHEEL_LEFT ? "LEFT" : target == WHEEL_RIGHT ? "RIGHT" : "NEUTRAL");
     } else {
-        vehicle_control(2, 1);
-        int completed = wait_with_brake_checks(TIME_NEUTRAL_TO_LEFT) == 0;
-        vehicle_control(2, 0);
-        if (completed) {
-            wheel_position = WHEEL_LEFT;
-        }
+        printf("[转向链路] reg%d脉冲中断或写入失败，未更新估计位置，下轮重试\n", command);
     }
 }
 
-// 转到右边
-void turn_to_right() {
-    if (wheel_position == WHEEL_RIGHT) return;
-
-    if (monitor_emergency_brake()) return;
-
-    if (wheel_position == WHEEL_LEFT) {
-        vehicle_control(3, 1);
-        int completed = wait_with_brake_checks(TIME_LEFT_TO_RIGHT) == 0;
-        vehicle_control(3, 0);
-        if (completed) {
-            wheel_position = WHEEL_RIGHT;
-        }
-    } else {
-        vehicle_control(3, 1);
-        int completed = wait_with_brake_checks(TIME_NEUTRAL_TO_RIGHT) == 0;
-        vehicle_control(3, 0);
-        if (completed) {
-            wheel_position = WHEEL_RIGHT;
-        }
-    }
+void turn_to_left(void) {
+    if (wheel_position != WHEEL_LEFT)
+        apply_turn_pulse(2, wheel_position == WHEEL_RIGHT ? TIME_LEFT_TO_RIGHT : TIME_NEUTRAL_TO_LEFT,
+                         WHEEL_LEFT);
 }
 
-// 回中
-void turn_to_neutral() {
-    if (wheel_position == WHEEL_NEUTRAL) return;
+void turn_to_right(void) {
+    if (wheel_position != WHEEL_RIGHT)
+        apply_turn_pulse(3, wheel_position == WHEEL_LEFT ? TIME_LEFT_TO_RIGHT : TIME_NEUTRAL_TO_RIGHT,
+                         WHEEL_RIGHT);
+}
 
-    if (monitor_emergency_brake()) return;
-
-    if (wheel_position == WHEEL_LEFT) {
-        vehicle_control(3, 1);
-        if (wait_with_brake_checks(TIME_LEFT_TO_NEUTRAL) != 0) {
-            vehicle_control(3, 0);
-            return;
-        }
-    } else {
-        vehicle_control(2, 1);
-        if (wait_with_brake_checks(TIME_RIGHT_TO_NEUTRAL) != 0) {
-            vehicle_control(2, 0);
-            return;
-        }
-    }
-    vehicle_control(2, 0);
-    vehicle_control(3, 0);
-    wheel_position = WHEEL_NEUTRAL;
+void turn_to_neutral(void) {
+    if (wheel_position == WHEEL_LEFT)
+        apply_turn_pulse(3, TIME_LEFT_TO_NEUTRAL, WHEEL_NEUTRAL);
+    else if (wheel_position == WHEEL_RIGHT)
+        apply_turn_pulse(2, TIME_RIGHT_TO_NEUTRAL, WHEEL_NEUTRAL);
 }
 
 // 停止所有车辆运动
@@ -328,7 +313,7 @@ int main(int argc, char *argv[]) {
     (void)argc;
     (void)argv;
     printf("=== 车辆控制程序 (弯道检测自动转向) ===\n");
-    printf("版本: 8.0 (弯道检测自动转向 + 紧急制动)\n");
+    printf("版本: 8.2 (SMDT原生三字节FSPI + 按轴转向 + 制动心跳隔离)\n");
     printf("作者: 科研轮转\n");
     printf("功能: 弯道检测自动左右转 + 人员检测紧急制动 + 显示控制\n");
     printf("工作模式说明:\n");
@@ -583,6 +568,8 @@ int main(int argc, char *argv[]) {
 
         // 只在值发生变化时记录
         if (current_mode_value != last_read_value) {
+            printf("[转向链路] HMI选择码=0x%02X；自动转向写reg2/3，最终引脚由FPGA手动优先及STOP仲裁\n",
+                   current_mode_value);
             last_read_value = current_mode_value;
         }
 

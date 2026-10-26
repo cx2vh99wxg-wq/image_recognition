@@ -1,0 +1,45 @@
+Running-test_direction_arbiter
+PASS: latched HMI traction, momentary independent steering, opposite switch, STOP clear and fresh-press rearm
+- fpga/fpga_pcie_ov5640/sim/test_direction_arbiter.v:256: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 26us; walltime 0.000 s; speed 142.668 ms/s
+- Verilator: cpu 0.000 s on 1 threads; allocated 6 MB
+Running-test_hmi_serial_release
+PASS: real UART latched GO/BACK, independent momentary steering, STOP clear and automatic brake/REARM
+- fpga/fpga_pcie_ov5640/sim/test_hmi_serial_release.v:232: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 16ms; walltime 0.209 s; speed 78.644 ms/s
+- Verilator: cpu 0.209 s on 1 threads; allocated 6 MB
+Running-test_hmi_auto_brake_switch
+PASS: UART FF/EE + SPI81 read + SPI00 register4 write + CDC + latched STOP pad + REARM, with legacy controls
+- fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:329: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 37us; walltime 0.004 s; speed 11.771 ms/s
+- Verilator: cpu 0.003 s on 1 threads; allocated 7 MB
+Running-test_remote_stop_controller
+PASS: persistent automatic STOP, forced REARM, re-detection, stale FSPI and CDC
+- fpga/fpga_pcie_ov5640/sim/test_remote_stop_controller.v:225: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 250ms; walltime 1.701 s; speed 147.011 ms/s
+- Verilator: cpu 1.701 s on 1 threads; allocated 6 MB
+Running-test_hmi_uart
+PASS: HMI frame 30 90 04 xx decodes A-E and release
+- fpga/fpga_pcie_ov5640/sim/test_hmi_uart.v:170: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 4s; walltime 36.914 s; speed 108.361 ms/s
+- Verilator: cpu 36.914 s on 1 threads; allocated 6 MB
+Running-test_fspi_control
+PASS: quad SPI writes update all five control registers
+- fpga/fpga_pcie_ov5640/sim/test_fspi_control.v:110: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 4us; walltime 0.000 s; speed 13.017 ms/s
+- Verilator: cpu 0.000 s on 1 threads; allocated 6 MB
+Running-test_smdt_transport
+REPRO: host reg4=1 becomes reg0=4, GO active-low bit becomes 0
+REPRO: host LEFT=0 becomes reg0=2; LEFT remains released
+REPRO: host RIGHT=0 becomes reg0=3; GO released and RIGHT remains released
+PASS: prefixed-controller model reproduces unintended GO and absent steering; SDK payload selects correct registers
+- fpga/fpga_pcie_ov5640/sim/test_smdt_transport.v:55: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 4us; walltime 0.000 s; speed 13.934 ms/s
+- Verilator: cpu 0.000 s on 1 threads; allocated 6 MB

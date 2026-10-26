@@ -1,0 +1,20 @@
+Executing : cfg_connect -ip 127.0.0.1 -port 65420
+Connecting to server[127.0.0.1 : 65420].
+Connect to server[127.0.0.1 : 65420] successfully.
+COMMAND[check version information] execute successfully, takes 0.0 secs.
+The cable List : 
+Cable index 0:USB Cable II/fffffffffffffffe 
+
+COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+Executing : cfg_connect -ip 127.0.0.1 -port 65420 successfully.
+Executing : cfg_scan_chain
+PANGO USB CABLE II cable driver: D2XX DLL
+PG2L100H
+This device configure situation (done bit): 1
+COMMAND[Open config cable] execute successfully, takes 0.4 secs.
+Executing : cfg_scan_chain successfully.
+Executing : cfg_debug_operate -mode 5 -device_index 0 -value D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026/pins_idle.txt -file D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_lane_steering_20261026.sbit
+W: Configuration-4002: Tcl parameter check failed: The input value format is illegal because of not hexadecimal number.
+E: Configuration-0009: Operation error :
+ cfg_debug_operate command can't be exec.
+0

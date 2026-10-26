@@ -1,0 +1,3 @@
+cfg_help cfg_connect
+cfg_help cfg_scan_chain
+cfg_help cfg_set_cable_property

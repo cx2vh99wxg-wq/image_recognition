@@ -1,0 +1,54 @@
+底栏视频输入帧率（2026-10-25）
+
+显示格式：VIDEO IN  S 17.6  M 30.0 FPS（数字为示例，程序实时计算）。
+
+S：S端PCIe完整图像的输入更新率。
+M：M端图像经UDP完整接收并交给S端共享内存的输入更新率。
+底栏已取消RENDER帧率。真实渲染/可见新帧频率仍保留在终端[PERF DISPLAY]日志中。
+
+算法
+1. S和M各自统计；首个校验成功的frame_id只建立基线。
+2. 累计uint32_t(新frame_id - 上次frame_id)，跳过N帧就计N，而非GUI读一次计一帧。
+3. 每约1秒以CLOCK_MONOTONIC的实际经过时间结算：FPS = 帧号增量合计 / 秒数。
+4. 计算位于输入轮询循环，与X11渲染次数、显示模式和方向箭头独立。
+5. 无新帧的窗口计0；断流、重连或帧号回退时重建基线；正常32位回绕保留。
+6. 程序启动和重新连接后的首秒用于建立统计窗口，初始显示0.0。
+
+含义边界
+当前frame_id由软件在完整图像发布时递增，不能代表每颗OV5640的硬件曝光序号。
+S端数值包含采集/识别通路的影响，M端数值包含传输/接收的影响。
+因此标签使用VIDEO IN。严格测量各OV5640的拍摄帧率，需要将FPGA的VSYNC帧计数导出到软件；本次没有修改FPGA、传感器配置、采集或制动逻辑。
+
+本地修改文件（相对本目录）
+  main.cpp
+  include/dashboard_ui.h
+  include/video_input_fps.h（新增，必须一起复制）
+  Makefile
+  tests/test_video_input_fps.cpp（新增测试）
+
+拷贝到S板
+将以上源码按原目录结构覆盖到 /home/linaro/S/x11/csrc/。
+保持现有include/shared_memory.h、字体、car.png等工程配套文件。
+在S板执行：
+  cd /home/linaro/S/x11/csrc
+  make test-fps
+  make -j2
+
+重新启动S端程序后，新底栏生效。
+若整套系统当前通过make run运行，关闭主窗口会触发整套S端清理；不要只关闭窗口再单独打开显示。需要重启时应在S工程根目录正常停止、完整启动：
+  cd /home/linaro/S
+  make stop
+  make run
+
+本次板内安装状态
+S板已通过COM7完成源码同步、test-fps测试和ARM原生编译；新版已安装到
+  /home/linaro/S/x11/csrc/build/eight_camera_renderer
+安装文件与编译产物的SHA256一致：
+  13da50e77a5a590243b958ccdaa77ecd160ae4996ca40bb508b980e46db77d9f
+安装后已执行sync，采集、UDP接收与原显示进程仍在运行。
+当前运行中的旧显示进程没有重启，因此新底栏在下次正常启动整套S端时生效。
+原板内源码和程序备份位于 /home/linaro/S/perf_build/20261025-video-fps/before/。
+
+验证
+单元测试覆盖GUI取样12次而输入18/30帧、重复帧、停流、重连大帧号、帧号回退、32位回绕、实际时间间隔和零初始化；ASan/UBSan通过。
+GUI验证覆盖9模式和7种方向提示：改变渲染FPS不会改变底栏；改变S/M输入FPS只改变底栏。现有方向箭头与布局保持不变。

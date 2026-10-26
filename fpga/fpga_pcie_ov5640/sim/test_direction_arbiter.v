@@ -27,7 +27,7 @@ module test_direction_arbiter;
 
   task step;
     begin
-      @(posedge clk);
+      repeat (16) @(posedge clk);
       #1;
     end
   endtask
@@ -37,8 +37,7 @@ module test_direction_arbiter;
     input [8*80-1:0] label;
     begin
       if (released !== expected) begin
-        $display("FAIL %0s: released=%b expected=%b at %0t", label, released, expected, $time);
-        $finish;
+        $fatal(1, "FAIL %0s: released=%b expected=%b at %0t", label, released, expected, $time);
       end
     end
   endtask
@@ -56,8 +55,7 @@ module test_direction_arbiter;
     #1;
     expect_released(4'he, "fresh FSPI GO press");
 
-    // Simulate stale GO and BACK FSPI writes. HMI release 0 must not reveal
-    // those old lows, even though the HMI decoder itself has released.
+    // HMI commands persist after 00 and override stale FSPI traction.
     @(negedge clk);
     fspi_released = 4'hc;
     hmi_code = 4'ha;
@@ -66,9 +64,9 @@ module test_direction_arbiter;
     @(negedge clk);
     hmi_code = 4'h0;
     #1;
-    expect_released(4'hf, "HMI GO release opens all contacts immediately");
+    expect_released(4'he, "GO remains latched after HMI release");
     repeat (3) step();
-    expect_released(4'hf, "stale FSPI GO and BACK remain suppressed");
+    expect_released(4'he, "stale FSPI BACK cannot override latched GO");
 
     @(negedge clk);
     hmi_code = 4'hb;
@@ -77,53 +75,184 @@ module test_direction_arbiter;
     @(negedge clk);
     hmi_code = 4'h0;
     #1;
-    expect_released(4'hf, "HMI BACK release opens all contacts");
+    expect_released(4'hd, "BACK remains latched and replaces GO");
 
     // LEFT and RIGHT use the same handoff rule.
     @(negedge clk);
     hmi_code = 4'hc;
     step();
-    expect_released(4'hb, "HMI LEFT press");
+    expect_released(4'h9, "HMI LEFT press preserves latched BACK");
     @(negedge clk);
     hmi_code = 4'h0;
     #1;
-    expect_released(4'hf, "HMI LEFT release");
+    expect_released(4'hd, "HMI LEFT release preserves latched BACK");
     @(negedge clk);
     hmi_code = 4'hd;
     step();
-    expect_released(4'h7, "HMI RIGHT press");
+    expect_released(4'h5, "HMI RIGHT press preserves latched BACK");
     @(negedge clk);
     hmi_code = 4'h0;
     #1;
-    expect_released(4'hf, "HMI RIGHT release");
+    expect_released(4'hd, "HMI RIGHT release preserves latched BACK");
 
     // Only an all-idle FSPI state hands authority back. Its next press works.
     @(negedge clk);
     fspi_released = 4'hf;
     step();
-    expect_released(4'hf, "FSPI idle clears stale-command hold");
+    expect_released(4'hd, "FSPI idle never clears the HMI BACK latch");
+    @(negedge clk);
+    hmi_code = 4'he;
+    movement_blocked = 1'b1;
+    step();
+    expect_released(4'hf, "manual STOP clears traction latch");
+    @(negedge clk);
+    hmi_code = 4'h0;
+    movement_blocked = 1'b0;
+    step();
+    expect_released(4'hf, "STOP release cannot restart traction");
     @(negedge clk);
     fspi_released = 4'hb;
     #1;
     expect_released(4'hb, "new FSPI LEFT press after handoff");
+
+    // Lane steering and manual traction must coexist on independent axes.
+    @(negedge clk);
+    hmi_code = 4'ha;
+    step();
+    expect_released(4'ha, "HMI GO plus FSPI LEFT drives forward-left");
+    @(negedge clk);
+    fspi_released = 4'hf;
+    hmi_code = 4'h0;
+    step();
+    expect_released(4'he, "GO persists with released HMI and FSPI");
+    @(negedge clk);
+    hmi_code = 4'he;
+    @(posedge clk); #1;
+    @(negedge clk);
+    hmi_code = 4'h0;
+    step();
+    expect_released(4'he, "unfiltered transient E cannot erase latched GO");
+    @(negedge clk);
+    hmi_code = 4'hc;
+    step();
+    expect_released(4'ha, "momentary HMI LEFT preserves latched GO");
+    @(negedge clk);
+    hmi_code = 4'h0;
+    step();
+    expect_released(4'he, "HMI LEFT release preserves latched GO");
+    @(negedge clk);
+    hmi_code = 4'hd;
+    step();
+    expect_released(4'h6, "momentary HMI RIGHT preserves latched GO");
+    @(negedge clk);
+    hmi_code = 4'h0;
+    step();
+    expect_released(4'he, "HMI RIGHT release preserves latched GO");
+    @(negedge clk);
+    fspi_released = 4'h7;
+    step();
+    expect_released(4'h6, "lane changes LEFT to RIGHT without releasing HMI GO");
+    @(negedge clk);
+    hmi_code = 4'hb;
+    step();
+    expect_released(4'h5, "HMI BACK plus FSPI RIGHT drives reverse-right");
+    @(negedge clk);
+    fspi_released = 4'hb;
+    step();
+    expect_released(4'h9, "HMI BACK plus FSPI LEFT drives reverse-left");
+    @(negedge clk);
+    fspi_released = 4'h8; // stale GO/BACK and active automatic LEFT
+    hmi_code = 4'h0;
+    step();
+    expect_released(4'h9, "released HMI retains BACK and lane LEFT");
+    @(negedge clk);
+    hmi_code = 4'hd;
+    step();
+    expect_released(4'h5, "manual RIGHT overrides automatic LEFT while BACK persists");
+    @(negedge clk);
+    hmi_code = 4'h0;
+    step();
+    expect_released(4'hd, "steering release masks old LEFT while BACK persists");
+    @(negedge clk);
+    fspi_released = 4'hc; // steering idle while stale traction still held
+    step();
+    @(negedge clk);
+    fspi_released = 4'h8;
+    step();
+    expect_released(4'h9, "fresh lane LEFT rearms independently while BACK persists");
+    @(negedge clk);
+    fspi_released = 4'hf;
+    step();
+    @(negedge clk);
+    hmi_code = 4'ha;
+    fspi_released = 4'h7;
+    step();
+    expect_released(4'h6, "forward-right before brake");
 
     // Pedestrian braking and HMI E must always release movement contacts.
     @(negedge clk);
     movement_blocked = 1'b1;
     #1;
     expect_released(4'hf, "brake releases all directions");
+    step();
     @(negedge clk);
     movement_blocked = 1'b0;
     hmi_code = 4'he;
     #1;
     expect_released(4'hf, "HMI E releases all directions");
+    step();
     @(negedge clk);
     hmi_code = 4'h0;
     fspi_direction_armed = 1'b0;
     #1;
     expect_released(4'hf, "disarmed FSPI cannot move vehicle");
 
-    $display("PASS: HMI direction release suppresses stale FSPI and fresh FSPI still works");
+    // A key observed during braking cannot reappear when braking clears.
+    @(negedge clk);
+    movement_blocked = 1'b1;
+    hmi_code = 4'ha;
+    step();
+    @(negedge clk);
+    movement_blocked = 1'b0;
+    step();
+    expect_released(4'hf, "held GO from a blocked interval cannot restart traction");
+    @(negedge clk);
+    hmi_code = 4'h0;
+    step();
+    @(negedge clk);
+    hmi_code = 4'ha;
+    step();
+    expect_released(4'he, "a fresh GO press is accepted after unlock");
+    @(negedge clk);
+    hmi_code = 4'he;
+    movement_blocked = 1'b1;
+    step();
+    @(negedge clk);
+    hmi_code = 4'h0;
+    movement_blocked = 1'b0;
+    step();
+    expect_released(4'hf, "manual STOP cancels GO until another explicit command");
+
+    // One-clock intermediate A/B during a multi-bit CDC is not a press.
+    @(negedge clk);
+    hmi_code = 4'h2;
+    step();
+    @(negedge clk);
+    hmi_code = 4'ha;
+    @(posedge clk); #1;
+    @(negedge clk);
+    hmi_code = 4'h8;
+    step();
+    expect_released(4'hf, "transient A between camera selections cannot latch GO");
+    @(negedge clk);
+    hmi_code = 4'hb;
+    @(posedge clk); #1;
+    @(negedge clk);
+    hmi_code = 4'h0;
+    step();
+    expect_released(4'hf, "transient B cannot latch BACK");
+
+    $display("PASS: latched HMI traction, momentary independent steering, opposite switch, STOP clear and fresh-press rearm");
     $finish;
   end
 endmodule

@@ -1,0 +1,83 @@
+HMI前后保持、左右瞬时独立控制（2026-10-26）
+
+行为
+1. FPGA上电或复位后，GO/BACK均为高电平，无HMI前后运动请求。
+2. 点一次GO：GO保持低、BACK为高。松开GO时HMI仍发送原来的00，但不清除前进状态。
+3. 点一次BACK：先前的GO无效，改为GO高、BACK持续低。松开BACK不清除后退状态。
+4. 点原STOP/S/R（E）：清除前后保持，GO/BACK回高；STOP触点及S/R解锁行为沿用原实现。
+5. LEFT/RIGHT仍按下有效、松开释放；按下或松开左右都不改变已保存的前后状态。
+   可以先点GO再按LEFT/RIGHT得到左前/右前，或先点BACK再按LEFT/RIGHT得到左退/右退。
+6. 自动STOP仍最高优先，会清除前后保持。人工S/R解锁后不恢复旧GO/BACK，需要重新点按。
+7. 同向重复点按保持原方向，不作为开关翻转；GO/BACK互斥。
+
+仅修改FPGA仲裁模块
+文件：source/image_pcie_capture.v内的remote_direction_arbiter。
+新增空闲/前进/后退三状态，只在稳定的A/B命令出现后切换。
+00、C/D以及显示选择码都不清除前后状态。
+A/B需连续稳定采样后才接受，防止多位跨时钟短暂跳变误触发持续运动。
+STOP采用既有滤波后的movement_blocked，不把一个瞬态E码永久记成停止。
+制动期间收到的按键会被消费；解除制动后不会因旧按键电平而重新起步。
+
+保持的部分
+HMI工程及30 90 04 A/B/C/D/E/00报文没有修改，不需要重新下载串口屏工程。
+uart_lcd.v解码器、AUTO的FF/EE协议、STOP锁存及REARM模块没有修改。
+LEFT/RIGHT输出与修改前在21024种组合/时序下逐周期一致，共比较202651次采样。
+S端ARM继续使用已实测成功的8.2三字节SMDT程序；本次未改ARM和M端代码。
+HMI原触摸箭头提示仍反映当前按键，未新增FPGA保持状态的回读或界面显示。
+
+生效及操作
+保持状态在S端FPGA内，因此需要更新S端FPGA固件；M端和ARM 8.2程序继续使用。
+新文件名包含image_pcie_capture_hmi_traction_latch_20261026。
+正式下载文件和时序结果将在本文件的“生成与部署”段记录。
+上板前放开HMI上的GO/BACK，初测保持车轮架空，结束运动使用STOP/S/R。
+ARM程序退出不等于HMI的STOP按键；该保持状态由FPGA复位或STOP清除。
+
+验证顺序
+上电不触摸：GO=1，BACK=1。
+GO按下再松开：GO=0，BACK=1。
+LEFT按下/松开及RIGHT按下/松开：GO/BACK保持，左右对应触点按下低、松开释放。
+BACK按下再松开：GO=1，BACK=0；再操作左右仍保持后退。
+STOP/S/R按下再松开：GO=1，BACK=1，不自动恢复。
+再点GO后触发原自动STOP：前后均释放；S/R解除后仍释放，直至重新点GO/BACK。
+
+已通过的本地验证
+真实UART接收、完整帧/残缺帧、GO/BACK保持、方向切换、左右独立及STOP清除。
+AUTO FF/EE、人员请求STOP锁存、强制S/R解锁、旧命令不复发。
+短暂A/B不触发保持，短暂E不清除保持；按键稳定后正常接受。
+FSPI五个寄存器、SMDT自动前导/三字节主机数据回归。
+左右与原成功版本的21024场景等价对照，前后互斥检查。
+
+备份与回退
+修改前源码、测试及默认sbit/sfc已备份到tmp/hmi_traction_latch_20261026/before/。
+若回退本次保持功能，使用之前已实测成功的image_pcie_capture_lane_steering_20261026.sfc。
+回退FPGA时仍保留ARM 8.2的SMDT三字节修复，不要恢复旧五字节组包。
+日志、完整测试和对照记录位于tmp/hmi_traction_latch_20261026/。
+
+生成与部署
+本地PDS综合、布局布线、比特流生成完成，退出码0；SFC转换成功，opcode 59。
+器件为PG2L100H-6 FBG484，沿用原project.pds设置。
+文件位于project/generate_bitstream/：
+  image_pcie_capture_hmi_traction_latch_20261026.sbit（临时下载）
+  image_pcie_capture_hmi_traction_latch_20261026.sfc（固化）
+默认image_pcie_capture.sbit/.sfc也已更新为同一版。
+尚未向开发板下载或固化，当前板内仍是之前已验证的版本。
+按原PDS流程把本次SFC固化到S端并重新上电后，本次保持逻辑才生效。
+M端FPGA、HMI工程以及S/M端ARM程序均不需要更新。
+
+本次源码范围检查通过：除remote_direction_arbiter外，顶层主模块及其余STOP/REARM
+等子模块与改动前相同；UART解码和S端8.2程序源文件SHA256均保持不变。
+完整RTL回归及左右等价对照通过，尚无新版固件的现场验收结果。
+
+时序限制
+当前和修改前的报告均为Some Constraints Violated，主要是摄像头/DDR跨时钟路径。
+本次没有修改这些数据通路或约束，不能宣称全工程时序收敛。
+当前Slow Corner setup：ref_clk余量36.001ns，FSPI内部时钟余量0.542ns，
+pclk余量0.019ns，pclk_div2余量0.097ns；Fast Corner hold均为正。
+完整报告保存在tmp/hmi_traction_latch_20261026/timing_after.rtr，
+摘要在同目录下载文件旁的image_pcie_capture_hmi_traction_latch_20261026_timing.txt。
+
+SHA256
+源码image_pcie_capture.v：464ad2772431474050110b0a9276483dfbeb68b01f699d2bfb85ffbbe70bafd0
+sbit：e33b7f31eb5733c6aa52d36a34c7d84b7af54ad8daf5da8e00bb01f95633c57e
+sfc：499d3c04b30219c37bea02090b51c17c2677632ad6d0311d52e2d0a7c595119f
+保留的原成功lane_steering版sfc：a7581693c7ad8d32f67172ba5254f4647ec4c42cfed912d17491fe8b3cb3a93c

@@ -1,0 +1,8 @@
+REPRO: host reg4=1 becomes reg0=4, GO active-low bit becomes 0
+REPRO: host LEFT=0 becomes reg0=2; LEFT remains released
+REPRO: host RIGHT=0 becomes reg0=3; GO released and RIGHT remains released
+PASS: prefixed-controller model reproduces unintended GO and absent steering; SDK payload selects correct registers
+- /mnt/d/Study_Object/image_recognition/image_recognition/tmp/spi_protocol_20261026/test_smdt_prefix.v:54: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 4us; walltime 0.000 s; speed 14.844 ms/s
+- Verilator: cpu 0.000 s on 1 threads; allocated 6 MB

@@ -384,8 +384,8 @@ module image_pcie_capture #(
       .fspi_direction_armed (fspi_direction_armed)
   );
 
-  // A released HMI direction must not expose an older active FSPI register.
-  // Return control to FSPI only after all four direction registers are idle.
+  // HMI overrides its own axis only: GO/BACK may coexist with lane steering.
+  // Release of an HMI axis cannot expose a stale FSPI command on that axis.
   wire go_released;
   wire back_released;
   wire left_released;
@@ -1236,9 +1236,11 @@ vga_ctrl u_vga_ctrl
 
 endmodule
 
-// HMI directions have priority while pressed. Their release frame is 0, so a
-// previously asserted FSPI bit must not immediately press the same contact
-// again. Wait for an all-idle FSPI state before accepting a fresh FSPI press.
+// Traction and steering arbitrate independently. HMI GO/BACK must not mask
+// automatic LEFT/RIGHT. Each axis retains the original stale-command guard:
+// after manual release, wait for that axis's FSPI bits to be idle.
+// HMI traction is latched until STOP or a new opposite-direction press.
+// Steering still follows its original momentary press/release behavior.
 module remote_direction_arbiter (
     input  wire       clk,
     input  wire       rst_n,
@@ -1256,25 +1258,79 @@ module remote_direction_arbiter (
   wire hmi_left  = (hmi_code == 4'hc);
   wire hmi_right = (hmi_code == 4'hd);
   wire hmi_neutral = (hmi_code == 4'he);
-  wire hmi_direction_valid = hmi_go | hmi_back | hmi_left | hmi_right;
-  wire fspi_idle = &fspi_released;
+  wire hmi_traction = hmi_go | hmi_back;
+  wire hmi_steering = hmi_left | hmi_right;
 
-  reg hmi_release_hold;
+  localparam [1:0] TRACTION_IDLE = 2'b00;
+  localparam [1:0] TRACTION_GO   = 2'b01;
+  localparam [1:0] TRACTION_BACK = 2'b10;
+  reg [1:0] hmi_traction_latched;
+  reg [3:0] previous_hmi_code;
+  reg [2:0] traction_stable_count;
+  reg traction_press_consumed;
+  wire hmi_code_changed = (hmi_code != previous_hmi_code);
+
+  // STOP clears the stored intent, including automatic STOP. Tracking the
+  // received code while blocked prevents a pre-STOP held key from restarting
+  // traction after REARM; the operator must release and press GO/BACK again.
   always @(posedge clk or negedge rst_n) begin
-    if (!rst_n)
-      hmi_release_hold <= 1'b0;
-    else if (hmi_direction_valid)
-      hmi_release_hold <= 1'b1;
-    else if (fspi_idle)
-      hmi_release_hold <= 1'b0;
+    if (!rst_n) begin
+      hmi_traction_latched <= TRACTION_IDLE;
+      previous_hmi_code <= 4'h0;
+      traction_stable_count <= 3'd0;
+      traction_press_consumed <= 1'b0;
+    end else begin
+      previous_hmi_code <= hmi_code;
+      if (hmi_code_changed)
+        traction_stable_count <= 3'd0;
+      else if (traction_stable_count != 3'd7)
+        traction_stable_count <= traction_stable_count + 3'd1;
+
+      // Use the existing filtered STOP signal. A transient intermediate E
+      // during a multi-bit CDC must not erase a valid traction latch.
+      if (movement_blocked) begin
+        hmi_traction_latched <= TRACTION_IDLE;
+        traction_press_consumed <= 1'b1;
+      end else if (hmi_code_changed) begin
+        traction_press_consumed <= 1'b0;
+      end else if (traction_stable_count == 3'd7 && !traction_press_consumed) begin
+        traction_press_consumed <= 1'b1;
+        if (hmi_go)
+          hmi_traction_latched <= TRACTION_GO;
+        else if (hmi_back)
+          hmi_traction_latched <= TRACTION_BACK;
+      end
+    end
   end
 
-  wire hmi_owns_direction = hmi_direction_valid | hmi_neutral | hmi_release_hold;
+  wire latched_go   = (hmi_traction_latched == TRACTION_GO);
+  wire latched_back = (hmi_traction_latched == TRACTION_BACK);
+
+  reg hmi_traction_hold;
+  reg hmi_steering_hold;
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      hmi_traction_hold <= 1'b0;
+      hmi_steering_hold <= 1'b0;
+    end else begin
+      if (hmi_traction | hmi_neutral)
+        hmi_traction_hold <= 1'b1;
+      else if (&fspi_released[1:0])
+        hmi_traction_hold <= 1'b0;
+      if (hmi_steering | hmi_neutral)
+        hmi_steering_hold <= 1'b1;
+      else if (&fspi_released[3:2])
+        hmi_steering_hold <= 1'b0;
+    end
+  end
+
+  wire hmi_owns_traction = latched_go | latched_back | hmi_traction | hmi_neutral | hmi_traction_hold;
+  wire hmi_owns_steering = hmi_steering | hmi_neutral | hmi_steering_hold;
   wire fspi_blocked = ~fspi_direction_armed;
-  assign go_released    = movement_blocked | (hmi_owns_direction ? ~hmi_go    : (fspi_blocked | fspi_released[0]));
-  assign back_released  = movement_blocked | (hmi_owns_direction ? ~hmi_back  : (fspi_blocked | fspi_released[1]));
-  assign left_released  = movement_blocked | (hmi_owns_direction ? ~hmi_left  : (fspi_blocked | fspi_released[2]));
-  assign right_released = movement_blocked | (hmi_owns_direction ? ~hmi_right : (fspi_blocked | fspi_released[3]));
+  assign go_released    = movement_blocked | (hmi_owns_traction ? ~latched_go   : (fspi_blocked | fspi_released[0]));
+  assign back_released  = movement_blocked | (hmi_owns_traction ? ~latched_back : (fspi_blocked | fspi_released[1]));
+  assign left_released  = movement_blocked | (hmi_owns_steering ? ~hmi_left  : (fspi_blocked | fspi_released[2]));
+  assign right_released = movement_blocked | (hmi_owns_steering ? ~hmi_right : (fspi_blocked | fspi_released[3]));
 endmodule
 
 // Only the new persistent enable bit crosses into the existing STOP domain.

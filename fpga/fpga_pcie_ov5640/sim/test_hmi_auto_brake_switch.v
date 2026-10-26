@@ -162,14 +162,14 @@ module test_hmi_auto_brake_switch;
       #10 master_drive = 1'b1;
     end
   endtask
-  task check_direction(input [7:0] code, input [3:0] expected);
+  task check_direction(input [7:0] code, input [3:0] expected, input [3:0] after_release);
     begin
       uart_command(8'h04, code);
       check(released == expected && !stop_pressed && !auto_enable,
             "legacy direction press remains independent while auto is disabled");
       uart_command(8'h04, 8'h00);
-      check(released == 4'hf && !stop_pressed && !auto_enable,
-            "legacy direction release remains momentary");
+      check(released == after_release && !stop_pressed && !auto_enable,
+            "traction persists while steering release remains momentary");
     end
   endtask
   task write_spi_register(input [15:0] address, input [7:0] value);
@@ -214,10 +214,10 @@ module test_hmi_auto_brake_switch;
     check(!stop_pressed && released == 4'hf && !auto_enable,
           "REARM release unlocks while switch remains OFF");
 
-    check_direction(8'h0a, 4'he);
-    check_direction(8'h0b, 4'hd);
-    check_direction(8'h0c, 4'hb);
-    check_direction(8'h0d, 4'h7);
+    check_direction(8'h0a, 4'he, 4'he);
+    check_direction(8'h0b, 4'hd, 4'hd);
+    check_direction(8'h0c, 4'h9, 4'hd);
+    check_direction(8'h0d, 4'h5, 4'hd);
     uart_command(8'h04, 8'h0e);
     check(stop_pressed && released == 4'hf && !auto_enable,
           "manual E still brakes when automatic braking is disabled");
@@ -231,7 +231,8 @@ module test_hmi_auto_brake_switch;
     check(auto_enable && !stop_pressed && released == 4'he && hmi_code == 4'ha,
           "enabling without a brake request leaves an existing GO unchanged");
     uart_command(8'h04, 8'h00);
-    check(auto_enable && !stop_pressed, "legacy release does not switch automatic braking OFF");
+    check(auto_enable && !stop_pressed && released == 4'he,
+          "release retains GO without switching automatic braking OFF");
     raw_brake_request = 1'b1;
     settle();
     check(stop_pressed, "fresh request latches while enabled");

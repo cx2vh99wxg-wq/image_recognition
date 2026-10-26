@@ -8,3 +8,150 @@
 [Debug] [2026-10-22 21:06:26] begin to get device info from CFG file...
 [Debug] [2026-10-22 21:06:26] end to get device info from CFG file...
 [Info] [2026-10-22 21:06:26] /***************************End Configration***************************/
+[Info] [2026-10-26 12:36:16] /***************************Start Configuration***************************/
+[Info] [2026-10-26 12:36:16] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-26 12:36:16] Version: 146967
+[Info] [2026-10-26 12:40:12] /***************************Start Configuration***************************/
+[Info] [2026-10-26 12:40:12] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-26 12:40:12] Version: 146967
+[Info] [2026-10-26 12:40:13] Current Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Info] [2026-10-26 12:40:13] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Info] [2026-10-26 12:40:13] /***************************End Configration***************************/
+[Info] [2026-10-26 12:41:10] /***************************Start Configuration***************************/
+[Info] [2026-10-26 12:41:10] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-26 12:41:10] Version: 146967
+[Info] [2026-10-26 12:41:11] Current Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Info] [2026-10-26 12:41:11] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Info] [2026-10-26 12:41:11] /***************************End Configration***************************/
+[Info] [2026-10-26 12:42:25] /***************************Start Configuration***************************/
+[Info] [2026-10-26 12:42:25] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-26 12:42:25] Version: 146967
+[Info] [2026-10-26 12:42:26] Current Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Info] [2026-10-26 12:42:26] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Error] [2026-10-26 12:42:26] The connection is disconnected, please connect to server first.
+[Error] [2026-10-26 12:42:26] cfg_scan_chain command can't be exec
+[Info] [2026-10-26 12:42:26] /***************************End Configration***************************/
+[Info] [2026-10-26 12:43:42] /***************************Start Configuration***************************/
+[Info] [2026-10-26 12:43:42] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-26 12:43:42] Version: 146967
+[Info] [2026-10-26 12:43:43] Current Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Info] [2026-10-26 12:43:43] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Info] [2026-10-26 12:43:43] /***************************End Configration***************************/
+[Info] [2026-10-26 12:47:23] /***************************Start Configuration***************************/
+[Info] [2026-10-26 12:47:23] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-26 12:47:23] Version: 146967
+[Info] [2026-10-26 12:47:24] Current Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Info] [2026-10-26 12:47:24] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Debug] [2026-10-26 12:47:24] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-26 12:47:24] end to check the cfg_connect exec condition.
+[Debug] [2026-10-26 12:47:24] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-26 12:47:24] Client Local Address:10.17.104.77
+[Debug] [2026-10-26 12:47:24] Client Local Address:172.24.144.1
+[Debug] [2026-10-26 12:47:24] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-26 12:47:24] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-26 12:47:24] Finish.
+[Info] [2026-10-26 12:47:24] Connect server succeeded
+[Debug] [2026-10-26 12:47:24] Send RPC:1
+[Debug] [2026-10-26 12:47:24] Send cmd [check version information:40004] OK
+[Debug] [2026-10-26 12:47:24] Send RPC:2
+[Debug] [2026-10-26 12:47:24] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-26 12:47:24] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-26 12:47:25] COMMAND[get_cable_paras] execute successfully, takes 1.0 secs.
+[Debug] [2026-10-26 12:47:25] cfg_connect succeed.
+[Debug] [2026-10-26 12:47:26] Send RPC:3
+[Debug] [2026-10-26 12:47:26] Send cmd [Open config cable:20001] OK
+[Error] [2026-10-26 12:47:26] fail to exec Open config cable cmd...
+[Error] [2026-10-26 12:47:27] cfg_scan_chain failed.
+[Info] [2026-10-26 12:47:27] /***************************End Configration***************************/
+[Info] [2026-10-26 12:49:12] /***************************Start Configuration***************************/
+[Info] [2026-10-26 12:49:12] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-26 12:49:12] Version: 146967
+[Info] [2026-10-26 12:49:13] Current Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Info] [2026-10-26 12:49:13] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Debug] [2026-10-26 12:49:13] begin to get device info from CFG file...
+[Debug] [2026-10-26 12:49:13] end to get device info from CFG file...
+[Debug] [2026-10-26 12:49:13] begin to get device info from CFG file...
+[Debug] [2026-10-26 12:49:13] end to get device info from CFG file...
+[Info] [2026-10-26 12:49:14] /***************************End Configration***************************/
+[Info] [2026-10-26 17:39:18] /***************************Start Configuration***************************/
+[Info] [2026-10-26 17:39:18] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-26 17:39:18] Version: 146967
+[Info] [2026-10-26 17:39:19] Current Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Info] [2026-10-26 17:39:19] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Info] [2026-10-26 17:39:19] /***************************End Configration***************************/
+[Info] [2026-10-26 17:40:19] /***************************Start Configuration***************************/
+[Info] [2026-10-26 17:40:19] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-26 17:40:19] Version: 146967
+[Info] [2026-10-26 17:40:20] Current Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Info] [2026-10-26 17:40:20] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Debug] [2026-10-26 17:40:20] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-26 17:40:20] end to check the cfg_connect exec condition.
+[Debug] [2026-10-26 17:40:20] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-26 17:40:20] Client Local Address:10.17.104.77
+[Debug] [2026-10-26 17:40:20] Client Local Address:172.24.144.1
+[Debug] [2026-10-26 17:40:20] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-26 17:40:20] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-26 17:40:20] Finish.
+[Info] [2026-10-26 17:40:20] Connect server succeeded
+[Debug] [2026-10-26 17:40:20] Send RPC:1
+[Debug] [2026-10-26 17:40:20] Send cmd [check version information:40004] OK
+[Debug] [2026-10-26 17:40:20] Send RPC:2
+[Debug] [2026-10-26 17:40:20] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-26 17:40:20] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-26 17:40:21] COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-10-26 17:40:21] cfg_connect succeed.
+[Debug] [2026-10-26 17:40:22] Send RPC:3
+[Debug] [2026-10-26 17:40:22] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-26 17:40:22] begin the exec of open cable cmd...
+[Debug] [2026-10-26 17:40:22] Begin to deal with chain from server...
+[Debug] [2026-10-26 17:40:22] Begin to set user chain...
+[Debug] [2026-10-26 17:40:22] End to set user chain.
+[Debug] [2026-10-26 17:40:22] end the exec of open cable cmd.
+[Debug] [2026-10-26 17:40:22] COMMAND[Open config cable] execute successfully, takes 0.5 secs.
+[Debug] [2026-10-26 17:40:23] cfg_scan_chain succeed.
+[Debug] [2026-10-26 17:40:23] begin to check the cfg_debug_operate exec condition.
+[Error] [2026-10-26 17:40:23] cfg_debug_operate command can't be exec
+[Info] [2026-10-26 17:40:23] /***************************End Configration***************************/
+[Info] [2026-10-26 17:42:15] /***************************Start Configuration***************************/
+[Info] [2026-10-26 17:42:15] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-26 17:42:15] Version: 146967
+[Info] [2026-10-26 17:42:16] Current Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Info] [2026-10-26 17:42:16] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/tmp/steering_fix_20261026
+[Debug] [2026-10-26 17:42:16] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-26 17:42:16] end to check the cfg_connect exec condition.
+[Debug] [2026-10-26 17:42:16] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-26 17:42:16] Client Local Address:10.17.104.77
+[Debug] [2026-10-26 17:42:16] Client Local Address:172.24.144.1
+[Debug] [2026-10-26 17:42:16] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-26 17:42:16] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-26 17:42:16] Finish.
+[Info] [2026-10-26 17:42:16] Connect server succeeded
+[Debug] [2026-10-26 17:42:16] Send RPC:1
+[Debug] [2026-10-26 17:42:16] Send cmd [check version information:40004] OK
+[Debug] [2026-10-26 17:42:16] Send RPC:2
+[Debug] [2026-10-26 17:42:16] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-26 17:42:16] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-26 17:42:17] COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-10-26 17:42:17] cfg_connect succeed.
+[Debug] [2026-10-26 17:42:18] Send RPC:3
+[Debug] [2026-10-26 17:42:18] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-26 17:42:18] begin the exec of open cable cmd...
+[Debug] [2026-10-26 17:42:18] Begin to deal with chain from server...
+[Debug] [2026-10-26 17:42:18] Begin to set user chain...
+[Debug] [2026-10-26 17:42:18] End to set user chain.
+[Debug] [2026-10-26 17:42:18] end the exec of open cable cmd.
+[Debug] [2026-10-26 17:42:18] COMMAND[Open config cable] execute successfully, takes 0.4 secs.
+[Debug] [2026-10-26 17:42:19] cfg_scan_chain succeed.
+[Debug] [2026-10-26 17:42:20] begin to check the cfg_debug_operate exec condition.
+[Error] [2026-10-26 17:42:20] cfg_debug_operate command can't be exec
+[Info] [2026-10-26 17:42:20] /***************************End Configration***************************/
+[Info] [2026-10-26 20:23:40] /***************************Start Configuration***************************/
+[Info] [2026-10-26 20:23:40] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-26 20:23:40] Version: 146967
+[Info] [2026-10-26 20:23:41] Current Path: D:/Study_Object/image_recognition/image_recognition/tmp/hmi_traction_latch_20261026
+[Info] [2026-10-26 20:23:41] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/tmp/hmi_traction_latch_20261026
+[Debug] [2026-10-26 20:23:41] begin to get device info from CFG file...
+[Debug] [2026-10-26 20:23:41] end to get device info from CFG file...
+[Debug] [2026-10-26 20:23:41] begin to get device info from CFG file...
+[Debug] [2026-10-26 20:23:41] end to get device info from CFG file...
+[Info] [2026-10-26 20:23:41] /***************************End Configration***************************/

@@ -1,0 +1,91 @@
+弯道识别到FSPI方向控制链路修复（2026-10-26）
+
+【后续修正】本文是第一轮8.1记录。实机对照已确认SMDT控制器自动添加00/80前导，
+8.1的五字节用户组包不适用，已改为三字节并部署8.2。
+最终根因、当前部署和验证请看同目录“SMDT协议修复说明_20261026.txt”。
+下面“未重启/未烧录”等内容为当时的历史状态，不代表当前状态。
+
+当前完成状态
+1. 本地生产源码已直接修改，没有修改HMI工程、UART按键帧或按键值。
+2. S板COM7在线；对应源码已同步、ARM原生编译和软件测试通过。
+3. 新程序已安装到 /home/linaro/S/fspi/build/vehicle_control，并执行sync。
+4. 当前运行的旧控制进程没有重启；采集、UDP接收、X11显示保持运行。
+5. PDS已生成新版sbit和sfc，但尚未烧录FPGA。下载服务扫描明确报告：
+   No PANGO USB CABLE II cable was found in system.
+   当前DEBUG串口只能访问ARM系统，不能代替FPGA的JTAG下载器。
+   因此尚不能声称实车转向已验证；下面的下载、重启是生效必需步骤。
+
+定位到的问题
+一、FPGA的remote_direction_arbiter原来将四个方向统一交给HMI。
+只要HMI处于GO或BACK，LEFT/RIGHT也被HMI接管，FSPI的reg2/3即使写0也不能拉低方向引脚。
+同一个全局释放保持位还可能让另一个轴的旧命令阻止自动转向重新接管。
+X11绿色车道提示只说明车道结果被读取，不能证明FSPI写入或方向触点实际生效。
+
+二、FSPI控制程序在无人状态下每秒刷新reg4=1时，还会同时写reg0..3=1。
+这类制动请求心跳不应清除方向命令；旧逻辑会取消已经存在的FSPI前后命令。
+当制动请求在转向脉冲中途清除时，旧代码也可能提前释放转向，却仍记为已经转到位。
+
+三、旧转向函数不检查开始和结束写入是否成功；SPI写函数也把不足5字节的正返回值当作成功。
+这会让内部wheel_position与实际发送情况不一致，并抑制后续同方向重试。
+
+具体修改
+FPGA：source/image_pcie_capture.v中的remote_direction_arbiter按轴仲裁。
+  前后轴：HMI GO/BACK优先，只接管前后。
+  转向轴：HMI LEFT/RIGHT优先，只接管左右；没有手动转向时接收FSPI车道转向。
+  两个轴分别保留“手动释放后，等待对应FSPI寄存器先全部释放”的旧命令保护。
+  STOP锁存、REARM强制解锁、AUTO开关最终门控、引脚极性和开漏方式保持原实现。
+  组合结果可为GO+LEFT、GO+RIGHT、BACK+LEFT、BACK+RIGHT。
+
+S端：fspi/csrc/main.c。
+  周期制动请求刷新只写reg4；仅请求由有效转清除或发生方向写故障时清除旧方向。
+  每次转向先释放reg2/3，再发新脉冲，给FPGA释放保护及STOP后的FSPI重新使能留下空闲状态。
+  检查开始/结束写入；失败或脉冲中断时不更新估计位置，后续重试。
+  方向释放失败时，即使行人原始请求仍有效也持续尝试释放，避免AUTO关闭时残留低电平。
+  增加转向寄存器、脉冲完成/中断和HMI选择码变化日志。
+
+S端：fspi/csrc/fspi_module.c。
+  只有完整发送5字节才报告寄存器写入成功；短写按EIO重试。
+
+原有参数保留
+  车道执行阈值：confidence >= 60%，与现有绿色车道线显示阈值相同。
+  中间到左：500ms；中间到右：600ms；左右回中：400ms；左到右/右到左：1500ms。
+  reg2=0左转，reg3=0右转，脉冲后写1释放。
+  CURVE_NONE=0、LEFT=1、RIGHT=2、BOTH=3及UDP/共享内存格式不变。
+  原行人检测阈值、自动刹停、AUTO开关、S/R按键及显示程序均未在本次修改。
+  wheel_position仍是按原标定脉冲推算的位置，没有新增方向盘硬件反馈。
+
+生效步骤
+1. 连接S端FPGA对应的PANGO下载器。确认选择的是S板，避免误刷M板。
+2. 打开原PDS工程和Fabric Configuration，沿用现有的扫描、分配文件、下载流程。
+   临时测试下载：project/generate_bitstream/image_pcie_capture_lane_steering_20261026.sbit
+   需要掉电保存时，使用相同目录下image_pcie_capture_lane_steering_20261026.sfc，
+   按你们原来的S端Flash固化流程写入并校验，重上电加载。
+3. FPGA更新完成后，在S板终端完整重启S端程序：
+     cd /home/linaro/S
+     make stop
+     make run
+   启动日志应显示版本8.1。主窗口由make run统一管理，不要只关闭主窗口单独重开显示。
+4. 若已有STOP锁存，仍使用原有S/R按键解除；没有修改或自动模拟此人工动作。
+5. 再运行原来的直道/左弯/右弯视频。有效车道结果会产生原有标定转向脉冲。
+   按住GO/BACK时，自动左右转向可以在另一个轴同时生效；松开GO/BACK仍应立即释放前后。
+   正常转向日志应包含：reg2低脉冲500ms完成并释放，或对应reg3/回中/换向时长。
+   “写事务成功/估计位置”不等于方向盘实测反馈，最后仍需核对实车动作。
+
+测试与时序
+软件：原刹停策略、SPI诊断/原始请求门控，以及新转向回归全部通过；S板原生测试同样通过。
+新增测试覆盖前后请求不被制动心跳清除、原标定时长、左右互斥、开始失败、释放失败、
+SPI短写、请求转换导致的脉冲中断与重试；ASan/UBSan通过。
+RTL：按轴组合/手动优先/释放保护、真实UART释放、AUTO开关、STOP/REARM、四线FSPI写入均通过。
+PDS：综合、布局布线、比特流生成和SFC转换成功。
+时序报告仍有原工程已存在的摄像头/DDR跨时钟负slack，不能宣称全工程时序收敛。
+本次报告ref_clk自时钟setup余量35.589ns，FSPI内部时钟setup余量0.356ns；
+Fast Corner hold均为正。本次没有改动摄像头/DDR数据通路或时序约束。
+
+备份与诊断
+电脑备份：tmp/steering_fix_20261026/before/（含原FPGA源码、FSPI主程序、原sbit/sfc）。
+板内备份：/home/linaro/S/perf_build/20261026-steering/before/
+板内编译/测试日志：/home/linaro/S/perf_build/20261026-steering/build.log
+电脑完整构建、仿真、ASan和JTAG扫描记录：tmp/steering_fix_20261026/
+新版ARM程序SHA256：49138fb4736af0ccf6d26aa9c4bebbf99d971b26955aa2b842be3cae3ad65c4f
+新版sbit SHA256：21bf5461213516daa5df2e599cb29de4f5dcf5bfc590d425b0827494a6e513b4
+新版sfc SHA256：a7581693c7ad8d32f67172ba5254f4647ec4c42cfed912d17491fe8b3cb3a93c

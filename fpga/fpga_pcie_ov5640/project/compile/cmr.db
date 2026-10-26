@@ -745,10 +745,10 @@
             <data>RAM(GB)</data>
         </column_headers>
         <row>
-            <data>0h:0m:20s</data>
-            <data>0h:0m:20s</data>
-            <data>0h:1m:12s</data>
-            <data>356</data>
+            <data>0h:0m:24s</data>
+            <data>0h:0m:24s</data>
+            <data>0h:1m:1s</data>
+            <data>357</data>
             <data>WINDOWS 10 x86_64</data>
             <data>Unknown</data>
             <data>31</data>
@@ -808,16 +808,16 @@
             <data message="5">Verilog-2006: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 124)] Ansi_parameter force parameter in body to localparam</data>
         </row>
         <row>
-            <data message="4">Verilog-0002: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 1242)] Analyzing module remote_direction_arbiter (library work)</data>
+            <data message="4">Verilog-0002: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 1244)] Analyzing module remote_direction_arbiter (library work)</data>
         </row>
         <row>
-            <data message="4">Verilog-0002: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 1281)] Analyzing module auto_brake_enable_gate (library work)</data>
+            <data message="4">Verilog-0002: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 1337)] Analyzing module auto_brake_enable_gate (library work)</data>
         </row>
         <row>
-            <data message="4">Verilog-0002: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 1307)] Analyzing module remote_stop_controller (library work)</data>
+            <data message="4">Verilog-0002: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 1363)] Analyzing module remote_stop_controller (library work)</data>
         </row>
         <row>
-            <data message="4">Verilog-0002: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 1364)] Analyzing module hmi_control_synchronizer (library work)</data>
+            <data message="4">Verilog-0002: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 1420)] Analyzing module hmi_control_synchronizer (library work)</data>
         </row>
         <row>
             <data message="4">Verilog-0001: Analyzing file D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/pcie/pcie_dma_ctrl/ipm_distributed_sdpram_v1_2.v</data>
@@ -4804,13 +4804,13 @@
             <data message="4">Verilog-0004: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 353)] Elaborating instance u_hmi_control_synchronizer</data>
         </row>
         <row>
-            <data message="4">Verilog-0003: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 1364)] Elaborating module hmi_control_synchronizer</data>
+            <data message="4">Verilog-0003: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 1420)] Elaborating module hmi_control_synchronizer</data>
         </row>
         <row>
             <data message="4">Verilog-0004: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 368)] Elaborating instance u_auto_brake_enable_gate</data>
         </row>
         <row>
-            <data message="4">Verilog-0003: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 1281)] Elaborating module auto_brake_enable_gate</data>
+            <data message="4">Verilog-0003: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 1337)] Elaborating module auto_brake_enable_gate</data>
         </row>
         <row>
             <data message="5">Sdm-2008: The attribute named ASYNC_REG is not legal, then it has no effect, ignore its value.</data>
@@ -4819,13 +4819,13 @@
             <data message="4">Verilog-0004: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 376)] Elaborating instance u_remote_stop_controller</data>
         </row>
         <row>
-            <data message="4">Verilog-0003: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 1307)] Elaborating module remote_stop_controller</data>
+            <data message="4">Verilog-0003: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 1363)] Elaborating module remote_stop_controller</data>
         </row>
         <row>
             <data message="4">Verilog-0004: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 393)] Elaborating instance u_remote_direction_arbiter</data>
         </row>
         <row>
-            <data message="4">Verilog-0003: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 1242)] Elaborating module remote_direction_arbiter</data>
+            <data message="4">Verilog-0003: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 1244)] Elaborating module remote_direction_arbiter</data>
         </row>
         <row>
             <data message="4">Verilog-0004: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/image_pcie_capture.v(line number: 414)] Elaborating instance u_fspi_slave_top</data>
@@ -13792,19 +13792,19 @@
             <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v(line number: 76)] Removed register node u_uart_lcd/frame_gap_count[19] that is stuck at constant 0.</data>
         </row>
         <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[15] that is stuck at constant 0.</data>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos6_reg_config/clock_20k_cnt[15] that is stuck at constant 0.</data>
         </row>
         <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[14] that is stuck at constant 0.</data>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos6_reg_config/clock_20k_cnt[14] that is stuck at constant 0.</data>
         </row>
         <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[13] that is stuck at constant 0.</data>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos6_reg_config/clock_20k_cnt[13] that is stuck at constant 0.</data>
         </row>
         <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[12] that is stuck at constant 0.</data>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos6_reg_config/clock_20k_cnt[12] that is stuck at constant 0.</data>
         </row>
         <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[11] that is stuck at constant 0.</data>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos6_reg_config/clock_20k_cnt[11] that is stuck at constant 0.</data>
         </row>
         <row>
             <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos5_reg_config/clock_20k_cnt[15] that is stuck at constant 0.</data>
@@ -13822,28 +13822,28 @@
             <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos5_reg_config/clock_20k_cnt[11] that is stuck at constant 0.</data>
         </row>
         <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos6_reg_config/clock_20k_cnt[15] that is stuck at constant 0.</data>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[15] that is stuck at constant 0.</data>
         </row>
         <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos6_reg_config/clock_20k_cnt[14] that is stuck at constant 0.</data>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[14] that is stuck at constant 0.</data>
         </row>
         <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos6_reg_config/clock_20k_cnt[13] that is stuck at constant 0.</data>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[13] that is stuck at constant 0.</data>
         </row>
         <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos6_reg_config/clock_20k_cnt[12] that is stuck at constant 0.</data>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[12] that is stuck at constant 0.</data>
         </row>
         <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos6_reg_config/clock_20k_cnt[11] that is stuck at constant 0.</data>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 40)] Removed register node u_ov5640_top/cmos2_reg_config/clock_20k_cnt[11] that is stuck at constant 0.</data>
         </row>
         <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 53)] Removed register node u_ov5640_top/cmos2_reg_config/reg_index[8] that is stuck at constant 0.</data>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 53)] Removed register node u_ov5640_top/cmos6_reg_config/reg_index[8] that is stuck at constant 0.</data>
         </row>
         <row>
             <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 53)] Removed register node u_ov5640_top/cmos5_reg_config/reg_index[8] that is stuck at constant 0.</data>
         </row>
         <row>
-            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 53)] Removed register node u_ov5640_top/cmos6_reg_config/reg_index[8] that is stuck at constant 0.</data>
+            <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v(line number: 53)] Removed register node u_ov5640_top/cmos2_reg_config/reg_index[8] that is stuck at constant 0.</data>
         </row>
         <row>
             <data message="5">Sdm-2000: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_rx.v(line number: 35)] Removed register node u_uart_loopback/u_uart_rx/baud_cnt[15] that is stuck at constant 0.</data>
@@ -14072,6 +14072,9 @@
         </row>
         <row>
             <data message="4">Sdm-0001: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/pcie/pcie_dma_ctrl/fifo/ipm_distributed_sdpram_v1_2_distributed_fifo.v(line number: 82)] Found Ram mem, depth=128, width=128.</data>
+        </row>
+        <row>
+            <data message="4">FSM hmi_traction_latched_fsm[1:0] inferred.</data>
         </row>
         <row>
             <data message="4">FSM ws_state_fsm[2:0] inferred.</data>
@@ -14321,6 +14324,9 @@
         </row>
         <row>
             <data message="4">Constant propagation done on N112 (bmsREDAND).</data>
+        </row>
+        <row>
+            <data message="5">Loop was found during constant probe.</data>
         </row>
         <row>
             <data message="5">Loop was found during constant probe.</data>

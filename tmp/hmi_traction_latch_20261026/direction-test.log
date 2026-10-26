@@ -1,0 +1,5 @@
+PASS: latched HMI traction, momentary independent steering, opposite switch, STOP clear and fresh-press rearm
+- /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_direction_arbiter.v:249: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 25us; walltime 0.000 s; speed 82.054 ms/s
+- Verilator: cpu 0.000 s on 1 threads; allocated 6 MB

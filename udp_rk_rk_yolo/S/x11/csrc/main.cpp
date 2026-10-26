@@ -24,6 +24,7 @@
 #include "stb_image.h"
 #include "dashboard_ui.h"
 #include "gles_presenter.h"
+#include "video_input_fps.h"
 
 /* 为了使用aligned_alloc，需要定义_ISOC11_SOURCE */
 #ifndef _ISOC11_SOURCE
@@ -143,6 +144,7 @@ typedef struct {
     uint64_t profile_compose_ns, profile_scale_ns, profile_present_ns;
     uint64_t last_layout_ns, profile_layout_ns, profile_car_ns, profile_dashboard_ns, profile_car_redraws;
     float pcie_shown_fps, udp_shown_fps;
+    perception_ui::FrameIdFps pcie_input_rate, udp_input_rate;
 } RenderEngine;
 
 //=========================================================================
@@ -1356,8 +1358,8 @@ static void record_display_perf(RenderEngine* engine, uint64_t start, uint64_t c
         double divisor = engine->profile_frames * 1e6;
         printf("[PERF DISPLAY] render_fps=%.2f S_input_fps=%.2f M_input_fps=%.2f S_shown_fps=%.2f M_shown_fps=%.2f compose_ms=%.2f legacy_ms=%.2f car_ms=%.2f dashboard_ms=%.2f car_redraw_pct=%.1f scale_ms=%.2f present_ms=%.2f reuse_wait_ms=%.2f upload_done_fps=%.2f upload_MB=%.2f upload_rects=%.1f partial=%d backend=%s/%s sync=%s\n",
                engine->display_fps,
-               (uint32_t)(engine->pcie_frame_id - engine->profile_pcie_start) / seconds,
-               (uint32_t)(engine->udp_frame_id - engine->profile_udp_start) / seconds,
+               engine->pcie_input_rate.frames_per_second,
+               engine->udp_input_rate.frames_per_second,
                engine->pcie_shown_fps, engine->udp_shown_fps,
                engine->profile_compose_ns / divisor, engine->profile_layout_ns / divisor,
                engine->profile_car_ns / divisor, engine->profile_dashboard_ns / divisor,
@@ -1425,8 +1427,8 @@ int present_dashboard(RenderEngine* engine) {
         }
     }
     status.fps = status.recorded ? 0.0f : engine->display_fps;
-    status.pcie_fps = engine->pcie_shown_fps;
-    status.udp_fps = engine->udp_shown_fps;
+    status.pcie_fps = engine->pcie_input_rate.frames_per_second;
+    status.udp_fps = engine->udp_input_rate.frames_per_second;
     float progress = engine->transition.is_active ? engine->transition.progress :
         (engine->presented_mode == DISPLAY_MODE_ALL_CAMERAS ? -1.0f : 1.0f);
     char mode_label[64];
@@ -2233,6 +2235,7 @@ int main(int argc, char** argv) {
                                  &last_pcie_retry, &last_pcie_frame_id)) {
             render_engine.pcie_frame_id = render_engine.shown_pcie_id = render_engine.profile_pcie_start = 0;
             render_engine.pcie_last_seen = 0;
+            render_engine.pcie_input_rate.reset();
         }
         if (!pcie_available) render_engine.pcie_last_seen = 0;
         int pcie_result = pcie_available
@@ -2252,6 +2255,7 @@ int main(int argc, char** argv) {
                                  &last_udp_retry, &last_udp_frame_id)) {
             render_engine.udp_frame_id = render_engine.shown_udp_id = render_engine.profile_udp_start = 0;
             render_engine.udp_last_seen = 0;
+            render_engine.udp_input_rate.reset();
         }
         if (!udp_available) render_engine.udp_last_seen = 0;
         int udp_result = udp_available
@@ -2267,6 +2271,22 @@ int main(int argc, char** argv) {
             render_engine.udp_frame_id = udp_frame_id;
         }
         
+        // Input FPS uses source-ID deltas and a monotonic clock. It remains
+        // independent of the selected camera and the slower GUI redraw rate.
+        const uint64_t input_sample_ns = display_clock_ns();
+        const uint64_t input_wall_ms = get_current_time_ms();
+        const bool pcie_live = pcie_available && render_engine.pcie_last_seen &&
+            input_wall_ms >= render_engine.pcie_last_seen &&
+            input_wall_ms - render_engine.pcie_last_seen < 2000;
+        const bool udp_live = udp_available && render_engine.udp_last_seen &&
+            input_wall_ms >= render_engine.udp_last_seen &&
+            input_wall_ms - render_engine.udp_last_seen < 2000;
+        const bool pcie_rate_updated = render_engine.pcie_input_rate.update(
+            render_engine.pcie_frame_id, input_sample_ns, pcie_live);
+        const bool udp_rate_updated = render_engine.udp_input_rate.update(
+            render_engine.udp_frame_id, input_sample_ns, udp_live);
+        if (pcie_rate_updated || udp_rate_updated) render_engine.needs_redraw = 1;
+
         // 如果有任意一个通道更新，或者正在播放动画，或者正在显示文字，就重新渲染
         if (pcie_updated || udp_updated) render_engine.needs_redraw = 1;
         uint64_t render_now = get_current_time_ms();

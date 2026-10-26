@@ -57,10 +57,16 @@ endif
 # 构建规则
 # =============================================================================
 
-.PHONY: all clean help run preview
+.PHONY: all clean help run preview test-fps
 
 # 默认目标
 all: $(BIN)
+
+$(BUILD_DIR)/test_video_input_fps: tests/test_video_input_fps.cpp include/video_input_fps.h | $(BUILD_DIR)
+	$(CXX) -std=c++14 -Wall -Wextra -Werror -Iinclude $< -o $@
+
+test-fps: $(BUILD_DIR)/test_video_input_fps
+	"$(abspath $(BUILD_DIR)/test_video_input_fps)"
 
 # 链接可执行文件
 $(BIN): $(OBJECTS) | $(BUILD_DIR)

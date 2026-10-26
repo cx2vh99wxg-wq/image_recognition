@@ -30,9 +30,9 @@ struct ViewStatus {
     bool pcie_live = false;
     bool udp_live = false;
     bool person = false;
-    float fps = 0;
-    float pcie_fps = 0;
-    float udp_fps = 0;
+    float fps = 0; // Renderer diagnostics; not shown as video FPS.
+    float pcie_fps = 0; // S complete video input rate, measured from frame_id.
+    float udp_fps = 0;  // M complete video arrival rate at S, measured from frame_id.
     bool recorded = false;
     MotionDirection motion = MotionDirection::Idle;
 };
@@ -135,12 +135,12 @@ public:
         char performance[64];
         if (status.recorded) {
             std::snprintf(performance, sizeof(performance), "RECORDED PREVIEW");
-        } else if (std::isfinite(status.fps) && status.fps > 0) {
-            std::snprintf(performance, sizeof(performance), "RENDER %.1f  S %.1f  M %.1f FPS",
-                          std::min(999.f, status.fps), std::min(999.f, status.pcie_fps),
-                          std::min(999.f, status.udp_fps));
         } else {
-            std::snprintf(performance, sizeof(performance), "DISPLAY FPS --");
+            const float s_fps = std::isfinite(status.pcie_fps)
+                ? std::max(0.f, std::min(999.f, status.pcie_fps)) : 0.f;
+            const float m_fps = std::isfinite(status.udp_fps)
+                ? std::max(0.f, std::min(999.f, status.udp_fps)) : 0.f;
+            std::snprintf(performance, sizeof(performance), "VIDEO IN  S %.1f  M %.1f FPS", s_fps, m_fps);
         }
         text(frame_, 486, 844, performance, 2,
              status.recorded ? 0xFFD5B97B : 0xFF93B1CB);

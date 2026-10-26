@@ -108,23 +108,27 @@ module test_hmi_serial_release;
     expect_contacts(4'ha, 4'he, 1'b1, "GO serial press drives GO low");
     send_byte(8'h30);
     send_direction(8'h00);
-    expect_contacts(4'h0, 4'hf, 1'b1, "GO release after stray header");
+    expect_contacts(4'h0, 4'he, 1'b1, "GO remains latched after release and stray header");
 
     send_direction(8'h0b);
     expect_contacts(4'hb, 4'hd, 1'b1, "BACK serial press drives BACK low");
     send_byte(8'h30);
     send_byte(8'h90);
     send_direction(8'h00);
-    expect_contacts(4'h0, 4'hf, 1'b1, "BACK release after partial prefix");
+    expect_contacts(4'h0, 4'hd, 1'b1, "BACK remains latched after release and partial prefix");
 
     send_direction(8'h0c);
-    expect_contacts(4'hc, 4'hb, 1'b1, "LEFT remains momentary");
+    expect_contacts(4'hc, 4'h9, 1'b1, "momentary LEFT preserves latched BACK");
     send_direction(8'h00);
-    expect_contacts(4'h0, 4'hf, 1'b1, "LEFT release");
+    expect_contacts(4'h0, 4'hd, 1'b1, "LEFT release preserves BACK");
     send_direction(8'h0d);
-    expect_contacts(4'hd, 4'h7, 1'b1, "RIGHT remains momentary");
+    expect_contacts(4'hd, 4'h5, 1'b1, "momentary RIGHT preserves latched BACK");
     send_direction(8'h00);
-    expect_contacts(4'h0, 4'hf, 1'b1, "RIGHT release");
+    expect_contacts(4'h0, 4'hd, 1'b1, "RIGHT release preserves BACK");
+    send_direction(8'h0e);
+    expect_contacts(4'he, 4'hf, 1'b0, "STOP resets latched BACK");
+    send_direction(8'h00);
+    expect_contacts(4'h0, 4'hf, 1'b1, "STOP release leaves traction idle");
 
     send_direction(8'h0a);
     expect_contacts(4'ha, 4'he, 1'b1, "GO before incomplete other command");
@@ -133,19 +137,19 @@ module test_hmi_serial_release;
     send_byte(8'h02);
     repeat (FRAME_GAP_CYCLES + 10) @(posedge clk_50m);
     send_direction(8'h00);
-    expect_contacts(4'h0, 4'hf, 1'b1, "release after partial-command timeout");
+    expect_contacts(4'h0, 4'he, 1'b1, "partial-command timeout and release retain GO latch");
 
     fspi_released = 4'hc;
     send_direction(8'h0a);
     expect_contacts(4'ha, 4'he, 1'b1, "GO before optional lost-release lease");
     repeat (TRACTION_LEASE_CYCLES + 10) @(posedge clk_50m);
-    expect_contacts(4'h0, 4'hf, 1'b1, "GO lease releases and masks stale FSPI");
+    expect_contacts(4'h0, 4'he, 1'b1, "raw-key lease expiry does not cancel intentional GO latch");
     fspi_released = 4'hf;
     settle();
     send_direction(8'h0b);
     expect_contacts(4'hb, 4'hd, 1'b1, "BACK before optional lost-release lease");
     repeat (TRACTION_LEASE_CYCLES + 10) @(posedge clk_50m);
-    expect_contacts(4'h0, 4'hf, 1'b1, "BACK lease releases lost-release press");
+    expect_contacts(4'h0, 4'hd, 1'b1, "raw-key lease expiry does not cancel intentional BACK latch");
 
     send_direction(8'h0e);
     expect_contacts(4'he, 4'hf, 1'b0, "manual E pulls STOP low in ready state");
@@ -189,7 +193,15 @@ module test_hmi_serial_release;
     send_direction(8'h0a);
     expect_contacts(4'ha, 4'he, 1'b1, "HMI GO available after forced unlock with person present");
     send_direction(8'h00);
-    expect_contacts(4'h0, 4'hf, 1'b1, "GO release still masks stale FSPI after unlock");
+    expect_contacts(4'h0, 4'he, 1'b1, "fresh GO latches after unlock while stale FSPI stays masked");
+    send_direction(8'h0c);
+    expect_contacts(4'hc, 4'ha, 1'b1, "serial LEFT plus latched GO");
+    send_direction(8'h00);
+    expect_contacts(4'h0, 4'he, 1'b1, "serial LEFT release preserves GO");
+    send_direction(8'h0d);
+    expect_contacts(4'hd, 4'h6, 1'b1, "serial RIGHT plus latched GO");
+    send_direction(8'h00);
+    expect_contacts(4'h0, 4'he, 1'b1, "serial RIGHT release preserves GO");
     fspi_released = 4'hf;
     settle();
     if (fspi_direction_armed !== 1'b1)
@@ -216,7 +228,7 @@ module test_hmi_serial_release;
     send_direction(8'h00);
     expect_contacts(4'h0, 4'hf, 1'b1, "fresh E recovers from alarm during held E");
 
-    $display("PASS: serial GO/BACK/LEFT/RIGHT/STOP, persistent brake and forced REARM integration");
+    $display("PASS: real UART latched GO/BACK, independent momentary steering, STOP clear and automatic brake/REARM");
     $finish;
   end
 
