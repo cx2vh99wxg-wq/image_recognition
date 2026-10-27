@@ -1,0 +1,21 @@
+Executing : cfg_connect -ip 127.0.0.1 -port 65420
+Connecting to server[127.0.0.1 : 65420].
+Connect to server[127.0.0.1 : 65420] successfully.
+COMMAND[check version information] execute successfully, takes 0.0 secs.
+The cable List : 
+Cable index 0:USB Cable II/fffffffffffffffe 
+
+COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+Executing : cfg_connect -ip 127.0.0.1 -port 65420 successfully.
+Executing : cfg_scan_chain
+PANGO USB CABLE II cable driver: D2XX DLL
+PG2L100H
+This device configure situation (done bit): 1
+COMMAND[Open config cable] execute successfully, takes 0.5 secs.
+Executing : cfg_scan_chain successfully.
+Executing : cfg_jtag_flash_scan_device -device_index 0
+COMMAND[Scan Outer SPI Flash] execute successfully, takes 0.4 secs.
+Executing : cfg_jtag_flash_scan_device -device_index 0 successfully.
+Executing : cfg_jtag_flash_assign_file -device_index 0 -file D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_line_style_20261026.sfc
+Executing : cfg_jtag_flash_assign_file -device_index 0 -file D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_line_style_20261026.sfc successfully.
+Executing : cfg_jtag_flash_program -device_index 0

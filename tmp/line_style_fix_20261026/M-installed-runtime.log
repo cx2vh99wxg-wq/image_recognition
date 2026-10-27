@@ -1,0 +1,196 @@
+
+==============================
+PCIE+YOLOPv2车道线检测系统启动
+==============================
+编译时间: Oct 26 2026 15:59:26
+渲染功能: 启用
+==============================
+
+=== 缓冲区分配 ===
+RGB565原始缓冲区: 729600 bytes
+RGB888处理缓冲区: 921600 bytes
+RGB565输出缓冲区: 614400 bytes
+
+=== FSPI模块初始化 ===
+========== SPI可靠读写程序 ==========
+FSPI Configuration:
+  Device: /dev/spidev4.0
+  Mode: 0x00000003
+  Bits per word: 8
+  Speed: 100000000 Hz (100000 KHz)
+FSPI initialized successfully
+✓ FSPI模块初始化成功
+
+=== PCIE设备初始化 ===
+正在初始化PCIE设备...
+PCIE设备信息获取成功
+设备ID: 0x0, 厂商ID: 0x0
+PCIE设备初始化成功
+✓ PCIE设备初始化成功
+
+=== YOLOPv2引擎初始化 ===
+正在初始化YOLOPv2引擎（车道线和可行驶区域检测）...
+模型输入数量: 1, 输出数量: 5
+输出 0: seg
+输出 1: ll
+输出 2: pred0
+输出 3: pred1
+输出 4: pred2
+模型输入尺寸: 640x480
+输出缓冲区: 车道线=1228800 bytes, 可行驶区域=2457600 bytes
+YOLOPv2引擎初始化成功
+✓ YOLOPv2引擎初始化成功
+
+=== PCIe共享内存初始化 ===
+正在初始化PCIe共享内存 (key=0x12345679, size=614504 bytes)
+PCIe shared memory initialized successfully (id=29, ptr=0x7fa14e5000)
+Initialized control structure for PCIe
+✓ PCIe共享内存初始化成功
+
+=== 弯道检测共享内存初始化 ===
+正在初始化弯道检测共享内存 (key=0x1234567e, size=72 bytes)
+弯道检测共享内存初始化成功 (id=30, ptr=0x7fa2b0c000)
+初始化弯道检测控制结构
+✓ 弯道检测共享内存初始化成功
+
+=== 视频流采集初始化 ===
+初始化视频流采集...
+DMA rows/request=1 (fixed by the current FPGA streaming protocol)
+DMA参数配置: current_len=380 dword (1520字节), offset_addr=0x0
+正在映射DMA地址...
+DMA地址映射完成
+正在重置DMA读取地址...
+DMA读取地址重置完成
+视频流采集初始化完成
+✓ 视频流采集初始化成功
+
+=== 渲染引擎初始化 ===
+正在初始化渲染引擎...
+DISPLAY环境变量: :0
+尝试连接X服务器...
+✓ X服务器连接成功
+屏幕信息: 3280x1440, 深度: 24位, 屏幕: 0
+创建窗口: 640x480...
+✓ 窗口创建成功
+设置窗口属性...
+映射窗口到屏幕...
+等待窗口显示...
+✓ 窗口已成功显示
+M X11 transfer=MIT-SHM (server-read fence enabled)
+渲染引擎初始化成功
+✓ 渲染引擎初始化成功
+=== 系统初始化完成 ===
+图像尺寸: 640x480
+窗口尺寸: 640x480
+YOLOPv2模型: model/yolopv2_Nx3x480x640_rk3568.rknn
+按任意键或点击窗口退出...
+
+=== 开始视频流处理和车道线检测 ===
+切换到视频流 5...
+正在切换到视频流 5...
+    [WRITE] 地址: 0x0000, 数据: 0x05
+TX Buffer: [0x00] [0x00] [0x05]
+视频流切换成功: 流ID=5
+    [READ]  地址: 0x0000
+TX Address: [0x00] [0x00]
+RX Data: [0x00]
+TX Address: [0x00] [0x00]
+RX Data: [0x00]
+TX Address: [0x00] [0x00]
+RX Data: [0x00]
+TX Address: [0x00] [0x00]
+RX Data: [0x00]
+TX Address: [0x00] [0x00]
+RX Data: [0x00]
+    [READ]  结果: 0x00
+警告：视频流切换验证失败 (写入=5, 读取=0)
+视频流切换成功: 当前流5
+NN submission interval: 3 captured frames; completed inference FPS is reported separately
+Performance timing report interval: 5 seconds
+M inference=latest-frame worker, capture target=30 fps (0=unlimited), NN result max age=500ms
+[LINE_STYLE] source=1 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.996
+[LINE_STYLE] source=61 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.992
+[LINE_STYLE] source=127 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.992
+[PERF M] capture_loop_fps=28.57 raw_changed_fps=28.57 inference_fps=3.40 fresh_result_fps=3.40 publish_fps=28.57 dma_ms=14.17 color_ms=1.23 infer_ms=270.40 overlay_ms=7.89 analysis_ms=10.62 shm_ms=0.73 render_ms=14.12 pending_replaced=29 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=193 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.996
+[LINE_STYLE] source=262 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.937
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=30.00 dma_ms=13.86 color_ms=1.24 infer_ms=268.41 overlay_ms=7.98 analysis_ms=10.37 shm_ms=0.70 render_ms=12.53 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=328 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.976
+[LINE_STYLE] source=394 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.863
+[PERF M] capture_loop_fps=29.98 raw_changed_fps=29.98 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=29.98 dma_ms=13.90 color_ms=1.29 infer_ms=268.21 overlay_ms=7.91 analysis_ms=10.78 shm_ms=0.73 render_ms=12.46 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=463 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..1.000
+[LINE_STYLE] source=529 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.831
+[PERF M] capture_loop_fps=30.02 raw_changed_fps=30.02 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=30.02 dma_ms=13.91 color_ms=1.25 infer_ms=268.20 overlay_ms=7.87 analysis_ms=10.63 shm_ms=0.72 render_ms=12.30 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=595 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.992
+[LINE_STYLE] source=664 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.812
+[LINE_STYLE] source=730 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.090
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=30.00 dma_ms=13.90 color_ms=1.24 infer_ms=268.55 overlay_ms=7.87 analysis_ms=10.55 shm_ms=0.73 render_ms=12.49 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=796 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.227
+[LINE_STYLE] source=865 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.698
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=30.00 dma_ms=13.99 color_ms=1.24 infer_ms=268.24 overlay_ms=7.89 analysis_ms=10.73 shm_ms=0.71 render_ms=12.27 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=931 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.471
+[LINE_STYLE] source=997 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.988
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=30.00 dma_ms=13.93 color_ms=1.23 infer_ms=267.84 overlay_ms=7.93 analysis_ms=10.85 shm_ms=0.71 render_ms=12.38 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=1063 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.925
+[LINE_STYLE] source=1132 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=30.00 dma_ms=13.91 color_ms=1.24 infer_ms=267.89 overlay_ms=7.87 analysis_ms=10.50 shm_ms=0.72 render_ms=12.32 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=1198 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.996
+[LINE_STYLE] source=1264 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 right=DASHED q=84 raw=DASHED reason=OK duty=62 spans=3 mask_range=0.000..1.000
+[LINE_STYLE] source=1333 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 right=UNKNOWN q=0 raw=DASHED reason=WAIT 3 duty=58 spans=4 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=30.01 raw_changed_fps=30.01 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=30.01 dma_ms=13.78 color_ms=1.22 infer_ms=268.52 overlay_ms=9.00 analysis_ms=11.79 shm_ms=0.71 render_ms=12.02 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=1399 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 right=UNKNOWN q=0 raw=SOLID reason=WAIT 3 duty=86 spans=2 mask_range=0.000..1.000
+[LINE_STYLE] source=1468 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 right=UNKNOWN q=0 raw=DASHED reason=WAIT 3 duty=33 spans=3 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=29.99 raw_changed_fps=29.99 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=29.99 dma_ms=13.68 color_ms=1.22 infer_ms=267.78 overlay_ms=9.33 analysis_ms=12.55 shm_ms=0.72 render_ms=12.04 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=1534 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=AMBIG duty=76 spans=1 mask_range=0.000..1.000
+[LINE_STYLE] source=1603 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 right=UNKNOWN q=0 raw=DASHED reason=WAIT 3 duty=54 spans=2 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=30.00 dma_ms=13.72 color_ms=1.21 infer_ms=268.14 overlay_ms=9.69 analysis_ms=12.61 shm_ms=0.68 render_ms=11.60 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=1669 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 right=DASHED q=84 raw=DASHED reason=OK duty=66 spans=4 mask_range=0.000..1.000
+[LINE_STYLE] source=1738 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 right=DASHED q=85 raw=DASHED reason=OK duty=32 spans=3 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=29.91 raw_changed_fps=29.91 inference_fps=3.59 fresh_result_fps=3.59 publish_fps=29.91 dma_ms=13.59 color_ms=1.24 infer_ms=268.46 overlay_ms=9.54 analysis_ms=12.93 shm_ms=0.69 render_ms=11.38 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=1804 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 right=DASHED q=77 raw=DASHED reason=OK duty=59 spans=2 mask_range=0.000..1.000
+[LINE_STYLE] source=1870 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 right=DASHED q=77 raw=DASHED reason=OK duty=54 spans=2 mask_range=0.000..1.000
+[LINE_STYLE] source=1939 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=SHORT duty=0 spans=0 right=DASHED q=81 raw=DASHED reason=OK duty=57 spans=4 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=29.99 raw_changed_fps=29.99 inference_fps=3.40 fresh_result_fps=3.40 publish_fps=29.99 dma_ms=13.69 color_ms=1.27 infer_ms=267.88 overlay_ms=9.43 analysis_ms=13.17 shm_ms=0.70 render_ms=11.04 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=2005 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..1.000
+[LINE_STYLE] source=2074 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.937
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.78 fresh_result_fps=3.78 publish_fps=30.00 dma_ms=13.84 color_ms=1.29 infer_ms=268.05 overlay_ms=8.27 analysis_ms=10.77 shm_ms=0.67 render_ms=11.31 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=2140 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=SHORT duty=0 spans=0 right=UNKNOWN q=0 raw=DASHED reason=WAIT 3 duty=42 spans=2 mask_range=0.000..1.000
+[LINE_STYLE] source=2206 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=BAD FIT duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=BAD FIT duty=0 spans=0 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.40 fresh_result_fps=3.40 publish_fps=30.00 dma_ms=13.76 color_ms=1.28 infer_ms=268.21 overlay_ms=8.89 analysis_ms=12.23 shm_ms=0.67 render_ms=11.22 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=2275 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.957
+[LINE_STYLE] source=2341 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=BAD FIT duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=BAD FIT duty=0 spans=0 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=30.00 dma_ms=13.73 color_ms=1.26 infer_ms=268.28 overlay_ms=8.81 analysis_ms=11.80 shm_ms=0.70 render_ms=11.26 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=2410 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=AMBIG duty=25 spans=1 right=UNKNOWN q=0 raw=DASHED reason=WAIT 3 duty=33 spans=4 mask_range=0.000..1.000
+[LINE_STYLE] source=2476 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 right=DASHED q=85 raw=DASHED reason=OK duty=29 spans=3 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=30.00 dma_ms=13.56 color_ms=1.27 infer_ms=268.58 overlay_ms=10.79 analysis_ms=14.86 shm_ms=0.68 render_ms=10.52 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=2545 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 right=DASHED q=80 raw=DASHED reason=OK duty=27 spans=2 mask_range=0.000..1.000
+[LINE_STYLE] source=2614 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 right=UNKNOWN q=0 raw=DASHED reason=WAIT 3 duty=32 spans=3 mask_range=0.000..1.000
+[LINE_STYLE] source=2680 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.992
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=30.00 dma_ms=13.62 color_ms=1.24 infer_ms=268.12 overlay_ms=10.09 analysis_ms=13.16 shm_ms=0.68 render_ms=11.27 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=2746 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.984
+[LINE_STYLE] source=2815 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.996
+[PERF M] capture_loop_fps=29.90 raw_changed_fps=29.90 inference_fps=3.59 fresh_result_fps=3.59 publish_fps=29.90 dma_ms=13.87 color_ms=1.27 infer_ms=268.53 overlay_ms=7.91 analysis_ms=11.28 shm_ms=0.70 render_ms=12.31 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=2881 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=AMBIG duty=90 spans=1 right=DASHED q=76 raw=DASHED reason=OK duty=70 spans=2 mask_range=0.000..1.000
+[LINE_STYLE] source=2950 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=AMBIG duty=100 spans=1 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=29.98 raw_changed_fps=29.98 inference_fps=3.40 fresh_result_fps=3.40 publish_fps=29.98 dma_ms=13.72 color_ms=1.22 infer_ms=268.24 overlay_ms=9.69 analysis_ms=12.89 shm_ms=0.71 render_ms=11.70 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=3016 camera=1 left=UNKNOWN q=0 raw=SOLID reason=WAIT 3 duty=96 spans=1 right=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 mask_range=0.000..1.000
+[LINE_STYLE] source=3082 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=AMBIG duty=100 spans=1 right=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=30.01 raw_changed_fps=30.01 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=30.01 dma_ms=13.67 color_ms=1.25 infer_ms=268.68 overlay_ms=9.29 analysis_ms=11.57 shm_ms=0.71 render_ms=11.90 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=3151 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.820
+[LINE_STYLE] source=3217 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=AMBIG duty=77 spans=1 right=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 mask_range=0.000..1.000
+[LINE_STYLE] source=3286 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=AMBIG duty=82 spans=1 right=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=30.00 dma_ms=13.91 color_ms=1.26 infer_ms=268.10 overlay_ms=8.73 analysis_ms=11.62 shm_ms=0.72 render_ms=12.00 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=3352 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=AMBIG duty=75 spans=1 right=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 mask_range=0.000..1.000
+[LINE_STYLE] source=3421 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=AMBIG duty=82 spans=1 right=UNKNOWN q=0 raw=UNKNOWN reason=NO TRACK duty=0 spans=0 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=30.00 dma_ms=13.83 color_ms=1.23 infer_ms=268.60 overlay_ms=9.06 analysis_ms=12.11 shm_ms=0.72 render_ms=12.18 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=3487 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..1.000
+[LINE_STYLE] source=3553 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=29.98 raw_changed_fps=29.98 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=29.98 dma_ms=13.97 color_ms=1.26 infer_ms=268.27 overlay_ms=7.90 analysis_ms=10.65 shm_ms=0.71 render_ms=12.27 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=3622 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.996
+[LINE_STYLE] source=3688 camera=1 left=UNKNOWN q=0 raw=DASHED reason=WAIT 3 duty=50 spans=6 right=UNKNOWN q=0 raw=SOLID reason=WAIT 3 duty=90 spans=2 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=30.02 raw_changed_fps=30.02 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=30.02 dma_ms=13.83 color_ms=1.24 infer_ms=269.42 overlay_ms=8.45 analysis_ms=11.29 shm_ms=0.71 render_ms=12.01 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=3757 camera=1 left=DASHED q=81 raw=DASHED reason=OK duty=58 spans=6 right=SOLID q=75 raw=SOLID reason=OK duty=83 spans=2 mask_range=0.000..1.000
+[LINE_STYLE] source=3823 camera=1 left=DASHED q=80 raw=DASHED reason=OK duty=54 spans=3 right=SOLID q=80 raw=SOLID reason=OK duty=90 spans=2 mask_range=0.000..1.000
+[LINE_STYLE] source=3892 camera=1 left=DASHED q=80 raw=DASHED reason=OK duty=58 spans=4 right=SOLID q=76 raw=SOLID reason=OK duty=87 spans=1 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=30.00 dma_ms=13.84 color_ms=1.22 infer_ms=268.60 overlay_ms=9.06 analysis_ms=12.36 shm_ms=0.69 render_ms=11.84 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=3958 camera=1 left=DASHED q=81 raw=DASHED reason=OK duty=58 spans=6 right=SOLID q=78 raw=SOLID reason=OK duty=87 spans=2 mask_range=0.000..1.000

@@ -467175,3 +467175,764 @@
 [Debug] [2026-10-26 20:30:16] progress bar is 100
 [Debug] [2026-10-26 20:30:17] end to operate flash: cmd id = 20303
 [Debug] [2026-10-26 20:30:17] cmd operation Verify Outer Flash releases locker
+[Debug] [2026-10-26 21:55:55] Add a new user_thread, socket descriptor is 820 user_thread id is 000000000000C5A0
+[Debug] [2026-10-26 21:55:55] After adding, map size is : 3
+[Debug] [2026-10-26 21:55:55] Add a new user_thread, socket descriptor is 1092 user_thread id is 000000000000C5A0
+[Debug] [2026-10-26 21:55:55] After adding, map size is : 4
+[Debug] [2026-10-26 21:55:55] IP address of connecting client is : ::ffff:127.0.0.1
+[Debug] [2026-10-26 21:55:55] IP address of connecting client is : ::ffff:127.0.0.1
+[Debug] [2026-10-26 21:55:55] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 21:55:55] _total_bytes_size : 160
+[Debug] [2026-10-26 21:55:55] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 21:55:55] _total_bytes_size : 96
+[Debug] [2026-10-26 21:55:55] cmd id :40010cmd name : get_cable_paras
+[Debug] [2026-10-26 21:55:56] cmd operation get_cable_paras releases locker
+[Debug] [2026-10-26 21:55:58] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 21:55:58] _total_bytes_size : 101
+[Debug] [2026-10-26 21:55:58] cmd id :20001cmd name : Open config cable
+[Error] [2026-10-26 21:55:58] E:CM Error: Current cable list empty, try to update current available cable list!. In function cdt_cable_manager::CableManager::Obtain at line 924 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CableManager.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 21:55:58] E:CM Error: Current cable list empty, try to update current available cable list!. In function cdt_cable_manager::CableManager::Obtain at line 924 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CableManager.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 21:55:58] E:CM Error: Current cable list empty, try to update current available cable list!. In function cdt_cable_manager::CableManager::Obtain at line 924 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CableManager.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 21:55:58] E:CM Error: Current cable list empty, try to update current available cable list!. In function cdt_cable_manager::CableManager::Obtain at line 924 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CableManager.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 21:55:58] E:CM Error: Current cable list empty, try to update current available cable list!. In function cdt_cable_manager::CableManager::Obtain at line 924 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CableManager.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 21:55:58] E:CM Error: Current cable list empty, try to update current available cable list!. In function cdt_cable_manager::CableManager::Obtain at line 924 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CableManager.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 21:55:58] E:CM Error: Current cable list empty, try to update current available cable list!. In function cdt_cable_manager::CableManager::Obtain at line 924 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CableManager.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 21:55:58] E:CM Error: Current cable list empty, try to update current available cable list!. In function cdt_cable_manager::CableManager::Obtain at line 924 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CableManager.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 21:55:58] E:CM Error: Current cable list empty, try to update current available cable list!. In function cdt_cable_manager::CableManager::Obtain at line 924 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CableManager.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 21:55:58] E:CM Error: Current cable list empty, try to update current available cable list!. In function cdt_cable_manager::CableManager::Obtain at line 924 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CableManager.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 21:55:58] Hardware handler is invalid
+[Debug] [2026-10-26 21:55:58] cmd operation Open config cable releases locker
+[Debug] [2026-10-26 21:55:59] connection error happens : 1
+[Debug] [2026-10-26 21:55:59] connection error happens : 1connection error happens : 1
+[Debug] [2026-10-26 21:55:59] connection state changes : 6 , socket description 1092
+[Warn] [2026-10-26 21:55:59] socket state is ListeningState
+[Debug] [2026-10-26 21:55:59] connection state changes : 0 , socket description 1092
+[Warn] [2026-10-26 21:55:59] socket state is UnconnectedState
+[Debug] [2026-10-26 21:55:59] connection state changes : 6 , socket description 820
+[Warn] [2026-10-26 21:55:59] socket state is ListeningState
+[Debug] [2026-10-26 21:55:59] connection state changes : 0 , socket description 820
+[Warn] [2026-10-26 21:55:59] socket state is UnconnectedState
+[Debug] [2026-10-26 21:55:59] socket descriptor 1092is about to delete
+[Debug] [2026-10-26 21:55:59] socket descriptor 820is about to delete
+[Debug] [2026-10-26 21:59:48] Add a new user_thread, socket descriptor is 1420 user_thread id is 000000000000C5A0
+[Debug] [2026-10-26 21:59:48] After adding, map size is : 3
+[Debug] [2026-10-26 21:59:48] Add a new user_thread, socket descriptor is 1488 user_thread id is 000000000000C5A0
+[Debug] [2026-10-26 21:59:48] After adding, map size is : 4
+[Debug] [2026-10-26 21:59:48] IP address of connecting client is : ::ffff:127.0.0.1
+[Debug] [2026-10-26 21:59:48] IP address of connecting client is : ::ffff:127.0.0.1
+[Debug] [2026-10-26 21:59:48] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 21:59:48] _total_bytes_size : 160
+[Debug] [2026-10-26 21:59:48] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 21:59:48] _total_bytes_size : 96
+[Debug] [2026-10-26 21:59:48] cmd id :40010cmd name : get_cable_paras
+[Debug] [2026-10-26 21:59:49] cmd operation get_cable_paras releases locker
+[Debug] [2026-10-26 21:59:50] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 21:59:50] _total_bytes_size : 101
+[Debug] [2026-10-26 21:59:50] cmd id :20001cmd name : Open config cable
+[Error] [2026-10-26 21:59:50] E:CM Error: Current cable list empty, try to update current available cable list!. In function cdt_cable_manager::CableManager::Obtain at line 924 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CableManager.cpp compiled at Jan 31 2024.
+[Debug] [2026-10-26 21:59:50] the idcode from the scanning is: 0x50602899
+[Debug] [2026-10-26 21:59:50] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 21:59:50] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 21:59:50] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 21:59:50] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 21:59:50] cmd operation Open config cable releases locker
+[Debug] [2026-10-26 21:59:51] connection error happens : 1
+[Debug] [2026-10-26 21:59:51] connection error happens : 1
+[Debug] [2026-10-26 21:59:51] connection state changes : 6 , socket description 58c
+[Debug] [2026-10-26 21:59:51] socket state is ListeningState
+[Warn] [2026-10-26 21:59:51] socket state is ListeningState
+[Warn] [2026-10-26 21:59:51] socket state is ListeningState
+[Debug] [2026-10-26 21:59:51] connection state changes : 0 , socket description 58c
+[Debug] [2026-10-26 21:59:51] connection state changes : 0 , socket description 5d0
+[Warn] [2026-10-26 21:59:51] socket state is UnconnectedState
+[Warn] [2026-10-26 21:59:51] socket state is UnconnectedState
+[Debug] [2026-10-26 21:59:51] socket descriptor 58cis about to delete
+[Debug] [2026-10-26 21:59:51] socket descriptor 5d0is about to delete
+[Debug] [2026-10-26 22:05:22] Add a new user_thread, socket descriptor is 3f8 user_thread id is 000000000000C5A0
+[Debug] [2026-10-26 22:05:22] After adding, map size is : 3
+[Debug] [2026-10-26 22:05:22] Add a new user_thread, socket descriptor is 59c user_thread id is 000000000000C5A0
+[Debug] [2026-10-26 22:05:22] After adding, map size is : 4
+[Debug] [2026-10-26 22:05:22] IP address of connecting client is : ::ffff:127.0.0.1
+[Debug] [2026-10-26 22:05:22] IP address of connecting client is : ::ffff:127.0.0.1
+[Debug] [2026-10-26 22:05:22] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:05:22] _total_bytes_size : a0
+[Debug] [2026-10-26 22:05:22] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:05:22] _total_bytes_size : 60
+[Debug] [2026-10-26 22:05:22] cmd id :9c4acmd name : get_cable_paras
+[Debug] [2026-10-26 22:05:23] cmd operation get_cable_paras releases locker
+[Debug] [2026-10-26 22:05:24] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:05:24] _total_bytes_size : 65
+[Debug] [2026-10-26 22:05:24] cmd id :4e21cmd name : Open config cable
+[Debug] [2026-10-26 22:05:24] the idcode from the scanning is: 0x50602899
+[Debug] [2026-10-26 22:05:24] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:05:24] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:05:24] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:05:24] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:05:24] cmd operation Open config cable releases locker
+[Debug] [2026-10-26 22:05:26] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:05:26] _total_bytes_size : 38c
+[Debug] [2026-10-26 22:05:26] cmd id :4e22cmd name : Program
+[Debug] [2026-10-26 22:05:26] the idcode from the scanning is: 0x50602899
+[Debug] [2026-10-26 22:05:26] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:05:26] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:05:26] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:05:26] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:05:26] begin to read back config registerregAddr is 4
+[Debug] [2026-10-26 22:05:26] progress bar is 6
+[Debug] [2026-10-26 22:05:26] progress bar is 10
+[Debug] [2026-10-26 22:05:27] progress bar is 15
+[Debug] [2026-10-26 22:05:27] progress bar is 20
+[Debug] [2026-10-26 22:05:27] progress bar is 25
+[Debug] [2026-10-26 22:05:27] progress bar is 30
+[Debug] [2026-10-26 22:05:27] progress bar is 35
+[Debug] [2026-10-26 22:05:27] progress bar is 40
+[Debug] [2026-10-26 22:05:28] progress bar is 45
+[Debug] [2026-10-26 22:05:28] progress bar is 50
+[Debug] [2026-10-26 22:05:28] progress bar is 55
+[Debug] [2026-10-26 22:05:28] progress bar is 60
+[Debug] [2026-10-26 22:05:28] progress bar is 65
+[Debug] [2026-10-26 22:05:28] progress bar is 70
+[Debug] [2026-10-26 22:05:28] progress bar is 75
+[Debug] [2026-10-26 22:05:29] progress bar is 80
+[Debug] [2026-10-26 22:05:29] progress bar is 85
+[Debug] [2026-10-26 22:05:29] progress bar is 90
+[Debug] [2026-10-26 22:05:29] progress bar is 95
+[Debug] [2026-10-26 22:05:29] progress bar is 100
+[Debug] [2026-10-26 22:05:29] the value in the status register is :2096288
+[Debug] [2026-10-26 22:05:29] cmd operation Program releases locker
+[Debug] [2026-10-26 22:05:31] connection error happens : 1
+[Debug] [2026-10-26 22:05:31] connection error happens : 1
+[Debug] [2026-10-26 22:05:31] connection error happens : 1connection state changes : 6 , socket description 1016
+[Warn] [2026-10-26 22:05:31] socket state is ListeningState
+[Debug] [2026-10-26 22:05:31] connection state changes : 0 , socket description 1016
+[Warn] [2026-10-26 22:05:31] socket state is UnconnectedState
+[Debug] [2026-10-26 22:05:31] connection state changes : 6 , socket description 1436
+[Warn] [2026-10-26 22:05:31] socket state is ListeningState
+[Debug] [2026-10-26 22:05:31] connection state changes : 0 , socket description 1436
+[Warn] [2026-10-26 22:05:31] socket state is UnconnectedState
+[Debug] [2026-10-26 22:05:31] socket descriptor 1016is about to delete
+[Debug] [2026-10-26 22:05:31] socket descriptor 1436is about to delete
+[Debug] [2026-10-26 22:07:57] Add a new user_thread, socket descriptor is 1488 user_thread id is 000000000000C5A0
+[Debug] [2026-10-26 22:07:57] After adding, map size is : 3
+[Debug] [2026-10-26 22:07:57] Add a new user_thread, socket descriptor is 1724 user_thread id is 000000000000C5A0
+[Debug] [2026-10-26 22:07:57] After adding, map size is : 4
+[Debug] [2026-10-26 22:07:57] IP address of connecting client is : ::ffff:127.0.0.1
+[Debug] [2026-10-26 22:07:57] IP address of connecting client is : ::ffff:127.0.0.1
+[Debug] [2026-10-26 22:07:57] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:07:57] _total_bytes_size : 160
+[Debug] [2026-10-26 22:07:57] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:07:57] _total_bytes_size : 96
+[Debug] [2026-10-26 22:07:57] cmd id :40010cmd name : get_cable_paras
+[Debug] [2026-10-26 22:07:58] cmd operation get_cable_paras releases locker
+[Debug] [2026-10-26 22:07:58] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:07:58] _total_bytes_size : 101
+[Debug] [2026-10-26 22:07:58] cmd id :20001cmd name : Open config cable
+[Debug] [2026-10-26 22:07:59] the idcode from the scanning is: 0x50602899
+[Debug] [2026-10-26 22:07:59] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:07:59] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:07:59] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:07:59] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:07:59] cmd operation Open config cable releases locker
+[Debug] [2026-10-26 22:08:00] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:08:00] _total_bytes_size : 165
+[Debug] [2026-10-26 22:08:00] cmd id :4f4ccmd name : Scan Outer SPI Flash
+[Debug] [2026-10-26 22:08:00] the idcode from the scanning is: 0x50602899
+[Debug] [2026-10-26 22:08:00] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:08:00] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:08:00] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:08:00] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:08:00] the value in the status register is :81ffca0
+[Debug] [2026-10-26 22:08:00] flash_id is 1c7118
+[Debug] [2026-10-26 22:08:00] cmd operation Scan Outer SPI Flash releases locker
+[Debug] [2026-10-26 22:08:02] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:08:02] _total_bytes_size : 349
+[Debug] [2026-10-26 22:08:02] cmd id :4f4dcmd name : Program Outer Flash
+[Debug] [2026-10-26 22:08:02] begin to operate flash: cmd id = 4f4d
+[Debug] [2026-10-26 22:08:02] the idcode from the scanning is: 0x50602899
+[Debug] [2026-10-26 22:08:02] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:08:02] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:08:02] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:08:02] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:08:02] the value in the status register is :81ffca0
+[Debug] [2026-10-26 22:08:02] flash_id is 1c7118
+[Debug] [2026-10-26 22:08:02] The value of GigaDevice status register 1 is 0x
+[Debug] [2026-10-26 22:08:02] progress bar is 1
+[Debug] [2026-10-26 22:08:05] progress bar is 6
+[Debug] [2026-10-26 22:08:08] progress bar is 10
+[Debug] [2026-10-26 22:08:10] progress bar is 15
+[Debug] [2026-10-26 22:08:13] progress bar is 20
+[Debug] [2026-10-26 22:08:16] progress bar is 25
+[Debug] [2026-10-26 22:08:19] progress bar is 30
+[Debug] [2026-10-26 22:08:21] progress bar is 35
+[Debug] [2026-10-26 22:08:24] progress bar is 40
+[Debug] [2026-10-26 22:08:27] progress bar is 45
+[Error] [2026-10-26 22:08:27] E:CM Error: Write JTAG operation(10002) error. In function cdt_cable_manager::PgUsbIIOperator::Write at line 1177 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:09:43] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:09:43] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:09:49] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:09:49] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:09:55] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:09:55] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:01] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:01] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:07] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:07] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:13] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:13] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:19] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:19] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:25] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:25] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:31] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:31] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:37] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:37] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:43] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:43] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:49] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:49] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:55] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:10:55] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:01] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:01] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:08] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:08] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:14] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:14] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:20] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:20] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:26] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:26] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:32] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:32] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:38] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:38] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:44] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:44] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:50] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:50] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:56] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:11:56] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:02] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:02] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:08] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:08] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:14] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:14] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:20] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:20] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:26] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:26] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:32] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:32] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:38] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:38] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:44] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:44] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:50] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:50] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:56] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:12:56] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:02] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:02] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:08] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:08] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:14] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:14] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:20] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:20] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:26] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:26] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:32] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:32] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:38] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:38] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:44] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:44] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:50] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:50] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:56] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:13:56] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:02] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:02] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:08] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:08] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:14] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:14] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:20] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:20] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:26] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:26] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:32] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:32] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:38] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:38] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:44] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:44] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:50] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:50] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:56] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:14:56] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:02] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:02] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:08] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:08] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:14] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:14] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:20] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:20] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:26] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:26] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:32] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:32] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:39] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:39] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Debug] [2026-10-26 22:15:41] connection error happens : 1
+[Debug] [2026-10-26 22:15:41] connection state changes : 6 , socket description 1724
+[Warn] [2026-10-26 22:15:41] socket state is ListeningState
+[Debug] [2026-10-26 22:15:41] connection state changes : 0 , socket description 1724
+[Warn] [2026-10-26 22:15:41] socket state is UnconnectedState
+[Debug] [2026-10-26 22:15:41] socket descriptor 1724is about to delete
+[Error] [2026-10-26 22:15:45] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:45] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:51] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:51] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:57] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:15:57] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:03] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:03] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:09] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:09] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:15] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:15] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:21] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:21] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:27] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:27] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:33] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:33] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:39] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:39] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:45] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:45] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:51] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:51] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:57] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:16:57] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:03] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:03] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:09] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:09] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:15] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:15] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:21] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:21] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:27] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:27] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:33] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:33] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:39] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:39] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:45] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:45] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:51] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:51] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:57] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:17:57] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:03] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:03] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Debug] [2026-10-26 22:18:08] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:18:08] _total_bytes_size : 1452
+[Debug] [2026-10-26 22:18:08] cmd id :20302cmd name : Erase Outer Flash
+[Error] [2026-10-26 22:18:09] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:09] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:15] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:15] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:21] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:21] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:27] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:27] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:33] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:33] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:39] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:39] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:45] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:45] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:51] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:51] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:57] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:18:57] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:03] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:03] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:09] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:09] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:15] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:15] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:21] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:21] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:27] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:27] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:33] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:33] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:39] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:39] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:46] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:46] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:52] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:52] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:58] E:CM Error: Request to read 1 bytes but only 0 provided. In function cdt_cable_manager::PgUsbIIOperator::IsAvailable at line 1793 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Error] [2026-10-26 22:19:58] E:CM Error: Read JTAG cmd or data timeout. In function cdt_cable_manager::PgUsbIIOperator::Read at line 1268 in file g:\wf\2022.2\output_files\oem\FAB_Develop\branches\pds_2022.2\source\sw\cdt\cablemgr\CablePgUsb.cpp compiled at Jan 31 2024.
+[Info] [2026-10-26 22:20:02] /***************************Start jtagserver***************************/
+[Info] [2026-10-26 22:20:02] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-26 22:20:02] Version: 146967
+[Debug] [2026-10-26 22:20:45] Add a new user_thread, socket descriptor is 1204 user_thread id is 00000000000001A4
+[Debug] [2026-10-26 22:20:45] After adding, map size is : 1
+[Debug] [2026-10-26 22:20:45] Add a new user_thread, socket descriptor is 1196 user_thread id is 00000000000001A4
+[Debug] [2026-10-26 22:20:45] After adding, map size is : 2
+[Debug] [2026-10-26 22:20:45] IP address of connecting client is : ::ffff:127.0.0.1
+[Debug] [2026-10-26 22:20:45] IP address of connecting client is : ::ffff:127.0.0.1
+[Debug] [2026-10-26 22:20:45] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:20:45] _total_bytes_size : 160
+[Debug] [2026-10-26 22:20:45] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:20:45] _total_bytes_size : 96
+[Debug] [2026-10-26 22:20:45] cmd id :40010cmd name : get_cable_paras
+[Debug] [2026-10-26 22:20:46] cmd operation get_cable_paras releases locker
+[Debug] [2026-10-26 22:20:47] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:20:47] _total_bytes_size : 101
+[Debug] [2026-10-26 22:20:47] cmd id :20001cmd name : Open config cable
+[Debug] [2026-10-26 22:20:47] the idcode from the scanning is: 0x50602899
+[Debug] [2026-10-26 22:20:47] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:20:47] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:20:47] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:20:47] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:20:47] cmd operation Open config cable releases locker
+[Debug] [2026-10-26 22:20:48] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:20:48] _total_bytes_size : 165
+[Debug] [2026-10-26 22:20:48] cmd id :4f4ccmd name : Scan Outer SPI Flash
+[Debug] [2026-10-26 22:20:48] the idcode from the scanning is: 0x50602899
+[Debug] [2026-10-26 22:20:48] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:20:48] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:20:48] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:20:48] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:20:48] the value in the status register is :81ffca0
+[Debug] [2026-10-26 22:20:48] flash_id is 1c7118
+[Debug] [2026-10-26 22:20:49] cmd operation Scan Outer SPI Flash releases locker
+[Debug] [2026-10-26 22:20:50] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:20:50] _total_bytes_size : 34c
+[Debug] [2026-10-26 22:20:50] cmd id :4f4ecmd name : Erase Outer Flash
+[Debug] [2026-10-26 22:20:50] begin to operate flash: cmd id = 4f4e
+[Debug] [2026-10-26 22:20:50] the idcode from the scanning is: 0x50602899
+[Debug] [2026-10-26 22:20:50] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:20:50] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:20:50] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:20:50] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:20:50] the value in the status register is :81ffca0
+[Debug] [2026-10-26 22:20:50] flash_id is 1c7118
+[Debug] [2026-10-26 22:20:50] the value in the status register is :81ffca0
+[Debug] [2026-10-26 22:20:50] progress bar is 1
+[Error] [2026-10-26 22:20:51] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:51] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:51] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:51] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:51] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:51] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:52] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:52] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:52] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:20:52] progress bar is 7
+[Error] [2026-10-26 22:20:52] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:52] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:52] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:53] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:20:53] progress bar is 11
+[Error] [2026-10-26 22:20:53] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:53] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:53] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:53] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:53] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:54] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:20:54] progress bar is 16
+[Error] [2026-10-26 22:20:54] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:54] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:54] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:54] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:20:54] progress bar is 20
+[Error] [2026-10-26 22:20:54] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:55] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:55] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:55] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:55] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:55] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:20:55] progress bar is 25
+[Error] [2026-10-26 22:20:55] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:55] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:56] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:56] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:56] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:56] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:20:56] progress bar is 31
+[Error] [2026-10-26 22:20:56] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:56] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:57] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:57] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:20:57] progress bar is 35
+[Error] [2026-10-26 22:20:57] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:57] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:57] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:57] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:58] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:20:58] progress bar is 40
+[Error] [2026-10-26 22:20:58] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:58] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:58] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:58] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:59] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:59] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:20:59] progress bar is 46
+[Error] [2026-10-26 22:20:59] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:59] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:59] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:20:59] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:20:59] progress bar is 50
+[Error] [2026-10-26 22:21:00] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:00] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:00] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:00] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:00] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:00] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:21:00] progress bar is 55
+[Error] [2026-10-26 22:21:01] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:01] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:01] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:01] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:01] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:01] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:21:01] progress bar is 61
+[Error] [2026-10-26 22:21:02] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:02] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:02] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:02] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:02] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:02] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:21:02] progress bar is 66
+[Error] [2026-10-26 22:21:03] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:03] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:03] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:03] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:21:03] progress bar is 70
+[Error] [2026-10-26 22:21:03] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:03] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:04] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:04] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:04] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:04] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:21:04] progress bar is 75
+[Error] [2026-10-26 22:21:04] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:04] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:05] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:05] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:05] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:05] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:21:05] progress bar is 81
+[Error] [2026-10-26 22:21:05] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:05] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:06] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:21:06] progress bar is 85
+[Error] [2026-10-26 22:21:06] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:06] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:06] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:06] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:06] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:07] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:21:07] progress bar is 90
+[Error] [2026-10-26 22:21:07] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:07] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:07] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:07] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:07] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:08] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:21:08] progress bar is 96
+[Error] [2026-10-26 22:21:08] WaitForWIPFinish timeout, wait second ms:100
+[Error] [2026-10-26 22:21:08] WaitForWIPFinish timeout, wait second ms:100
+[Debug] [2026-10-26 22:21:08] progress bar is 100
+[Debug] [2026-10-26 22:21:08] end to operate flash: cmd id = 20302
+[Debug] [2026-10-26 22:21:08] cmd operation Erase Outer Flash releases locker
+[Debug] [2026-10-26 22:21:09] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:21:09] _total_bytes_size : 841
+[Debug] [2026-10-26 22:21:09] cmd id :20301cmd name : Program Outer Flash
+[Debug] [2026-10-26 22:21:09] begin to operate flash: cmd id = 20301
+[Debug] [2026-10-26 22:21:09] the idcode from the scanning is: 0x50602899
+[Debug] [2026-10-26 22:21:09] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:21:09] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:21:09] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:21:09] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:21:09] the value in the status register is :81ffca0
+[Debug] [2026-10-26 22:21:09] flash_id is 1c7118
+[Debug] [2026-10-26 22:21:09] The value of GigaDevice status register 1 is 0x
+[Debug] [2026-10-26 22:21:09] progress bar is 1
+[Debug] [2026-10-26 22:21:12] progress bar is 6
+[Debug] [2026-10-26 22:21:15] progress bar is 10
+[Debug] [2026-10-26 22:21:17] progress bar is 15
+[Debug] [2026-10-26 22:21:20] progress bar is 20
+[Debug] [2026-10-26 22:21:23] progress bar is 25
+[Debug] [2026-10-26 22:21:26] progress bar is 30
+[Debug] [2026-10-26 22:21:28] progress bar is 35
+[Debug] [2026-10-26 22:21:31] progress bar is 40
+[Debug] [2026-10-26 22:21:34] progress bar is 45
+[Debug] [2026-10-26 22:21:36] progress bar is 50
+[Debug] [2026-10-26 22:21:39] progress bar is 55
+[Debug] [2026-10-26 22:21:42] progress bar is 60
+[Debug] [2026-10-26 22:21:45] progress bar is 65
+[Debug] [2026-10-26 22:21:47] progress bar is 70
+[Debug] [2026-10-26 22:21:50] progress bar is 75
+[Debug] [2026-10-26 22:21:53] progress bar is 80
+[Debug] [2026-10-26 22:21:56] progress bar is 85
+[Debug] [2026-10-26 22:21:58] progress bar is 90
+[Debug] [2026-10-26 22:22:01] progress bar is 95
+[Debug] [2026-10-26 22:22:04] progress bar is 100
+[Debug] [2026-10-26 22:22:04] end to operate flash: cmd id = 20301
+[Debug] [2026-10-26 22:22:04] cmd operation Program Outer Flash releases locker
+[Debug] [2026-10-26 22:22:05] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:22:05] _total_bytes_size : 839
+[Debug] [2026-10-26 22:22:05] cmd id :20303cmd name : Verify Outer Flash
+[Debug] [2026-10-26 22:22:05] begin to operate flash: cmd id = 20303
+[Debug] [2026-10-26 22:22:05] the idcode from the scanning is: 0x50602899
+[Debug] [2026-10-26 22:22:05] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:22:05] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:22:05] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:22:05] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:22:05] the value in the status register is :81ffca0
+[Debug] [2026-10-26 22:22:05] flash_id is 1c7118
+[Debug] [2026-10-26 22:22:05] the value in the status register is :81ffca0
+[Debug] [2026-10-26 22:22:05] progress bar is 1
+[Debug] [2026-10-26 22:22:05] progress bar is 6
+[Debug] [2026-10-26 22:22:05] progress bar is 10
+[Debug] [2026-10-26 22:22:06] progress bar is 15
+[Debug] [2026-10-26 22:22:06] progress bar is 20
+[Debug] [2026-10-26 22:22:06] progress bar is 25
+[Debug] [2026-10-26 22:22:06] progress bar is 30
+[Debug] [2026-10-26 22:22:06] progress bar is 35
+[Debug] [2026-10-26 22:22:07] progress bar is 40
+[Debug] [2026-10-26 22:22:07] progress bar is 45
+[Debug] [2026-10-26 22:22:07] progress bar is 50
+[Debug] [2026-10-26 22:22:07] progress bar is 55
+[Debug] [2026-10-26 22:22:07] progress bar is 60
+[Debug] [2026-10-26 22:22:07] progress bar is 65
+[Debug] [2026-10-26 22:22:08] progress bar is 70
+[Debug] [2026-10-26 22:22:08] progress bar is 75
+[Debug] [2026-10-26 22:22:08] progress bar is 80
+[Debug] [2026-10-26 22:22:08] progress bar is 85
+[Debug] [2026-10-26 22:22:08] progress bar is 90
+[Debug] [2026-10-26 22:22:08] progress bar is 95
+[Debug] [2026-10-26 22:22:09] progress bar is 100
+[Debug] [2026-10-26 22:22:09] end to operate flash: cmd id = 20303
+[Debug] [2026-10-26 22:22:09] cmd operation Verify Outer Flash releases locker
+[Debug] [2026-10-26 22:22:10] connection error happens : 1
+[Debug] [2026-10-26 22:22:10] connection error happens : 1
+[Debug] [2026-10-26 22:22:10] connection state changes : 6 , socket description 1204
+[Warn] [2026-10-26 22:22:10] socket state is ListeningState
+[Debug] [2026-10-26 22:22:10] connection state changes : 0 , socket description 1204
+[Warn] [2026-10-26 22:22:10] socket state is UnconnectedState
+[Debug] [2026-10-26 22:22:10] connection state changes : 6 , socket description 1196
+[Warn] [2026-10-26 22:22:10] socket state is ListeningState
+[Debug] [2026-10-26 22:22:10] connection state changes : 0 , socket description 1196
+[Warn] [2026-10-26 22:22:10] socket state is UnconnectedState
+[Debug] [2026-10-26 22:22:10] socket descriptor 1204is about to delete
+[Debug] [2026-10-26 22:22:10] socket descriptor 1196is about to delete
+[Debug] [2026-10-26 22:27:07] Add a new user_thread, socket descriptor is 1204 user_thread id is 00000000000001A4
+[Debug] [2026-10-26 22:27:07] After adding, map size is : 1
+[Debug] [2026-10-26 22:27:07] Add a new user_thread, socket descriptor is 1156 user_thread id is 00000000000001A4
+[Debug] [2026-10-26 22:27:07] After adding, map size is : 2
+[Debug] [2026-10-26 22:27:07] IP address of connecting client is : ::ffff:127.0.0.1
+[Debug] [2026-10-26 22:27:07] IP address of connecting client is : ::ffff:127.0.0.1
+[Debug] [2026-10-26 22:27:07] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:27:07] _total_bytes_size : 160
+[Debug] [2026-10-26 22:27:07] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:27:07] _total_bytes_size : 96
+[Debug] [2026-10-26 22:27:07] cmd id :40010cmd name : get_cable_paras
+[Debug] [2026-10-26 22:27:08] cmd operation get_cable_paras releases locker
+[Debug] [2026-10-26 22:27:08] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:27:08] _total_bytes_size : 101
+[Debug] [2026-10-26 22:27:08] cmd id :20001cmd name : Open config cable
+[Debug] [2026-10-26 22:27:08] the idcode from the scanning is: 0x50602899
+[Debug] [2026-10-26 22:27:08] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:27:08] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:27:08] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:27:08] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:27:09] cmd operation Open config cable releases locker
+[Debug] [2026-10-26 22:27:10] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:27:10] _total_bytes_size : 38c
+[Debug] [2026-10-26 22:27:10] cmd id :4e22cmd name : Program
+[Debug] [2026-10-26 22:27:10] the idcode from the scanning is: 0x50602899
+[Debug] [2026-10-26 22:27:10] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:27:10] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:27:10] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:27:10] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:27:10] begin to read back config registerregAddr is 4
+[Debug] [2026-10-26 22:27:11] progress bar is 6
+[Debug] [2026-10-26 22:27:11] progress bar is 10
+[Debug] [2026-10-26 22:27:11] progress bar is 15
+[Debug] [2026-10-26 22:27:11] progress bar is 20
+[Debug] [2026-10-26 22:27:11] progress bar is 25
+[Debug] [2026-10-26 22:27:11] progress bar is 30
+[Debug] [2026-10-26 22:27:12] progress bar is 35
+[Debug] [2026-10-26 22:27:12] progress bar is 40
+[Debug] [2026-10-26 22:27:12] progress bar is 45
+[Debug] [2026-10-26 22:27:12] progress bar is 50
+[Debug] [2026-10-26 22:27:12] progress bar is 55
+[Debug] [2026-10-26 22:27:12] progress bar is 60
+[Debug] [2026-10-26 22:27:12] progress bar is 65
+[Debug] [2026-10-26 22:27:13] progress bar is 70
+[Debug] [2026-10-26 22:27:13] progress bar is 75
+[Debug] [2026-10-26 22:27:13] progress bar is 80
+[Debug] [2026-10-26 22:27:13] progress bar is 85
+[Debug] [2026-10-26 22:27:13] progress bar is 90
+[Debug] [2026-10-26 22:27:13] progress bar is 95
+[Debug] [2026-10-26 22:27:13] progress bar is 100
+[Debug] [2026-10-26 22:27:13] the value in the status register is :2096288
+[Debug] [2026-10-26 22:27:14] cmd operation Program releases locker
+[Debug] [2026-10-26 22:27:15] connection error happens : 1
+[Debug] [2026-10-26 22:27:15] connection error happens : 1
+[Debug] [2026-10-26 22:27:15] connection state changes : 6 , socket description 1204
+[Warn] [2026-10-26 22:27:15] socket state is ListeningState
+[Debug] [2026-10-26 22:27:15] connection state changes : 0 , socket description 1204
+[Warn] [2026-10-26 22:27:15] socket state is UnconnectedState
+[Debug] [2026-10-26 22:27:15] connection state changes : 6 , socket description 1156
+[Warn] [2026-10-26 22:27:15] socket state is ListeningState
+[Debug] [2026-10-26 22:27:15] connection state changes : 0 , socket description 1156
+[Warn] [2026-10-26 22:27:15] socket state is UnconnectedState
+[Debug] [2026-10-26 22:27:15] socket descriptor 1204is about to delete
+[Debug] [2026-10-26 22:27:15] socket descriptor 1156is about to delete
+[Debug] [2026-10-26 22:44:31] Add a new user_thread, socket descriptor is 1448 user_thread id is 00000000000001A4
+[Debug] [2026-10-26 22:44:31] After adding, map size is : 1
+[Debug] [2026-10-26 22:44:31] Add a new user_thread, socket descriptor is 1436 user_thread id is 00000000000001A4
+[Debug] [2026-10-26 22:44:31] After adding, map size is : 2
+[Debug] [2026-10-26 22:44:31] IP address of connecting client is : ::ffff:127.0.0.1
+[Debug] [2026-10-26 22:44:31] IP address of connecting client is : ::ffff:127.0.0.1
+[Debug] [2026-10-26 22:44:32] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:44:32] _total_bytes_size : 160
+[Debug] [2026-10-26 22:44:32] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:44:32] _total_bytes_size : 96
+[Debug] [2026-10-26 22:44:32] cmd id :40010cmd name : get_cable_paras
+[Debug] [2026-10-26 22:44:32] cmd operation get_cable_paras releases locker
+[Debug] [2026-10-26 22:44:33] Remove the header data from the client, index : 0
+[Debug] [2026-10-26 22:44:33] _total_bytes_size : 101
+[Debug] [2026-10-26 22:44:33] cmd id :20001cmd name : Open config cable
+[Debug] [2026-10-26 22:44:33] the idcode from the scanning is: 0x50602899
+[Debug] [2026-10-26 22:44:33] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:44:33] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:44:33] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:44:33] the idcode from the scanning is: 0x0
+[Debug] [2026-10-26 22:44:33] cmd operation Open config cable releases locker
+[Debug] [2026-10-26 22:44:35] connection error happens : 1
+[Debug] [2026-10-26 22:44:35] 
+[Debug] [2026-10-26 22:44:35] connection state changes : 6 , socket description 5a8
+[Warn] [2026-10-26 22:44:35] socket state is ListeningState
+[Debug] [2026-10-26 22:44:35] connection state changes : 0 , socket description 5a8
+[Warn] [2026-10-26 22:44:35] socket state is UnconnectedState
+[Debug] [2026-10-26 22:44:35] connection state changes : 6 , socket description 59c
+[Warn] [2026-10-26 22:44:35] socket state is ListeningState
+[Debug] [2026-10-26 22:44:35] connection state changes : 0 , socket description 59c
+[Warn] [2026-10-26 22:44:35] socket state is UnconnectedState
+[Debug] [2026-10-26 22:44:35] socket descriptor 5a8is about to delete
+[Debug] [2026-10-26 22:44:35] socket descriptor 59cis about to delete

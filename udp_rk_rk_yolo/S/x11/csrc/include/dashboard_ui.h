@@ -35,6 +35,11 @@ struct ViewStatus {
     float udp_fps = 0;  // M complete video arrival rate at S, measured from frame_id.
     bool recorded = false;
     MotionDirection motion = MotionDirection::Idle;
+    unsigned lane_blocked = 0;
+    unsigned line_left = 0, line_right = 0;
+    unsigned line_left_quality=0,line_right_quality=0;
+    unsigned line_left_reason=9,line_right_reason=9;
+    unsigned line_left_raw=0,line_right_raw=0;
 };
 
 class Dashboard {
@@ -112,6 +117,21 @@ public:
         }
         if (status.motion != MotionDirection::Idle)
             drawMotionCue(status.motion);
+        if(status.lane_blocked&1)drawForbiddenCross(1282,475);
+        if(status.lane_blocked&2)drawForbiddenCross(1490,475);
+        const char* names[]={"UNKNOWN","SOLID","DASHED"};
+        char line_text[80];
+        unsigned lt=status.line_left?status.line_left:status.line_left_raw;
+        unsigned rt=status.line_right?status.line_right:status.line_right_raw;
+        std::snprintf(line_text,sizeof(line_text),"L %s%s Q%u   R %s%s Q%u",names[std::min(2u,lt)],
+            !status.line_left&&status.line_left_raw?"*":"",status.line_left_quality,names[std::min(2u,rt)],
+            !status.line_right&&status.line_right_raw?"*":"",status.line_right_quality);
+        centeredText(frame_,line_text,{1238,699,296,18},1,0xFF93B1CB);
+        const char* reasons[]={"OK","NO MASK","NO TRACK","SHORT","FIT ERR","NO PAINT","AMBIG","WAIT 3","DUPLICATE","STALE","HELD"};
+        const char* lr=(!status.line_left&&status.line_left_reason==0)?"NO CLASS":reasons[std::min(10u,status.line_left_reason)];
+        const char* rr=(!status.line_right&&status.line_right_reason==0)?"NO CLASS":reasons[std::min(10u,status.line_right_reason)];
+        std::snprintf(line_text,sizeof(line_text),"L:%s  R:%s",lr,rr);
+        centeredText(frame_,line_text,{1238,719,296,15},1,0xFFB9ACD7);
 
         const uint64_t car_done = compositorClock();
         const char* label = safeLabel(mode_label, overview);
@@ -414,6 +434,24 @@ private:
             const Point b = rotateArrowPoint({x, 4}, center, cosine, sine, size);
             line(frame_, a, b, 0xFFDEFBFF, 1.f, 105);
         }
+    }
+
+    void drawForbiddenCross(int x,int y) {
+        // Screen-space geometry remains crisp through every camera/zoom mode.
+        circle(frame_,x,y,35.f,0xFFFF254F,30);
+        circle(frame_,x,y,28.f,0xFF200D1B,235);
+        for(int i=0;i<32;++i) {
+            float a=i*6.2831853f/32,b=(i+1)*6.2831853f/32;
+            line(frame_,{x+(int)(27*std::cos(a)),y+(int)(27*std::sin(a))},
+                         {x+(int)(27*std::cos(b)),y+(int)(27*std::sin(b))},0xFFFF4368,2.f,230);
+        }
+        for(int slope:{-1,1}) {
+            Point a={x-13,y-slope*13},b={x+13,y+slope*13};
+            line(frame_,a,b,0xFFFF244F,13.f,40);
+            line(frame_,a,b,0xFFFF375C,7.f,255);
+            line(frame_,a,b,0xFFFFCBD4,2.f,230);
+        }
+        centeredText(frame_,"BLOCKED",{x-42,y+38,84,16},1,0xFFFF7C96);
     }
 
     static void panel(std::vector<uint32_t>& image, Rect box, uint32_t color) {

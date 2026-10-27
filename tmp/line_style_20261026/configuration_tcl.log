@@ -1,0 +1,21 @@
+[2026.10.26 22:01:32] : cfg_gen_sfc succeed, 0.0
+[2026.10.26 22:05:23] : cfg_connect succeed, 1.1
+[2026.10.26 22:05:25] : cfg_scan_chain succeed, 1.0
+[2026.10.26 22:05:25] : cfg_assign_file succeed, 0.0
+[2026.10.26 22:05:30] : cfg_program succeed, 4.0
+[2026.10.26 22:05:31] : cfg_verify command can't be exec, 0.0
+[2026.10.26 22:07:58] : cfg_connect succeed, 1.1
+[2026.10.26 22:07:59] : cfg_scan_chain succeed, 1.0
+[2026.10.26 22:08:01] : cfg_jtag_flash_scan_device succeed, 1.0
+[2026.10.26 22:08:01] : cfg_jtag_flash_assign_file succeed, 0.0
+[2026.10.26 22:20:46] : cfg_connect succeed, 1.1
+[2026.10.26 22:20:48] : cfg_scan_chain succeed, 1.0
+[2026.10.26 22:20:49] : cfg_jtag_flash_scan_device succeed, 1.0
+[2026.10.26 22:20:50] : cfg_jtag_flash_assign_file succeed, 0.0
+[2026.10.26 22:21:08] : cfg_jtag_flash_erase succeed, 18.2
+[2026.10.26 22:22:04] : cfg_jtag_flash_program succeed, 55.5
+[2026.10.26 22:22:09] : cfg_jtag_flash_verify succeed, 4.0
+[2026.10.26 22:27:08] : cfg_connect succeed, 1.1
+[2026.10.26 22:27:09] : cfg_scan_chain succeed, 1.0
+[2026.10.26 22:27:10] : cfg_assign_file succeed, 0.0
+[2026.10.26 22:27:14] : cfg_program succeed, 4.0

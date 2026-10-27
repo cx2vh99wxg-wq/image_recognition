@@ -1,0 +1,12 @@
+正在初始化YOLOPv2引擎（车道线和可行驶区域检测）...
+模型输入数量: 1, 输出数量: 5
+输出 0: seg
+输出 1: ll
+输出 2: pred0
+输出 3: pred1
+输出 4: pred2
+模型输入尺寸: 640x480
+输出缓冲区: 车道线=1228800 bytes, 可行驶区域=2457600 bytes
+YOLOPv2引擎初始化成功
+PROBE LEFT SOLID reason=OK duty=100 spans=1 gaps=0 coverage=46 bottom=-144.0
+PROBE RIGHT DASHED reason=OK duty=64 spans=4 gaps=4 coverage=74 bottom=163.3

@@ -331,6 +331,12 @@ module image_pcie_capture #(
   wire [  7:0] mem2_out;
   wire [  7:0] mem3_out;
   wire [  7:0] mem4_out;
+  wire [  7:0] mem5_out;
+  wire hmi_left_denied, hmi_right_denied;
+  lane_permission_guard u_lane_permission_guard (
+      .clk(free_clk), .rst_n(board_rst_n), .async_permission(mem5_out),
+      .left_denied(hmi_left_denied), .right_denied(hmi_right_denied)
+  );
 
   // FSPI registers are written on its faster wr_clk. Their button levels
   // are held for many free_clk periods, so two flip-flops safely transfer
@@ -397,6 +403,8 @@ module image_pcie_capture #(
       .fspi_released       (fspi_button_sync[3:0]),
       .fspi_direction_armed(fspi_direction_armed),
       .movement_blocked    (movement_blocked),
+      .hmi_left_denied     (hmi_left_denied),
+      .hmi_right_denied    (hmi_right_denied),
       .go_released         (go_released),
       .back_released       (back_released),
       .left_released       (left_released),
@@ -423,7 +431,8 @@ module image_pcie_capture #(
       .mem1_out       (mem1_out),
       .mem2_out       (mem2_out),
       .mem3_out       (mem3_out),
-      .mem4_out       (mem4_out)
+      .mem4_out       (mem4_out),
+      .mem5_out       (mem5_out)
   );
 
   //===================================================================================================================
@@ -1248,6 +1257,8 @@ module remote_direction_arbiter (
     input  wire [3:0] fspi_released,
     input  wire       fspi_direction_armed,
     input  wire       movement_blocked,
+    input  wire       hmi_left_denied,
+    input  wire       hmi_right_denied,
     output wire       go_released,
     output wire       back_released,
     output wire       left_released,
@@ -1329,8 +1340,44 @@ module remote_direction_arbiter (
   wire fspi_blocked = ~fspi_direction_armed;
   assign go_released    = movement_blocked | (hmi_owns_traction ? ~latched_go   : (fspi_blocked | fspi_released[0]));
   assign back_released  = movement_blocked | (hmi_owns_traction ? ~latched_back : (fspi_blocked | fspi_released[1]));
-  assign left_released  = movement_blocked | (hmi_owns_steering ? ~hmi_left  : (fspi_blocked | fspi_released[2]));
-  assign right_released = movement_blocked | (hmi_owns_steering ? ~hmi_right : (fspi_blocked | fspi_released[3]));
+  assign left_released  = movement_blocked | (hmi_owns_steering ? (~hmi_left | hmi_left_denied) : (fspi_blocked | fspi_released[2]));
+  assign right_released = movement_blocked | (hmi_owns_steering ? (~hmi_right | hmi_right_denied) : (fspi_blocked | fspi_released[3]));
+endmodule
+
+// reg5: bit6=protocol valid, bit7=heartbeat toggle, bits[1:0]=right/left deny.
+// Reset, a stopped S process or expired metadata restores legacy manual control.
+// Stable-word CDC and one atomic byte prevent mixed left/right permissions.
+module lane_permission_guard #(
+    parameter TIMEOUT_CYCLES = 18750000
+) (
+    input wire clk, rst_n,
+    input wire [7:0] async_permission,
+    output wire left_denied, right_denied
+);
+  (* ASYNC_REG="TRUE" *) reg [7:0] meta, synced;
+  reg [7:0] candidate;
+  reg [3:0] stable;
+  reg [24:0] age;
+  reg heartbeat, alive;
+  reg [1:0] deny;
+  assign left_denied=alive & deny[0];
+  assign right_denied=alive & deny[1];
+  always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+      meta<=0; synced<=0; candidate<=0; stable<=0;
+      age<=0; heartbeat<=0; alive<=0; deny<=0;
+    end else begin
+      meta<=async_permission; synced<=meta;
+      if(synced!=candidate) begin candidate<=synced; stable<=0; end
+      else if(stable!=15) stable<=stable+1'b1;
+      if(age<TIMEOUT_CYCLES) age<=age+1'b1;
+      else begin alive<=0; deny<=0; end
+      if(stable==8 && candidate[6] && (!alive || candidate[7]!=heartbeat)) begin
+        heartbeat<=candidate[7]; deny<=candidate[1:0]; age<=0; alive<=1;
+      end
+      if(stable==8 && !candidate[6]) begin alive<=0; deny<=0; end
+    end
+  end
 endmodule
 
 // Only the new persistent enable bit crosses into the existing STOP domain.

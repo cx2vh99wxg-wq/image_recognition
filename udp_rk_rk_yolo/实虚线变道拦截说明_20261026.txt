@@ -1,0 +1,70 @@
+实虚线识别与 HMI 变道拦截（2026-10-26）
+
+修订提示：本文件记录初版实现及当时的 FPGA 固化结果。后续针对真实手机视频一直 UNKNOWN 的修复、当前算法与更新步骤，请查看同目录《实虚线UNKNOWN修复说明_20261027.txt》；修复已于 2026-10-27 通过 DEBUG 更新到两板生产目录并启动。下面的固定投影/采样说明为初版历史，不能作为新版算法说明。
+
+使用规则
+1. 左侧确认实线：按 HMI LEFT 时，FPGA 不拉低 LEFT，LCD 车图左侧显示红色 X。
+2. 右侧确认实线：按 HMI RIGHT 时，同理拦截并在右侧显示红色 X。
+3. 对应侧确认虚线：沿用原有按住转向、松开释放的行为。
+4. 两侧实线：左右 HMI 转向都拦截。X 仅在请求被拦截时显示，松手后保留约 0.7 秒。
+5. 初始、未识别、结果过期时为 UNKNOWN，保留原有手动控制；UNKNOWN 不代表已识别出虚线。
+6. GO/BACK 保持、STOP/REARM、人员自动刹停不改。原弯道跟随仍可转向，未按变道请求时不因实线禁止正常沿弯道行驶。
+7. 这里实现的是人工左右键的越线请求门控，车辆按键并无车道位置/车速闭环，不宣称可自动完成整条车道的变换。
+
+实现方法
+M 端复用同一次 YOLOPv2 推理，不重训练、不替换模型、不改变旧弯道判定。
+输入 640x480 是四路摄像头拼接；新增分析与旧弯道一样，读取左上角第 1 路 320x240。
+新增只读分析在原图被红/绿色覆盖之前执行。0.3 掩码阈值用于定位边界；原始 RGB 的亮度/颜色与邻域对比用于检验实际漆线，避免连续掩码抹掉虚线空白。
+在第 1 路画面高度 43%~96% 的近中区域按 3 行采样，寻找车道像素段，投影种子后迭代拟合二次曲线，分别建立左右边界。
+沿拟合走廊统计真实亮段、内侧空隙和占空比，拟合不足、有效长度不足、只有一个虚线亮段、缺乏图像证据时输出 UNKNOWN。
+当前启发式初值：实线占空比 >=82% 且无长断口；虚线占空比 15%~72%、至少两段可见标线和一个有效内侧间隙。
+quality 是工程评分，不是经标定的概率。阴影、磨损、反光和特殊双线场景仍需实际素材评估。
+仅连续三个新的推理 source_id 一致才确认线型；重复显示同一份掩码不计为新帧。
+
+传输和时序
+原 V3 64 字节图像帧头、原弯道共享内存 ABI 不变。
+新增独立 LST1 元数据包（60 字节、网络字节序、FNV-1a 校验）在已有 UDP 端口上传送。
+独立共享内存键：基础键 0x12345678 +9 为线型，+10 为 HMI 拦截显示事件。
+M 推理约 265ms/次，因此线型从采集时刻起最多有效 1 秒；重复包不可刷新原始到期时间。
+原弯道结果仍使用原来的 500ms 新鲜度设置。
+S 单线程 FSPI 循环每约 100ms 写 reg5 权限和翻转心跳，不写运动/刹停寄存器 0..4。
+reg5 bit6=协议有效，bit7=心跳翻转，bit0=禁止 HMI 左，bit1=禁止 HMI 右。
+FPGA 采用稳定字节同步，约 750ms 未收到新心跳就撤销旧权限，恢复 UNKNOWN 的原有手动行为。
+HMI 仍发送原有 C/D，不修改 HMI 工程和串口协议；最终硬件仲裁只拦截 HMI 转向分支，不拦截原 FSPI 弯道跟随分支。
+人员 STOP 仍优先于所有方向。
+新增 HMI 告警轮询使用三个立即匹配的 RX-only 样本，不引入原十次读值中的 500us 重试休眠；原有读值接口保持原样。
+
+本地与板内位置
+本地生产源码直接位于 udp_rk_rk_yolo/M、udp_rk_rk_yolo/S 和 fpga/fpga_pcie_ov5640/source，没有压缩包。
+板内生产代码为 /home/linaro/M 和 /home/linaro/S；候选构建/日志/备份在各自 line_build/20261026。
+FPGA 文件为 project/generate_bitstream/image_pcie_capture_line_style_20261026.sbit 和同名 .sfc。
+Flash 编程先擦除，再写入，再读回校验；本次完整记录见 tmp/line_style_20261026/program-flash-retry.log。
+仅重新配置 FPGA 而不重启 Linux 时，PCIe 的 Mem/BusMaster 和 BAR 可能被复位，表现为进程仍读帧但图像全零。应停止采集后恢复该端 PCIe 枚举/原驱动，再启动程序；不能用 frame_id 增长当作图像有效的唯一证据。
+原 hmi_traction_latch_20261026 和 lane_steering_20261026 文件仍保留，可回退。
+现有相机/DDR 跨时钟约束仍有旧路径负裕量；本次未更改这些路径，不宣称全工程 STA 已收敛。新门控 free_clk 域 setup 裕量为 34.352ns。
+
+无需手机的检查
+M：cd /home/linaro/M/pcie && make test-line-style
+M：make line-style-replay
+M：./build/line_style_replay 原始帧.ppm 车道掩码.pgm
+回放工具仅输出单张图像的左右线型证据，不访问 PCIe、SPI 或车辆，不伪造三帧时序确认。
+S：cd /home/linaro/S/fspi && make test-lane-rule
+本地还通过了八组 FPGA 控制仿真、旧 FSPI 弯道/刹停/协议回归，以及分类器 ASan/UBSan 检查。
+真实道路摄像头下的准确率和真实按键引脚拦截，不能用合成图或日志写成功代替实测验收。
+
+PDS 后续重新固化步骤
+1. 打开 fpga/fpga_pcie_ov5640/project/project.pds。当前目标器件是 PG2L100H。
+2. 打开 Fabric Configuration，连接 PANGO USB CABLE II，Scan Device 确认 S 端器件为 PG2L100H。
+3. 在 Boundary Scan 中选择 FPGA 上方的 Outer Flash；首次使用先扫描外部 Flash。
+4. 右键 Outer Flash → Assign New Configuration File，选择 image_pcie_capture_line_style_20261026.sfc。
+5. 对 Outer Flash 执行 Program，包含 Erase → Program → Verify，直到控制台明确返回 Verify Outer Flash successfully。命令行需显式先 cfg_jtag_flash_erase，再 program 和 verify。
+6. 完成后给 S 板断电再上电，让 Linux 对重新配置的 PCIe 正常枚举；本次原驱动热恢复出现过重复类错误，不建议在运行中反复热拔插驱动。
+7. S 板登录图形桌面后，按原方式在 /home/linaro/S 执行 make run。若已自动启动，不要再重复启动。
+8. M 端 FPGA 不需要重烧，HMI 文件不需要重烧。M 端只更新 /home/linaro/M 的 ARM 源码/程序。
+
+最终部署验证
+S Flash 擦除 17.9 秒、写入 54.9 秒、读回校验 3.9 秒，校验明确成功。SFC SHA256：85fdb8e35d7195880df4c26e1af8eceb89311dcd90029acca8226a5695f21d90。
+S 板冷启动后已自动运行新版全部进程。两次本地 RGB565 帧 SHA256 前缀分别为 e480fa15f114226a、bef06c13f1ba31a6，颜色数均为数千，确认图像有效且持续更新。
+M 端采集/发送约 30 FPS，推理约 3.6 FPS；S UDP 实测约 30 FPS。左右线型数据及 HMI 告警共享段持续刷新。
+无道路输入时保持 UNKNOWN。本次未以手机保持道路画面做现场实虚线准确率/真实引脚验收。
+五个生产可执行文件已从板上原样同步回本地，均检查为 AArch64；本地主机测试产生的对象文件已移到 tmp，避免误拷贝到 ARM 板上。

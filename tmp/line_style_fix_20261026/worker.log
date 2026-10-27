@@ -1,0 +1,4 @@
+[LINE_STYLE] source=1 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=OK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=OK duty=0 spans=0 mask_range=1.000..1.000 ego_ref=0.0 road=0 objects=0
+bounded slot PASS calls=23 replaced=44 latest=199
+[LINE_STYLE] source=1 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=OK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=OK duty=0 spans=0 mask_range=199.000..199.000 ego_ref=0.0 road=0 objects=0
+invalid outputs/stale/future/exceptions/join/immutable masks PASS

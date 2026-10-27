@@ -5,6 +5,7 @@
 
 # 编译器设置
 CC = gcc
+.DEFAULT_GOAL := all
 
 # 编译选项
 CFLAGS = -Wall -O2 -std=c11
@@ -16,6 +17,13 @@ BUILDDIR = build
 
 # 目标程序
 TARGET_APP = $(BUILDDIR)/vehicle_control
+
+$(BUILDDIR)/test_lane_rule: test_lane_rule.c ../include/lane_rule.h ../include/line_style_ipc.h ../include/line_style.h
+	@mkdir -p $(BUILDDIR)
+	$(CC) -std=c11 -Wall -Wextra -Werror -I../include $< -o $@
+
+test-lane-rule: $(BUILDDIR)/test_lane_rule
+	./$(BUILDDIR)/test_lane_rule
 TARGET_TEST = $(BUILDDIR)/test_brake_control
 TARGET_SWITCH_TEST = $(BUILDDIR)/test_auto_brake_switch
 TARGET_LANE_TEST = $(BUILDDIR)/test_lane_steering

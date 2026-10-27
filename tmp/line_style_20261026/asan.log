@@ -1,0 +1,17 @@
+scene bend=0 filled=0 expected=1/1 got=1/1 duty=100/100 spans=1/1
+scene bend=0 filled=0 expected=1/2 got=1/2 duty=100/58 spans=1/3
+scene bend=0 filled=0 expected=2/1 got=2/1 duty=58/100 spans=3/1
+scene bend=0 filled=0 expected=2/2 got=2/2 duty=58/58 spans=3/3
+scene bend=0 filled=1 expected=1/1 got=1/1 duty=100/100 spans=1/1
+scene bend=0 filled=1 expected=1/2 got=1/2 duty=100/58 spans=1/3
+scene bend=0 filled=1 expected=2/1 got=2/1 duty=58/100 spans=3/1
+scene bend=0 filled=1 expected=2/2 got=2/2 duty=58/58 spans=3/3
+scene bend=1 filled=0 expected=1/1 got=1/1 duty=100/100 spans=1/1
+scene bend=1 filled=0 expected=1/2 got=1/2 duty=100/58 spans=1/3
+scene bend=1 filled=0 expected=2/1 got=2/1 duty=58/100 spans=3/1
+scene bend=1 filled=0 expected=2/2 got=2/2 duty=58/58 spans=3/3
+scene bend=1 filled=1 expected=1/1 got=1/1 duty=100/100 spans=1/1
+scene bend=1 filled=1 expected=1/2 got=1/2 duty=100/58 spans=1/3
+scene bend=1 filled=1 expected=2/1 got=2/1 duty=58/100 spans=3/1
+scene bend=1 filled=1 expected=2/2 got=2/2 duty=58/58 spans=3/3
+line styles / RGB gaps / temporal identity / metadata expiry PASS

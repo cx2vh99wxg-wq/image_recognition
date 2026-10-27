@@ -24,3 +24,9 @@ The start address of operating flash is 0x0.
 COMMAND[Program Outer Flash] execute finish, takes 54.7 secs.
 The start address of operating flash is 0x0.
 COMMAND[Verify Outer Flash] execute successfully, takes 3.9 secs.
+The start address of operating flash is 0x0.
+E: JtagServer-0612: The following error occurred : client socket connect error!
+E: JtagServer-0613: Server is busy now, please wait for a moment and try again.
+E: Configuration-0008: The command 'Erase Outer Flash' execute fail.
+E: CdtCommon-0402: Fail to connect to server. 
+Server is disconnect

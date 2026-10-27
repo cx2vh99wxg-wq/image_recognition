@@ -1,0 +1,103 @@
+正在初始化UDP共享内存 (key=0x1234567a, size=614504 bytes)
+Shared memory initialized successfully (is_writer: 1)
+正在初始化弯道检测共享内存 (key=0x1234567e, size=72 bytes)
+弯道检测共享内存初始化成功 (id=32, ptr=0x7f9e30b000)
+初始化弯道检测控制结构
+[UDP_RX] socket_rcvbuf=2457600 batch=32 max_inflight=2 protocol=V3/V2/legacy curve_ttl_ms=500
+[LINE_RX] session=4182696421 source=193 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=559
+[LINE_RX] session=4182696421 source=253 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=499
+[LINE_RX] session=4182696421 source=310 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=333
+[UDP_RX] publish_fps=29.95 complete_fps=29.95 udp_mbps=154.65 assembly_ms=25.66 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=379 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=626
+[LINE_RX] session=4182696421 source=436 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=526
+[UDP_RX] publish_fps=29.99 complete_fps=29.99 udp_mbps=155.11 assembly_ms=25.87 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=496 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=526
+[LINE_RX] session=4182696421 source=553 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=365
+[LINE_RX] session=4182696421 source=622 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=657
+[UDP_RX] publish_fps=29.99 complete_fps=29.99 udp_mbps=154.95 assembly_ms=25.86 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=679 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=491
+[LINE_RX] session=4182696421 source=739 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=433
+[UDP_RX] publish_fps=30.00 complete_fps=30.00 udp_mbps=154.82 assembly_ms=25.96 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=805 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=623
+[LINE_RX] session=4182696421 source=865 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=562
+[LINE_RX] session=4182696421 source=922 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=394
+[UDP_RX] publish_fps=29.99 complete_fps=29.99 udp_mbps=154.80 assembly_ms=25.89 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=982 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=405
+[LINE_RX] session=4182696421 source=1048 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=599
+[UDP_RX] publish_fps=30.00 complete_fps=30.00 udp_mbps=154.82 assembly_ms=25.92 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=1105 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=490
+[LINE_RX] session=4182696421 source=1165 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=433
+[LINE_RX] session=4182696421 source=1222 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=330
+[UDP_RX] publish_fps=29.99 complete_fps=29.99 udp_mbps=154.65 assembly_ms=25.97 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=1291 left=UNKNOWN(Q0,NO TRACK) right=UNKNOWN(Q0,WAIT 3) ttl_ms=633
+弯道检测更新: frame=1300, type=左弯, confidence=90%, angle=25度
+弯道检测更新: frame=1300, type=左弯, confidence=0%, angle=25度
+[LINE_RX] session=4182696421 source=1348 left=UNKNOWN(Q0,NO TRACK) right=DASHED(Q85,OK) ttl_ms=462
+[UDP_RX] publish_fps=29.99 complete_fps=29.99 udp_mbps=155.06 assembly_ms=25.83 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=1408 left=UNKNOWN(Q0,NO TRACK) right=UNKNOWN(Q0,AMBIG) ttl_ms=463
+[LINE_RX] session=4182696421 source=1468 left=UNKNOWN(Q0,NO TRACK) right=UNKNOWN(Q0,WAIT 3) ttl_ms=429
+[LINE_RX] session=4182696421 source=1534 left=UNKNOWN(Q0,NO TRACK) right=UNKNOWN(Q0,AMBIG) ttl_ms=554
+[UDP_RX] publish_fps=30.00 complete_fps=30.00 udp_mbps=154.56 assembly_ms=25.85 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=1594 left=UNKNOWN(Q0,NO TRACK) right=UNKNOWN(Q0,AMBIG) ttl_ms=493
+[LINE_RX] session=4182696421 source=1654 left=UNKNOWN(Q0,NO TRACK) right=DASHED(Q85,OK) ttl_ms=435
+[UDP_RX] publish_fps=29.99 complete_fps=29.99 udp_mbps=154.93 assembly_ms=25.89 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=1720 left=UNKNOWN(Q0,NO TRACK) right=DASHED(Q84,OK) ttl_ms=624
+[LINE_RX] session=4182696421 source=1780 left=UNKNOWN(Q0,NO TRACK) right=DASHED(Q85,OK) ttl_ms=625
+[LINE_RX] session=4182696421 source=1837 left=UNKNOWN(Q0,NO TRACK) right=UNKNOWN(Q0,AMBIG) ttl_ms=460
+[UDP_RX] publish_fps=30.00 complete_fps=30.00 udp_mbps=154.40 assembly_ms=26.17 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=1897 left=UNKNOWN(Q0,NO TRACK) right=DASHED(Q85,OK) ttl_ms=395
+[LINE_RX] session=4182696421 source=1963 left=UNKNOWN(Q0,SHORT) right=DASHED(Q85,OK) ttl_ms=589
+[UDP_RX] publish_fps=30.00 complete_fps=30.00 udp_mbps=154.83 assembly_ms=25.96 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=2023 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=527
+[LINE_RX] session=4182696421 source=2080 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=364
+[UDP_RX] publish_fps=29.99 complete_fps=29.99 udp_mbps=154.74 assembly_ms=25.94 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=2140 left=UNKNOWN(Q0,SHORT) right=UNKNOWN(Q0,WAIT 3) ttl_ms=364
+弯道检测更新: frame=2200, type=左弯, confidence=90%, angle=25度
+弯道检测更新: frame=2200, type=左弯, confidence=0%, angle=25度
+[LINE_RX] session=4182696421 source=2206 left=UNKNOWN(Q0,BAD FIT) right=UNKNOWN(Q0,BAD FIT) ttl_ms=559
+[LINE_RX] session=4182696421 source=2266 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=556
+[UDP_RX] publish_fps=29.99 complete_fps=29.99 udp_mbps=154.94 assembly_ms=25.96 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=2326 left=UNKNOWN(Q0,AMBIG) right=UNKNOWN(Q0,NO TRACK) ttl_ms=492
+[LINE_RX] session=4182696421 source=2383 left=UNKNOWN(Q0,BAD FIT) right=UNKNOWN(Q0,BAD FIT) ttl_ms=327
+[UDP_RX] publish_fps=29.97 complete_fps=29.97 udp_mbps=154.56 assembly_ms=26.01 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=2452 left=UNKNOWN(Q0,NO PAINT) right=DASHED(Q85,OK) ttl_ms=592
+[LINE_RX] session=4182696421 source=2512 left=UNKNOWN(Q0,NO TRACK) right=DASHED(Q80,OK) ttl_ms=592
+[LINE_RX] session=4182696421 source=2569 left=UNKNOWN(Q0,BAD FIT) right=UNKNOWN(Q0,BAD FIT) ttl_ms=489
+[UDP_RX] publish_fps=29.99 complete_fps=29.99 udp_mbps=155.21 assembly_ms=25.81 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=2629 left=UNKNOWN(Q0,NO TRACK) right=UNKNOWN(Q0,AMBIG) ttl_ms=460
+[LINE_RX] session=4182696421 source=2689 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=400
+[UDP_RX] publish_fps=30.00 complete_fps=30.00 udp_mbps=154.62 assembly_ms=25.68 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=2755 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=593
+[LINE_RX] session=4182696421 source=2815 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=591
+[LINE_RX] session=4182696421 source=2872 left=SOLID(Q80,OK) right=DASHED(Q77,OK) ttl_ms=460
+[UDP_RX] publish_fps=29.92 complete_fps=29.92 udp_mbps=154.16 assembly_ms=26.03 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=2932 left=UNKNOWN(Q0,NO TRACK) right=UNKNOWN(Q0,WAIT 3) ttl_ms=460
+[LINE_RX] session=4182696421 source=2992 left=UNKNOWN(Q0,NO TRACK) right=UNKNOWN(Q0,NO TRACK) ttl_ms=433
+[UDP_RX] publish_fps=29.99 complete_fps=29.99 udp_mbps=155.13 assembly_ms=26.11 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=3058 left=UNKNOWN(Q0,AMBIG) right=UNKNOWN(Q0,NO TRACK) ttl_ms=593
+弯道检测更新: frame=3100, type=直道, confidence=90%, angle=0度
+弯道检测更新: frame=3100, type=直道, confidence=0%, angle=0度
+[LINE_RX] session=4182696421 source=3118 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=559
+[LINE_RX] session=4182696421 source=3175 left=UNKNOWN(Q0,NO TRACK) right=UNKNOWN(Q0,NO TRACK) ttl_ms=397
+[UDP_RX] publish_fps=30.00 complete_fps=30.00 udp_mbps=154.70 assembly_ms=26.00 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=3244 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=626
+[LINE_RX] session=4182696421 source=3301 left=UNKNOWN(Q0,AMBIG) right=UNKNOWN(Q0,NO TRACK) ttl_ms=523
+[UDP_RX] publish_fps=30.00 complete_fps=30.00 udp_mbps=154.77 assembly_ms=25.94 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=3361 left=UNKNOWN(Q0,AMBIG) right=UNKNOWN(Q0,NO TRACK) ttl_ms=463
+[LINE_RX] session=4182696421 source=3421 left=UNKNOWN(Q0,AMBIG) right=UNKNOWN(Q0,NO TRACK) ttl_ms=459
+[LINE_RX] session=4182696421 source=3487 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=593
+[UDP_RX] publish_fps=29.99 complete_fps=29.99 udp_mbps=154.78 assembly_ms=25.95 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=3544 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=490
+[LINE_RX] session=4182696421 source=3604 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=441
+[UDP_RX] publish_fps=30.00 complete_fps=30.00 udp_mbps=155.18 assembly_ms=25.96 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=3664 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=432
+[LINE_RX] session=4182696421 source=3730 left=DASHED(Q82,OK) right=UNKNOWN(Q0,WAIT 3) ttl_ms=557
+[LINE_RX] session=4182696421 source=3790 left=DASHED(Q81,OK) right=SOLID(Q83,OK) ttl_ms=492
+[UDP_RX] publish_fps=29.99 complete_fps=29.99 udp_mbps=154.76 assembly_ms=26.03 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=3847 left=DASHED(Q80,OK) right=SOLID(Q80,OK) ttl_ms=332
+[LINE_RX] session=4182696421 source=3916 left=DASHED(Q80,OK) right=SOLID(Q78,OK) ttl_ms=625
+[UDP_RX] publish_fps=30.00 complete_fps=30.00 udp_mbps=154.83 assembly_ms=25.87 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=4182696421 source=3976 left=DASHED(Q81,OK) right=SOLID(Q78,OK) ttl_ms=569
+弯道检测更新: frame=4000, type=右弯, confidence=90%, angle=25度
+弯道检测更新: frame=4000, type=右弯, confidence=0%, angle=25度
+[LINE_RX] session=4182696421 source=4036 left=DASHED(Q80,OK) right=SOLID(Q83,OK) ttl_ms=558

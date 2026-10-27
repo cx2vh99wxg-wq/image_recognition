@@ -2,6 +2,7 @@
 #include "fspi_module.h"
 #include "yolo_integration.h"
 #include "latest_lane_worker.h"
+#include "line_style_ipc.h"
 #include "shared_memory.h"
 #include <stdio.h>
 #include <stdint.h>
@@ -1162,6 +1163,11 @@ int main() {
     }
     printf("M inference=%s, capture target=%u fps (0=unlimited), NN result max age=500ms\n",
            asynchronous ? "latest-frame worker" : "synchronous", capture_fps);
+    LineStyleIPC line_ipc = {-1,nullptr};
+    line_ipc_open(&line_ipc,LINE_STYLE_KEY,1);
+    LineStyleData line_initial={};line_ipc_write(&line_ipc,&line_initial);
+    m_lane::LineStyleAnalyzer synchronous_line_analyzer;
+    const uint32_t line_session=(uint32_t)(monotonic_ns()^((uint64_t)getpid()<<16))|1u;
     while (g_running) {
         uint64_t mark = monotonic_ns();
         // printf("[DEBUG] ===== 帧 %d 开始 =====\n", frame_count);
@@ -1213,6 +1219,8 @@ int main() {
                         result->curve.angle, result->captured_ns);
                     last_curve_source = result->source_id;
                     last_curve_capture_ns = result->captured_ns;
+                    LineStyleData line=line_result_data(&result->line_style,line_session,(uint32_t)result->source_id,result->captured_ns);
+                    line_ipc_write(&line_ipc,&line);
                 }
                 curve_fresh = true;
             } else if (curve_fresh) {
@@ -1247,6 +1255,11 @@ int main() {
                     // printf("[DEBUG] 检查结果指针: lane=%p, drivable=%p\n",
                     //        yolopv2_results.lane_line_data, yolopv2_results.drivable_area_data);
                     if (yolopv2_results.lane_line_data && yolopv2_results.drivable_area_data) {
+                        auto raw_line=synchronous_line_analyzer.analyze_front_camera(yolopv2_results.lane_line_data,
+                            yolopv2_results.width,yolopv2_results.height,image_buf_888,IMAGE_WIDTH,IMAGE_HEIGHT,nullptr,yolopv2_results.drivable_area_data);
+                        auto stable_line=synchronous_line_analyzer.confirm(raw_line,(uint64_t)frame_count+1,captured_ns);
+                        LineStyleData line=line_result_data(&stable_line,line_session,(uint32_t)frame_count+1,captured_ns);
+                        if(line_fresh(&line,monotonic_ns()))line_ipc_write(&line_ipc,&line);
                         // printf("[DEBUG] 调用draw_lane_and_drivable...\n");
                         draw_lane_and_drivable(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, &yolopv2_results);
                         // printf("[DEBUG] draw_lane_and_drivable完成\n");
@@ -1343,6 +1356,7 @@ int main() {
 #endif
     pcie_manager_cleanup_streaming(&pcie_manager);
     shared_memory_cleanup(&pcie_shm_manager);
+    line_ipc_close(&line_ipc);
     curve_detection_shm_cleanup();  // 清理弯道检测共享内存
     yolo_engine_cleanup(&yolo_engine);
     pcie_manager_cleanup(&pcie_manager);

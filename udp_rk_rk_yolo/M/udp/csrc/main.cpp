@@ -12,6 +12,7 @@
 #include <arpa/inet.h>
 #include "shared_memory.h"
 #include "video_transport_v2.h"
+#include "line_style_wire.h"
 #include <errno.h>
 #include <signal.h>
 #include <sys/uio.h>
@@ -395,11 +396,19 @@ int main(int argc, char* argv[]) {
     uint8_t* pixels = (uint8_t*)malloc(PCIE_FRAME_SIZE);
     if (!pixels) { network_manager_cleanup(&network); return 1; }
     SourceConnection source;
+    LineStyleIPC line_ipc={-1,nullptr};
+    uint64_t last_line_send=0;
     printf("[UDP_TX] protocol=V3 packet=%zu curve_ttl_ms=500 (legacy/V2 video has no trusted NN identity)\n",
            sizeof(video_v2::WireHeader) + video_v2::LINE_BYTES);
     while (sender_running) {
         uint64_t now = monotonic_ns();
         report_sender(&network); probe_source(source, network, now);
+        if(!last_line_send||now-last_line_send>=50000000ULL) {
+            line_ipc_open(&line_ipc,LINE_STYLE_KEY,0);LineStyleData line={};uint8_t packet[line_wire::SIZE];
+            if(!line_ipc_read(&line_ipc,&line)&&line_wire::encode(packet,line,now))
+                sendto(network.socket_fd,packet,sizeof(packet),MSG_DONTWAIT,(sockaddr*)&network.target_addr,sizeof(network.target_addr));
+            last_line_send=now;
+        }
         if (!source.attached) { usleep(10000); continue; }
         uint32_t width = 0, height = 0, frame_id = 0;
         const uint64_t generation_before = shared_memory_image_generation(&source.image);
@@ -433,6 +442,7 @@ int main(int argc, char* argv[]) {
         source.curve.fill(meta, monotonic_ns());
         network_send_frame_source(&network, pixels, meta);
     }
+    line_ipc_close(&line_ipc);
     detach_source(source); free(pixels); network_manager_cleanup(&network);
     return 0;
 }

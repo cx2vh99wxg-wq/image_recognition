@@ -1,0 +1,62 @@
+[
+  {
+    "name": "sample_00",
+    "source": 28066,
+    "metadata": "source=28066 capture_ns=1015038346970\nL=DASHED raw=DASHED reason=OK Q=80 duty=61 spans=4 gaps=3\nR=UNKNOWN raw=UNKNOWN reason=AMBIG Q=0 duty=80 spans=3 gaps=1\n"
+  },
+  {
+    "name": "sample_01",
+    "source": 28132,
+    "metadata": "source=28132 capture_ns=1017236267695\nL=DASHED raw=DASHED reason=OK Q=79 duty=41 spans=3 gaps=1\nR=SOLID raw=SOLID reason=OK Q=86 duty=95 spans=1 gaps=0\n"
+  },
+  {
+    "name": "sample_02",
+    "source": 28168,
+    "metadata": "source=28168 capture_ns=1018437955868\nL=UNKNOWN raw=DASHED reason=WAIT 3 Q=0 duty=50 spans=2 gaps=2\nR=UNKNOWN raw=UNKNOWN reason=AMBIG Q=0 duty=73 spans=2 gaps=2\n"
+  },
+  {
+    "name": "sample_03",
+    "source": 28201,
+    "metadata": "source=28201 capture_ns=1019536763393\nL=DASHED raw=DASHED reason=OK Q=73 duty=40 spans=2 gaps=1\nR=UNKNOWN raw=SOLID reason=WAIT 3 Q=0 duty=95 spans=1 gaps=0\n"
+  },
+  {
+    "name": "sample_04",
+    "source": 28234,
+    "metadata": "source=28234 capture_ns=1020637957691\nL=UNKNOWN raw=DASHED reason=WAIT 3 Q=0 duty=57 spans=3 gaps=2\nR=SOLID raw=SOLID reason=OK Q=81 duty=90 spans=3 gaps=1\n"
+  },
+  {
+    "name": "sample_05",
+    "source": 28270,
+    "metadata": "source=28270 capture_ns=1021838029987\nL=DASHED raw=DASHED reason=OK Q=80 duty=43 spans=3 gaps=2\nR=UNKNOWN raw=SOLID reason=WAIT 3 Q=0 duty=83 spans=2 gaps=1\n"
+  },
+  {
+    "name": "sample_06",
+    "source": 28303,
+    "metadata": "source=28303 capture_ns=1022938167256\nL=UNKNOWN raw=UNKNOWN reason=NO TRACK Q=0 duty=0 spans=0 gaps=0\nR=UNKNOWN raw=SOLID reason=WAIT 3 Q=0 duty=97 spans=1 gaps=0\n"
+  },
+  {
+    "name": "sample_07",
+    "source": 28336,
+    "metadata": "source=28336 capture_ns=1024037968808\nL=DASHED raw=DASHED reason=OK Q=80 duty=61 spans=3 gaps=2\nR=UNKNOWN raw=UNKNOWN reason=AMBIG Q=0 duty=56 spans=1 gaps=0\n"
+  },
+  {
+    "name": "sample_08",
+    "source": 28372,
+    "metadata": "source=28372 capture_ns=1025237320959\nL=DASHED raw=DASHED reason=OK Q=74 duty=31 spans=2 gaps=1\nR=UNKNOWN raw=UNKNOWN reason=AMBIG Q=0 duty=60 spans=1 gaps=0\n"
+  },
+  {
+    "name": "sample_09",
+    "source": 28405,
+    "metadata": "source=28405 capture_ns=1026346051088\nL=DASHED raw=DASHED reason=OK Q=80 duty=63 spans=3 gaps=1\nR=UNKNOWN raw=UNKNOWN reason=AMBIG Q=0 duty=65 spans=1 gaps=1\n"
+  },
+  {
+    "name": "sample_10",
+    "source": 28438,
+    "metadata": "source=28438 capture_ns=1027445213873\nL=UNKNOWN raw=DASHED reason=WAIT 3 Q=0 duty=48 spans=3 gaps=2\nR=UNKNOWN raw=UNKNOWN reason=AMBIG Q=0 duty=78 spans=2 gaps=1\n"
+  },
+  {
+    "name": "sample_11",
+    "source": 28471,
+    "metadata": "source=28471 capture_ns=1028544638540\nL=UNKNOWN raw=DASHED reason=WAIT 3 Q=0 duty=61 spans=3 gaps=2\nR=UNKNOWN raw=UNKNOWN reason=AMBIG Q=0 duty=57 spans=2 gaps=0\n"
+  }
+]

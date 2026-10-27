@@ -2,6 +2,10 @@
 #define M_LATEST_LANE_WORKER_H
 
 #include "yolo_integration.h"
+#include "line_style_analyzer.h"
+#include "line_style_snapshot.h"
+#include <cstdio>
+#include <cstdlib>
 #include <atomic>
 #include <condition_variable>
 #include <cstdint>
@@ -27,6 +31,7 @@ struct Snapshot {
     bool valid = false;
     int width = 0, height = 0;
     YOLOCurveResult curve = {};
+    YOLOLineStyleResult line_style = {};
     std::vector<float> lane, drivable;
 
     bool fresh(uint64_t now) const {
@@ -127,6 +132,29 @@ private:
                     uint64_t now = clock_ns();
                     if (captured && now >= captured && now - captured <= MAX_RESULT_AGE_NS) {
                         start = now;
+                        YOLOLineStyleResult observed = line_analyzer_.analyze_front_camera(raw.lane_line_data,
+                            raw.width, raw.height, working_pixels_.data(), width_, height_,nullptr,raw.drivable_area_data);
+                        result->line_style = line_analyzer_.confirm(observed,source,captured);
+                        snapshot_request_.poll(now,source,captured,working_pixels_.data(),width_,height_,raw,observed,result->line_style);
+                        if(!line_log_ns_ || now-line_log_ns_>=2000000000ULL) {
+                            float lo=raw.lane_line_data[0],hi=lo;
+                            for(int k=0;k<raw.width*raw.height;++k){lo=std::min(lo,raw.lane_line_data[k]);hi=std::max(hi,raw.lane_line_data[k]);}
+                            printf("[LINE_STYLE] source=%llu camera=1 left=%s q=%u raw=%s reason=%s duty=%u spans=%u right=%s q=%u raw=%s reason=%s duty=%u spans=%u mask_range=%.3f..%.3f ego_ref=%.1f road=%u objects=%u\n",
+                                (unsigned long long)source,line_style_name(result->line_style.left.type),result->line_style.left.quality,
+                                line_style_name(observed.left.type),line_reason_name(result->line_style.left.reason),observed.left.duty,observed.left.spans,
+                                line_style_name(result->line_style.right.type),result->line_style.right.quality,
+                                line_style_name(observed.right.type),line_reason_name(result->line_style.right.reason),observed.right.duty,observed.right.spans,lo,hi,observed.reference_x,observed.road_area,observed.object_count);
+                            line_log_ns_=now;
+                        }
+                        // Optional bounded diagnostic pairs; no normal-runtime disk I/O.
+                        const char* dump=getenv("LANE_STYLE_DUMP_DIR");
+                        if(dump && *dump && dump_count_<6 && (!dump_ns_||now-dump_ns_>=1000000000ULL)) {
+                            char path[512];snprintf(path,sizeof(path),"%s/source_%llu.ppm",dump,(unsigned long long)source);
+                            FILE* fp=fopen(path,"wb");if(fp){fprintf(fp,"P6\n%d %d\n255\n",width_,height_);fwrite(working_pixels_.data(),1,working_pixels_.size(),fp);fclose(fp);}
+                            snprintf(path,sizeof(path),"%s/source_%llu_mask.pgm",dump,(unsigned long long)source);
+                            fp=fopen(path,"wb");if(fp){fprintf(fp,"P5\n%d %d\n255\n",raw.width,raw.height);for(int k=0;k<raw.width*raw.height;++k)fputc(raw.lane_line_data[k]>.3f?255:0,fp);fclose(fp);}
+                            ++dump_count_;dump_ns_=now;
+                        }
                         int pixels = yolo_overlay_lane_and_drivable(working_pixels_.data(), width_, height_, &raw);
                         if (yolo_analyze_annotated_curve(working_pixels_.data(), width_, height_,
                                                         pixels, &result->curve) == 0) {
@@ -166,6 +194,10 @@ private:
     }
 
     YOLOEngine* engine_;
+    LineStyleAnalyzer line_analyzer_;
+    SnapshotRequest snapshot_request_;
+    uint64_t line_log_ns_=0,dump_ns_=0;
+    unsigned dump_count_=0;
     int width_, height_;
     mutable std::mutex mutex_;
     std::condition_variable ready_;

@@ -1,0 +1,98 @@
+[
+  {
+    "name": "sample_00",
+    "got": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "EGO reference=58.25 near_y=174.00 road=7571 objects=4 selected=0/1\nLEFT SOLID quality=82 reason=OK duty=100 spans=1 gaps=0 coverage=46 bottom_x=-144.0 fit=-143.962,-207.379,0.000 y=108..138\nRIGHT DASHED quality=82 reason=OK duty=64 spans=4 gaps=4 coverage=74 bottom_x=163.3 fit=163.263,110.068,0.000 y=108..178\nPERF postprocess_ms=4.670 repeats=20 check=60\n"
+  },
+  {
+    "name": "sample_01",
+    "got": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "EGO reference=69.00 near_y=169.00 road=9881 objects=5 selected=0/1\nLEFT SOLID quality=82 reason=OK duty=100 spans=1 gaps=0 coverage=44 bottom_x=-144.6 fit=-144.618,-206.066,0.000 y=105..134\nRIGHT DASHED quality=81 reason=OK duty=47 spans=3 gaps=4 coverage=65 bottom_x=169.2 fit=169.153,99.728,0.000 y=105..169\nPERF postprocess_ms=5.117 repeats=20 check=60\n"
+  },
+  {
+    "name": "sample_02",
+    "got": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "EGO reference=57.00 near_y=172.00 road=7791 objects=4 selected=0/1\nLEFT SOLID quality=80 reason=OK duty=96 spans=1 gaps=0 coverage=46 bottom_x=-124.6 fit=-124.619,-187.566,0.000 y=108..140\nRIGHT DASHED quality=82 reason=OK duty=50 spans=3 gaps=1 coverage=73 bottom_x=185.1 fit=185.089,128.624,0.000 y=114..178\nPERF postprocess_ms=4.521 repeats=20 check=60\n"
+  },
+  {
+    "name": "sample_03",
+    "got": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "EGO reference=64.25 near_y=162.00 road=7827 objects=4 selected=0/1\nLEFT SOLID quality=82 reason=OK duty=100 spans=1 gaps=0 coverage=41 bottom_x=-145.7 fit=-145.749,-193.040,0.000 y=100..128\nRIGHT DASHED quality=79 reason=OK duty=52 spans=4 gaps=2 coverage=40 bottom_x=152.6 fit=152.580,77.990,0.000 y=98..141\nPERF postprocess_ms=4.613 repeats=20 check=60\n"
+  },
+  {
+    "name": "sample_04",
+    "got": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "EGO reference=54.00 near_y=205.00 road=8100 objects=4 selected=0/1\nLEFT SOLID quality=81 reason=OK duty=100 spans=1 gaps=0 coverage=35 bottom_x=-100.5 fit=-100.536,-217.290,0.000 y=144..166\nRIGHT DASHED quality=77 reason=OK duty=62 spans=2 gaps=2 coverage=70 bottom_x=130.0 fit=129.988,109.614,0.000 y=151..217\nPERF postprocess_ms=4.486 repeats=20 check=60\n"
+  },
+  {
+    "name": "sample_05",
+    "got": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "EGO reference=56.25 near_y=199.00 road=9280 objects=4 selected=0/1\nLEFT SOLID quality=81 reason=OK duty=100 spans=1 gaps=0 coverage=36 bottom_x=-113.3 fit=-113.259,-203.232,0.000 y=131..155\nRIGHT DASHED quality=82 reason=OK duty=44 spans=3 gaps=2 coverage=73 bottom_x=146.2 fit=146.224,110.944,0.000 y=133..202\nPERF postprocess_ms=4.523 repeats=20 check=60\n"
+  },
+  {
+    "name": "sample_06",
+    "got": [
+      "UNKNOWN",
+      "UNKNOWN"
+    ],
+    "detail": "EGO reference=67.00 near_y=184.00 road=6208 objects=1 selected=-1/-1\nLEFT UNKNOWN quality=0 reason=NO TRACK duty=0 spans=0 gaps=0 coverage=0 bottom_x=0.0 fit=0.000,0.000,0.000 y=0..0\nRIGHT UNKNOWN quality=0 reason=NO TRACK duty=0 spans=0 gaps=0 coverage=0 bottom_x=0.0 fit=0.000,0.000,0.000 y=0..0\nPERF postprocess_ms=2.982 repeats=20 check=0\n"
+  },
+  {
+    "name": "sample_07",
+    "got": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "EGO reference=59.75 near_y=180.00 road=8500 objects=5 selected=0/1\nLEFT SOLID quality=82 reason=OK duty=100 spans=1 gaps=0 coverage=44 bottom_x=-121.3 fit=-121.307,-194.547,0.000 y=116..146\nRIGHT DASHED quality=82 reason=OK duty=63 spans=3 gaps=2 coverage=72 bottom_x=189.1 fit=189.140,192.759,61.932 y=115..182\nPERF postprocess_ms=5.169 repeats=20 check=60\n"
+  },
+  {
+    "name": "sample_08",
+    "got": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "EGO reference=54.00 near_y=189.00 road=9109 objects=6 selected=1/2\nLEFT SOLID quality=81 reason=OK duty=100 spans=1 gaps=0 coverage=38 bottom_x=-136.9 fit=-136.908,-216.480,0.000 y=121..145\nRIGHT DASHED quality=80 reason=OK duty=54 spans=4 gaps=2 coverage=54 bottom_x=120.7 fit=120.728,66.314,0.000 y=121..181\nPERF postprocess_ms=5.113 repeats=20 check=60\n"
+  },
+  {
+    "name": "sample_09",
+    "got": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "EGO reference=58.50 near_y=180.00 road=8213 objects=5 selected=0/1\nLEFT SOLID quality=82 reason=OK duty=100 spans=1 gaps=0 coverage=40 bottom_x=-144.7 fit=-144.721,-216.993,0.000 y=116..141\nRIGHT DASHED quality=81 reason=OK duty=60 spans=3 gaps=1 coverage=65 bottom_x=147.5 fit=147.478,98.533,0.000 y=116..180\nPERF postprocess_ms=5.864 repeats=20 check=60\n"
+  },
+  {
+    "name": "sample_10",
+    "got": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "EGO reference=54.50 near_y=181.00 road=7141 objects=4 selected=0/1\nLEFT SOLID quality=81 reason=OK duty=100 spans=1 gaps=0 coverage=32 bottom_x=-144.1 fit=-144.108,-217.022,0.000 y=121..141\nRIGHT DASHED quality=75 reason=OK duty=50 spans=2 gaps=2 coverage=58 bottom_x=142.2 fit=142.178,97.494,0.000 y=121..179\nPERF postprocess_ms=4.164 repeats=20 check=60\n"
+  },
+  {
+    "name": "sample_11",
+    "got": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "EGO reference=54.75 near_y=185.00 road=6521 objects=6 selected=2/3\nLEFT SOLID quality=81 reason=OK duty=100 spans=1 gaps=0 coverage=36 bottom_x=-136.5 fit=-136.539,-214.250,0.000 y=121..144\nRIGHT DASHED quality=78 reason=OK duty=66 spans=4 gaps=3 coverage=37 bottom_x=231.8 fit=231.839,371.823,205.933 y=121..159\nPERF postprocess_ms=3.967 repeats=20 check=60\n"
+  }
+]

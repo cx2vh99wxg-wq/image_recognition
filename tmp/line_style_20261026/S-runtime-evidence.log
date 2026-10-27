@@ -1,0 +1,22 @@
+stty -echo
+[?2004l[?2004hroot@linaro-alip:/# [?2004l
+
+__S_FINAL_EVIDENCE__
+[LINE_RX] session=2109792993 source=27841 left=UNKNOWN(0) right=UNKNOWN(0) ttl_ms=495
+[PERF S-PCIE] capture_loop_fps=16.33 raw_changed_fps=0.00 infer_fps=5.51 dma_ms=25.93 orient_ms=1.66 color_ms=1.10 infer_job_ms=87.71 draw_ms=0.00 publish_ms=2.91 rows=1 ioctls_per_frame=960
+[LINE_RX] session=2109792993 source=27907 left=UNKNOWN(0) right=UNKNOWN(0) ttl_ms=622
+[PERF S-YOLO] jobs=28 preprocess_ms=1.80 input_ms=2.12 npu_ms=83.74 post_ms=0.14
+[UDP_RX] publish_fps=29.99 complete_fps=29.99 udp_mbps=154.99 assembly_ms=25.93 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=2109792993 source=27964 left=UNKNOWN(0) right=UNKNOWN(0) ttl_ms=463
+[PERF DISPLAY] render_fps=16.57 S_input_fps=16.18 M_input_fps=30.46 S_shown_fps=11.98 M_shown_fps=16.57 compose_ms=26.25 legacy_ms=3.91 car_ms=3.30 dashboard_ms=22.96 car_redraw_pct=44.6 scale_ms=9.43 present_ms=16.81 reuse_wait_ms=0.00 upload_done_fps=16.57 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[LINE_RX] session=2109792993 source=28021 left=UNKNOWN(0) right=UNKNOWN(0) ttl_ms=363
+[PERF S-PCIE] capture_loop_fps=16.35 raw_changed_fps=0.00 infer_fps=5.38 dma_ms=26.86 orient_ms=1.64 color_ms=1.04 infer_job_ms=87.05 draw_ms=0.00 publish_ms=2.96 rows=1 ioctls_per_frame=960
+[PERF S-YOLO] jobs=28 preprocess_ms=1.77 input_ms=2.10 npu_ms=83.44 post_ms=0.12
+[LINE_RX] session=2109792993 source=28087 left=UNKNOWN(0) right=UNKNOWN(0) ttl_ms=558
+[UDP_RX] publish_fps=29.99 complete_fps=29.99 udp_mbps=154.91 assembly_ms=25.82 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[PERF DISPLAY] render_fps=16.64 S_input_fps=17.77 M_input_fps=29.61 S_shown_fps=11.69 M_shown_fps=16.24 compose_ms=26.31 legacy_ms=3.79 car_ms=3.12 dashboard_ms=23.19 car_redraw_pct=42.9 scale_ms=9.40 present_ms=16.92 reuse_wait_ms=0.00 upload_done_fps=16.64 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[LINE_RX] session=2109792993 source=28144 left=UNKNOWN(0) right=UNKNOWN(0) ttl_ms=399
+
+__PERF_SERIAL_DONE__
+[?2004hroot@linaro-alip:/# [?2004l
+[?2004hroot@linaro-alip:/# 

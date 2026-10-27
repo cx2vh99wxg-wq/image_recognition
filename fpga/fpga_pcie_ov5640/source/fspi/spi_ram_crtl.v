@@ -14,7 +14,8 @@ module spi_ram_crtl
 	output	wire	[7:0]		mem1_out	,	// 引出第1个地址的寄存器
 	output	wire	[7:0]		mem2_out	,	// 引出第2个地址的寄存器
 	output	wire	[7:0]		mem3_out	,	// 引出第3个地址的寄存器
-	output	wire	[7:0]		mem4_out		// 引出第4个地址的寄存器
+	output	wire	[7:0]		mem4_out,
+	output  wire    [7:0]        mem5_out    // lane permissions + heartbeat (independent of motion)
 );
 
 //--------------------状态机定义--------------------
@@ -174,7 +175,7 @@ always@(negedge wr_clk or negedge rst_n) begin
 end
 
 //====================内存数组定义====================
-reg [7:0] mem [4:0];  // 5个8位的内存单元(0-4)
+reg [7:0] mem [5:0];
 
 // 内存读写逻辑 - 统一使用negedge wr_clk与状态机保持一致
 always@(negedge wr_clk or negedge rst_n) begin
@@ -185,11 +186,12 @@ always@(negedge wr_clk or negedge rst_n) begin
 		mem[2] <= 8'd1;
 		mem[3] <= 8'd1;
 		mem[4] <= 8'd1;
+		mem[5] <= 8'd0; // no valid lane metadata: legacy manual behavior
 		rd_data <= 8'd0;
 	end
 	else begin
 		// 写操作 - 修正地址范围检查
-		if(ram_wr_en && ram_addr[15:0] < 16'd5) begin
+		if(ram_wr_en && ram_addr[15:0] < 16'd6) begin
 			mem[ram_addr[2:0]] <= wr_data_reg;  // 使用[2:0]确保只访问0-4
 		end
 		
@@ -208,5 +210,6 @@ assign mem1_out = mem[1];
 assign mem2_out = mem[2];
 assign mem3_out = mem[3];
 assign mem4_out = mem[4];
+assign mem5_out = mem[5];
 endmodule
 

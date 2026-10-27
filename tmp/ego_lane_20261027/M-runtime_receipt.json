@@ -1,0 +1,94 @@
+{
+  "role": "M",
+  "monotonic_ns": 7005759133525,
+  "files_verified": {
+    "include/line_style_wire.h": true,
+    "include/line_style_ipc.h": true,
+    "include/line_style.h": true,
+    "pcie/Makefile": true,
+    "pcie/include/ego_lane_selector.h": true,
+    "pcie/include/latest_lane_worker.h": true,
+    "pcie/include/line_style_trace.h": true,
+    "pcie/include/line_style_analyzer.h": true,
+    "pcie/include/line_style_snapshot.h": true,
+    "pcie/csrc/main.cpp": true,
+    "pcie/tools/line_style_model_probe.cpp": true,
+    "pcie/tools/line_style_replay.cpp": true,
+    "pcie/tests/test_ego_lane.cpp": true,
+    "pcie/tests/test_line_style.cpp": true,
+    "udp/csrc/main.cpp": true,
+    "pcie/build/pcie_capture": true,
+    "udp/build/udp_sender": true,
+    "pcie/build/test_line_style": true,
+    "pcie/build/test_ego_lane": true,
+    "pcie/build/line_style_replay": true,
+    "pcie/build/line_style_model_probe": true
+  },
+  "pids": {
+    "pcie/build/pcie_capture": [
+      5976
+    ],
+    "udp/build/udp_sender": [
+      5980
+    ]
+  },
+  "protected_sha256": {
+    "pcie/csrc/yolo_integration.c": "275bf4965edbdb62679a1d9da93eac0379c053ae02b65c3a47575c0270785ee9"
+  },
+  "logs": {
+    "pcie_capture.log": [
+      "[LINE_STYLE] source=5650 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.082 ego_ref=0.0 road=0 objects=0",
+      "[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=30.00 dma_ms=13.92 color_ms=1.32 infer_ms=270.42 overlay_ms=7.90 analysis_ms=11.06 shm_ms=0.76 render_ms=12.23 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1",
+      "[LINE_STYLE] source=5719 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.757 ego_ref=0.0 road=0 objects=0",
+      "[LINE_STYLE] source=5785 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.608 ego_ref=0.0 road=0 objects=0",
+      "[LINE_STYLE] source=5854 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.992 ego_ref=0.0 road=0 objects=0",
+      "[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=30.00 dma_ms=13.96 color_ms=1.34 infer_ms=269.41 overlay_ms=7.91 analysis_ms=11.53 shm_ms=0.79 render_ms=12.44 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1",
+      "[LINE_STYLE] source=5920 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.871 ego_ref=0.0 road=0 objects=0",
+      "[LINE_STYLE] source=5989 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.992 ego_ref=0.0 road=0 objects=0",
+      "[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.40 fresh_result_fps=3.40 publish_fps=30.00 dma_ms=13.96 color_ms=1.32 infer_ms=269.67 overlay_ms=7.97 analysis_ms=10.99 shm_ms=0.75 render_ms=12.41 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1",
+      "[LINE_STYLE] source=6055 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.984 ego_ref=0.0 road=0 objects=0",
+      "[LINE_STYLE] source=6124 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.984 ego_ref=0.0 road=0 objects=0",
+      "[PERF M] capture_loop_fps=29.99 raw_changed_fps=29.99 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=29.99 dma_ms=13.83 color_ms=1.30 infer_ms=269.35 overlay_ms=8.01 analysis_ms=11.21 shm_ms=0.77 render_ms=12.16 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1",
+      "[LINE_STYLE] source=6190 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.996 ego_ref=0.0 road=0 objects=0",
+      "[LINE_STYLE] source=6256 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.992 ego_ref=0.0 road=0 objects=0",
+      "[PERF M] capture_loop_fps=30.02 raw_changed_fps=30.02 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=30.02 dma_ms=13.95 color_ms=1.33 infer_ms=269.51 overlay_ms=7.93 analysis_ms=10.72 shm_ms=0.75 render_ms=12.13 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1",
+      "[LINE_STYLE] source=6325 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.992 ego_ref=0.0 road=0 objects=0",
+      "[LINE_STYLE] source=6391 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.761 ego_ref=0.0 road=0 objects=0",
+      "[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=30.00 dma_ms=13.91 color_ms=1.28 infer_ms=268.86 overlay_ms=7.99 analysis_ms=11.26 shm_ms=0.77 render_ms=12.28 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1",
+      "[LINE_STYLE] source=6460 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.953 ego_ref=0.0 road=0 objects=0",
+      "[LINE_STYLE] source=6526 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.635 ego_ref=0.0 road=0 objects=0",
+      "[LINE_STYLE] source=6595 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.976 ego_ref=0.0 road=0 objects=0",
+      "[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=30.00 dma_ms=13.82 color_ms=1.32 infer_ms=269.70 overlay_ms=7.98 analysis_ms=11.07 shm_ms=0.78 render_ms=11.98 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1",
+      "[LINE_STYLE] source=6661 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.443 ego_ref=0.0 road=0 objects=0",
+      "[LINE_STYLE] source=6727 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.318 ego_ref=0.0 road=0 objects=0",
+      "[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=30.00 dma_ms=13.98 color_ms=1.33 infer_ms=269.01 overlay_ms=7.95 analysis_ms=11.08 shm_ms=0.75 render_ms=12.41 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1"
+    ],
+    "udp_sender.log": [
+      "[UDP_TX] fps=29.99 payload_mbps=147.43 send_ms=27.22 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=30.00 payload_mbps=147.44 send_ms=27.20 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=30.05 payload_mbps=147.70 send_ms=27.21 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=29.95 payload_mbps=147.20 send_ms=27.22 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=29.99 payload_mbps=147.43 send_ms=27.22 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=29.99 payload_mbps=147.42 send_ms=27.21 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=30.04 payload_mbps=147.66 send_ms=27.20 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=30.00 payload_mbps=147.45 send_ms=27.22 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=29.99 payload_mbps=147.42 send_ms=27.21 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=30.00 payload_mbps=147.44 send_ms=27.27 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=29.99 payload_mbps=147.42 send_ms=27.20 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=30.03 payload_mbps=147.58 send_ms=27.25 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=30.00 payload_mbps=147.45 send_ms=27.23 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=29.97 payload_mbps=147.31 send_ms=27.20 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=30.00 payload_mbps=147.43 send_ms=27.22 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=29.99 payload_mbps=147.39 send_ms=27.25 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=30.05 payload_mbps=147.71 send_ms=27.22 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=29.99 payload_mbps=147.41 send_ms=27.19 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=29.96 payload_mbps=147.26 send_ms=27.22 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=30.00 payload_mbps=147.45 send_ms=27.21 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=30.00 payload_mbps=147.44 send_ms=27.23 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=29.99 payload_mbps=147.43 send_ms=27.20 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=30.06 payload_mbps=147.74 send_ms=27.19 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=29.95 payload_mbps=147.19 send_ms=27.19 failed=0 pacing_mbps=200",
+      "[UDP_TX] fps=30.04 payload_mbps=147.64 send_ms=27.24 failed=0 pacing_mbps=200"
+    ]
+  }
+}

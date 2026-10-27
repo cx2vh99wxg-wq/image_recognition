@@ -1,0 +1,16 @@
+make: Entering directory '/home/linaro/S/line_style_fix_20261026/candidate/udp'
+mkdir -p ../build/
+gcc -Iinclude -I../include -std=c99 -O3 -march=native -funroll-loops -pthread -MMD -MP -c ../csrc/shared_memory.c -o build/shared_memory.o
+g++ -c -Iinclude -I../include -std=c++14 -O3 -march=native -funroll-loops -pthread -MMD -MP csrc/main.cpp -o build/main.o
+ar rcs ../build/libshared.a build/shared_memory.o
+g++ build/main.o  -o build/video_receiver ../build/libshared.a -lrt -lpthread
+make: Leaving directory '/home/linaro/S/line_style_fix_20261026/candidate/udp'
+make: Entering directory '/home/linaro/S/line_style_fix_20261026/candidate/x11/csrc'
+编译C++: main.cpp
+g++ -I../../include -Iinclude -std=c++14 -O3 -march=native -funroll-loops -pthread -DPERCEPTION_HAVE_XRENDER=1  -DPERCEPTION_HAVE_GLES=1  -c main.cpp -o build/main.o
+编译共享内存C文件: ../../csrc/shared_memory.c
+gcc -I../../include -Iinclude -std=c99 -O3 -march=native -funroll-loops -pthread -c ../../csrc/shared_memory.c -o build/shared_memory.o
+链接可执行文件: build/eight_camera_renderer
+g++ build/main.o build/shared_memory.o -o build/eight_camera_renderer -lX11 -lXext -lrt -lpthread -lXrender -lX11  -lEGL -lGLESv2 
+编译完成: eight_camera_renderer - Perception Engine 全景界面
+make: Leaving directory '/home/linaro/S/line_style_fix_20261026/candidate/x11/csrc'

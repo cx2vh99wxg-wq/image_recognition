@@ -1,0 +1,3 @@
+source=13687 capture_ns=950238101922
+L=UNKNOWN raw=UNKNOWN reason=NO MASK Q=0 duty=0 spans=0 gaps=0
+R=UNKNOWN raw=UNKNOWN reason=NO MASK Q=0 duty=0 spans=0 gaps=0

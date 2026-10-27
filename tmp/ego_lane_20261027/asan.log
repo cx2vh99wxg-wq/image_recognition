@@ -1,0 +1,11 @@
+inset three lines: SOLID/DASHED
+full curve=0 expected=1/1 got=1/1
+full curve=0 expected=1/2 got=1/2
+full curve=0 expected=2/1 got=2/1
+full curve=0 expected=2/2 got=2/2
+full curve=1 expected=1/1 got=1/1
+full curve=1 expected=1/2 got=1/2
+full curve=1 expected=2/1 got=2/1
+full curve=1 expected=2/2 got=2/2
+ego tracking: identity, missing evidence, expiry, wire lifetime and translated ROI PASS
+ego lane ownership / line style / negative evidence PASS

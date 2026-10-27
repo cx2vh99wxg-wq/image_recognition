@@ -1,0 +1,21 @@
+{
+  "role": "M",
+  "root": "/home/linaro/M",
+  "candidate": "/home/linaro/M/line_style_fix_20261026/candidate",
+  "previous": {
+    "pcie/include/line_style_analyzer.h": "89a38b6db312ebe322c4139c972014fd1859f1ad9cdf20ab7cf64d29647a74c1",
+    "pcie/tests/test_line_style.cpp": "2f07aca95d87c34f771a674a2cefdc69d99646731b4c4adc5f17bd7b3d0cf10b",
+    "pcie/build/pcie_capture": "ffe2094487bfd18d436eee7a33e2590127d6e284c137f386392e9283695b85e0",
+    "pcie/build/test_line_style": "233fa5897df71bad7ddd84169ea96ae4bd06e7976c6665f6c0836bfddbdf273b",
+    "pcie/build/line_style_replay": "741f0feecf46f9bbab5ef4867769874862093db9ad2577a277265351e3e08e9e",
+    "pcie/build/line_style_model_probe": "71f22cdb616c3e3b42f00ae9c52a2f5f24d9f3077fca590b3da5d1565d95478c"
+  },
+  "installed": {
+    "pcie/include/line_style_analyzer.h": "4b4f5244a4618b16b7fa3f731c29558082ab793a7fcd96539ef53f08fb216516",
+    "pcie/tests/test_line_style.cpp": "019b9f39ba8b466bdbc245e14f1846be50ac576d232b1730c89fcd579bb5a8c4",
+    "pcie/build/pcie_capture": "6839766f55108628f26df615ed131da86ee5e0cc0d1e764ab00cd7d51d13492a",
+    "pcie/build/test_line_style": "bba6458ade9e07f08b73e6a9c4e64436b43560e3270cd76d25c14613afdf5f11",
+    "pcie/build/line_style_replay": "42818e7ebe1ecc79a51852c7927cbb58754b32b9580347a55974d1ba4fe17304",
+    "pcie/build/line_style_model_probe": "9cf2809f9e45fb27cefcb8b22722b10f3de22b7bb61e62fad30db2514d415cb3"
+  }
+}

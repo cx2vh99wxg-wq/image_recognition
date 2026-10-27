@@ -1,0 +1,26 @@
+{
+  "detected": {
+    "source": 29605,
+    "left": 1,
+    "right": 2,
+    "Q": [
+      82,
+      85
+    ],
+    "detail": 589824,
+    "blocked": 0,
+    "ttl_ms": 371
+  },
+  "warning": {
+    "source": 29605,
+    "left": 1,
+    "right": 2,
+    "Q": [
+      82,
+      85
+    ],
+    "detail": 204,
+    "blocked": 1,
+    "ttl_ms": 388
+  }
+}

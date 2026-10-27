@@ -1,0 +1,197 @@
+make: Entering directory '/mnt/d/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/S/fspi'
+gcc -Wall -O2 -std=c11 -Wextra -ffunction-sections -fdata-sections -Iinclude -I../include test_auto_brake_switch.c -Wl,--gc-sections -o build/test_auto_brake_switch
+gcc -Wall -O2 -std=c11 -Wextra -ffunction-sections -fdata-sections -Iinclude -I../include test_lane_steering.c -Wl,--gc-sections -o build/test_lane_steering
+gcc -Wall -O2 -std=c11 -Wextra -Iinclude -I../include test_smdt_transport.c -o build/test_smdt_transport
+=== 编译测试完成 ===
+可执行文件: build/vehicle_control
+编译成功!
+-rwxrwxrwx 1 jiaketschong jiaketschong 49K Oct 26 22:23 build/vehicle_control
+"/mnt/d/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/S/fspi/build/test_brake_control"
+brake policy tests passed
+"/mnt/d/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/S/fspi/build/test_auto_brake_switch"
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 已连接行人检测共享内存
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 检测段/首帧/时钟不可用: valid=0 person=0 brake_enable=1 raw_request=1 -> reg4=0；AUTO及实际STOP锁[自动刹停] 写制动寄存器失败，下一次轮询将重试
+存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 检测数据超时: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停FSPI] re[自动刹停] 方向键释放失败，暂停自动转向并重试；发布原始故障请求，最终由FPGA AUTO门控
+g4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 方向寄存器写入故障: valid=1 person=0 brake_enable=1 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+optional SPI diagnostic and FPGA-gated raw brake monitor tests passed
+"/mnt/d/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/S/fspi/build/test_lane_steering"
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2低脉冲500ms完成并释放；估计位置=LEFT（非硬件反馈）
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 右转...
+调试信息: 命令=3, enable=1, 地址=0x0003, 发送值=0
+车辆控制成功: 右转 运动 (地址=0x0003, 值=0)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+[转向链路] reg3低脉冲1500ms完成并释放；估计位置=RIGHT（非硬件反馈）
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2低脉冲400ms完成并释放；估计位置=NEUTRAL（非硬件反馈）
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制失败: 左转 运动 (写入失败)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2低脉冲500ms完成并释放；估计位置=LEFT（非硬件反馈）
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制失败: 左转 运动 (写入失败)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2低脉冲500ms完成并释放；估计位置=LEFT（非硬件反馈）
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 右转...
+调试信息: 命令=3, enable=1, 地址=0x0003, 发送值=0
+车辆控制成功: 右转 运动 (地址=0x0003, 值=0)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制失败: 右转 停止 (写入失败)
+[转向链路] reg3脉冲中断或写入失败，未更新估计位置，下轮重试
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 右转...
+调试信息: 命令=3, enable=1, 地址=0x0003, 发送值=0
+车辆控制成功: 右转 运动 (地址=0x0003, 值=0)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+[转向链路] reg3低脉冲600ms完成并释放；估计位置=RIGHT（非硬件反馈）
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2脉冲中断或写入失败，未更新估计位置，下轮重试
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2低脉冲500ms完成并释放；估计位置=LEFT（非硬件反馈）
+PASS lane steering: unchanged calibration, independent traction, heartbeat isolation, write failures and interrupted-pulse retry
+"/mnt/d/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/S/fspi/build/test_smdt_transport"
+PASS SMDT transport: controller-generated opcodes, isolated registers, RX-only HMI and short-transfer rejection
+make: Leaving directory '/mnt/d/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/S/fspi'

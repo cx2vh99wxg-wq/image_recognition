@@ -1,0 +1,43 @@
+{
+  "role": "M",
+  "root": "/home/linaro/M",
+  "candidate": "/home/linaro/M/line_style_fix_20261026/candidate",
+  "previous": {
+    "pcie/csrc/main.cpp": "78e49e4422c6d83644a2c81965ee668a0d05e18110c5cb757cd56b91d2fef494",
+    "pcie/Makefile": "b5fa8bf1ac0bb7dc7f279bb90dd2e3b53b0c9a2f9f915456eecf26520f0a2647",
+    "include/line_style_wire.h": "4141ca2709f97eedd8a2823baca30e90835f0f70cd73486e25bdce26cead938e",
+    "pcie/build/line_style_replay": null,
+    "udp/build/udp_sender": "13f80b310f9e23ebcf2981e3c36fd7b0f699a6ec5f5e76827678a3e5ac67d315",
+    "pcie/build/test_line_style": null,
+    "pcie/include/latest_lane_worker.h": "683f7e729a45a92b4f6dbde2d15f318256e09accde68fe594d8f07cadf761fb8",
+    "pcie/build/line_style_model_probe": null,
+    "pcie/include/line_style_analyzer.h": "a5c9147d696e9003449a41b3528a4eb35922606d2917c804a8ae1dd625afaec5",
+    "pcie/include/line_style_snapshot.h": null,
+    "udp/csrc/main.cpp": "c00637023d41f7eb4e0c4d30c6b1042c657e5a1fe7a846e610bba6dbd49e3d04",
+    "include/line_style_ipc.h": "c772fac0dc345c3cf32b798e98b424bf8f8adf9a0f8c2f03545f0462fb81f727",
+    "pcie/tests/test_line_style.cpp": "668f3fc2952b8c95cff2ed2b5168c24990a91f371efe772f97de677d0afd3de3",
+    "pcie/tools/line_style_replay.cpp": "dba655fd5ede949870de4b45201afb39c4ed5865e66f8b6e1f619c5ed8691736",
+    "pcie/build/pcie_capture": "772c21318686bc9ba76a46d0389e6d70e4a708abc69bc27823335dcda2d80e74",
+    "include/line_style.h": "36f6d480945a4ef5e08650cc451ec7b8d2a879fad88fb8a9fb3855b170b1f6a8",
+    "pcie/tools/line_style_model_probe.cpp": null
+  },
+  "installed": {
+    "pcie/csrc/main.cpp": "04611298f3825aa9bfe959914d5327289dfba63a7c2b87d6445ccf471241ff13",
+    "pcie/Makefile": "4c786601c9d26d2b63f90e3918510da0ef02136cce494da240161b5ff2d8cbc1",
+    "include/line_style_wire.h": "2acbd8b1f16b2c86b50002784105867824bd87da762075c34d0f05ae05973260",
+    "pcie/build/line_style_replay": "741f0feecf46f9bbab5ef4867769874862093db9ad2577a277265351e3e08e9e",
+    "udp/build/udp_sender": "6a7019ed8cd796715d33c7f822c05f9e4fc8d1ac85b7c16d5194496b34d4e8c1",
+    "pcie/build/test_line_style": "233fa5897df71bad7ddd84169ea96ae4bd06e7976c6665f6c0836bfddbdf273b",
+    "pcie/include/latest_lane_worker.h": "a760a41f5f7a16dbe86c6efacba82652b8e82852ee48806e4bb8fd5bf6228cc3",
+    "pcie/build/line_style_model_probe": "71f22cdb616c3e3b42f00ae9c52a2f5f24d9f3077fca590b3da5d1565d95478c",
+    "pcie/include/line_style_analyzer.h": "89a38b6db312ebe322c4139c972014fd1859f1ad9cdf20ab7cf64d29647a74c1",
+    "pcie/include/line_style_snapshot.h": "bf97a98724ca849e9aa792998b9eb8ef6bddfef71d84230a0a928adefd8c8a4d",
+    "udp/csrc/main.cpp": "c00637023d41f7eb4e0c4d30c6b1042c657e5a1fe7a846e610bba6dbd49e3d04",
+    "include/line_style_ipc.h": "f377b1793c5cf813c77a23fe9180016048cfbf8d49f24f5ff7f286f7dd23abf3",
+    "pcie/tests/test_line_style.cpp": "2f07aca95d87c34f771a674a2cefdc69d99646731b4c4adc5f17bd7b3d0cf10b",
+    "pcie/tools/line_style_replay.cpp": "5685ca9372f2d068bb70e24b283600204a391d02211c4cd0af46f7bdc2335ef6",
+    "pcie/build/pcie_capture": "ffe2094487bfd18d436eee7a33e2590127d6e284c137f386392e9283695b85e0",
+    "include/line_style.h": "d8f82a5067f933dc8f0ba881ec5a17deca70fc3ff6b699672ff58bc98ee6ef87",
+    "pcie/tools/line_style_model_probe.cpp": "453cc4b1e49266532a1e553ae71a7ff9d4e009ec70b5d311ad548920b07af5c1"
+  }
+}

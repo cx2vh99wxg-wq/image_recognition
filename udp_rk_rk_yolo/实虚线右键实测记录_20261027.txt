@@ -1,0 +1,47 @@
+左虚右实视频与 HMI 右键联动实测（2026-10-27）
+
+已完成
+1. 通过 M/S DEBUG 取得实时日志和匹配的原始 RGB/车道掩码，确认视频在 M 第 1 路（M 拼接左上；S 六画面上排中间）。
+2. 实际视频帧复现左右 UNKNOWN：取样从高度 32% 开始，右实线只剩 y76..126 共 50 像素；左虚线远处亮段/间隙也被截掉。
+3. 仅把新线型分析的取样上界扩展到 12%，继续使用原拟合、RGB 证据、可见长度门限和三帧确认。没有修改 HMI、FPGA、旧弯道判定或 FSPI 仲裁。
+4. 同一帧离线与 M 板回放得到 L DASHED Q84、R SOLID Q91；右线可用范围变为 y44..126。M 板新增后处理 20 次平均 2.392 ms。
+5. 早消失点及原有分类/时序/元数据单测、ASan/UBSan、异步工作线程和真实保存帧回归均通过。
+6. 取样修复已在 M 端编译安装，重启采集；UDP 与 S 端继续运行。M 板旧版备份位于 /home/linaro/M/backup_line_roi_20261027。配套源码和四个 ARM 可执行文件已同步回电脑，并逐块、整文件校验。
+7. 两端实时日志连续出现 L DASHED、R SOLID；例如 S 接收 source=469/529/586 时，右侧分别为 SOLID Q93/Q92/Q91。
+
+首次按键观察
+最初观察器读到了实际 HMI 右键 DD，但该时刻左右均为 UNKNOWN / NO MASK，warning=0，未触发实线拦截。
+这符合现有 UNKNOWN 保留手动控制的规则，该次不能算作“右实线拦截失败”，也不能证明拦截已成功。
+
+第二次软件联动验证：已通过（2026-10-27 10:59 核验）
+两板重启后，用户因遥控器缺电池明确要求先验证软件红叉。只读观察器记录到了真实道路识别 + 真实 HMI RIGHT 请求 + 实际 LCD 画面：
+  source=9679
+  L=DASHED，Q75
+  R=SOLID，Q84
+  HMI=0xDD（十进制 221）
+  右侧告警 blocked=2，识别数据剩余有效期 506ms，告警剩余有效期 393ms。
+同一事件抓取了 X11 实屏，车图右边清楚显示红色 X 和 BLOCKED。用户也两次明确确认看到右侧红叉。
+后续事件 source=9958/10240/10267/10282 等再次记录到右实线、DD 和 blocked=2；松开后 HMI=0，告警短暂保留后清为 0。
+本次截图底部已变为 R UNKNOWN，是抓图期间后续一帧证据变化；红叉按原有 0.7 秒告警保留策略仍可见。触发瞬间的 R SOLID 有独立 JSON 记录，不能把截图后续帧误当成触发依据。
+遥控器无电池不影响这条软件链路。未注入软件按键或人为转向命令，未用伪造线型或预览界面代替实屏。
+
+硬件验证仍待进行
+用户此前已确认车轮架空、AUTO_BREAK 关闭，并按过 S/R。本次软件红叉已确认，真实方向盘是否阻止右转留到遥控器装好电池后再验证。
+DEBUG 没有最终 FMC 引脚电压读回，不能仅凭 reg5_write=OK 宣称测到了引脚高电平。
+
+恢复后的验证条件
+保持手机/播放屏固定，也可以暂停在清晰道路帧。确认 LCD 的 R SOLID 已稳定显示，再按住 HMI RIGHT 约 5 秒后松开。
+同步记录：真实 DD 请求、右侧 SOLID 和有效期、warning bit1、reg5 写入、实际 LCD 截图，以及用户观察到的方向盘动作。
+右键按下时若视频已离开取景、变为 UNKNOWN，应先恢复有效道路输入再测试。
+
+证据位置
+电脑：D:\Study_Object\image_recognition\image_recognition\tmp\line_style_live_20261027
+live1.ppm / live1_mask.pgm / live1.txt：匹配的真实输入和模型结果。
+live1_before.csv / live1_after.csv：修复前后采样证据。
+live1_verified.png：真实道路帧与采样点示意，属于离线分析图，不是红 X 实机截图。
+s_lcd_before.jpg：先前实际 LCD 初始截图。
+right_block_real_lcd.png：本次实际 LCD 红叉截图（实屏右侧面板裁切，不是离线预览）。
+right_block_trigger.json：触发瞬间 source=9679 的左右线型、DD 和 blocked=2。
+right_block_events.jsonl：本次 180 秒只读观察记录，含告警触发、释放和清除。
+M-roi-installed-manifest.json：本次 M 端变更与旧版校验值。
+S 板：/tmp/line_right_check_20261027/events.jsonl；短时观察器已经自行结束，没有留下持续观察进程。

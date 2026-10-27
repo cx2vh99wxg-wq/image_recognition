@@ -1,0 +1,83 @@
+=== Perception Engine / S-End Surround Vision ===
+Six-view dashboard, eight selectable cameras, F11 fullscreen, Q exit
+Source streams remain 640x480; dashboard canvas is 1600x900
+
+=== 初始化PCIe共享内存连接 ===
+正在初始化PCIe共享内存 (key=0x12345679, size=614504 bytes)
+Shared memory initialized successfully (is_writer: 0)
+PCIe共享内存连接成功
+
+=== 初始化UDP共享内存连接 ===
+正在初始化UDP共享内存 (key=0x1234567a, size=614504 bytes)
+Shared memory initialized successfully (is_writer: 0)
+UDP共享内存连接成功
+
+=== 加载car.png图像 ===
+成功加载PNG图像: ../car.png (400x600, 4通道)
+
+=== 连接可选显示元数据；未启动的数据源每秒重试 ===
+正在初始化显示控制共享内存 (key=0x1234567c, size=64 bytes, is_writer=0)
+显示控制共享内存连接成功 (读取者模式)
+正在初始化紧急制动共享内存 (key=0x1234567d, size=60 bytes, is_writer=0)
+角色: 读取者(FSPI-制动控制)
+紧急制动共享内存连接成功 (读取者模式)
+正在初始化弯道检测共享内存 (key=0x1234567e, size=72 bytes)
+弯道检测共享内存初始化成功 (id=32, ptr=0x7f85ccd000)
+
+=== 初始化渲染引擎 ===
+[RENDER] scale=XRender upload=MIT-SHM image=1600x900 window=2560x1440
+Perception Engine: 2560x1440, F11 fullscreen, Q exit
+PERCEPTION_WINDOW_ID=0x2e00001
+
+=== 开始双通道渲染 ===
+按 Q/Esc 键或关闭窗口退出
+[PERF DASHBOARD] copy_ms=6.51 clear_ms=2.76 video_fit_ms=9.33 car_fit_ms=3.02 ui_ms=1.02 fast=0
+[PERF DISPLAY] render_fps=11.47 S_input_fps=17.74 M_input_fps=30.56 S_shown_fps=9.09 M_shown_fps=11.47 compose_ms=26.20 legacy_ms=4.01 car_ms=3.49 dashboard_ms=22.71 car_redraw_pct=53.4 scale_ms=8.84 present_ms=44.22 reuse_wait_ms=0.00 upload_done_fps=11.47 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=7.15 clear_ms=3.14 video_fit_ms=9.75 car_fit_ms=2.80 ui_ms=0.93 fast=0
+[PERF DISPLAY] render_fps=13.41 S_input_fps=14.36 M_input_fps=29.67 S_shown_fps=11.24 M_shown_fps=13.21 compose_ms=29.65 legacy_ms=3.94 car_ms=5.80 dashboard_ms=23.84 car_redraw_pct=58.8 scale_ms=8.55 present_ms=28.41 reuse_wait_ms=0.00 upload_done_fps=13.41 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.52 clear_ms=3.14 video_fit_ms=9.58 car_fit_ms=2.73 ui_ms=0.97 fast=0
+[PERF DISPLAY] render_fps=12.94 S_input_fps=16.26 M_input_fps=29.65 S_shown_fps=10.95 M_shown_fps=12.74 compose_ms=32.30 legacy_ms=3.87 car_ms=9.32 dashboard_ms=22.98 car_redraw_pct=81.5 scale_ms=7.62 present_ms=29.56 reuse_wait_ms=0.00 upload_done_fps=12.94 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.97 clear_ms=3.14 video_fit_ms=9.77 car_fit_ms=2.84 ui_ms=0.93 fast=0
+[PERF DISPLAY] render_fps=13.33 S_input_fps=11.49 M_input_fps=30.65 S_shown_fps=10.74 M_shown_fps=12.93 compose_ms=32.31 legacy_ms=4.17 car_ms=8.63 dashboard_ms=23.68 car_redraw_pct=76.1 scale_ms=7.80 present_ms=26.86 reuse_wait_ms=0.00 upload_done_fps=13.33 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.83 clear_ms=2.95 video_fit_ms=9.65 car_fit_ms=2.94 ui_ms=0.96 fast=0
+[PERF DISPLAY] render_fps=13.18 S_input_fps=14.19 M_input_fps=30.26 S_shown_fps=10.58 M_shown_fps=13.18 compose_ms=32.75 legacy_ms=3.84 car_ms=9.27 dashboard_ms=23.48 car_redraw_pct=80.3 scale_ms=7.47 present_ms=28.00 reuse_wait_ms=0.00 upload_done_fps=13.18 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=7.06 clear_ms=2.99 video_fit_ms=9.60 car_fit_ms=2.78 ui_ms=0.90 fast=0
+[PERF DISPLAY] render_fps=13.33 S_input_fps=13.98 M_input_fps=30.76 S_shown_fps=9.35 M_shown_fps=12.94 compose_ms=32.63 legacy_ms=4.09 car_ms=9.26 dashboard_ms=23.37 car_redraw_pct=79.1 scale_ms=7.16 present_ms=27.34 reuse_wait_ms=0.00 upload_done_fps=13.33 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=7.58 clear_ms=3.07 video_fit_ms=9.50 car_fit_ms=2.71 ui_ms=0.90 fast=0
+[PERF DISPLAY] render_fps=13.28 S_input_fps=17.03 M_input_fps=30.27 S_shown_fps=10.51 M_shown_fps=13.09 compose_ms=34.08 legacy_ms=3.98 car_ms=10.32 dashboard_ms=23.76 car_redraw_pct=82.1 scale_ms=7.42 present_ms=25.85 reuse_wait_ms=0.00 upload_done_fps=13.28 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=7.15 clear_ms=3.14 video_fit_ms=9.74 car_fit_ms=2.85 ui_ms=0.99 fast=0
+[PERF DISPLAY] render_fps=13.14 S_input_fps=16.16 M_input_fps=30.43 S_shown_fps=10.75 M_shown_fps=13.14 compose_ms=32.25 legacy_ms=3.85 car_ms=8.24 dashboard_ms=24.02 car_redraw_pct=71.2 scale_ms=7.57 present_ms=28.55 reuse_wait_ms=0.00 upload_done_fps=13.14 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.84 clear_ms=3.13 video_fit_ms=9.90 car_fit_ms=2.68 ui_ms=0.99 fast=0
+[PERF DISPLAY] render_fps=13.29 S_input_fps=14.42 M_input_fps=29.79 S_shown_fps=10.71 M_shown_fps=13.29 compose_ms=29.59 legacy_ms=3.96 car_ms=5.96 dashboard_ms=23.64 car_redraw_pct=61.2 scale_ms=8.02 present_ms=29.78 reuse_wait_ms=0.00 upload_done_fps=13.29 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.78 clear_ms=2.99 video_fit_ms=9.71 car_fit_ms=2.84 ui_ms=1.01 fast=0
+[PERF DISPLAY] render_fps=13.37 S_input_fps=11.26 M_input_fps=30.03 S_shown_fps=10.57 M_shown_fps=12.97 compose_ms=32.08 legacy_ms=3.95 car_ms=8.64 dashboard_ms=23.44 car_redraw_pct=71.6 scale_ms=7.65 present_ms=27.35 reuse_wait_ms=0.00 upload_done_fps=13.37 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.57 clear_ms=2.97 video_fit_ms=9.41 car_fit_ms=2.68 ui_ms=0.99 fast=0
+[PERF DISPLAY] render_fps=12.98 S_input_fps=13.96 M_input_fps=29.92 S_shown_fps=11.02 M_shown_fps=12.98 compose_ms=31.57 legacy_ms=3.94 car_ms=8.94 dashboard_ms=22.63 car_redraw_pct=75.8 scale_ms=7.99 present_ms=29.55 reuse_wait_ms=0.00 upload_done_fps=12.98 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.39 clear_ms=2.81 video_fit_ms=9.92 car_fit_ms=2.80 ui_ms=0.98 fast=0
+[PERF DISPLAY] render_fps=13.37 S_input_fps=15.54 M_input_fps=29.14 S_shown_fps=10.97 M_shown_fps=13.37 compose_ms=31.99 legacy_ms=3.90 car_ms=9.06 dashboard_ms=22.93 car_redraw_pct=80.6 scale_ms=7.74 present_ms=27.36 reuse_wait_ms=0.00 upload_done_fps=13.37 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.55 clear_ms=2.80 video_fit_ms=9.56 car_fit_ms=2.91 ui_ms=0.94 fast=0
+[PERF DISPLAY] render_fps=13.23 S_input_fps=12.12 M_input_fps=29.84 S_shown_fps=10.26 M_shown_fps=12.83 compose_ms=31.48 legacy_ms=3.90 car_ms=8.65 dashboard_ms=22.83 car_redraw_pct=73.1 scale_ms=7.58 present_ms=28.93 reuse_wait_ms=0.00 upload_done_fps=13.23 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.37 clear_ms=2.79 video_fit_ms=9.26 car_fit_ms=2.58 ui_ms=0.92 fast=0
+[PERF DISPLAY] render_fps=13.46 S_input_fps=11.99 M_input_fps=29.98 S_shown_fps=10.29 M_shown_fps=13.46 compose_ms=30.25 legacy_ms=3.75 car_ms=8.30 dashboard_ms=21.95 car_redraw_pct=72.1 scale_ms=7.66 present_ms=28.92 reuse_wait_ms=0.00 upload_done_fps=13.46 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.42 clear_ms=2.80 video_fit_ms=9.46 car_fit_ms=2.68 ui_ms=0.86 fast=0
+[PERF DISPLAY] render_fps=13.16 S_input_fps=14.56 M_input_fps=29.12 S_shown_fps=9.77 M_shown_fps=13.16 compose_ms=30.85 legacy_ms=3.83 car_ms=8.58 dashboard_ms=22.26 car_redraw_pct=72.7 scale_ms=7.51 present_ms=30.17 reuse_wait_ms=0.00 upload_done_fps=13.16 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.88 clear_ms=3.13 video_fit_ms=9.29 car_fit_ms=2.76 ui_ms=0.95 fast=0
+[PERF DISPLAY] render_fps=13.38 S_input_fps=11.83 M_input_fps=29.57 S_shown_fps=10.39 M_shown_fps=13.18 compose_ms=31.41 legacy_ms=3.95 car_ms=8.27 dashboard_ms=23.14 car_redraw_pct=67.2 scale_ms=7.58 present_ms=27.84 reuse_wait_ms=0.00 upload_done_fps=13.38 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.34 clear_ms=2.76 video_fit_ms=9.47 car_fit_ms=2.83 ui_ms=0.95 fast=0
+[PERF DISPLAY] render_fps=13.57 S_input_fps=12.47 M_input_fps=29.72 S_shown_fps=10.58 M_shown_fps=13.57 compose_ms=30.68 legacy_ms=3.72 car_ms=8.26 dashboard_ms=22.42 car_redraw_pct=75.0 scale_ms=7.31 present_ms=28.38 reuse_wait_ms=0.00 upload_done_fps=13.57 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=7.16 clear_ms=3.06 video_fit_ms=9.59 car_fit_ms=2.72 ui_ms=0.93 fast=0
+[PERF DISPLAY] render_fps=13.69 S_input_fps=10.96 M_input_fps=30.88 S_shown_fps=10.32 M_shown_fps=13.09 compose_ms=32.48 legacy_ms=3.84 car_ms=8.97 dashboard_ms=23.52 car_redraw_pct=72.5 scale_ms=7.64 present_ms=25.42 reuse_wait_ms=0.00 upload_done_fps=13.69 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.16 clear_ms=2.76 video_fit_ms=9.28 car_fit_ms=2.67 ui_ms=0.91 fast=0
+[PERF DISPLAY] render_fps=13.41 S_input_fps=11.25 M_input_fps=29.99 S_shown_fps=10.25 M_shown_fps=13.41 compose_ms=30.38 legacy_ms=3.73 car_ms=8.52 dashboard_ms=21.85 car_redraw_pct=72.1 scale_ms=7.54 present_ms=29.17 reuse_wait_ms=0.00 upload_done_fps=13.41 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.47 clear_ms=3.07 video_fit_ms=9.43 car_fit_ms=2.67 ui_ms=0.95 fast=0
+[PERF DISPLAY] render_fps=13.58 S_input_fps=10.73 M_input_fps=30.23 S_shown_fps=9.98 M_shown_fps=13.38 compose_ms=31.68 legacy_ms=3.85 car_ms=9.03 dashboard_ms=22.65 car_redraw_pct=75.0 scale_ms=7.56 present_ms=26.92 reuse_wait_ms=0.00 upload_done_fps=13.58 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.61 clear_ms=2.81 video_fit_ms=9.58 car_fit_ms=2.70 ui_ms=0.90 fast=0
+[PERF DISPLAY] render_fps=13.25 S_input_fps=11.92 M_input_fps=30.80 S_shown_fps=10.88 M_shown_fps=12.86 compose_ms=31.69 legacy_ms=3.77 car_ms=9.03 dashboard_ms=22.66 car_redraw_pct=76.1 scale_ms=7.23 present_ms=29.01 reuse_wait_ms=0.00 upload_done_fps=13.25 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=7.14 clear_ms=3.15 video_fit_ms=9.24 car_fit_ms=2.70 ui_ms=0.96 fast=0
+[PERF DISPLAY] render_fps=13.73 S_input_fps=15.14 M_input_fps=30.27 S_shown_fps=10.15 M_shown_fps=13.53 compose_ms=32.40 legacy_ms=3.91 car_ms=9.15 dashboard_ms=23.25 car_redraw_pct=76.8 scale_ms=7.74 present_ms=25.13 reuse_wait_ms=0.00 upload_done_fps=13.73 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.69 clear_ms=3.02 video_fit_ms=9.12 car_fit_ms=2.68 ui_ms=0.94 fast=0
+[PERF DISPLAY] render_fps=13.18 S_input_fps=20.44 M_input_fps=30.17 S_shown_fps=9.64 M_shown_fps=12.78 compose_ms=28.55 legacy_ms=3.87 car_ms=6.04 dashboard_ms=22.51 car_redraw_pct=65.7 scale_ms=8.67 present_ms=30.94 reuse_wait_ms=0.00 upload_done_fps=13.18 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.96 clear_ms=3.19 video_fit_ms=10.15 car_fit_ms=2.73 ui_ms=1.09 fast=0
+[PERF DISPLAY] render_fps=12.63 S_input_fps=19.39 M_input_fps=30.46 S_shown_fps=9.67 M_shown_fps=12.43 compose_ms=28.08 legacy_ms=4.14 car_ms=3.90 dashboard_ms=24.18 car_redraw_pct=53.1 scale_ms=8.83 present_ms=34.19 reuse_wait_ms=0.00 upload_done_fps=12.63 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.98 clear_ms=2.92 video_fit_ms=9.93 car_fit_ms=2.93 ui_ms=1.06 fast=0
+[PERF DISPLAY] render_fps=12.86 S_input_fps=17.74 M_input_fps=29.88 S_shown_fps=9.30 M_shown_fps=12.66 compose_ms=27.88 legacy_ms=4.01 car_ms=4.00 dashboard_ms=23.88 car_redraw_pct=53.8 scale_ms=8.60 present_ms=33.37 reuse_wait_ms=0.00 upload_done_fps=12.86 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync

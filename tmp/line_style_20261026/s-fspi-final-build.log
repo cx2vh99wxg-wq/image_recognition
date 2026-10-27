@@ -1,0 +1,12 @@
+make: Entering directory '/mnt/d/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/S/fspi'
+编译C文件: csrc/fspi_module.c
+gcc -Wall -O2 -std=c11 -Iinclude -I../include -c csrc/fspi_module.c -o build/fspi_module.o
+编译C文件: csrc/main.c
+gcc -Wall -O2 -std=c11 -Iinclude -I../include -c csrc/main.c -o build/main.o
+链接应用程序: build/vehicle_control
+gcc build/fspi_module.o build/main.o build/shared_memory.o -lm -lpthread -lrt -o build/vehicle_control
+应用程序编译完成: build/vehicle_control
+gcc -std=c11 -Wall -Wextra -Werror -I../include test_lane_rule.c -o build/test_lane_rule
+./build/test_lane_rule
+lane policy: 9 side combinations, CC/DD input, traction independence, expiry and quality PASS
+make: Leaving directory '/mnt/d/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/S/fspi'

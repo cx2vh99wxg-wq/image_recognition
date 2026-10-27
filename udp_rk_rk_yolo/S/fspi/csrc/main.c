@@ -22,6 +22,7 @@
 #include "fspi_module.h"
 #include "brake_policy.h"
 #include "../include/shared_memory.h"
+#include "lane_rule.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -58,6 +59,38 @@ static int turn_pulse_active = 0;
 static int turn_pulse_interrupted = 0;
 static uint32_t next_brake_attach = 0;
 static int direction_release_failed = 0;
+static LineStyleIPC lane_input={-1,NULL},lane_warning={-1,NULL};
+static uint64_t lane_last_poll=0;
+static uint8_t lane_heartbeat=0;
+
+/* Runs in the same thread as all other SPI operations, including the 20ms
+ * pulse wait. It never writes GO/BACK/LEFT/RIGHT/STOP registers 0..4. */
+static void monitor_lane_rule(void) {
+    uint64_t now=line_clock_ns();
+    if(lane_last_poll&&now-lane_last_poll<100000000ULL)return;
+    lane_last_poll=now;
+    line_ipc_open(&lane_input,LINE_STYLE_KEY,0);
+    line_ipc_open(&lane_warning,LINE_WARNING_KEY,1);
+    LineStyleData data={0};
+    if(line_ipc_read(&lane_input,&data)||!line_fresh(&data,now))data=(LineStyleData){0};
+    unsigned denied=lane_denied_sides(&data,now);
+    lane_heartbeat^=0x80;
+    int written=fspi_write_data(5,(uint8_t)(0x40|lane_heartbeat|denied))==0;
+    uint8_t hmi=0;
+    if(fspi_read_hmi_snapshot(&hmi))hmi=0;
+    data.hmi_code=hmi;
+    data.blocked=written?lane_blocked_request(denied,hmi):0;
+    // The warning is a bounded display event; release remains visible for 700ms.
+    static unsigned previous=0;static uint64_t warning_until=0;static unsigned held=0;
+    if(data.blocked){held=data.blocked;warning_until=now+700000000ULL;}
+    if(now<warning_until)data.blocked|=held;
+    if(data.blocked!=previous) {
+        printf("[LANE_RULE] left=%s right=%s hmi=%02X deny=%u warning=%u reg5_write=%s (not pin readback)\n",
+            line_style_name(data.left),line_style_name(data.right),hmi,denied,data.blocked,written?"OK":"FAIL");
+        previous=data.blocked;
+    }
+    line_set_deadline(&data,now+400000000ULL);line_ipc_write(&lane_warning,&data);
+}
 
 /* 读端只接受检测程序最近两秒写入的状态。检测程序未启动、退出或卡住时保持制动请求。
  * 请求有效时重复写低电平；请求清除时每秒重写高电平，避免无回执的 SPI 写入丢失。
@@ -65,6 +98,7 @@ static int direction_release_failed = 0;
  * STOP 锁存位于 FPGA，请求清除不自动解锁；人工 REARM 可强制解除当前报警。 */
 static int monitor_emergency_brake(void)
 {
+    monitor_lane_rule();
     // 转向脉冲的20ms等待也持续发布请求，不等待不可靠的开关读回。
     struct timespec ts;
     int clock_ok = clock_gettime(CLOCK_MONOTONIC, &ts) == 0;

@@ -1,0 +1,98 @@
+[
+  {
+    "t_ns": 7006052212586,
+    "detected": {
+      "session": 1520775611,
+      "source": 6796,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 257,
+      "blocked": 0,
+      "ttl_ms": 437
+    }
+  },
+  {
+    "t_ns": 7007052944219,
+    "detected": {
+      "session": 1520775611,
+      "source": 6829,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 257,
+      "blocked": 0,
+      "ttl_ms": 535
+    }
+  },
+  {
+    "t_ns": 7008053857857,
+    "detected": {
+      "session": 1520775611,
+      "source": 6856,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 257,
+      "blocked": 0,
+      "ttl_ms": 436
+    }
+  },
+  {
+    "t_ns": 7009054643449,
+    "detected": {
+      "session": 1520775611,
+      "source": 6889,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 257,
+      "blocked": 0,
+      "ttl_ms": 534
+    }
+  },
+  {
+    "t_ns": 7010055720883,
+    "detected": {
+      "session": 1520775611,
+      "source": 6913,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 257,
+      "blocked": 0,
+      "ttl_ms": 331
+    }
+  },
+  {
+    "t_ns": 7011057234621,
+    "detected": {
+      "session": 1520775611,
+      "source": 6949,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 257,
+      "blocked": 0,
+      "ttl_ms": 540
+    }
+  }
+]

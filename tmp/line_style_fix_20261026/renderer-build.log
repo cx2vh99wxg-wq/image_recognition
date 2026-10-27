@@ -1,0 +1,9 @@
+make: Entering directory '/mnt/d/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/S/x11/csrc'
+编译C++: main.cpp
+g++ -I../../include -Iinclude -std=c++14 -O3 -march=native -funroll-loops -pthread -DPERCEPTION_HAVE_XRENDER=1  -DPERCEPTION_HAVE_GLES=1  -c main.cpp -o /mnt/d/Study_Object/image_recognition/image_recognition/tmp/line_style_fix_20261026/host_renderer/main.o
+编译共享内存C文件: ../../csrc/shared_memory.c
+gcc -I../../include -Iinclude -std=c99 -O3 -march=native -funroll-loops -pthread -c ../../csrc/shared_memory.c -o /mnt/d/Study_Object/image_recognition/image_recognition/tmp/line_style_fix_20261026/host_renderer/shared_memory.o
+链接可执行文件: /mnt/d/Study_Object/image_recognition/image_recognition/tmp/line_style_fix_20261026/host_renderer/eight_camera_renderer
+g++ /mnt/d/Study_Object/image_recognition/image_recognition/tmp/line_style_fix_20261026/host_renderer/main.o /mnt/d/Study_Object/image_recognition/image_recognition/tmp/line_style_fix_20261026/host_renderer/shared_memory.o -o /mnt/d/Study_Object/image_recognition/image_recognition/tmp/line_style_fix_20261026/host_renderer/eight_camera_renderer -lX11 -lXext -lrt -lpthread -lXrender -lX11  -lEGL -lGLESv2 
+编译完成: eight_camera_renderer - Perception Engine 全景界面
+make: Leaving directory '/mnt/d/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/S/x11/csrc'

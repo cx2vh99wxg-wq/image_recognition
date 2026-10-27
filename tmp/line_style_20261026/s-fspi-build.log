@@ -1,0 +1,13 @@
+make: Entering directory '/mnt/d/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/S/fspi'
+创建build目录
+mkdir -p build
+编译C文件: csrc/fspi_module.c
+编译C文件: csrc/main.c
+gcc -Wall -O2 -std=c11 -Iinclude -I../include -c csrc/fspi_module.c -o build/fspi_module.o
+gcc -Wall -O2 -std=c11 -Iinclude -I../include -c csrc/main.c -o build/main.o
+编译共享内存文件: ../csrc/shared_memory.c
+gcc -Wall -O2 -std=c11 -Iinclude -I../include -c ../csrc/shared_memory.c -o build/shared_memory.o
+链接应用程序: build/vehicle_control
+gcc build/fspi_module.o build/main.o build/shared_memory.o -lm -lpthread -lrt -o build/vehicle_control
+应用程序编译完成: build/vehicle_control
+make: Leaving directory '/mnt/d/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/S/fspi'

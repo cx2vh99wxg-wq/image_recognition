@@ -1,0 +1,14 @@
+stty -echo
+[?2004l[?2004hroot@linaro-alip:/# [?2004l
+
+__M_FINAL_EVIDENCE__
+[LINE_STYLE] source=28105 camera=1 left=UNKNOWN q=0 duty=0 spans=0 right=UNKNOWN q=0 duty=0 spans=0 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=30.00 dma_ms=14.17 color_ms=1.02 infer_ms=264.01 overlay_ms=7.47 analysis_ms=10.53 shm_ms=0.67 render_ms=3.41 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=28171 camera=1 left=UNKNOWN q=0 duty=0 spans=0 right=UNKNOWN q=0 duty=0 spans=0 mask_range=0.000..1.000
+[LINE_STYLE] source=28237 camera=1 left=UNKNOWN q=0 duty=0 spans=0 right=UNKNOWN q=0 duty=0 spans=0 mask_range=0.000..1.000
+[PERF M] capture_loop_fps=30.02 raw_changed_fps=30.02 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=30.02 dma_ms=14.06 color_ms=1.05 infer_ms=264.48 overlay_ms=7.49 analysis_ms=10.44 shm_ms=0.66 render_ms=3.39 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[UDP_TX] fps=29.99 payload_mbps=147.41 send_ms=27.17 failed=0 pacing_mbps=200
+
+__PERF_SERIAL_DONE__
+[?2004hroot@linaro-alip:/# [?2004l
+[?2004hroot@linaro-alip:/# 

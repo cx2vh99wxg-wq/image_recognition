@@ -12,11 +12,11 @@
         </comment>
         <row>
             <data>Total On Chip Power</data>
-            <data>4.736</data>
+            <data>4.749</data>
         </row>
         <row>
             <data>Static Power</data>
-            <data>0.663</data>
+            <data>0.664</data>
         </row>
         <row>
             <data>External Power</data>
@@ -24,15 +24,15 @@
         </row>
         <row>
             <data>Junction Temperature</data>
-            <data>70.83</data>
+            <data>70.953</data>
         </row>
         <row>
             <data>Thermal Margin</data>
-            <data>29.17</data>
+            <data>29.047</data>
         </row>
         <row>
             <data>Power Margin</data>
-            <data>3.013</data>
+            <data>3.001</data>
         </row>
     </table>
     <table id="report_power_logic_device_summary" title="Logic Device Summary" column_number="3">
@@ -43,28 +43,28 @@
         </column_headers>
         <row>
             <data>Clock</data>
-            <data>0.213</data>
-            <data>4.50%</data>
+            <data>0.221</data>
+            <data>4.66%</data>
         </row>
         <row>
             <data>CLM</data>
-            <data>0.076</data>
-            <data>1.60%</data>
+            <data>0.075</data>
+            <data>1.59%</data>
         </row>
         <row>
             <data>IO</data>
-            <data>1.72</data>
-            <data>36.32%</data>
+            <data>1.716</data>
+            <data>36.14%</data>
         </row>
         <row>
             <data>APM</data>
             <data>0.043</data>
-            <data>0.92%</data>
+            <data>0.90%</data>
         </row>
         <row>
             <data>DRM</data>
-            <data>0.168</data>
-            <data>3.54%</data>
+            <data>0.174</data>
+            <data>3.66%</data>
         </row>
         <row>
             <data>ADC</data>
@@ -74,7 +74,7 @@
         <row>
             <data>PLL</data>
             <data>1.391</data>
-            <data>29.37%</data>
+            <data>29.29%</data>
         </row>
         <row>
             <data>PCIE</data>
@@ -84,12 +84,12 @@
         <row>
             <data>HSSTLP</data>
             <data>0.233</data>
-            <data>4.93%</data>
+            <data>4.92%</data>
         </row>
         <row>
             <data>Net</data>
-            <data>0.186</data>
-            <data>3.93%</data>
+            <data>0.188</data>
+            <data>3.97%</data>
         </row>
     </table>
     <table id="report_power_power_rail_summary" title="Power Rail Summary" column_number="5">
@@ -103,9 +103,9 @@
         <row>
             <data>vcc</data>
             <data>1</data>
-            <data>2.575</data>
+            <data>2.587</data>
             <data>0</data>
-            <data>2.575</data>
+            <data>2.587</data>
         </row>
         <row>
             <data>vcc_drm</data>
@@ -199,7 +199,7 @@
             <data>0h:0m:24s</data>
             <data>0h:0m:24s</data>
             <data>0h:0m:27s</data>
-            <data>1,680</data>
+            <data>1,677</data>
             <data>WINDOWS 10 x86_64</data>
             <data>Unknown</data>
             <data>31</data>
@@ -267,7 +267,7 @@
                     </row>
                     <row>
                         <data>Junction Temperature</data>
-                        <data>70.8304</data>
+                        <data>70.953</data>
                     </row>
                     <row>
                         <data>Custom Effective Theta JA </data>

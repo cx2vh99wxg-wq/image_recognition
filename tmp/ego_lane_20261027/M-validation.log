@@ -1,0 +1,14 @@
+sample_00 ['SOLID', 'DASHED'] PERF postprocess_ms=4.670 repeats=20 check=60
+sample_01 ['SOLID', 'DASHED'] PERF postprocess_ms=5.117 repeats=20 check=60
+sample_02 ['SOLID', 'DASHED'] PERF postprocess_ms=4.521 repeats=20 check=60
+sample_03 ['SOLID', 'DASHED'] PERF postprocess_ms=4.613 repeats=20 check=60
+sample_04 ['SOLID', 'DASHED'] PERF postprocess_ms=4.486 repeats=20 check=60
+sample_05 ['SOLID', 'DASHED'] PERF postprocess_ms=4.523 repeats=20 check=60
+sample_06 ['UNKNOWN', 'UNKNOWN'] PERF postprocess_ms=2.982 repeats=20 check=0
+sample_07 ['SOLID', 'DASHED'] PERF postprocess_ms=5.169 repeats=20 check=60
+sample_08 ['SOLID', 'DASHED'] PERF postprocess_ms=5.113 repeats=20 check=60
+sample_09 ['SOLID', 'DASHED'] PERF postprocess_ms=5.864 repeats=20 check=60
+sample_10 ['SOLID', 'DASHED'] PERF postprocess_ms=4.164 repeats=20 check=60
+sample_11 ['SOLID', 'DASHED'] PERF postprocess_ms=3.967 repeats=20 check=60
+ACTUAL_MODEL_LEFT_SOLID_RIGHT_DASHED
+ARM_SAVED_VALIDATION_PASS

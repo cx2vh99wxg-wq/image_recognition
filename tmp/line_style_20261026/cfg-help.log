@@ -1,0 +1,160 @@
+Executing : cfg_help -help
+H: cfg_help : list all support commands (Version 2022.2-SP6.4 build 146967)
+    [ -help  ]
+        Turn on to print this message
+
+
+Executing : cfg_help -help successfully.
+COMMAND cfg_help: 
+Executing : cfg_gen_sfc -help
+H: cfg_gen_sfc : generate sfc file from sbit file (Version 2022.2-SP6.4 build 146967)
+    [ -help  ]
+        Turn on to print this message
+    -sbit string
+        set sbit file to transform
+    [ -sbit_start_address string ]
+        set sbit file start address   ---Hexadecimal Number
+    [ -sfc string ]
+        set sfc file to generate
+    [ -opcode integer_number ]
+        set flash operation code, only support (11(0x0B), 59(0x3B), 107(0x6B), 12(0x0C), 60(0x3C), 108(0x6C))
+    [ -device_name string ]
+        set flash device name default(N25Q256)
+    [ -fast_mode Boolean_value (TRUE/FALSE) ]
+        Data Sample Time in Falling Edge
+    [ -is_x8 Boolean_value (TRUE/FALSE) ]
+        set transform X8 mode
+    [ -user_address_list { string string ... } ]
+        set user data file start address   ---Hexadecimal Number
+    [ -file_list { string string ... } ]
+        set user data files
+
+
+Executing : cfg_gen_sfc -help successfully.
+COMMAND cfg_gen_sfc: 
+Executing : cfg_add_device -help
+H: cfg_add_device : add device (Version 2022.2-SP6.4 build 146967)
+    [ -help  ]
+        Turn on to print this message
+    -file string
+        Specify ONE bit file name
+
+
+Executing : cfg_add_device -help successfully.
+COMMAND cfg_add_device: 
+Executing : cfg_set_device_property -help
+H: cfg_set_device_property : set device properties (Version 2022.2-SP6.4 build 146967)
+    [ -help  ]
+        Turn on to print this message
+    [ -device_index integer_number ]
+        Specify target device's index
+    [ -program string ]
+        Specify programmed value of program properties.   ---Hexadecimal Number.
+          Bit0: Enable WakeDown Reconfigure. 
+          Bit1: Enable ISC Reconfigure.      
+          Bit2: Enable HighZDis Reconfigure. 
+          If a bit is setting 1,it means that this function is valid.
+          Such as, if Bit0 and Bit1 is setting 1, the value of program properties is 3.
+          Notice: Bit1 and Bit2 can not be set to 1 at the same time for specific series device.
+    [ -readback string ]
+        Specify programmed value of read back properties.   ---Hexadecimal Number.
+          Bit0: Enable WakeDown Read Back. 
+          Bit1: Enable ISC Read Back.      
+          Bit2: Enable HighZDis Read Back. 
+          If a bit is setting 1,it means that this function is valid.
+          Such as, if Bit0 and Bit2 is setting 1, the value of read back properties is 5.
+          Notice: Bit1 and Bit2 can not be set to 1 at the same time for specific series device.
+    [ -eflash string ]
+        Specify programmed value of embed flash properties.   ---Hexadecimal Number.
+          Bit0: Enable Erase before Program Embed Flash.
+          Bit1: Enable Verify after Program Embed Flash.
+          Bit2: Enable Erase Entire Embed Flash.
+          Bit3: Enable Reset FPGA after Erase Embed Flash.
+          Bit4: Enable Reset FPGA after Program Embed Flash.
+          Bit5: Enable Reset FPGA after Program Feature Control.
+          Bit6: Enable Program Feature Control after Program EFlash.
+          Bit7: Enable Program Feature Control before Program CRAM.
+          Bit19-Bit8 :  Embed Flash Start Page Index(Unit: 256Byte).   total pages:332   ---Decimal Number
+          Bit31-Bit20:  Embed Flash Tail  Page Index(Unit: 256Byte).   total pages:332   ---Decimal Number
+          Bit51-Bit32:  Embed Flash Read  Back Size(Unit: Byte).   ---Hexadecimal Number.
+          If a bit is setting 1,it means that this function is valid.
+          Such as, if only Bit0 and Bit5 is setting 1, the value of embed flash properties is 21.
+          The use of the tcl command: cfg_set_device_property -device_index 0 -program 3 -readback 5 -eflash 21.
+          Notice: the arguments program and eflash are hexadecimal number and optional.
+
+
+Executing : cfg_set_device_property -help successfully.
+COMMAND cfg_set_device_property: 
+COMMAND cfg_download: invalid command name "cfg_download"
+Executing : cfg_program -help
+H: cfg_program : program the specified device (Version 2022.2-SP6.4 build 146967)
+    [ -help  ]
+        Turn on to print this message
+    [ -device_index integer_number ]
+        Specify programmed device's index
+
+
+Executing : cfg_program -help successfully.
+COMMAND cfg_program: 
+COMMAND cfg_load_config_file: invalid command name "cfg_load_config_file"
+cfg_add_device
+cfg_assign_file
+cfg_close
+cfg_connect
+cfg_create_chain_svf
+cfg_debug_operate
+cfg_disconnect
+cfg_efuse_lock
+cfg_execute_svf
+cfg_flash_assign_file
+cfg_flash_erase
+cfg_flash_program
+cfg_flash_read_register
+cfg_flash_readback
+cfg_flash_remove_device
+cfg_flash_scan_device
+cfg_flash_special_operate
+cfg_flash_verify
+cfg_flash_write_register
+cfg_gen_backup_sfc
+cfg_gen_chain_file
+cfg_gen_multi_file
+cfg_gen_remote_backup_sfc
+cfg_gen_sfc
+cfg_help
+cfg_jtag_flash_assign_file
+cfg_jtag_flash_erase
+cfg_jtag_flash_program
+cfg_jtag_flash_readback
+cfg_jtag_flash_scan_device
+cfg_jtag_flash_verify
+cfg_load_dir
+cfg_load_excite
+cfg_modify_sbit
+cfg_one_step_create_svf
+cfg_operate_ctl
+cfg_operate_eflash
+cfg_pef_to_svf
+cfg_program
+cfg_program_key_file
+cfg_program_user_efuse
+cfg_read_device_property
+cfg_read_register
+cfg_readback
+cfg_remove_all_devices
+cfg_remove_device
+cfg_remove_devices
+cfg_reset_fpga
+cfg_scan_chain
+cfg_set_cable_property
+cfg_set_delay_time
+cfg_set_device_property
+cfg_set_options
+cfg_set_tcl_break
+cfg_svf_to_pef
+cfg_switch_flatten_svf
+cfg_verify
+cfg_write_all_report_file
+cfg_write_all_tcl_file
+cfg_write_auto_test
+cfg_write_register

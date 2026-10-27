@@ -1,0 +1,38 @@
+[
+  {
+    "name": "user0",
+    "expected": [
+      "DASHED",
+      "SOLID"
+    ],
+    "got": [
+      "DASHED",
+      "SOLID"
+    ],
+    "output": "EGO reference=171.25 near_y=202.00 road=17993 objects=3 selected=0/1\nOBJECT 0 fit=19.544,62.413,323.009 y=132..179 NN=40\nOBJECT 1 fit=293.384,199.487,44.600 y=132..217 NN=81\nOBJECT 2 fit=519.734,450.340,0.000 y=134..166 NN=31\nLEFT DASHED quality=85 reason=OK duty=70 spans=5 gaps=2 coverage=100 bottom_x=19.5 fit=19.544,62.413,323.009 y=132..179\nRIGHT SOLID quality=80 reason=OK duty=84 spans=2 gaps=1 coverage=100 bottom_x=293.4 fit=293.384,199.487,44.600 y=132..217\n"
+  },
+  {
+    "name": "user2",
+    "expected": [
+      "DASHED",
+      "SOLID"
+    ],
+    "got": [
+      "DASHED",
+      "SOLID"
+    ],
+    "output": "EGO reference=167.00 near_y=188.00 road=16436 objects=3 selected=0/1\nOBJECT 0 fit=3.997,71.951,282.465 y=121..159 NN=36\nOBJECT 1 fit=276.050,132.510,0.000 y=126..210 NN=85\nOBJECT 2 fit=599.236,646.134,183.012 y=122..157 NN=33\nLEFT DASHED quality=83 reason=OK duty=66 spans=4 gaps=1 coverage=85 bottom_x=4.0 fit=3.997,71.951,282.465 y=121..159\nRIGHT SOLID quality=81 reason=OK duty=88 spans=1 gaps=0 coverage=98 bottom_x=276.1 fit=276.050,132.510,0.000 y=126..210\n"
+  },
+  {
+    "name": "lab",
+    "expected": [
+      "UNKNOWN",
+      "UNKNOWN"
+    ],
+    "got": [
+      "UNKNOWN",
+      "UNKNOWN"
+    ],
+    "output": "EGO reference=-1.00 near_y=-1.00 road=0 objects=0 selected=-1/-1\nLEFT UNKNOWN quality=0 reason=NO MASK duty=0 spans=0 gaps=0 coverage=0 bottom_x=0.0 fit=0.000,0.000,0.000 y=0..0\nRIGHT UNKNOWN quality=0 reason=NO MASK duty=0 spans=0 gaps=0 coverage=0 bottom_x=0.0 fit=0.000,0.000,0.000 y=0..0\n"
+  }
+]

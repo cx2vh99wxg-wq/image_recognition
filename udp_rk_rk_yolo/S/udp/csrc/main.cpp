@@ -3,6 +3,7 @@
 #endif
 #include "shared_memory.h"
 #include "video_transport_v2.h"
+#include "line_style_wire.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -18,6 +19,8 @@
 
 static_assert(sizeof(SharedMemoryControl) == 104, "Image control ABI must remain 104 bytes");
 static_assert(sizeof(CurveDetectionSharedMemory) == 72, "Curve shared ABI must remain 72 bytes");
+static LineStyleIPC line_ipc={-1,nullptr};
+static line_wire::Receiver line_receiver;
 #define IMAGE_WIDTH 640
 #define IMAGE_HEIGHT 480
 #define UDP_PORT 8888
@@ -167,6 +170,20 @@ static void ingest_datagram(NetworkReceiver* r, const Datagram& packet) {
     if (!packet.size || packet.size > MAX_PACKET_SIZE) return;
     uint64_t now = monotonic_ns();
     FrameHeader old_header = {};
+    if(line_wire::is_packet(packet.data,packet.size)) {
+        LineStyleData line={};
+        if(line_receiver.ingest(packet.data,packet.size,packet.received_ns,now,line)) {
+            line_ipc_write(&line_ipc,&line);
+            static uint64_t logged=0;
+            if(!logged||now-logged>=2000000000ULL) {
+                printf("[LINE_RX] session=%u source=%u left=%s(Q%u,%s) right=%s(Q%u,%s) ttl_ms=%llu\n",line.session,line.source_id,
+                    line_style_name(line.left),line.left_quality,line_reason_name(line.diagnostic&255),
+                    line_style_name(line.right),line.right_quality,line_reason_name((line.diagnostic>>8)&255),
+                    (unsigned long long)((line_deadline(&line)-now)/1000000));logged=now;
+            }
+        }
+        return;
+    }
     bool v2 = video_v2::is_packet(packet.data, packet.size);
     bool old = !v2 && legacy_header(packet.data, packet.size, old_header);
     uint64_t source = ((uint64_t)packet.source.sin_addr.s_addr << 16) | packet.source.sin_port;
@@ -280,6 +297,7 @@ int main() {
     setvbuf(stdout, nullptr, _IOLBF, 0);
     signal(SIGINT, signal_handler); signal(SIGTERM, signal_handler);
     if (shared_memory_init_udp(&shm_manager, 1)) return 1;
+    line_ipc_open(&line_ipc,LINE_STYLE_KEY,1);
     curve_detection_available = curve_detection_shm_init(1) == 0;
     NetworkReceiver receiver;
     if (network_receiver_init(&receiver)) {
@@ -298,6 +316,7 @@ int main() {
     }
     if (frames) save_frame(receiver.frame_buffer, "udp_last_frame.ppm");
     network_receiver_cleanup(&receiver); shared_memory_cleanup(&shm_manager);
+    line_ipc_close(&line_ipc);
     if (curve_detection_available) curve_detection_shm_cleanup();
     return 0;
 }

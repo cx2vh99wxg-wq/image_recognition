@@ -16,7 +16,8 @@ module fspi_slave_top
     output   wire    [7:0]    mem1_out,
     output   wire    [7:0]    mem2_out,
     output   wire    [7:0]    mem3_out,
-    output   wire    [7:0]    mem4_out
+    output   wire    [7:0]    mem4_out,
+    output   wire    [7:0]    mem5_out
 );
 
 
@@ -48,7 +49,8 @@ spi_ram_crtl u_spi_ram_crtl(
     .mem1_out       ( mem1_out       ),
     .mem2_out       ( mem2_out       ),
     .mem3_out       ( mem3_out       ),
-    .mem4_out       ( mem4_out       )
+    .mem4_out       ( mem4_out       ),
+    .mem5_out       ( mem5_out       )
 );
 
 fspi_slave u_fspi_slave(

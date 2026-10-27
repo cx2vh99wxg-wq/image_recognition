@@ -1,0 +1,82 @@
+Executing : cfg_assign_file -help
+H: cfg_assign_file : Specify bit files (Version 2022.2-SP6.4 build 146967)
+    [ -help  ]
+        Turn on to print this message
+    -file string
+        Specify one sbit file name
+    [ -device_index integer_number ]
+        Specify assigned device's index, default is 0.
+
+
+Executing : cfg_assign_file -help successfully.
+COMMAND cfg_assign_file: 
+Executing : cfg_jtag_flash_scan_device -help
+H: cfg_jtag_flash_scan_device : Scan jtag flash device (Version 2022.2-SP6.4 build 146967)
+    [ -help  ]
+        Turn on to print this message
+    [ -device_index integer_number ]
+        Specify operate device's index
+
+
+Executing : cfg_jtag_flash_scan_device -help successfully.
+COMMAND cfg_jtag_flash_scan_device: 
+Executing : cfg_jtag_flash_assign_file -help
+H: cfg_jtag_flash_assign_file : Assign new bit file for jtag flash (Version 2022.2-SP6.4 build 146967)
+    [ -help  ]
+        Turn on to print this message
+    [ -device_index integer_number ]
+        Specify operate device's index
+    -file string
+        Specify ONE bit file name
+
+
+Executing : cfg_jtag_flash_assign_file -help successfully.
+COMMAND cfg_jtag_flash_assign_file: 
+Executing : cfg_jtag_flash_program -help
+H: cfg_jtag_flash_program : program thejtag flash device (Version 2022.2-SP6.4 build 146967)
+    [ -help  ]
+        Turn on to print this message
+    [ -device_index integer_number ]
+        Specify operate device's index
+
+
+Executing : cfg_jtag_flash_program -help successfully.
+COMMAND cfg_jtag_flash_program: 
+Executing : cfg_jtag_flash_verify -help
+H: cfg_jtag_flash_verify : verify the bit stream on jtag flash (Version 2022.2-SP6.4 build 146967)
+    [ -help  ]
+        Turn on to print this message
+    [ -device_index integer_number ]
+        Specify operate device's index
+
+
+Executing : cfg_jtag_flash_verify -help successfully.
+COMMAND cfg_jtag_flash_verify: 
+Executing : cfg_flash_program -help
+H: cfg_flash_program : program the flash device (Version 2022.2-SP6.4 build 146967)
+    [ -help  ]
+        Turn on to print this message
+
+
+Executing : cfg_flash_program -help successfully.
+COMMAND cfg_flash_program: 
+Executing : cfg_reset_fpga -help
+H: cfg_reset_fpga : Reset fpga device (Version 2022.2-SP6.4 build 146967)
+    [ -help  ]
+        Turn on to print this message
+    [ -device_index integer_number ]
+        Specify reset fpga device's index
+
+
+Executing : cfg_reset_fpga -help successfully.
+COMMAND cfg_reset_fpga: 
+Executing : cfg_verify -help
+H: cfg_verify : verify the bit stream on the board (Version 2022.2-SP6.4 build 146967)
+    [ -help  ]
+        Turn on to print this message
+    [ -device_index integer_number ]
+        Specify read back device's index
+
+
+Executing : cfg_verify -help successfully.
+COMMAND cfg_verify: 

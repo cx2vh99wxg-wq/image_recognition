@@ -83,11 +83,20 @@ int test_spi_ioctl(int fd, unsigned long request, ...)
     if (request == SPI_IOC_MESSAGE(1)) {
         struct spi_ioc_transfer *tr = argument;
         const uint8_t *command = (const uint8_t *)(uintptr_t)tr->tx_buf;
+        if(!command && tr->rx_buf) {
+            expect(tr->len==1 && tr->rx_nbits==4,"lane snapshot is RX-only HMI");
+            *(uint8_t *)(uintptr_t)tr->rx_buf=0;
+            return 1;
+        }
         expect(tr->len == 3 && command && command[0] == 0,
                "SMDT host write excludes the controller-generated opcode");
         expect(tr->speed_hz == SPI_SPEED, "existing control writes keep their configured speed");
         uint16_t address = ((uint16_t)command[0] << 8) | command[1];
-        expect(address <= 4, "request monitor never writes display/switch configuration");
+        expect(address <= 5, "request monitor uses only motion/STOP and independent lane permission");
+        if(address==5) {
+            expect((command[2]&0x7c)==0x40,"permission byte has protocol signature");
+            return tr->len;
+        }
         if (direction_failure && address < 4) return -1;
         if (address == 4) {
             if (request_failure) {

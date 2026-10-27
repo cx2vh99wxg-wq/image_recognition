@@ -18,7 +18,7 @@ module test_direction_arbiter;
       .hmi_code(hmi_code),
       .fspi_released(fspi_released),
       .fspi_direction_armed(fspi_direction_armed),
-      .movement_blocked(movement_blocked),
+      .hmi_left_denied(1'b0), .hmi_right_denied(1'b0), .movement_blocked(movement_blocked),
       .go_released(go_released),
       .back_released(back_released),
       .left_released(left_released),

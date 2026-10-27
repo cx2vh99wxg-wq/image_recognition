@@ -25,6 +25,7 @@
 #include "dashboard_ui.h"
 #include "gles_presenter.h"
 #include "video_input_fps.h"
+#include "line_style_ipc.h"
 
 /* 为了使用aligned_alloc，需要定义_ISOC11_SOURCE */
 #ifndef _ISOC11_SOURCE
@@ -1429,6 +1430,39 @@ int present_dashboard(RenderEngine* engine) {
     status.fps = status.recorded ? 0.0f : engine->display_fps;
     status.pcie_fps = engine->pcie_input_rate.frames_per_second;
     status.udp_fps = engine->udp_input_rate.frames_per_second;
+    static LineStyleIPC line_status={-1,nullptr};
+    static LineStyleIPC line_detection={-1,nullptr};
+    line_ipc_open(&line_detection,LINE_STYLE_KEY,0);
+    LineStyleData detected={};
+    if(!line_ipc_read(&line_detection,&detected)&&line_fresh(&detected,display_clock_ns())) {
+        status.line_left=detected.left;status.line_right=detected.right;
+        status.line_left_quality=detected.left_quality;status.line_right_quality=detected.right_quality;
+        status.line_left_reason=detected.diagnostic&255;status.line_right_reason=(detected.diagnostic>>8)&255;
+        status.line_left_raw=(detected.diagnostic>>16)&3;status.line_right_raw=(detected.diagnostic>>18)&3;
+    }
+    line_ipc_open(&line_status,LINE_WARNING_KEY,0);
+    LineStyleData line={};
+    if(!line_ipc_read(&line_status,&line)&&line_fresh(&line,display_clock_ns())) {
+        status.lane_blocked=line.blocked&3;
+
+    }
+    if(engine->headless) {
+        const char* forbidden=getenv("VISION_PREVIEW_BLOCK");
+        if(forbidden) {
+            status.lane_blocked=!strcmp(forbidden,"left")?1:!strcmp(forbidden,"right")?2:3;
+            status.line_left=status.lane_blocked&1?1:2;status.line_right=status.lane_blocked&2?1:2;
+            status.line_left_quality=73;status.line_right_quality=77;
+            status.line_left_reason=status.line_right_reason=0;
+        }
+        const char* pending=getenv("VISION_PREVIEW_LINE_PENDING");
+        if(pending&&*pending) {
+            status.line_left=status.line_right=0;status.line_left_raw=2;status.line_right_raw=1;
+            status.line_left_reason=status.line_right_reason=7;
+            status.line_left_quality=status.line_right_quality=0;
+        }
+    }
+    if((status.lane_blocked&1)&&(status.motion==perception_ui::MotionDirection::Left||status.motion==perception_ui::MotionDirection::ForwardLeft))status.motion=perception_ui::MotionDirection::Idle;
+    if((status.lane_blocked&2)&&(status.motion==perception_ui::MotionDirection::Right||status.motion==perception_ui::MotionDirection::ForwardRight))status.motion=perception_ui::MotionDirection::Idle;
     float progress = engine->transition.is_active ? engine->transition.progress :
         (engine->presented_mode == DISPLAY_MODE_ALL_CAMERAS ? -1.0f : 1.0f);
     char mode_label[64];

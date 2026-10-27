@@ -1,0 +1,176 @@
+[
+  {
+    "t_ns": 6882607573947,
+    "detected": {
+      "session": 1520775611,
+      "source": 3094,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 257,
+      "blocked": 0,
+      "ttl_ms": 552
+    },
+    "warning": {
+      "session": 1520775611,
+      "source": 3085,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 0,
+      "blocked": 0,
+      "ttl_ms": 363
+    }
+  },
+  {
+    "t_ns": 6883609462656,
+    "detected": {
+      "session": 1520775611,
+      "source": 3121,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 257,
+      "blocked": 0,
+      "ttl_ms": 453
+    },
+    "warning": {
+      "session": 1520775611,
+      "source": 3121,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 0,
+      "blocked": 0,
+      "ttl_ms": 356
+    }
+  },
+  {
+    "t_ns": 6884611723532,
+    "detected": {
+      "session": 1520775611,
+      "source": 3154,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 257,
+      "blocked": 0,
+      "ttl_ms": 549
+    },
+    "warning": {
+      "session": 1520775611,
+      "source": 3145,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 0,
+      "blocked": 0,
+      "ttl_ms": 344
+    }
+  },
+  {
+    "t_ns": 6885613215282,
+    "detected": {
+      "session": 1520775611,
+      "source": 3178,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 257,
+      "blocked": 0,
+      "ttl_ms": 346
+    },
+    "warning": {
+      "session": 1520775611,
+      "source": 3178,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 0,
+      "blocked": 0,
+      "ttl_ms": 332
+    }
+  },
+  {
+    "t_ns": 6886614779658,
+    "detected": {
+      "session": 1520775611,
+      "source": 3214,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 257,
+      "blocked": 0,
+      "ttl_ms": 547
+    },
+    "warning": {
+      "session": 1520775611,
+      "source": 3214,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 0,
+      "blocked": 0,
+      "ttl_ms": 311
+    }
+  },
+  {
+    "t_ns": 6887616534783,
+    "detected": {
+      "session": 1520775611,
+      "source": 3238,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 257,
+      "blocked": 0,
+      "ttl_ms": 345
+    },
+    "warning": {
+      "session": 1520775611,
+      "source": 3238,
+      "left": 0,
+      "right": 0,
+      "Q": [
+        0,
+        0
+      ],
+      "diagnostic": 0,
+      "blocked": 0,
+      "ttl_ms": 396
+    }
+  }
+]

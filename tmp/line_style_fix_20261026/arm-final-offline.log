@@ -1,0 +1,49 @@
+make: Entering directory '/home/linaro/M/line_style_fix_20261026/candidate/pcie'
+======================================
+Compiling C++: csrc/main.cpp
+PCIe Capture Module Build System
+======================================
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/M/line_style_fix_20261026/candidate/include -I/usr/include/X11 -c csrc/main.cpp -o build/main.o
+Target: pcie_capture
+Build Directory: build
+Rendering Support: 1
+YOLO Detection: Enabled
+Compiler: gcc / g++
+======================================
+Linking: build/pcie_capture
+g++  build/fspi_module.o  build/preprocess.o  build/yolo_integration.o  build/main.o  build/postprocess.o  build/yolop_opencv_integration.o /home/linaro/M/line_style_fix_20261026/candidate/build/shared_memory.o -o build/pcie_capture -Llib -L../lib -lrknnrt -pthread -lm -ldl -lX11 -lXext
+Build successful: build/pcie_capture
+make: Leaving directory '/home/linaro/M/line_style_fix_20261026/candidate/pcie'
+make: Entering directory '/home/linaro/M/line_style_fix_20261026/candidate/udp'
+======================================
+Compiling C++: csrc/main.cpp
+UDP Network Module Build System
+======================================
+g++ -std=c++11 -Wall -O3 -march=native -MMD -MP -Iinclude -I/home/linaro/M/line_style_fix_20261026/candidate/include -c csrc/main.cpp -o build/main.o
+Target: udp_sender
+Build Directory: build
+Compiler: gcc / g++
+======================================
+Linking: build/udp_sender
+g++   build/main.o /home/linaro/M/line_style_fix_20261026/candidate/build/shared_memory.o -o build/udp_sender -pthread -lm
+Build successful: build/udp_sender
+make: Leaving directory '/home/linaro/M/line_style_fix_20261026/candidate/udp'
+make: Entering directory '/home/linaro/M/line_style_fix_20261026/candidate/pcie'
+g++ -std=c++11 -Wall -Wextra -Werror -O2 -Iinclude -I../include -I/home/linaro/M/line_style_fix_20261026/candidate/include -I/usr/include/X11 tools/line_style_replay.cpp -o build/line_style_replay
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/M/line_style_fix_20261026/candidate/include -I/usr/include/X11 tools/line_style_model_probe.cpp build/yolo_integration.o build/preprocess.o /home/linaro/M/line_style_fix_20261026/candidate/build/shared_memory.o -o build/line_style_model_probe -Llib -L../lib -lrknnrt -lm -pthread -lrt -ldl
+make: Leaving directory '/home/linaro/M/line_style_fix_20261026/candidate/pcie'
+LEFT DASHED quality=78 reason=OK duty=40 spans=3 gaps=1 coverage=33 bottom_x=18.3 fit=18.319,46.795,303.062 y=132..174
+RIGHT SOLID quality=77 reason=OK duty=86 spans=1 gaps=0 coverage=67 bottom_x=292.3 fit=292.310,201.442,48.093 y=132..216
+PERF postprocess_ms=2.222 repeats=20 check=60
+正在初始化YOLOPv2引擎（车道线和可行驶区域检测）...
+模型输入数量: 1, 输出数量: 5
+输出 0: seg
+输出 1: ll
+输出 2: pred0
+输出 3: pred1
+输出 4: pred2
+模型输入尺寸: 640x480
+输出缓冲区: 车道线=1228800 bytes, 可行驶区域=2457600 bytes
+YOLOPv2引擎初始化成功
+PROBE LEFT UNKNOWN reason=AMBIG duty=15 spans=1 gaps=0 coverage=51 bottom=14.1
+PROBE RIGHT UNKNOWN reason=NO PAINT duty=12 spans=1 gaps=0 coverage=100 bottom=306.9

@@ -1,0 +1,89 @@
+{
+  "production_installed": true,
+  "pipeline_started": true,
+  "verified_BJT": "2026-10-27 10:30",
+  "user_confirmed_stationary_or_raised": true,
+  "M_port": "COM8",
+  "S_port": "COM7",
+  "M_installed_files": 17,
+  "S_installed_files": 8,
+  "M_backup": "/home/linaro/M/backup_line_style_20261027_1008",
+  "S_backup": "/home/linaro/S/backup_line_style_20261027_1008",
+  "M_pids": [
+    2285,
+    2119
+  ],
+  "S_pids": [
+    2190,
+    2192,
+    2193,
+    2195
+  ],
+  "M_capture_send_fps": 30,
+  "S_receive_fps": 30,
+  "S_display_fps_observed": 13.3,
+  "udp_incomplete_corrupt_kernel_drop_at_check": [
+    0,
+    0,
+    0
+  ],
+  "S_local_frames": [
+    1385,
+    1394
+  ],
+  "S_network_frames": [
+    2726,
+    2750
+  ],
+  "S_local_image_hash_prefixes": [
+    "c55cb6a2a162ba35",
+    "5fc3c6eb88cb7770"
+  ],
+  "S_network_image_hash_prefixes": [
+    "f4f9f824697f882e",
+    "a719db183192b800"
+  ],
+  "line_metadata_received_and_fresh": true,
+  "FPGA_HMI_changed": false,
+  "FSPI_binary_changed": false,
+  "artificial_motion_commands_sent": false,
+  "pin_voltage_measured": false,
+  "ROI_sampling_percent": [
+    12,
+    96
+  ],
+  "ROI_backup": "/home/linaro/M/backup_line_roi_20261027",
+  "right_key_hardware_validation": "Pending remote-controller batteries",
+  "current_frame_offline_result": "L DASHED Q84 / R SOLID Q91",
+  "ROI_postprocess_ms": 2.392,
+  "right_key_software_validated": true,
+  "right_X_real_LCD_captured": true,
+  "right_X_user_confirmed": true,
+  "right_software_verification_BJT": "2026-10-27 10:59",
+  "right_event": {
+    "detected": {
+      "source": 9679,
+      "left": 2,
+      "right": 1,
+      "Q": [
+        75,
+        84
+      ],
+      "detail": 393216,
+      "blocked": 0,
+      "ttl_ms": 506
+    },
+    "warning": {
+      "source": 9679,
+      "left": 2,
+      "right": 1,
+      "Q": [
+        75,
+        84
+      ],
+      "detail": 221,
+      "blocked": 2,
+      "ttl_ms": 393
+    }
+  }
+}

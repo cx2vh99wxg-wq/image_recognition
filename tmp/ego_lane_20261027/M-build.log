@@ -1,0 +1,87 @@
+make: Entering directory '/home/linaro/M/ego_lane_20261027/candidate/pcie'
+======================================
+Compiling C: csrc/fspi_module.c
+PCIe Capture Module Build System
+gcc -std=c99 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/M/ego_lane_20261027/candidate/include -I/usr/include/X11 -c csrc/fspi_module.c -o build/fspi_module.o
+======================================
+Target: pcie_capture
+Build Directory: build
+Rendering Support: 1
+YOLO Detection: Enabled
+Compiler: gcc / g++
+======================================
+Compiling C: csrc/preprocess.c
+gcc -std=c99 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/M/ego_lane_20261027/candidate/include -I/usr/include/X11 -c csrc/preprocess.c -o build/preprocess.o
+Compiling C: csrc/yolo_integration.c
+gcc -std=c99 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/M/ego_lane_20261027/candidate/include -I/usr/include/X11 -c csrc/yolo_integration.c -o build/yolo_integration.o
+Compiling C++: csrc/main.cpp
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/M/ego_lane_20261027/candidate/include -I/usr/include/X11 -c csrc/main.cpp -o build/main.o
+Compiling C++: csrc/postprocess.cpp
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/M/ego_lane_20261027/candidate/include -I/usr/include/X11 -c csrc/postprocess.cpp -o build/postprocess.o
+Compiling C++: csrc/yolop_opencv_integration.cpp
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/M/ego_lane_20261027/candidate/include -I/usr/include/X11 -c csrc/yolop_opencv_integration.cpp -o build/yolop_opencv_integration.o
+gcc -std=c99 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/M/ego_lane_20261027/candidate/include -I/usr/include/X11 -c /home/linaro/M/ego_lane_20261027/candidate/csrc/shared_memory.c -o /home/linaro/M/ego_lane_20261027/candidate/build/shared_memory.o
+g++ -std=c++11 -Wall -Wextra -Werror -O2 -Iinclude -I../include -I/home/linaro/M/ego_lane_20261027/candidate/include -I/usr/include/X11 tests/test_line_style.cpp -o build/test_line_style
+g++ -std=c++11 -Wall -Wextra -Werror -O2 -Iinclude -I../include -I/home/linaro/M/ego_lane_20261027/candidate/include -I/usr/include/X11 tests/test_ego_lane.cpp -o build/test_ego_lane
+g++ -std=c++11 -Wall -Wextra -Werror -O2 -Iinclude -I../include -I/home/linaro/M/ego_lane_20261027/candidate/include -I/usr/include/X11 tools/line_style_replay.cpp -o build/line_style_replay
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/M/ego_lane_20261027/candidate/include -I/usr/include/X11 tools/line_style_model_probe.cpp build/yolo_integration.o build/preprocess.o /home/linaro/M/ego_lane_20261027/candidate/build/shared_memory.o -o build/line_style_model_probe -Llib -L../lib -lrknnrt -lm -pthread -lrt -ldl
+Linking: build/pcie_capture
+g++  build/fspi_module.o  build/preprocess.o  build/yolo_integration.o  build/main.o  build/postprocess.o  build/yolop_opencv_integration.o /home/linaro/M/ego_lane_20261027/candidate/build/shared_memory.o -o build/pcie_capture -Llib -L../lib -lrknnrt -pthread -lm -ldl -lX11 -lXext
+Build successful: build/pcie_capture
+./build/test_line_style
+scene bend=0 filled=0 expected=1/1 got=1/1 duty=100/100 spans=1/1
+scene bend=0 filled=0 expected=1/2 got=1/2 duty=100/58 spans=1/4
+scene bend=0 filled=0 expected=2/1 got=2/1 duty=58/100 spans=4/1
+scene bend=0 filled=0 expected=2/2 got=2/2 duty=58/58 spans=4/4
+scene bend=0 filled=1 expected=1/1 got=1/1 duty=100/100 spans=1/1
+scene bend=0 filled=1 expected=1/2 got=1/2 duty=100/58 spans=1/4
+scene bend=0 filled=1 expected=2/1 got=2/1 duty=58/100 spans=4/1
+scene bend=0 filled=1 expected=2/2 got=2/2 duty=58/58 spans=4/4
+scene bend=1 filled=0 expected=1/1 got=1/1 duty=100/100 spans=1/1
+scene bend=1 filled=0 expected=1/2 got=1/2 duty=100/58 spans=1/4
+scene bend=1 filled=0 expected=2/1 got=2/1 duty=58/100 spans=4/1
+scene bend=1 filled=0 expected=2/2 got=2/2 duty=58/58 spans=4/4
+scene bend=1 filled=1 expected=1/1 got=1/1 duty=100/100 spans=1/1
+scene bend=1 filled=1 expected=1/2 got=1/2 duty=100/58 spans=1/4
+scene bend=1 filled=1 expected=2/1 got=2/1 duty=58/100 spans=4/1
+scene bend=1 filled=1 expected=2/2 got=2/2 duty=58/58 spans=4/4
+framed horizon=40 offset=-12 types=2/1 reasons=OK/OK duty=48/100
+framed horizon=40 offset=0 types=2/1 reasons=OK/OK duty=50/100
+framed horizon=40 offset=12 types=2/1 reasons=OK/OK duty=45/100
+framed horizon=80 offset=-12 types=2/1 reasons=OK/OK duty=48/100
+framed horizon=80 offset=0 types=2/1 reasons=OK/OK duty=50/100
+framed horizon=80 offset=12 types=2/1 reasons=OK/OK duty=45/100
+framed horizon=110 offset=-12 types=2/1 reasons=OK/OK duty=48/100
+framed horizon=110 offset=0 types=2/1 reasons=OK/OK duty=50/100
+framed horizon=110 offset=12 types=2/1 reasons=OK/OK duty=45/100
+framed horizon=130 offset=-12 types=2/1 reasons=OK/OK duty=48/100
+framed horizon=130 offset=0 types=2/1 reasons=OK/OK duty=50/100
+framed horizon=130 offset=12 types=2/1 reasons=OK/OK duty=45/100
+line styles / RGB gaps / temporal identity / metadata expiry PASS
+./build/test_ego_lane
+inset three lines: SOLID/DASHED
+full curve=0 expected=1/1 got=1/1
+full curve=0 expected=1/2 got=1/2
+full curve=0 expected=2/1 got=2/1
+full curve=0 expected=2/2 got=2/2
+full curve=1 expected=1/1 got=1/1
+full curve=1 expected=1/2 got=1/2
+full curve=1 expected=2/1 got=2/1
+full curve=1 expected=2/2 got=2/2
+ego tracking: identity, missing evidence, expiry, wire lifetime and translated ROI PASS
+ego lane ownership / line style / negative evidence PASS
+make: Leaving directory '/home/linaro/M/ego_lane_20261027/candidate/pcie'
+make: Entering directory '/home/linaro/M/ego_lane_20261027/candidate/udp'
+======================================
+Compiling C++: csrc/main.cpp
+UDP Network Module Build System
+g++ -std=c++11 -Wall -O3 -march=native -MMD -MP -Iinclude -I/home/linaro/M/ego_lane_20261027/candidate/include -c csrc/main.cpp -o build/main.o
+======================================
+Target: udp_sender
+Build Directory: build
+Compiler: gcc / g++
+======================================
+Linking: build/udp_sender
+g++   build/main.o /home/linaro/M/ego_lane_20261027/candidate/build/shared_memory.o -o build/udp_sender -pthread -lm
+Build successful: build/udp_sender
+make: Leaving directory '/home/linaro/M/ego_lane_20261027/candidate/udp'

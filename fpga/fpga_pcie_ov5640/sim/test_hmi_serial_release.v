@@ -47,7 +47,7 @@ module test_hmi_serial_release;
   remote_direction_arbiter u_remote_direction_arbiter (
       .clk(clk_25m), .rst_n(rst_n), .hmi_code(hmi_code_sync),
       .fspi_released(fspi_released), .fspi_direction_armed(fspi_direction_armed),
-      .movement_blocked(movement_blocked), .go_released(go_released),
+      .hmi_left_denied(1'b0), .hmi_right_denied(1'b0), .movement_blocked(movement_blocked), .go_released(go_released),
       .back_released(back_released), .left_released(left_released),
       .right_released(right_released)
   );

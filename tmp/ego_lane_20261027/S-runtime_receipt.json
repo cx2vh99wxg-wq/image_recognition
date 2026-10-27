@@ -1,0 +1,142 @@
+{
+  "role": "S",
+  "monotonic_ns": 6973399107866,
+  "files_verified": {
+    "include/line_style_wire.h": true,
+    "include/line_style_ipc.h": true,
+    "include/line_style.h": true,
+    "x11/csrc/main.cpp": true,
+    "x11/csrc/include/dashboard_ui.h": true,
+    "udp/csrc/main.cpp": true,
+    "udp/build/video_receiver": true,
+    "x11/csrc/build/eight_camera_renderer": true
+  },
+  "pids": {
+    "pcie/build/app": [
+      3186
+    ],
+    "udp/build/video_receiver": [
+      3187
+    ],
+    "fspi/build/vehicle_control": [
+      3190
+    ],
+    "x11/csrc/build/eight_camera_renderer": [
+      3191
+    ]
+  },
+  "protected_sha256": {
+    "fspi/csrc/main.c": "f498f51d20006ea55e8e625bd3230aa0b0e0dc31c5d9bd81e6ea5e3fb4fc86d4",
+    "fspi/csrc/fspi_module.c": "1b03402145dc743f17236dbcf6f1fe7366007fb7caee123f8e9cdc6ffb7c1759"
+  },
+  "logs": {
+    "app.log": [
+      "PCIe程序写入帧3000到共享内存类型:1 (应该是1)",
+      "[3000帧] FPS: 17.3 | 检测数: 21 | 人员检测: 否",
+      "[PERF S-PCIE] capture_loop_fps=17.19 raw_changed_fps=17.19 infer_fps=5.60 dma_ms=23.82 orient_ms=1.59 color_ms=1.07 infer_job_ms=87.75 draw_ms=0.23 publish_ms=2.87 rows=1 ioctls_per_frame=960",
+      "[PERF S-YOLO] jobs=29 preprocess_ms=1.45 input_ms=1.71 npu_ms=83.21 post_ms=0.42",
+      "PCIe程序写入帧3100到共享内存类型:1 (应该是1)",
+      "[PERF S-PCIE] capture_loop_fps=16.78 raw_changed_fps=16.78 infer_fps=5.72 dma_ms=24.17 orient_ms=1.49 color_ms=0.96 infer_job_ms=87.21 draw_ms=0.30 publish_ms=2.91 rows=1 ioctls_per_frame=960",
+      "[PERF S-YOLO] jobs=29 preprocess_ms=1.54 input_ms=1.76 npu_ms=84.15 post_ms=0.42",
+      "PCIe程序写入帧3200到共享内存类型:1 (应该是1)",
+      "[3200帧] FPS: 17.3 | 检测数: 7 | 人员检测: 否",
+      "[PERF S-PCIE] capture_loop_fps=17.13 raw_changed_fps=17.13 infer_fps=5.71 dma_ms=23.35 orient_ms=1.40 color_ms=1.01 infer_job_ms=87.68 draw_ms=0.27 publish_ms=3.13 rows=1 ioctls_per_frame=960",
+      "[PERF S-YOLO] jobs=29 preprocess_ms=1.36 input_ms=1.78 npu_ms=84.03 post_ms=0.39",
+      "PCIe程序写入帧3300到共享内存类型:1 (应该是1)",
+      "[PERF S-PCIE] capture_loop_fps=16.89 raw_changed_fps=16.89 infer_fps=5.56 dma_ms=24.24 orient_ms=1.38 color_ms=1.01 infer_job_ms=89.24 draw_ms=0.27 publish_ms=2.89 rows=1 ioctls_per_frame=960",
+      "[PERF S-YOLO] jobs=28 preprocess_ms=1.52 input_ms=1.76 npu_ms=86.22 post_ms=0.51",
+      "[PERF S-PCIE] capture_loop_fps=16.94 raw_changed_fps=16.94 infer_fps=5.58 dma_ms=24.49 orient_ms=1.38 color_ms=1.00 infer_job_ms=87.76 draw_ms=0.24 publish_ms=3.01 rows=1 ioctls_per_frame=960",
+      "PCIe程序写入帧3400到共享内存类型:1 (应该是1)",
+      "[3400帧] FPS: 17.2 | 检测数: 18 | 人员检测: 否",
+      "[PERF S-YOLO] jobs=29 preprocess_ms=1.59 input_ms=1.94 npu_ms=84.01 post_ms=0.41",
+      "[PERF S-PCIE] capture_loop_fps=16.80 raw_changed_fps=16.80 infer_fps=5.73 dma_ms=23.55 orient_ms=1.41 color_ms=1.05 infer_job_ms=88.58 draw_ms=0.25 publish_ms=3.04 rows=1 ioctls_per_frame=960",
+      "PCIe程序写入帧3500到共享内存类型:1 (应该是1)",
+      "[PERF S-YOLO] jobs=29 preprocess_ms=1.38 input_ms=1.54 npu_ms=85.25 post_ms=0.34",
+      "[PERF S-PCIE] capture_loop_fps=17.00 raw_changed_fps=17.00 infer_fps=5.67 dma_ms=23.91 orient_ms=1.45 color_ms=1.00 infer_job_ms=88.20 draw_ms=0.24 publish_ms=2.80 rows=1 ioctls_per_frame=960",
+      "[PERF S-YOLO] jobs=29 preprocess_ms=1.49 input_ms=1.71 npu_ms=83.09 post_ms=0.35",
+      "PCIe程序写入帧3600到共享内存类型:1 (应该是1)",
+      "[3600帧] FPS: 17.2 | 检测数: 26 | 人员检测: 否"
+    ],
+    "video_receiver.log": [
+      "弯道检测更新: frame=4900, type=直道, confidence=40%, angle=0度",
+      "弯道检测更新: frame=4900, type=直道, confidence=0%, angle=0度",
+      "[LINE_RX] session=1520775611 source=4915 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=433",
+      "[UDP_RX] publish_fps=30.00 complete_fps=30.00 udp_mbps=154.90 assembly_ms=26.03 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0",
+      "[LINE_RX] session=1520775611 source=4975 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=365",
+      "[LINE_RX] session=1520775611 source=5044 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=660",
+      "[LINE_RX] session=1520775611 source=5101 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=556",
+      "[UDP_RX] publish_fps=30.00 complete_fps=30.00 udp_mbps=154.61 assembly_ms=26.11 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0",
+      "[LINE_RX] session=1520775611 source=5161 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=493",
+      "[LINE_RX] session=1520775611 source=5221 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=434",
+      "[UDP_RX] publish_fps=30.00 complete_fps=30.00 udp_mbps=154.81 assembly_ms=26.29 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0",
+      "[LINE_RX] session=1520775611 source=5278 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=328",
+      "[LINE_RX] session=1520775611 source=5347 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=626",
+      "[LINE_RX] session=1520775611 source=5407 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=560",
+      "[UDP_RX] publish_fps=29.99 complete_fps=29.99 udp_mbps=154.81 assembly_ms=26.17 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0",
+      "[LINE_RX] session=1520775611 source=5464 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=397",
+      "弯道检测更新: frame=5500, type=直道, confidence=40%, angle=0度",
+      "弯道检测更新: frame=5500, type=直道, confidence=0%, angle=0度",
+      "[LINE_RX] session=1520775611 source=5533 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=627",
+      "[UDP_RX] publish_fps=30.00 complete_fps=30.00 udp_mbps=155.18 assembly_ms=26.14 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0",
+      "[LINE_RX] session=1520775611 source=5593 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=562",
+      "[LINE_RX] session=1520775611 source=5650 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=400",
+      "[LINE_RX] session=1520775611 source=5719 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=626",
+      "[UDP_RX] publish_fps=30.00 complete_fps=30.00 udp_mbps=154.54 assembly_ms=26.02 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0",
+      "[LINE_RX] session=1520775611 source=5779 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=562"
+    ],
+    "vehicle_control.log": [
+      "[SHM Read] Frame5752: STRAIGHT | Conf:0% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5752: STRAIGHT | Conf:0% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5761: STRAIGHT | Conf:40% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5761: STRAIGHT | Conf:0% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5761: STRAIGHT | Conf:0% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5770: STRAIGHT | Conf:40% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5770: STRAIGHT | Conf:0% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5779: STRAIGHT | Conf:40% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5779: STRAIGHT | Conf:40% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5779: STRAIGHT | Conf:0% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5785: STRAIGHT | Conf:0% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5785: STRAIGHT | Conf:0% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5794: STRAIGHT | Conf:60% | Angle:0 | Wheel:NEUTRAL",
+      "",
+      "========================================",
+      "Road: STRAIGHT (Frame 5794, Conf:60%)",
+      "========================================",
+      "",
+      "[SHM Read] Frame5794: STRAIGHT | Conf:0% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5794: STRAIGHT | Conf:0% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5803: STRAIGHT | Conf:40% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5803: STRAIGHT | Conf:0% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5812: STRAIGHT | Conf:40% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5812: STRAIGHT | Conf:40% | Angle:0 | Wheel:NEUTRAL",
+      "[SHM Read] Frame5812: STRAIGHT | Conf:0% | Angle:0 | Wheel:NEUTRAL"
+    ],
+    "eight_camera_renderer.log": [
+      "[PERF DISPLAY] render_fps=13.57 S_input_fps=17.50 M_input_fps=30.45 S_shown_fps=9.98 M_shown_fps=13.17 compose_ms=30.09 legacy_ms=4.04 car_ms=3.52 dashboard_ms=26.57 car_redraw_pct=52.9 scale_ms=9.38 present_ms=26.28 reuse_wait_ms=0.00 upload_done_fps=13.57 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DASHBOARD] copy_ms=8.04 clear_ms=3.33 video_fit_ms=11.17 car_fit_ms=2.95 ui_ms=1.13 fast=0",
+      "[PERF DISPLAY] render_fps=13.52 S_input_fps=16.54 M_input_fps=30.20 S_shown_fps=10.14 M_shown_fps=13.32 compose_ms=30.15 legacy_ms=4.02 car_ms=3.45 dashboard_ms=26.70 car_redraw_pct=51.5 scale_ms=9.38 present_ms=26.57 reuse_wait_ms=0.00 upload_done_fps=13.52 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DASHBOARD] copy_ms=7.37 clear_ms=3.16 video_fit_ms=10.75 car_fit_ms=2.99 ui_ms=1.07 fast=0",
+      "[PERF DISPLAY] render_fps=13.31 S_input_fps=17.04 M_input_fps=30.16 S_shown_fps=10.33 M_shown_fps=12.72 compose_ms=28.90 legacy_ms=4.04 car_ms=3.47 dashboard_ms=25.43 car_redraw_pct=55.2 scale_ms=9.50 present_ms=28.89 reuse_wait_ms=0.00 upload_done_fps=13.31 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DASHBOARD] copy_ms=8.18 clear_ms=3.24 video_fit_ms=11.09 car_fit_ms=3.07 ui_ms=1.16 fast=0",
+      "[PERF DISPLAY] render_fps=13.73 S_input_fps=17.79 M_input_fps=30.11 S_shown_fps=10.35 M_shown_fps=13.73 compose_ms=30.29 legacy_ms=4.17 car_ms=3.44 dashboard_ms=26.85 car_redraw_pct=52.2 scale_ms=9.46 present_ms=24.99 reuse_wait_ms=0.00 upload_done_fps=13.73 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DISPLAY] render_fps=13.77 S_input_fps=16.81 M_input_fps=30.59 S_shown_fps=10.38 M_shown_fps=13.57 compose_ms=29.82 legacy_ms=4.08 car_ms=3.19 dashboard_ms=26.63 car_redraw_pct=47.8 scale_ms=9.60 present_ms=25.28 reuse_wait_ms=0.00 upload_done_fps=13.77 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DASHBOARD] copy_ms=8.08 clear_ms=3.42 video_fit_ms=10.79 car_fit_ms=3.16 ui_ms=1.10 fast=0",
+      "[PERF DISPLAY] render_fps=13.77 S_input_fps=17.48 M_input_fps=29.69 S_shown_fps=10.78 M_shown_fps=13.37 compose_ms=29.30 legacy_ms=4.08 car_ms=3.42 dashboard_ms=25.89 car_redraw_pct=52.2 scale_ms=9.67 present_ms=25.70 reuse_wait_ms=0.00 upload_done_fps=13.77 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DASHBOARD] copy_ms=7.84 clear_ms=3.19 video_fit_ms=10.68 car_fit_ms=3.08 ui_ms=1.09 fast=0",
+      "[PERF DISPLAY] render_fps=13.81 S_input_fps=17.51 M_input_fps=30.24 S_shown_fps=10.06 M_shown_fps=13.41 compose_ms=30.16 legacy_ms=3.96 car_ms=3.17 dashboard_ms=26.98 car_redraw_pct=48.6 scale_ms=9.56 present_ms=24.94 reuse_wait_ms=0.00 upload_done_fps=13.81 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DASHBOARD] copy_ms=7.93 clear_ms=3.28 video_fit_ms=11.33 car_fit_ms=3.10 ui_ms=1.17 fast=0",
+      "[PERF DISPLAY] render_fps=13.58 S_input_fps=16.99 M_input_fps=30.44 S_shown_fps=10.18 M_shown_fps=13.38 compose_ms=29.12 legacy_ms=3.90 car_ms=3.32 dashboard_ms=25.79 car_redraw_pct=51.5 scale_ms=9.73 present_ms=27.08 reuse_wait_ms=0.00 upload_done_fps=13.58 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DASHBOARD] copy_ms=7.62 clear_ms=3.17 video_fit_ms=10.79 car_fit_ms=3.05 ui_ms=1.13 fast=0",
+      "[PERF DISPLAY] render_fps=13.41 S_input_fps=16.77 M_input_fps=30.38 S_shown_fps=10.05 M_shown_fps=13.21 compose_ms=30.75 legacy_ms=4.04 car_ms=3.24 dashboard_ms=27.52 car_redraw_pct=50.0 scale_ms=9.23 present_ms=26.59 reuse_wait_ms=0.00 upload_done_fps=13.41 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DASHBOARD] copy_ms=8.31 clear_ms=3.35 video_fit_ms=11.50 car_fit_ms=3.09 ui_ms=1.25 fast=0",
+      "[PERF DISPLAY] render_fps=13.26 S_input_fps=17.53 M_input_fps=29.63 S_shown_fps=9.70 M_shown_fps=13.26 compose_ms=29.99 legacy_ms=4.12 car_ms=3.69 dashboard_ms=26.30 car_redraw_pct=53.7 scale_ms=10.03 present_ms=27.31 reuse_wait_ms=0.00 upload_done_fps=13.26 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DASHBOARD] copy_ms=7.96 clear_ms=3.42 video_fit_ms=10.53 car_fit_ms=3.18 ui_ms=1.09 fast=0",
+      "[PERF DISPLAY] render_fps=13.61 S_input_fps=15.56 M_input_fps=30.72 S_shown_fps=10.85 M_shown_fps=13.41 compose_ms=29.29 legacy_ms=3.84 car_ms=3.21 dashboard_ms=26.08 car_redraw_pct=49.3 scale_ms=9.72 present_ms=26.83 reuse_wait_ms=0.00 upload_done_fps=13.61 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DASHBOARD] copy_ms=7.81 clear_ms=3.30 video_fit_ms=10.89 car_fit_ms=3.05 ui_ms=1.11 fast=0",
+      "[PERF DISPLAY] render_fps=13.65 S_input_fps=17.77 M_input_fps=30.10 S_shown_fps=10.09 M_shown_fps=13.65 compose_ms=29.80 legacy_ms=3.96 car_ms=3.39 dashboard_ms=26.41 car_redraw_pct=52.2 scale_ms=9.82 present_ms=25.86 reuse_wait_ms=0.00 upload_done_fps=13.65 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DASHBOARD] copy_ms=7.57 clear_ms=3.28 video_fit_ms=10.88 car_fit_ms=3.34 ui_ms=1.14 fast=0",
+      "[PERF DISPLAY] render_fps=13.62 S_input_fps=17.52 M_input_fps=29.65 S_shown_fps=10.66 M_shown_fps=13.62 compose_ms=30.60 legacy_ms=4.14 car_ms=3.75 dashboard_ms=26.85 car_redraw_pct=52.2 scale_ms=9.81 present_ms=24.88 reuse_wait_ms=0.00 upload_done_fps=13.62 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DASHBOARD] copy_ms=7.79 clear_ms=3.35 video_fit_ms=11.10 car_fit_ms=3.27 ui_ms=1.22 fast=0"
+    ]
+  }
+}

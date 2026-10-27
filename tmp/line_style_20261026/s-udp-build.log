@@ -1,0 +1,7 @@
+make: Entering directory '/mnt/d/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/S/udp'
+g++ -c -Iinclude -I../include -std=c++14 -O3 -march=native -funroll-loops -pthread -MMD -MP csrc/main.cpp -o build/main.o
+mkdir -p ../build/
+gcc -Iinclude -I../include -std=c99 -O3 -march=native -funroll-loops -pthread -MMD -MP -c ../csrc/shared_memory.c -o build/shared_memory.o
+ar rcs ../build/libshared.a build/shared_memory.o
+g++ build/main.o  -o build/video_receiver ../build/libshared.a -lrt -lpthread
+make: Leaving directory '/mnt/d/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/S/udp'

@@ -1,0 +1,26 @@
+stty -echo
+[?2004l[?2004hroot@linaro-alip:/# [?2004l
+[?2004h> [?2004l
+[?2004h> [?2004l
+[?2004h> [?2004l
+[?2004h> [?2004l
+[?2004h> [?2004l
+[?2004h> [?2004l
+[?2004h> [?2004l
+[?2004h> [?2004l
+[?2004h> [?2004l
+[?2004h> [?2004l
+[?2004h> [?2004l
+[?2004h> [?2004l
+[?2004h> [?2004l
+[?2004h> [?2004l
+[?2004h> [?2004l
+S_VALID_FRAME e480fa15f114226a range 0 65535 colors 9082
+S_VALID_FRAME bef06c13f1ba31a6 range 0 65535 colors 6785
+LINE_SEG 0x12345681 source 45712 styles [0, 0] hmi 0x0 blocked 0 ttl_ms 331
+LINE_SEG 0x12345682 source 45712 styles [0, 0] hmi 0x0 blocked 0 ttl_ms 349
+[?2004hroot@linaro-alip:/# [?2004l
+
+__PERF_SERIAL_DONE__
+[?2004hroot@linaro-alip:/# [?2004l
+[?2004hroot@linaro-alip:/# 

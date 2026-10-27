@@ -1,0 +1,30 @@
+make: Entering directory '/home/linaro/M/line_style_fix_20261026/candidate/pcie'
+g++ -std=c++11 -Wall -Wextra -Werror -O2 -Iinclude -I../include -I/home/linaro/M/line_style_fix_20261026/candidate/include -I/usr/include/X11 tests/test_line_style.cpp -o build/test_line_style
+./build/test_line_style
+scene bend=0 filled=0 expected=1/1 got=1/1 duty=100/100 spans=1/1
+scene bend=0 filled=0 expected=1/2 got=1/2 duty=100/58 spans=1/4
+scene bend=0 filled=0 expected=2/1 got=2/1 duty=58/100 spans=4/1
+scene bend=0 filled=0 expected=2/2 got=2/2 duty=58/58 spans=4/4
+scene bend=0 filled=1 expected=1/1 got=1/1 duty=100/100 spans=1/1
+scene bend=0 filled=1 expected=1/2 got=1/2 duty=100/58 spans=1/4
+scene bend=0 filled=1 expected=2/1 got=2/1 duty=58/100 spans=4/1
+scene bend=0 filled=1 expected=2/2 got=2/2 duty=58/58 spans=4/4
+scene bend=1 filled=0 expected=1/1 got=1/1 duty=100/100 spans=1/1
+scene bend=1 filled=0 expected=1/2 got=1/2 duty=100/58 spans=1/4
+scene bend=1 filled=0 expected=2/1 got=2/1 duty=58/100 spans=4/1
+scene bend=1 filled=0 expected=2/2 got=2/2 duty=58/58 spans=4/4
+scene bend=1 filled=1 expected=1/1 got=1/1 duty=100/100 spans=1/1
+scene bend=1 filled=1 expected=1/2 got=1/2 duty=100/58 spans=1/4
+scene bend=1 filled=1 expected=2/1 got=2/1 duty=58/100 spans=4/1
+scene bend=1 filled=1 expected=2/2 got=2/2 duty=58/58 spans=4/4
+framed horizon=80 offset=-12 types=2/1 reasons=OK/OK duty=48/100
+framed horizon=80 offset=0 types=2/1 reasons=OK/OK duty=50/100
+framed horizon=80 offset=12 types=2/1 reasons=OK/OK duty=45/100
+framed horizon=110 offset=-12 types=2/1 reasons=OK/OK duty=48/100
+framed horizon=110 offset=0 types=2/1 reasons=OK/OK duty=50/100
+framed horizon=110 offset=12 types=2/1 reasons=OK/OK duty=45/100
+framed horizon=130 offset=-12 types=2/1 reasons=OK/OK duty=48/100
+framed horizon=130 offset=0 types=2/1 reasons=OK/OK duty=50/100
+framed horizon=130 offset=12 types=2/1 reasons=OK/OK duty=45/100
+line styles / RGB gaps / temporal identity / metadata expiry PASS
+make: Leaving directory '/home/linaro/M/line_style_fix_20261026/candidate/pcie'

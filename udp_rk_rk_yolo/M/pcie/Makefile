@@ -89,6 +89,34 @@ endif
 
 all: info $(BUILD_DIR)/$(TARGET)
 
+# Offline classification checks/replay never open PCIe or vehicle interfaces.
+$(BUILD_DIR)/test_line_style: tests/test_line_style.cpp include/line_style_analyzer.h include/ego_lane_selector.h include/line_style_trace.h ../include/line_style.h ../include/line_style_wire.h ../include/line_style_ipc.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 $(INCLUDES) $< -o $@
+
+test-line-style: $(BUILD_DIR)/test_line_style
+	./$(BUILD_DIR)/test_line_style
+
+$(BUILD_DIR)/test_ego_lane: tests/test_ego_lane.cpp include/line_style_analyzer.h include/ego_lane_selector.h include/line_style_trace.h ../include/line_style.h ../include/line_style_wire.h ../include/line_style_ipc.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 $(INCLUDES) $< -o $@
+
+test-ego-lane: $(BUILD_DIR)/test_ego_lane
+	./$(BUILD_DIR)/test_ego_lane
+
+$(BUILD_DIR)/line_style_replay: tools/line_style_replay.cpp include/line_style_analyzer.h include/ego_lane_selector.h include/line_style_trace.h ../include/line_style.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 $(INCLUDES) $< -o $@
+
+line-style-replay: $(BUILD_DIR)/line_style_replay
+
+# One saved image through the real RKNN model. No capture/control publication.
+$(BUILD_DIR)/line_style_model_probe: tools/line_style_model_probe.cpp include/line_style_analyzer.h include/ego_lane_selector.h include/line_style_trace.h ../include/line_style.h $(BUILD_DIR)/yolo_integration.o $(BUILD_DIR)/preprocess.o $(SHARED_MEMORY_OBJ)
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< $(BUILD_DIR)/yolo_integration.o $(BUILD_DIR)/preprocess.o $(SHARED_MEMORY_OBJ) -o $@ $(LIBS) -lm -pthread -lrt -ldl
+
+line-style-model-probe: $(BUILD_DIR)/line_style_model_probe
+
 #############################################################################
 # 编译信息
 #############################################################################

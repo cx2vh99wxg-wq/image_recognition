@@ -408,6 +408,17 @@ int fspi_read_data(uint16_t addr, uint8_t *data)
     return spi_read_reliable(g_spi_fd, addr, data);
 }
 
+/* Nonblocking-in-the-policy sense: three immediate samples, no 10x500us
+ * retry sleep. The existing display/control read API is unchanged. */
+int fspi_read_hmi_snapshot(uint8_t *data)
+{
+    if (g_spi_fd < 0 || !data) return -1;
+    uint8_t a=0,b=0,c=0;
+    if (spi_read_direct(g_spi_fd,&a) || spi_read_direct(g_spi_fd,&b) ||
+        spi_read_direct(g_spi_fd,&c) || a!=b || b!=c) return -1;
+    *data=a;return 0;
+}
+
 /* 独立开关读事务不能使用旧的分两次片选的模式读取路径。
  * 两个 transfer 属于同一个 SPI_IOC_MESSAGE；cs_change=0 保持片选。
  * 地址阶段后保留 1us，让 FPGA 发送端锁存状态，再切换四线接收。

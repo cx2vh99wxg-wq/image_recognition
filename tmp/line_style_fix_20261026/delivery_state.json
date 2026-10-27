@@ -1,0 +1,126 @@
+{
+  "date": "2026-10-27",
+  "fix": "observed-track + original-RGB paint analysis + diagnostics",
+  "local_sources_updated": true,
+  "ARM_builds_verified": true,
+  "ARM_binaries_downloaded": true,
+  "board_production_installed": true,
+  "board_production_restarted": true,
+  "last_serial_online_BJT": "2026-10-27 10:30",
+  "continuous_monitoring": false,
+  "board_candidate_root": "/home/linaro/{M,S}/line_style_fix_20261026/candidate",
+  "actual_road_frames": 3,
+  "actual_results": [
+    "DASHED/SOLID",
+    "DASHED/SOLID",
+    "DASHED/SOLID (live ROI fix)"
+  ],
+  "transformed_checks": {
+    "boundaries": 48,
+    "correct": 42,
+    "unknown": 6,
+    "opposite": 0
+  },
+  "independent_reference": "UNKNOWN/UNKNOWN (insufficient visible paint evidence)",
+  "ARM_postprocess_mean_ms": 2.222,
+  "hardware_HMI_or_pin_test": false,
+  "document": "D:\\Study_Object\\image_recognition\\image_recognition\\udp_rk_rk_yolo\\实虚线UNKNOWN修复说明_20261027.txt",
+  "binaries": {
+    "M/pcie/build/pcie_capture": "6839766f55108628f26df615ed131da86ee5e0cc0d1e764ab00cd7d51d13492a",
+    "M/udp/build/udp_sender": "6a7019ed8cd796715d33c7f822c05f9e4fc8d1ac85b7c16d5194496b34d4e8c1",
+    "S/udp/build/video_receiver": "8be7b441907e47c02ceb6908d5059208d0f4121050edc58bd50053ccdcd0c5a9",
+    "S/x11/csrc/build/eight_camera_renderer": "fe6c4d4a45317e15d5b78ef7efcf435f67660c318f370ff4f32f1521faca17fd",
+    "M/pcie/build/line_style_replay": "42818e7ebe1ecc79a51852c7927cbb58754b32b9580347a55974d1ba4fe17304",
+    "M/pcie/build/line_style_model_probe": "9cf2809f9e45fb27cefcb8b22722b10f3de22b7bb61e62fad30db2514d415cb3",
+    "M/pcie/build/test_line_style": "bba6458ade9e07f08b73e6a9c4e64436b43560e3270cd76d25c14613afdf5f11"
+  },
+  "deployment_receipt": {
+    "production_installed": true,
+    "pipeline_started": true,
+    "verified_BJT": "2026-10-27 10:30",
+    "user_confirmed_stationary_or_raised": true,
+    "M_port": "COM8",
+    "S_port": "COM7",
+    "M_installed_files": 17,
+    "S_installed_files": 8,
+    "M_backup": "/home/linaro/M/backup_line_style_20261027_1008",
+    "S_backup": "/home/linaro/S/backup_line_style_20261027_1008",
+    "M_pids": [
+      2285,
+      2119
+    ],
+    "S_pids": [
+      2190,
+      2192,
+      2193,
+      2195
+    ],
+    "M_capture_send_fps": 30,
+    "S_receive_fps": 30,
+    "S_display_fps_observed": 13.3,
+    "udp_incomplete_corrupt_kernel_drop_at_check": [
+      0,
+      0,
+      0
+    ],
+    "S_local_frames": [
+      1385,
+      1394
+    ],
+    "S_network_frames": [
+      2726,
+      2750
+    ],
+    "S_local_image_hash_prefixes": [
+      "c55cb6a2a162ba35",
+      "5fc3c6eb88cb7770"
+    ],
+    "S_network_image_hash_prefixes": [
+      "f4f9f824697f882e",
+      "a719db183192b800"
+    ],
+    "line_metadata_received_and_fresh": true,
+    "FPGA_HMI_changed": false,
+    "FSPI_binary_changed": false,
+    "artificial_motion_commands_sent": false,
+    "pin_voltage_measured": false,
+    "ROI_sampling_percent": [
+      12,
+      96
+    ],
+    "ROI_backup": "/home/linaro/M/backup_line_roi_20261027",
+    "right_key_hardware_validation": "Pending remote-controller batteries",
+    "current_frame_offline_result": "L DASHED Q84 / R SOLID Q91",
+    "ROI_postprocess_ms": 2.392,
+    "right_key_software_validated": true,
+    "right_X_real_LCD_captured": true,
+    "right_X_user_confirmed": true,
+    "right_software_verification_BJT": "2026-10-27 10:59",
+    "right_event": {
+      "detected": {
+        "source": 9679,
+        "left": 2,
+        "right": 1,
+        "Q": [
+          75,
+          84
+        ],
+        "detail": 393216,
+        "blocked": 0,
+        "ttl_ms": 506
+      },
+      "warning": {
+        "source": 9679,
+        "left": 2,
+        "right": 1,
+        "Q": [
+          75,
+          84
+        ],
+        "detail": 221,
+        "blocked": 2,
+        "ttl_ms": 393
+      }
+    }
+  }
+}

@@ -10,8 +10,8 @@
 #include <stdarg.h>
 
 static unsigned writes, reads;
-static int short_write, short_read;
-static uint8_t model_registers[5], hmi_reply;
+static int short_write, short_read, unstable_read;
+static uint8_t model_registers[6], hmi_reply;
 
 void transport_perror(const char *message) { (void)message; }
 int transport_sleep(useconds_t duration) { (void)duration; return 0; }
@@ -43,7 +43,7 @@ int transport_ioctl(int fd, unsigned long request, ...) {
         const uint8_t *host = (const uint8_t *)(uintptr_t)tr->tx_buf;
         const uint8_t wire[4] = {0x00, host[0], host[1], host[2]};
         const unsigned address = ((unsigned)wire[1] << 8) | wire[2];
-        assert(address < 5);
+        assert(address < 6);
         if (short_write) return 2;
         model_registers[address] = wire[3];
         return 3;
@@ -53,6 +53,7 @@ int transport_ioctl(int fd, unsigned long request, ...) {
     assert((g_config.spi_mode & (SPI_TX_QUAD | SPI_RX_QUAD)) == SPI_RX_QUAD);
     if (short_read) return 0;
     *(uint8_t *)(uintptr_t)tr->rx_buf = hmi_reply;
+    if(unstable_read)hmi_reply^=0x11;
     return 1;
 }
 
@@ -89,6 +90,13 @@ int main(void) {
     assert(fspi_read_data(0, &value) == -1 && value == 0x5a && errno == EIO);
     assert(reads == previous_reads + READ_RETRY_COUNT);
     assert(g_config.transfer_size == 3);
+    short_read=0;hmi_reply=0xcc;value=0x5a;previous_reads=reads;
+    assert(fspi_read_hmi_snapshot(&value)==0 && value==0xcc && reads==previous_reads+3);
+    unstable_read=1;value=0x5a;
+    assert(fspi_read_hmi_snapshot(&value)==-1 && value==0x5a);
+    unstable_read=0;
+    assert(fspi_write_data(5,0xc3)==0 && model_registers[5]==0xc3);
+    for(int i=0;i<5;++i)assert(model_registers[i]==1);
     puts("PASS SMDT transport: controller-generated opcodes, isolated registers, RX-only HMI and short-transfer rejection");
     return 0;
 }

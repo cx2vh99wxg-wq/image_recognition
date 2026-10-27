@@ -1,0 +1,326 @@
+[
+  {
+    "case": "user0",
+    "expected": [
+      "DASHED",
+      "SOLID"
+    ],
+    "result": [
+      "DASHED",
+      "SOLID"
+    ],
+    "detail": "LEFT DASHED quality=84 reason=OK duty=40 spans=3 gaps=1 coverage=92 bottom_x=18.3 fit=18.319,46.795,303.062 y=132..174\nRIGHT SOLID quality=81 reason=OK duty=86 spans=1 gaps=0 coverage=100 bottom_x=292.3 fit=292.310,201.442,48.093 y=132..216\n"
+  },
+  {
+    "case": "user0_mirror0_scale0.85_y-8",
+    "expected": [
+      "DASHED",
+      "SOLID"
+    ],
+    "result": [
+      "DASHED",
+      "SOLID"
+    ],
+    "detail": "LEFT DASHED quality=82 reason=OK duty=68 spans=3 gaps=1 coverage=79 bottom_x=56.8 fit=56.766,170.018,345.374 y=122..158\nRIGHT SOLID quality=80 reason=OK duty=86 spans=1 gaps=0 coverage=94 bottom_x=315.5 fit=315.454,230.921,64.183 y=122..194\n"
+  },
+  {
+    "case": "user0_mirror0_scale0.85_y0",
+    "expected": [
+      "DASHED",
+      "SOLID"
+    ],
+    "result": [
+      "DASHED",
+      "SOLID"
+    ],
+    "detail": "LEFT DASHED quality=82 reason=OK duty=68 spans=3 gaps=1 coverage=79 bottom_x=47.3 fit=47.286,125.739,345.374 y=130..166\nRIGHT SOLID quality=80 reason=OK duty=86 spans=1 gaps=0 coverage=94 bottom_x=300.9 fit=300.915,222.692,64.183 y=130..202\n"
+  },
+  {
+    "case": "user0_mirror0_scale0.85_y8",
+    "expected": [
+      "DASHED",
+      "SOLID"
+    ],
+    "result": [
+      "DASHED",
+      "SOLID"
+    ],
+    "detail": "LEFT DASHED quality=82 reason=OK duty=68 spans=3 gaps=1 coverage=79 bottom_x=40.6 fit=40.645,81.461,345.374 y=138..174\nRIGHT SOLID quality=80 reason=OK duty=86 spans=1 gaps=0 coverage=94 bottom_x=286.9 fit=286.904,214.464,64.183 y=138..210\n"
+  },
+  {
+    "case": "user0_mirror0_scale1.0_y-8",
+    "expected": [
+      "DASHED",
+      "SOLID"
+    ],
+    "result": [
+      "DASHED",
+      "SOLID"
+    ],
+    "detail": "LEFT DASHED quality=84 reason=OK duty=40 spans=3 gaps=1 coverage=92 bottom_x=22.6 fit=22.564,85.649,303.062 y=124..166\nRIGHT SOLID quality=81 reason=OK duty=86 spans=1 gaps=0 coverage=100 bottom_x=305.4 fit=305.420,207.607,48.093 y=124..208\n"
+  },
+  {
+    "case": "user0_mirror0_scale1.0_y0",
+    "expected": [
+      "DASHED",
+      "SOLID"
+    ],
+    "result": [
+      "DASHED",
+      "SOLID"
+    ],
+    "detail": "LEFT DASHED quality=84 reason=OK duty=40 spans=3 gaps=1 coverage=92 bottom_x=18.3 fit=18.319,46.795,303.062 y=132..174\nRIGHT SOLID quality=81 reason=OK duty=86 spans=1 gaps=0 coverage=100 bottom_x=292.3 fit=292.310,201.442,48.093 y=132..216\n"
+  },
+  {
+    "case": "user0_mirror0_scale1.0_y8",
+    "expected": [
+      "DASHED",
+      "SOLID"
+    ],
+    "result": [
+      "DASHED",
+      "SOLID"
+    ],
+    "detail": "LEFT DASHED quality=84 reason=OK duty=40 spans=3 gaps=1 coverage=92 bottom_x=16.6 fit=16.564,7.941,303.062 y=140..182\nRIGHT SOLID quality=81 reason=OK duty=86 spans=1 gaps=0 coverage=100 bottom_x=279.6 fit=279.595,195.276,48.093 y=140..224\n"
+  },
+  {
+    "case": "user0_mirror1_scale0.85_y-8",
+    "expected": [
+      "SOLID",
+      "DASHED"
+    ],
+    "result": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "LEFT SOLID quality=80 reason=OK duty=86 spans=1 gaps=0 coverage=94 bottom_x=3.3 fit=3.306,-231.681,-64.764 y=122..194\nRIGHT DASHED quality=82 reason=OK duty=68 spans=3 gaps=1 coverage=79 bottom_x=262.2 fit=262.234,-170.018,-345.374 y=122..158\n"
+  },
+  {
+    "case": "user0_mirror1_scale0.85_y0",
+    "expected": [
+      "SOLID",
+      "DASHED"
+    ],
+    "result": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "LEFT SOLID quality=80 reason=OK duty=86 spans=1 gaps=0 coverage=94 bottom_x=17.9 fit=17.891,-223.378,-64.764 y=130..202\nRIGHT DASHED quality=82 reason=OK duty=68 spans=3 gaps=1 coverage=79 bottom_x=271.7 fit=271.714,-125.739,-345.374 y=130..166\n"
+  },
+  {
+    "case": "user0_mirror1_scale0.85_y8",
+    "expected": [
+      "SOLID",
+      "DASHED"
+    ],
+    "result": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "LEFT SOLID quality=80 reason=OK duty=86 spans=1 gaps=0 coverage=94 bottom_x=31.9 fit=31.944,-215.075,-64.764 y=138..210\nRIGHT DASHED quality=82 reason=OK duty=68 spans=3 gaps=1 coverage=79 bottom_x=278.4 fit=278.355,-81.461,-345.374 y=138..174\n"
+  },
+  {
+    "case": "user0_mirror1_scale1.0_y-8",
+    "expected": [
+      "SOLID",
+      "DASHED"
+    ],
+    "result": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "LEFT SOLID quality=81 reason=OK duty=86 spans=1 gaps=0 coverage=100 bottom_x=13.6 fit=13.580,-207.607,-48.093 y=124..208\nRIGHT DASHED quality=84 reason=OK duty=40 spans=3 gaps=1 coverage=92 bottom_x=296.4 fit=296.436,-85.649,-303.062 y=124..166\n"
+  },
+  {
+    "case": "user0_mirror1_scale1.0_y0",
+    "expected": [
+      "SOLID",
+      "DASHED"
+    ],
+    "result": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "LEFT SOLID quality=81 reason=OK duty=86 spans=1 gaps=0 coverage=100 bottom_x=26.7 fit=26.690,-201.442,-48.093 y=132..216\nRIGHT DASHED quality=84 reason=OK duty=40 spans=3 gaps=1 coverage=92 bottom_x=300.7 fit=300.681,-46.795,-303.062 y=132..174\n"
+  },
+  {
+    "case": "user0_mirror1_scale1.0_y8",
+    "expected": [
+      "SOLID",
+      "DASHED"
+    ],
+    "result": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "LEFT SOLID quality=81 reason=OK duty=86 spans=1 gaps=0 coverage=100 bottom_x=39.4 fit=39.405,-195.276,-48.093 y=140..224\nRIGHT DASHED quality=84 reason=OK duty=40 spans=3 gaps=1 coverage=92 bottom_x=302.4 fit=302.436,-7.941,-303.062 y=140..182\n"
+  },
+  {
+    "case": "user2",
+    "expected": [
+      "DASHED",
+      "SOLID"
+    ],
+    "result": [
+      "DASHED",
+      "SOLID"
+    ],
+    "detail": "LEFT DASHED quality=82 reason=OK duty=64 spans=3 gaps=1 coverage=72 bottom_x=24.5 fit=24.529,136.854,335.279 y=126..158\nRIGHT SOLID quality=85 reason=OK duty=90 spans=2 gaps=1 coverage=100 bottom_x=287.4 fit=287.418,188.720,55.839 y=126..210\n"
+  },
+  {
+    "case": "user2_mirror0_scale0.85_y-8",
+    "expected": [
+      "DASHED",
+      "SOLID"
+    ],
+    "result": [
+      "DASHED",
+      "SOLID"
+    ],
+    "detail": "LEFT DASHED quality=76 reason=OK duty=60 spans=2 gaps=1 coverage=64 bottom_x=102.8 fit=102.753,335.089,424.582 y=116..144\nRIGHT SOLID quality=84 reason=OK duty=91 spans=2 gaps=1 coverage=85 bottom_x=310.0 fit=310.018,224.811,75.367 y=116..188\n"
+  },
+  {
+    "case": "user2_mirror0_scale0.85_y0",
+    "expected": [
+      "DASHED",
+      "SOLID"
+    ],
+    "result": [
+      "DASHED",
+      "SOLID"
+    ],
+    "detail": "LEFT DASHED quality=76 reason=OK duty=60 spans=2 gaps=1 coverage=64 bottom_x=83.0 fit=83.017,280.655,424.582 y=124..152\nRIGHT SOLID quality=84 reason=OK duty=91 spans=2 gaps=1 coverage=85 bottom_x=295.9 fit=295.917,215.149,75.367 y=124..196\n"
+  },
+  {
+    "case": "user2_mirror0_scale0.85_y8",
+    "expected": [
+      "DASHED",
+      "SOLID"
+    ],
+    "result": [
+      "DASHED",
+      "SOLID"
+    ],
+    "detail": "LEFT DASHED quality=76 reason=OK duty=60 spans=2 gaps=1 coverage=64 bottom_x=66.8 fit=66.771,226.222,424.582 y=132..160\nRIGHT SOLID quality=84 reason=OK duty=91 spans=2 gaps=1 coverage=85 bottom_x=282.4 fit=282.435,205.486,75.367 y=132..204\n"
+  },
+  {
+    "case": "user2_mirror0_scale1.0_y-8",
+    "expected": [
+      "DASHED",
+      "SOLID"
+    ],
+    "result": [
+      "DASHED",
+      "SOLID"
+    ],
+    "detail": "LEFT DASHED quality=82 reason=OK duty=64 spans=3 gaps=1 coverage=72 bottom_x=34.7 fit=34.679,179.839,335.279 y=118..150\nRIGHT SOLID quality=85 reason=OK duty=90 spans=2 gaps=1 coverage=100 bottom_x=299.7 fit=299.745,195.879,55.839 y=118..202\n"
+  },
+  {
+    "case": "user2_mirror0_scale1.0_y0",
+    "expected": [
+      "DASHED",
+      "SOLID"
+    ],
+    "result": [
+      "DASHED",
+      "SOLID"
+    ],
+    "detail": "LEFT DASHED quality=82 reason=OK duty=64 spans=3 gaps=1 coverage=72 bottom_x=24.5 fit=24.529,136.854,335.279 y=126..158\nRIGHT SOLID quality=85 reason=OK duty=90 spans=2 gaps=1 coverage=100 bottom_x=287.4 fit=287.418,188.720,55.839 y=126..210\n"
+  },
+  {
+    "case": "user2_mirror0_scale1.0_y8",
+    "expected": [
+      "DASHED",
+      "SOLID"
+    ],
+    "result": [
+      "DASHED",
+      "SOLID"
+    ],
+    "detail": "LEFT DASHED quality=82 reason=OK duty=64 spans=3 gaps=1 coverage=72 bottom_x=17.1 fit=17.134,93.870,335.279 y=134..166\nRIGHT SOLID quality=85 reason=OK duty=90 spans=2 gaps=1 coverage=100 bottom_x=275.6 fit=275.550,181.561,55.839 y=134..218\n"
+  },
+  {
+    "case": "user2_mirror1_scale0.85_y-8",
+    "expected": [
+      "SOLID",
+      "DASHED"
+    ],
+    "result": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "LEFT SOLID quality=84 reason=OK duty=91 spans=2 gaps=1 coverage=85 bottom_x=8.7 fit=8.650,-225.807,-76.087 y=116..188\nRIGHT DASHED quality=76 reason=OK duty=60 spans=2 gaps=1 coverage=64 bottom_x=204.5 fit=204.543,-363.603,-441.886 y=116..144\n"
+  },
+  {
+    "case": "user2_mirror1_scale0.85_y0",
+    "expected": [
+      "SOLID",
+      "DASHED"
+    ],
+    "result": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "LEFT SOLID quality=84 reason=OK duty=91 spans=2 gaps=1 coverage=85 bottom_x=22.8 fit=22.813,-216.052,-76.087 y=124..196\nRIGHT DASHED quality=76 reason=OK duty=60 spans=2 gaps=1 coverage=64 bottom_x=226.0 fit=226.035,-306.950,-441.886 y=124..152\n"
+  },
+  {
+    "case": "user2_mirror1_scale0.85_y8",
+    "expected": [
+      "SOLID",
+      "DASHED"
+    ],
+    "result": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "LEFT SOLID quality=84 reason=OK duty=91 spans=2 gaps=1 coverage=85 bottom_x=36.3 fit=36.349,-206.297,-76.087 y=132..204\nRIGHT DASHED quality=76 reason=OK duty=60 spans=2 gaps=1 coverage=64 bottom_x=243.9 fit=243.896,-250.298,-441.886 y=132..160\n"
+  },
+  {
+    "case": "user2_mirror1_scale1.0_y-8",
+    "expected": [
+      "SOLID",
+      "DASHED"
+    ],
+    "result": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "LEFT SOLID quality=85 reason=OK duty=90 spans=2 gaps=1 coverage=100 bottom_x=19.3 fit=19.255,-195.879,-55.839 y=118..202\nRIGHT DASHED quality=82 reason=OK duty=64 spans=3 gaps=1 coverage=72 bottom_x=284.3 fit=284.321,-179.839,-335.279 y=118..150\n"
+  },
+  {
+    "case": "user2_mirror1_scale1.0_y0",
+    "expected": [
+      "SOLID",
+      "DASHED"
+    ],
+    "result": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "LEFT SOLID quality=85 reason=OK duty=90 spans=2 gaps=1 coverage=100 bottom_x=31.6 fit=31.582,-188.720,-55.839 y=126..210\nRIGHT DASHED quality=82 reason=OK duty=64 spans=3 gaps=1 coverage=72 bottom_x=294.5 fit=294.471,-136.854,-335.279 y=126..158\n"
+  },
+  {
+    "case": "user2_mirror1_scale1.0_y8",
+    "expected": [
+      "SOLID",
+      "DASHED"
+    ],
+    "result": [
+      "SOLID",
+      "DASHED"
+    ],
+    "detail": "LEFT SOLID quality=85 reason=OK duty=90 spans=2 gaps=1 coverage=100 bottom_x=43.4 fit=43.450,-181.561,-55.839 y=134..218\nRIGHT DASHED quality=82 reason=OK duty=64 spans=3 gaps=1 coverage=72 bottom_x=301.9 fit=301.866,-93.870,-335.279 y=134..166\n"
+  },
+  {
+    "case": "lab",
+    "expected": [
+      "UNKNOWN",
+      "UNKNOWN"
+    ],
+    "result": [
+      "UNKNOWN",
+      "UNKNOWN"
+    ],
+    "detail": "LEFT UNKNOWN quality=0 reason=NO MASK duty=0 spans=0 gaps=0 coverage=0 bottom_x=0.0 fit=0.000,0.000,0.000 y=0..0\nRIGHT UNKNOWN quality=0 reason=NO MASK duty=0 spans=0 gaps=0 coverage=0 bottom_x=0.0 fit=0.000,0.000,0.000 y=0..0\n"
+  }
+]

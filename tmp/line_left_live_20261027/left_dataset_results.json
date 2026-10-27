@@ -1,0 +1,350 @@
+[
+  {
+    "sample": "sample_00",
+    "old": [
+      [
+        "DASHED",
+        "80",
+        "OK"
+      ],
+      [
+        "UNKNOWN",
+        "0",
+        "AMBIG"
+      ]
+    ],
+    "new": [
+      [
+        "SOLID",
+        "82",
+        "OK"
+      ],
+      [
+        "DASHED",
+        "82",
+        "OK"
+      ]
+    ],
+    "before_detail": "LEFT DASHED quality=80 reason=OK duty=61 spans=4 gaps=3 coverage=56 bottom_x=155.1 fit=155.056,89.440,-13.590 y=108..178\nRIGHT UNKNOWN quality=0 reason=AMBIG duty=80 spans=3 gaps=1 coverage=74 bottom_x=369.0 fit=368.958,412.229,88.498 y=108..200\n",
+    "after_detail": "EGO reference=58.25 near_y=174.00 road=7571 objects=4 selected=0/1\nOBJECT 0 fit=-143.962,-207.379,0.000 y=108..138 NN=31\nOBJECT 1 fit=163.263,110.068,0.000 y=108..178 NN=62\nOBJECT 2 fit=375.264,446.131,125.842 y=110..189 NN=32\nOBJECT 3 fit=354.819,339.587,0.000 y=114..202 NN=67\nLEFT SOLID quality=82 reason=OK duty=100 spans=1 gaps=0 coverage=46 bottom_x=-144.0 fit=-143.962,-207.379,0.000 y=108..138\nRIGHT DASHED quality=82 reason=OK duty=64 spans=4 gaps=4 coverage=74 bottom_x=163.3 fit=163.263,110.068,0.000 y=108..178\n"
+  },
+  {
+    "sample": "sample_01",
+    "old": [
+      [
+        "DASHED",
+        "79",
+        "OK"
+      ],
+      [
+        "SOLID",
+        "86",
+        "OK"
+      ]
+    ],
+    "new": [
+      [
+        "SOLID",
+        "82",
+        "OK"
+      ],
+      [
+        "DASHED",
+        "81",
+        "OK"
+      ]
+    ],
+    "before_detail": "LEFT DASHED quality=79 reason=OK duty=41 spans=3 gaps=1 coverage=48 bottom_x=184.9 fit=184.912,133.196,17.300 y=108..168\nRIGHT SOLID quality=86 reason=OK duty=95 spans=1 gaps=0 coverage=66 bottom_x=410.5 fit=410.492,409.969,61.799 y=104..186\n",
+    "after_detail": "EGO reference=69.00 near_y=169.00 road=9881 objects=5 selected=0/1\nOBJECT 0 fit=-144.618,-206.066,0.000 y=105..134 NN=34\nOBJECT 1 fit=169.153,99.728,0.000 y=105..169 NN=63\nOBJECT 2 fit=396.430,347.930,0.000 y=105..186 NN=68\nOBJECT 3 fit=402.398,261.725,-71.768 y=105..177 NN=0\nOBJECT 4 fit=514.240,463.169,0.000 y=104..167 NN=63\nLEFT SOLID quality=82 reason=OK duty=100 spans=1 gaps=0 coverage=44 bottom_x=-144.6 fit=-144.618,-206.066,0.000 y=105..134\nRIGHT DASHED quality=81 reason=OK duty=47 spans=3 gaps=4 coverage=65 bottom_x=169.2 fit=169.153,99.728,0.000 y=105..169\n"
+  },
+  {
+    "sample": "sample_02",
+    "old": [
+      [
+        "DASHED",
+        "75",
+        "OK"
+      ],
+      [
+        "UNKNOWN",
+        "0",
+        "AMBIG"
+      ]
+    ],
+    "new": [
+      [
+        "SOLID",
+        "80",
+        "OK"
+      ],
+      [
+        "DASHED",
+        "82",
+        "OK"
+      ]
+    ],
+    "before_detail": "LEFT DASHED quality=75 reason=OK duty=50 spans=2 gaps=2 coverage=56 bottom_x=168.4 fit=168.372,77.678,-39.037 y=108..178\nRIGHT UNKNOWN quality=0 reason=AMBIG duty=73 spans=2 gaps=2 coverage=66 bottom_x=408.6 fit=408.562,442.174,75.886 y=108..190\n",
+    "after_detail": "EGO reference=57.00 near_y=172.00 road=7791 objects=4 selected=0/1\nOBJECT 0 fit=-124.619,-187.566,0.000 y=108..140 NN=33\nOBJECT 1 fit=185.089,128.624,0.000 y=114..178 NN=63\nOBJECT 2 fit=394.698,374.561,0.000 y=109..191 NN=65\nOBJECT 3 fit=412.914,381.277,0.000 y=108..135 NN=22\nLEFT SOLID quality=80 reason=OK duty=96 spans=1 gaps=0 coverage=46 bottom_x=-124.6 fit=-124.619,-187.566,0.000 y=108..140\nRIGHT DASHED quality=82 reason=OK duty=50 spans=3 gaps=1 coverage=73 bottom_x=185.1 fit=185.089,128.624,0.000 y=114..178\n"
+  },
+  {
+    "sample": "sample_03",
+    "old": [
+      [
+        "DASHED",
+        "73",
+        "OK"
+      ],
+      [
+        "SOLID",
+        "86",
+        "OK"
+      ]
+    ],
+    "new": [
+      [
+        "SOLID",
+        "82",
+        "OK"
+      ],
+      [
+        "DASHED",
+        "79",
+        "OK"
+      ]
+    ],
+    "before_detail": "LEFT DASHED quality=73 reason=OK duty=40 spans=2 gaps=1 coverage=33 bottom_x=275.3 fit=275.300,347.818,146.895 y=98..140\nRIGHT SOLID quality=86 reason=OK duty=95 spans=1 gaps=0 coverage=64 bottom_x=430.9 fit=430.944,421.754,68.800 y=98..178\n",
+    "after_detail": "EGO reference=64.25 near_y=162.00 road=7827 objects=4 selected=0/1\nOBJECT 0 fit=-145.749,-193.040,0.000 y=100..128 NN=33\nOBJECT 1 fit=152.580,77.990,0.000 y=98..141 NN=44\nOBJECT 2 fit=429.803,407.276,49.719 y=98..178 NN=69\nOBJECT 3 fit=538.708,475.559,0.000 y=98..159 NN=31\nLEFT SOLID quality=82 reason=OK duty=100 spans=1 gaps=0 coverage=41 bottom_x=-145.7 fit=-145.749,-193.040,0.000 y=100..128\nRIGHT DASHED quality=79 reason=OK duty=52 spans=4 gaps=2 coverage=40 bottom_x=152.6 fit=152.580,77.990,0.000 y=98..141\n"
+  },
+  {
+    "sample": "sample_04",
+    "old": [
+      [
+        "DASHED",
+        "80",
+        "OK"
+      ],
+      [
+        "SOLID",
+        "81",
+        "OK"
+      ]
+    ],
+    "new": [
+      [
+        "SOLID",
+        "81",
+        "OK"
+      ],
+      [
+        "DASHED",
+        "77",
+        "OK"
+      ]
+    ],
+    "before_detail": "LEFT DASHED quality=80 reason=OK duty=57 spans=3 gaps=2 coverage=59 bottom_x=126.1 fit=126.147,86.266,-34.746 y=142..216\nRIGHT SOLID quality=81 reason=OK duty=90 spans=3 gaps=1 coverage=64 bottom_x=277.6 fit=277.606,438.579,165.422 y=142..222\n",
+    "after_detail": "EGO reference=54.00 near_y=205.00 road=8100 objects=4 selected=0/1\nOBJECT 0 fit=-100.536,-217.290,0.000 y=144..166 NN=27\nOBJECT 1 fit=129.988,109.614,0.000 y=151..217 NN=67\nOBJECT 2 fit=273.808,395.957,88.630 y=142..229 NN=82\nOBJECT 3 fit=286.489,355.705,0.000 y=143..229 NN=18\nLEFT SOLID quality=81 reason=OK duty=100 spans=1 gaps=0 coverage=35 bottom_x=-100.5 fit=-100.536,-217.290,0.000 y=144..166\nRIGHT DASHED quality=77 reason=OK duty=62 spans=2 gaps=2 coverage=70 bottom_x=130.0 fit=129.988,109.614,0.000 y=151..217\n"
+  },
+  {
+    "sample": "sample_05",
+    "old": [
+      [
+        "DASHED",
+        "80",
+        "OK"
+      ],
+      [
+        "SOLID",
+        "74",
+        "OK"
+      ]
+    ],
+    "new": [
+      [
+        "SOLID",
+        "81",
+        "OK"
+      ],
+      [
+        "DASHED",
+        "82",
+        "OK"
+      ]
+    ],
+    "before_detail": "LEFT DASHED quality=80 reason=OK duty=43 spans=3 gaps=2 coverage=58 bottom_x=138.2 fit=138.176,79.297,-31.719 y=130..202\nRIGHT SOLID quality=74 reason=OK duty=83 spans=2 gaps=1 coverage=67 bottom_x=333.8 fit=333.820,443.314,112.292 y=130..214\n",
+    "after_detail": "EGO reference=56.25 near_y=199.00 road=9280 objects=4 selected=0/1\nOBJECT 0 fit=-113.259,-203.232,0.000 y=131..155 NN=27\nOBJECT 1 fit=146.224,110.944,0.000 y=133..202 NN=70\nOBJECT 2 fit=338.568,473.016,150.681 y=129..215 NN=84\nOBJECT 3 fit=388.314,435.576,0.000 y=129..148 NN=17\nLEFT SOLID quality=81 reason=OK duty=100 spans=1 gaps=0 coverage=36 bottom_x=-113.3 fit=-113.259,-203.232,0.000 y=131..155\nRIGHT DASHED quality=82 reason=OK duty=44 spans=3 gaps=2 coverage=73 bottom_x=146.2 fit=146.224,110.944,0.000 y=133..202\n"
+  },
+  {
+    "sample": "sample_06",
+    "old": [
+      [
+        "UNKNOWN",
+        "0",
+        "NO TRACK"
+      ],
+      [
+        "SOLID",
+        "87",
+        "OK"
+      ]
+    ],
+    "new": [
+      [
+        "UNKNOWN",
+        "0",
+        "NO TRACK"
+      ],
+      [
+        "UNKNOWN",
+        "0",
+        "NO TRACK"
+      ]
+    ],
+    "before_detail": "LEFT UNKNOWN quality=0 reason=NO TRACK duty=0 spans=0 gaps=0 coverage=0 bottom_x=0.0 fit=0.000,0.000,0.000 y=0..0\nRIGHT SOLID quality=87 reason=OK duty=97 spans=1 gaps=0 coverage=58 bottom_x=399.4 fit=399.402,554.107,201.800 y=130..202\n",
+    "after_detail": "EGO reference=67.00 near_y=184.00 road=6208 objects=1 selected=-1/-1\nOBJECT 0 fit=407.637,578.219,223.611 y=126..202 NN=73\nLEFT UNKNOWN quality=0 reason=NO TRACK duty=0 spans=0 gaps=0 coverage=0 bottom_x=0.0 fit=0.000,0.000,0.000 y=0..0\nRIGHT UNKNOWN quality=0 reason=NO TRACK duty=0 spans=0 gaps=0 coverage=0 bottom_x=0.0 fit=0.000,0.000,0.000 y=0..0\n"
+  },
+  {
+    "sample": "sample_07",
+    "old": [
+      [
+        "DASHED",
+        "80",
+        "OK"
+      ],
+      [
+        "UNKNOWN",
+        "0",
+        "AMBIG"
+      ]
+    ],
+    "new": [
+      [
+        "SOLID",
+        "82",
+        "OK"
+      ],
+      [
+        "DASHED",
+        "82",
+        "OK"
+      ]
+    ],
+    "before_detail": "LEFT DASHED quality=80 reason=OK duty=61 spans=3 gaps=2 coverage=53 bottom_x=177.0 fit=177.006,161.653,42.032 y=116..182\nRIGHT UNKNOWN quality=0 reason=AMBIG duty=56 spans=1 gaps=0 coverage=61 bottom_x=384.3 fit=384.348,399.906,4.528 y=120..196\n",
+    "after_detail": "EGO reference=59.75 near_y=180.00 road=8500 objects=5 selected=0/1\nOBJECT 0 fit=-121.307,-194.547,0.000 y=116..146 NN=18\nOBJECT 1 fit=189.140,192.759,61.932 y=115..182 NN=66\nOBJECT 2 fit=367.806,391.106,55.045 y=123..202 NN=21\nOBJECT 3 fit=395.269,449.043,56.169 y=119..197 NN=55\nOBJECT 4 fit=455.777,471.442,0.000 y=119..184 NN=50\nLEFT SOLID quality=82 reason=OK duty=100 spans=1 gaps=0 coverage=44 bottom_x=-121.3 fit=-121.307,-194.547,0.000 y=116..146\nRIGHT DASHED quality=82 reason=OK duty=63 spans=3 gaps=2 coverage=72 bottom_x=189.1 fit=189.140,192.759,61.932 y=115..182\n"
+  },
+  {
+    "sample": "sample_08",
+    "old": [
+      [
+        "DASHED",
+        "74",
+        "OK"
+      ],
+      [
+        "UNKNOWN",
+        "0",
+        "AMBIG"
+      ]
+    ],
+    "new": [
+      [
+        "SOLID",
+        "81",
+        "OK"
+      ],
+      [
+        "DASHED",
+        "80",
+        "OK"
+      ]
+    ],
+    "before_detail": "LEFT DASHED quality=74 reason=OK duty=31 spans=2 gaps=1 coverage=45 bottom_x=127.0 fit=126.963,73.506,-1.530 y=122..178\nRIGHT UNKNOWN quality=0 reason=AMBIG duty=60 spans=1 gaps=0 coverage=67 bottom_x=351.9 fit=351.904,423.636,70.836 y=122..206\n",
+    "after_detail": "EGO reference=54.00 near_y=189.00 road=9109 objects=6 selected=1/2\nOBJECT 0 fit=-261.164,-404.010,0.000 y=122..146 NN=10\nOBJECT 1 fit=-136.908,-216.480,0.000 y=121..145 NN=20\nOBJECT 2 fit=120.728,66.314,0.000 y=121..181 NN=58\nOBJECT 3 fit=342.595,414.981,101.638 y=121..211 NN=0\nOBJECT 4 fit=356.556,443.179,91.133 y=121..207 NN=66\nOBJECT 5 fit=422.809,513.504,75.536 y=122..194 NN=62\nLEFT SOLID quality=81 reason=OK duty=100 spans=1 gaps=0 coverage=38 bottom_x=-136.9 fit=-136.908,-216.480,0.000 y=121..145\nRIGHT DASHED quality=80 reason=OK duty=54 spans=4 gaps=2 coverage=54 bottom_x=120.7 fit=120.728,66.314,0.000 y=121..181\n"
+  },
+  {
+    "sample": "sample_09",
+    "old": [
+      [
+        "DASHED",
+        "80",
+        "OK"
+      ],
+      [
+        "UNKNOWN",
+        "0",
+        "AMBIG"
+      ]
+    ],
+    "new": [
+      [
+        "SOLID",
+        "82",
+        "OK"
+      ],
+      [
+        "DASHED",
+        "81",
+        "OK"
+      ]
+    ],
+    "before_detail": "LEFT DASHED quality=80 reason=OK duty=63 spans=3 gaps=1 coverage=51 bottom_x=135.1 fit=135.061,60.519,-29.683 y=116..180\nRIGHT UNKNOWN quality=0 reason=AMBIG duty=65 spans=1 gaps=1 coverage=64 bottom_x=372.3 fit=372.322,413.350,46.659 y=118..198\n",
+    "after_detail": "EGO reference=58.50 near_y=180.00 road=8213 objects=5 selected=0/1\nOBJECT 0 fit=-144.721,-216.993,0.000 y=116..141 NN=27\nOBJECT 1 fit=147.478,98.533,0.000 y=116..180 NN=63\nOBJECT 2 fit=377.418,435.395,68.598 y=116..199 NN=63\nOBJECT 3 fit=412.957,406.633,0.000 y=116..184 NN=23\nOBJECT 4 fit=454.238,477.731,0.000 y=116..184 NN=56\nLEFT SOLID quality=82 reason=OK duty=100 spans=1 gaps=0 coverage=40 bottom_x=-144.7 fit=-144.721,-216.993,0.000 y=116..141\nRIGHT DASHED quality=81 reason=OK duty=60 spans=3 gaps=1 coverage=65 bottom_x=147.5 fit=147.478,98.533,0.000 y=116..180\n"
+  },
+  {
+    "sample": "sample_10",
+    "old": [
+      [
+        "DASHED",
+        "79",
+        "OK"
+      ],
+      [
+        "UNKNOWN",
+        "0",
+        "AMBIG"
+      ]
+    ],
+    "new": [
+      [
+        "SOLID",
+        "81",
+        "OK"
+      ],
+      [
+        "DASHED",
+        "75",
+        "OK"
+      ]
+    ],
+    "before_detail": "LEFT DASHED quality=79 reason=OK duty=48 spans=3 gaps=2 coverage=48 bottom_x=125.3 fit=125.311,44.874,-41.179 y=118..178\nRIGHT UNKNOWN quality=0 reason=AMBIG duty=78 spans=2 gaps=1 coverage=66 bottom_x=377.7 fit=377.715,472.162,114.251 y=118..200\n",
+    "after_detail": "EGO reference=54.50 near_y=181.00 road=7141 objects=4 selected=0/1\nOBJECT 0 fit=-144.108,-217.022,0.000 y=121..141 NN=25\nOBJECT 1 fit=142.178,97.494,0.000 y=121..179 NN=56\nOBJECT 2 fit=112.801,-275.474,-405.320 y=118..156 NN=23\nOBJECT 3 fit=355.079,401.781,66.166 y=130..204 NN=66\nLEFT SOLID quality=81 reason=OK duty=100 spans=1 gaps=0 coverage=32 bottom_x=-144.1 fit=-144.108,-217.022,0.000 y=121..141\nRIGHT DASHED quality=75 reason=OK duty=50 spans=2 gaps=2 coverage=58 bottom_x=142.2 fit=142.178,97.494,0.000 y=121..179\n"
+  },
+  {
+    "sample": "sample_11",
+    "old": [
+      [
+        "DASHED",
+        "77",
+        "OK"
+      ],
+      [
+        "UNKNOWN",
+        "0",
+        "AMBIG"
+      ]
+    ],
+    "new": [
+      [
+        "SOLID",
+        "81",
+        "OK"
+      ],
+      [
+        "DASHED",
+        "78",
+        "OK"
+      ]
+    ],
+    "before_detail": "LEFT DASHED quality=77 reason=OK duty=61 spans=3 gaps=2 coverage=27 bottom_x=225.0 fit=225.034,357.019,198.279 y=122..156\nRIGHT UNKNOWN quality=0 reason=AMBIG duty=57 spans=2 gaps=0 coverage=66 bottom_x=353.7 fit=353.668,419.401,65.106 y=122..204\n",
+    "after_detail": "EGO reference=54.75 near_y=185.00 road=6521 objects=6 selected=2/3\nOBJECT 0 fit=-304.010,-441.562,0.000 y=123..139 NN=10\nOBJECT 1 fit=-278.055,-423.880,0.000 y=121..145 NN=11\nOBJECT 2 fit=-136.539,-214.250,0.000 y=121..144 NN=0\nOBJECT 3 fit=231.839,371.823,205.933 y=121..159 NN=35\nOBJECT 4 fit=278.341,251.904,0.000 y=121..162 NN=30\nOBJECT 5 fit=343.649,366.498,0.000 y=124..205 NN=63\nLEFT SOLID quality=81 reason=OK duty=100 spans=1 gaps=0 coverage=36 bottom_x=-136.5 fit=-136.539,-214.250,0.000 y=121..144\nRIGHT DASHED quality=78 reason=OK duty=66 spans=4 gaps=3 coverage=37 bottom_x=231.8 fit=231.839,371.823,205.933 y=121..159\n"
+  }
+]

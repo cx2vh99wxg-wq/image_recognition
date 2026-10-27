@@ -1,0 +1,17 @@
+Executing : cfg_connect -ip 127.0.0.1 -port 65420
+Connecting to server[127.0.0.1 : 65420].
+Connect to server[127.0.0.1 : 65420] successfully.
+COMMAND[check version information] execute successfully, takes 0.0 secs.
+The cable List : 
+Cable index 0:USB Cable II/fffffffffffffffe 
+
+COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+Executing : cfg_connect -ip 127.0.0.1 -port 65420 successfully.
+CONNECT_RESULT 1
+Executing : cfg_scan_chain
+PANGO USB CABLE II cable driver: D2XX DLL
+PG2L100H
+This device configure situation (done bit): 1
+COMMAND[Open config cable] execute successfully, takes 0.4 secs.
+Executing : cfg_scan_chain successfully.
+SCAN_RESULT 1

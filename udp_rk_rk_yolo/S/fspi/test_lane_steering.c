@@ -62,6 +62,15 @@ int lane_test_ioctl(int fd, unsigned long request, ...) {
     assert(request == SPI_IOC_MESSAGE(1));
     struct spi_ioc_transfer *tr = argument;
     const uint8_t *tx = (const uint8_t *)(uintptr_t)tr->tx_buf;
+    if(!tx && tr->rx_buf) {
+        assert(tr->len==1 && tr->rx_nbits==4);
+        *(uint8_t *)(uintptr_t)tr->rx_buf=0;
+        return 1;
+    }
+    if(tx && tr->len==3 && tx[0]==0 && tx[1]==5) {
+        assert((tx[2]&0x7c)==0x40);
+        return 3; // Independent permissions never count as motion/STOP writes.
+    }
     assert(tr->len == 3 && tx && tx[0] == 0 && tx[1] < 5);
     const int address = tx[1], value = tx[2];
     if (address == short_start && value == 0) return 2;
