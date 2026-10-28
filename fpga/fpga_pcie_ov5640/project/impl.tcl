@@ -3485,3 +3485,18 @@ report_timing
 report_power 
 gen_netlist 
 gen_bit_stream -compress_bitstream true -master_configuration_clock_frequency {40M} 
+set_arch -family Logos2 -device PG2L100H -speedgrade -6 -package FBG484
+compile -top_module image_pcie_capture
+synthesize -ads -selected_syn_tool_opt 2 
+dev_map 
+pnr 
+report_timing 
+report_power 
+gen_netlist 
+gen_bit_stream -compress_bitstream true -master_configuration_clock_frequency {40M} 
+pnr -force_to_run -gplace_seed 2 -groute_seed 2 
+report_timing -force_to_run 
+pnr -force_to_run -gplace_seed 3 -groute_seed 3 
+pnr -force_to_run -gplace_seed 3 -groute_seed 3 
+report_timing -force_to_run 
+gen_bit_stream -force_to_run -compress_bitstream true -master_configuration_clock_frequency {40M} 

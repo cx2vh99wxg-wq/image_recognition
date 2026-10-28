@@ -4,6 +4,7 @@
 #include "shared_memory.h"
 #include "video_transport_v2.h"
 #include "line_style_wire.h"
+#include "traffic_light_wire.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -21,6 +22,8 @@ static_assert(sizeof(SharedMemoryControl) == 104, "Image control ABI must remain
 static_assert(sizeof(CurveDetectionSharedMemory) == 72, "Curve shared ABI must remain 72 bytes");
 static LineStyleIPC line_ipc={-1,nullptr};
 static line_wire::Receiver line_receiver;
+static TrafficLightIPC traffic_ipc={-1,nullptr};
+static traffic_wire::Receiver traffic_receiver;
 #define IMAGE_WIDTH 640
 #define IMAGE_HEIGHT 480
 #define UDP_PORT 8888
@@ -170,6 +173,18 @@ static void ingest_datagram(NetworkReceiver* r, const Datagram& packet) {
     if (!packet.size || packet.size > MAX_PACKET_SIZE) return;
     uint64_t now = monotonic_ns();
     FrameHeader old_header = {};
+    if(traffic_wire::is_packet(packet.data,packet.size)) {
+        TrafficLightData traffic={};
+        if(traffic_receiver.ingest(packet.data,packet.size,packet.received_ns,now,traffic)) {
+            traffic_ipc_write(&traffic_ipc,&traffic);
+            static uint64_t logged=0;
+            if(!logged||now-logged>=2000000000ULL) {
+                printf("[TRAFFIC_RX] source=%u detector=%u state=%s raw=%s color_q=%u detector_q=%u age_ms=%u ttl_ms=%llu\n",traffic.source_id,traffic.detector_id,traffic_state_name(traffic.state),traffic_state_name(traffic.raw_state),traffic.color_quality,traffic.detector_quality,traffic.detection_age_ms,(unsigned long long)((traffic_deadline(&traffic)-now)/1000000));
+                logged=now;
+            }
+        }
+        return;
+    }
     if(line_wire::is_packet(packet.data,packet.size)) {
         LineStyleData line={};
         if(line_receiver.ingest(packet.data,packet.size,packet.received_ns,now,line)) {
@@ -298,6 +313,8 @@ int main() {
     signal(SIGINT, signal_handler); signal(SIGTERM, signal_handler);
     if (shared_memory_init_udp(&shm_manager, 1)) return 1;
     line_ipc_open(&line_ipc,LINE_STYLE_KEY,1);
+    traffic_ipc_open(&traffic_ipc,1);
+    TrafficLightData traffic_initial={};traffic_ipc_write(&traffic_ipc,&traffic_initial);
     curve_detection_available = curve_detection_shm_init(1) == 0;
     NetworkReceiver receiver;
     if (network_receiver_init(&receiver)) {
@@ -317,6 +334,7 @@ int main() {
     if (frames) save_frame(receiver.frame_buffer, "udp_last_frame.ppm");
     network_receiver_cleanup(&receiver); shared_memory_cleanup(&shm_manager);
     line_ipc_close(&line_ipc);
+    traffic_ipc_close(&traffic_ipc);
     if (curve_detection_available) curve_detection_shm_cleanup();
     return 0;
 }

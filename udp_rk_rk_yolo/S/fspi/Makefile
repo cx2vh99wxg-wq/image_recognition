@@ -7,6 +7,7 @@
 CC = gcc
 .DEFAULT_GOAL := all
 
+
 # 编译选项
 CFLAGS = -Wall -O2 -std=c11
 
@@ -14,6 +15,20 @@ CFLAGS = -Wall -O2 -std=c11
 SRCDIR = csrc
 INCDIR = include
 BUILDDIR = build
+
+$(BUILDDIR)/test_traffic_go: test_traffic_go.c ../include/traffic_go_rule.h ../include/traffic_light_ipc.h ../include/traffic_light.h
+	@mkdir -p $(BUILDDIR)
+	$(CC) -std=c11 -Wall -Wextra -Werror -I../include $< -o $@
+
+test-traffic-go: $(BUILDDIR)/test_traffic_go
+	./$(BUILDDIR)/test_traffic_go
+
+$(BUILDDIR)/test_traffic_go_monitor: test_traffic_go_monitor.c $(SRCDIR)/main.c $(SRCDIR)/fspi_module.c ../include/traffic_go_rule.h
+	@mkdir -p $(BUILDDIR)
+	$(CC) $(CFLAGS) -Wextra -ffunction-sections -fdata-sections $(INCLUDES) $< -Wl,--gc-sections -o $@
+
+test-traffic-go-monitor: $(BUILDDIR)/test_traffic_go_monitor
+	./$(BUILDDIR)/test_traffic_go_monitor
 
 # 目标程序
 TARGET_APP = $(BUILDDIR)/vehicle_control
@@ -71,7 +86,7 @@ $(BUILDDIR)/%.o: ../csrc/%.c | $(BUILDDIR)
 	@echo "编译共享内存文件: $<"
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-$(BUILDDIR)/main.o: $(INCDIR)/fspi_module.h $(INCDIR)/brake_policy.h ../include/shared_memory.h
+$(BUILDDIR)/main.o: $(INCDIR)/fspi_module.h $(INCDIR)/brake_policy.h ../include/shared_memory.h ../include/lane_rule.h ../include/traffic_go_rule.h ../include/traffic_light_ipc.h ../include/traffic_light.h
 $(BUILDDIR)/fspi_module.o: $(INCDIR)/fspi_module.h
 
 # 创建目录

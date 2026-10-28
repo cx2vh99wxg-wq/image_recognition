@@ -332,10 +332,11 @@ module image_pcie_capture #(
   wire [  7:0] mem3_out;
   wire [  7:0] mem4_out;
   wire [  7:0] mem5_out;
-  wire hmi_left_denied, hmi_right_denied;
+  wire hmi_left_denied, hmi_right_denied, traffic_go_denied;
   lane_permission_guard u_lane_permission_guard (
       .clk(free_clk), .rst_n(board_rst_n), .async_permission(mem5_out),
-      .left_denied(hmi_left_denied), .right_denied(hmi_right_denied)
+      .left_denied(hmi_left_denied), .right_denied(hmi_right_denied),
+      .traffic_go_denied(traffic_go_denied)
   );
 
   // FSPI registers are written on its faster wr_clk. Their button levels
@@ -413,7 +414,9 @@ module image_pcie_capture #(
 
   // GO/BACK/STOP actively drive the requested idle-high/pressed-low levels.
   // LEFT/RIGHT retain their existing open-drain contact wiring.
-  assign go    = go_released;
+  // Traffic permission masks only the final GO contact. Keep the HMI traction
+  // latch intact so a confirmed green restores the operator's stored intent.
+  assign go    = go_released | traffic_go_denied;
   assign back  = back_released;
   assign left  = left_released  ? 1'bz : 1'b0;
   assign right = right_released ? 1'bz : 1'b0;
@@ -1345,14 +1348,18 @@ module remote_direction_arbiter (
 endmodule
 
 // reg5: bit6=protocol valid, bit7=heartbeat toggle, bits[1:0]=right/left deny.
-// Reset, a stopped S process or expired metadata restores legacy manual control.
+// bit2=set red-light GO hold; bit3=clear hold on confirmed green. Set wins.
+// A lost heartbeat releases only the original lane permissions. A previously
+// observed red stays held until an explicit green (or FPGA power-on reset).
+// Old software writes bits[3:2]=00 and cannot inadvertently release this hold.
 // Stable-word CDC and one atomic byte prevent mixed left/right permissions.
 module lane_permission_guard #(
     parameter TIMEOUT_CYCLES = 18750000
 ) (
     input wire clk, rst_n,
     input wire [7:0] async_permission,
-    output wire left_denied, right_denied
+    output wire left_denied, right_denied,
+    output wire traffic_go_denied
 );
   (* ASYNC_REG="TRUE" *) reg [7:0] meta, synced;
   reg [7:0] candidate;
@@ -1360,12 +1367,14 @@ module lane_permission_guard #(
   reg [24:0] age;
   reg heartbeat, alive;
   reg [1:0] deny;
+  reg red_hold;
   assign left_denied=alive & deny[0];
   assign right_denied=alive & deny[1];
+  assign traffic_go_denied=red_hold;
   always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
       meta<=0; synced<=0; candidate<=0; stable<=0;
-      age<=0; heartbeat<=0; alive<=0; deny<=0;
+      age<=0; heartbeat<=0; alive<=0; deny<=0; red_hold<=0;
     end else begin
       meta<=async_permission; synced<=meta;
       if(synced!=candidate) begin candidate<=synced; stable<=0; end
@@ -1374,6 +1383,8 @@ module lane_permission_guard #(
       else begin alive<=0; deny<=0; end
       if(stable==8 && candidate[6] && (!alive || candidate[7]!=heartbeat)) begin
         heartbeat<=candidate[7]; deny<=candidate[1:0]; age<=0; alive<=1;
+        if(candidate[2]) red_hold<=1;
+        else if(candidate[3]) red_hold<=0;
       end
       if(stable==8 && !candidate[6]) begin alive<=0; deny<=0; end
     end

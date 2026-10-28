@@ -3,7 +3,7 @@ project name,project.pds
 
 Single Seed:
 Seed,State,Convergence,Setup(Slow),Setup(Fast),Hold(Slow),Hold(Fast),Recovery(Slow),Recovery(Fast),Removal(Slow),Removal(Fast),PBM-GP,PBM-PreGP,PBM-PostGP,LP,Total Placement Cpu Time,Detailed routing,Total Routing Cpu Time,Wire Length After Post-GP,Wire Length After LP,Wire Length After DP,Routing Arc Length,Worst Slack After GP Timing,Worst Slack After LP Timing,Worst Slack Before RP,Worst Slack Before DP,Worst Slack After DP,Worst Slack After Placement,Worst Slack After TA By Preroute,TNS After DP,TNS Before Route,Setup(Slow) Total Failing TNS,Setup(Slow) Total Failing Endpoints,Hold(Slow) Total Failing THS,Hold(Slow) Total Failing Endpoints,Power
-single,OK,Fail,-7.120,-4.139,0.137,0.101,-3.939,-3.073,0.286,0.250,NA,NA,NA,2.17,52.02,55.31,90.73,NA,NA,NA,324693,NA,NA,-3475,-3475,-3358,-4958,NA,-206475,-275026,-519.297,117,0.000,0,4.72
+single,OK,Fail,-7.207,-4.373,0.121,0.082,-3.862,-3.049,0.275,0.233,NA,NA,NA,2.25,61.02,98.30,145.33,NA,NA,NA,330012,NA,NA,-3591,-3591,-3345,-4595,NA,-204537,-267886,-520.867,117,0.000,0,NA
 Pass Rate/Convergence Rate,100.00%,0.00%
 
 Synthesize:
@@ -11,22 +11,24 @@ control_set,369
 Synthesize Performance Summary:
 slack category,Synthesize Setup WNS,Synthesize Setup TNS,Synthesize Recovery WNS,Synthesize Recovery TNS
 slack value,-7.345,-331.105,-7.929,-166.509
-Synthesize Process Cpu Time,0h:1m:12s
+Synthesize Process Cpu Time,0h:1m:28s
 
 Device Map:
 Device Map Resource Usage Summary:
 Logic Utilization,LUT,FF,DRM,APM,Distributed RAM,HSSTHP,USCM,HCKB,RCKB
-Used,11763,41214,71.5,74,1918,NA,13,0,2
+Used,11767,41215,71.5,74,1918,NA,13,0,2
 Available,66600,133200,155,240,19900,NA,32,96,24
 Utilization(%),18%,31%,47%,31%,10%,NA,41%,0%,9%
-Device Map Process Cpu Time,0h:0m:21s
+Device Map Process Cpu Time,0h:0m:23s
 
 Project Configurations:
 top module,image_pcie_capture
-compile,
-synthesize," -ads "
+compile," -top_module {image_pcie_capture} "
+synthesize,
 device map,
-place & route,
+place & route," -force_to_run 
+ -gplace_seed 3 
+ -groute_seed 3 "
 
 Test Parameters Configurations:
 testparam,

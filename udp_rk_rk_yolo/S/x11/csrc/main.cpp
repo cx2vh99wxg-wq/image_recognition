@@ -26,6 +26,8 @@
 #include "gles_presenter.h"
 #include "video_input_fps.h"
 #include "line_style_ipc.h"
+#include "traffic_light_ipc.h"
+#include "traffic_go_rule.h"
 
 /* 为了使用aligned_alloc，需要定义_ISOC11_SOURCE */
 #ifndef _ISOC11_SOURCE
@@ -1430,6 +1432,21 @@ int present_dashboard(RenderEngine* engine) {
     status.fps = status.recorded ? 0.0f : engine->display_fps;
     status.pcie_fps = engine->pcie_input_rate.frames_per_second;
     status.udp_fps = engine->udp_input_rate.frames_per_second;
+    static TrafficLightIPC traffic_status={-1,nullptr};
+    traffic_ipc_open(&traffic_status,0);TrafficLightData signal={};
+    if(!traffic_ipc_read(&traffic_status,&signal)&&traffic_fresh(&signal,display_clock_ns())) {
+        status.traffic=signal.state;status.traffic_raw=signal.raw_state;
+        status.traffic_quality=signal.color_quality;status.traffic_flags=signal.flags;
+        status.traffic_detector_quality=signal.detector_quality;
+        status.traffic_live=true;
+    }
+    static TrafficGoIPC traffic_control={-1,nullptr};
+    traffic_go_open(&traffic_control,0);TrafficGoData go_status={};
+    if(!traffic_go_read(&traffic_control,&go_status)) {
+        status.go_blocked=go_status.blocked==1;
+        status.go_control_live=traffic_go_fresh(&go_status,display_clock_ns());
+        status.go_write_ok=go_status.write_ok==1;
+    }
     static LineStyleIPC line_status={-1,nullptr};
     static LineStyleIPC line_detection={-1,nullptr};
     line_ipc_open(&line_detection,LINE_STYLE_KEY,0);
@@ -1447,6 +1464,16 @@ int present_dashboard(RenderEngine* engine) {
 
     }
     if(engine->headless) {
+        const char* traffic_preview=getenv("VISION_PREVIEW_TRAFFIC");
+        if(traffic_preview) {
+            status.traffic=!strcmp(traffic_preview,"red")?1:!strcmp(traffic_preview,"yellow")?2:!strcmp(traffic_preview,"green")?3:0;
+            status.traffic_raw=status.traffic;status.traffic_quality=status.traffic?88:0;
+            status.traffic_detector_quality=status.traffic?82:0;
+            status.traffic_live=true;
+            // Preview is a display-only path; it never publishes control data.
+            status.go_blocked=status.traffic==TRAFFIC_RED;
+            status.go_control_live=true;status.go_write_ok=true;
+        }
         const char* forbidden=getenv("VISION_PREVIEW_BLOCK");
         if(forbidden) {
             status.lane_blocked=!strcmp(forbidden,"left")?1:!strcmp(forbidden,"right")?2:3;
@@ -1463,6 +1490,11 @@ int present_dashboard(RenderEngine* engine) {
     }
     if((status.lane_blocked&1)&&(status.motion==perception_ui::MotionDirection::Left||status.motion==perception_ui::MotionDirection::ForwardLeft))status.motion=perception_ui::MotionDirection::Idle;
     if((status.lane_blocked&2)&&(status.motion==perception_ui::MotionDirection::Right||status.motion==perception_ui::MotionDirection::ForwardRight))status.motion=perception_ui::MotionDirection::Idle;
+    if(status.go_blocked) {
+        if(status.motion==perception_ui::MotionDirection::Forward)status.motion=perception_ui::MotionDirection::Idle;
+        else if(status.motion==perception_ui::MotionDirection::ForwardLeft)status.motion=perception_ui::MotionDirection::Left;
+        else if(status.motion==perception_ui::MotionDirection::ForwardRight)status.motion=perception_ui::MotionDirection::Right;
+    }
     float progress = engine->transition.is_active ? engine->transition.progress :
         (engine->presented_mode == DISPLAY_MODE_ALL_CAMERAS ? -1.0f : 1.0f);
     char mode_label[64];

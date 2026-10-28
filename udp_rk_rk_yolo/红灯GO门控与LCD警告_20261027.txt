@@ -1,0 +1,65 @@
+红灯禁止前进与 LCD 警告实现（2026-10-27）
+
+行为
+- 复用 M 端现有的红绿灯识别、三帧确认和 TFL1 数据传输。
+- S 端每 100ms 检查新鲜且已确认的红灯，将 FPGA 最终 GO 输出置 1（无效）。
+- 保留原 HMI 的 GO 锁存。确认绿灯后自动撤销红灯门控，恢复此前仍有效的 GO。
+- 红灯触发后，黄灯、UNKNOWN、识别停止和网络超时均不解除门控。
+- STOP/S/R 仍会按原逻辑清除 GO 锁存；此后绿灯不会自行重新发起 GO。
+- BACK、左右手动转向、弯道转向、实线拦截、行人 AUTO_BREAK/STOP 锁存保持原仲裁规则。
+- 红灯门控独立于行人 AUTO_BREAK 开关，只禁止 GO，不额外发出 STOP 请求。
+- FPGA 复位时恢复初始释放状态；HMI GO 锁存也为空，车辆不会因绿灯自行启动。
+
+实现
+1. udp_rk_rk_yolo/S/include/traffic_go_rule.h
+   校验交通灯 TTL、CONFIRMED/BOX/MODEL_READY 标志及 raw_state 一致性。
+   红灯置保持位；绿灯写成功后才清除软件保持位，失败保留警告并重试。
+   新建独立控制状态共享内存 0x12345684，原视频/车道/行人 ABI 不变。
+2. udp_rk_rk_yolo/S/fspi/csrc/main.c
+   红灯与实线权限共用一个写入者，合成一次 reg5 原子写入；不写 reg0 代替硬件门控。
+   reg5 bit0/1：左/右实线禁止；bit2：红灯 SET；bit3：已确认绿灯 CLEAR；bit6：有效；bit7：心跳。
+   SPI 写成功后才推进心跳；转向脉冲等待期间也继续轮询。
+   继续使用已实测有效的主机三字节协议 [地址高,地址低,数据]。
+3. fpga/fpga_pcie_ov5640/source/image_pcie_capture.v
+   最终输出 go = 原方向仲裁的 go_released OR 红灯保持位。
+   心跳超时仍按原规则释放左右实线权限，但不会释放已触发的红灯保持。
+   GREEN CLEAR 必须来自有效、稳定且更新的权限字节；SET 优先于 CLEAR。
+4. udp_rk_rk_yolo/S/x11/csrc/main.cpp 与 include/dashboard_ui.h
+   读取控制进程的保持状态，在车头上方绘制红色三角警告及 RED LIGHT / GO HOLD。
+   正常提示 WAIT CONFIRMED GREEN；控制进程或 SPI 异常时提示 CONTROL LINK LOST / SPI WRITE RETRY。
+   可与左右红叉、行人警告同时显示。警告是控制请求状态，不冒充电气引脚反馈。
+5. udp_rk_rk_yolo/M/pcie/tools/traffic_replay.cpp
+   因交通灯元数据现在会影响前进，保存样本回放默认进入独立 IPC 命名空间。
+   不更换模型，不改变生产 NPU 调度；测试工具仍拒绝与采集/NPU 进程并行运行。
+   只有显式设置 TRAFFIC_REPLAY_LIVE_CONTROL_TEST=1 才允许受控的静止联调发布实时元数据。
+
+验证
+- 新增 test_traffic_go.v：HMI/FSPI GO、绿灯恢复、STOP 清除、BACK 独立、实线组合、超时保持、SET 优先。
+- 原方向仲裁、串口 HMI、FF/EE、STOP/REARM、SPI 和 SMDT 协议共九项 RTL 测试通过。
+- 软件红灯策略、生产监控函数集成及原行人/转向/实线/输入 FPS 回归通过。
+- 集成测试使用模拟 SPI 与私有共享内存，不向小车发送运动命令。
+- 离线 LCD 预览已检查，见 tmp/traffic_go_20261027/red_warning.png。
+- 两端原车道、弯道、YOLO 模型和三字节 SPI 传输代码的保留文件哈希已核对。
+- FPGA 第一轮新增 DDR 时序负裕量，第二轮新增 PCIe 时序负裕量，均未用于下载；仍在筛选无新增失败的布线结果。
+
+部署结果和实测记录将在最终校验后补充。
+
+部署进度
+- S 端 11 项源文件/二进制已备份后原子安装并逐项校验。
+- S 端备份：/home/linaro/S/backup_traffic_go_20261027。
+- M 端仅更新保存样本回放工具；生产采集程序未改动，已恢复运行，实测约 29.94 FPS。
+- SFC 已通过 PANGO 写入 S 端 Flash，并完成读回 Verify Outer Flash 校验。
+- SBIT SHA256：360efb51aeff57cd9d28583dba834e347884f00300ee5905ccc9b7515858fcf8。
+- SFC SHA256：ea424ec47699b455e9ffa97a77b7a7517c992c75a7cb18567a05439afb94c2b5。
+- 最终时序：GO 时钟域 setup +34.680ns；PCIe pclk setup +0.043ns；DDR→DQS0 setup +0.166ns。
+- Setup/Hold 的负裕量时钟对未比原版本增加；所有 Hold 汇总无失败。
+- 原有 CMOS/DDR/相机控制跨时钟约束仍报告负裕量，本次没有扩大修改这些约束，不能称为整工程时序完全收敛。
+- PDS 第三轮保存被旧输出数据库占用，保留旧文件后重跑，最终数据库及比特流已成功生成。
+- S 板需要一次冷重启加载新 Flash，当前等待冷重启后的运行验证。
+
+文件
+fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_traffic_go_20261027.sbit
+fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_traffic_go_20261027.sfc
+原通用名 image_pcie_capture.sbit / image_pcie_capture.sfc 也已同步为本次最终版本。
+本地 S 端 ARM 二进制与板内候选程序 SHA256 一致；M 端回放工具亦已同步。
+HMI 工程及现有按键消息未修改。M 端 FPGA 不需要固化。

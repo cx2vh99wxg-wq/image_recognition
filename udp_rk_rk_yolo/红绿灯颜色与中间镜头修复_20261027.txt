@@ -1,0 +1,89 @@
+红绿灯颜色与中间镜头输入修复记录（2026-10-27）
+
+状态：已通过 DEBUG 安装到 M 原工程并运行；本地原目录的源码、模型说明及实际 ARM 程序已同步核对。
+S 端已有显示转换正确，本次没有改动或重启 S 的采集、FSPI、UDP、LCD 程序。S 四个正式 PID 保持 2176/2182/2196/2216。
+M 当前正式 PID：4676（采集）/4681（UDP）。
+本次仍只有交通灯识别/状态显示，没有新增红灯自动刹车、HMI 指令或车控信号。
+
+1. 已确认的根因
+S/x11/csrc/main.cpp 已按 BGR565 解释视频：低5位为红、高5位为蓝。
+M 的历史 rgb565_to_rgb888() 变量名虽叫 RGB，但给新交通灯分支的字节实际仍遵循历史 BGR 顺序。
+上一版交通灯分支将它直接当 RGB，YOLOv5n 和 HSV 两处输入都错序。
+实际结果：红灯偏蓝而被红色规则排除，黄灯偏青；带青色成分的绿灯也会偏黄。
+因此调试原始图和你们看到的 LCD 颜色不同：LCD 已做红蓝纠正，调试原始图及新分支没有做。
+上一轮软件回放喂入的是已经正确排序的 RGB 图片，漏测了真实相机 BGR 入口；本次已补上此入口回归。
+
+2. 中间镜头与内存位置
+按 S 现有六画面代码，上排从左到右是：
+  左：M 原拼接图左下 (0,240)
+  中：M 原拼接图右下 (320,240)，对应 0x88，代码注释为“前中复制”
+  右：M 原拼接图右上 (320,0)
+原拼接图左上 (0,0) 对应 0x55，代码注释为“前中”，在全景布局中不直接作为中间格显示。
+本次不再从拼接格位置推断物理镜头编号，交通灯固定对齐你们确认的“中间镜头、LCD 上排中间”内存块 (320,240,320,240)。
+没有改动旧车道、弯道算法使用的输入及取样位置。
+
+3. 修改方式
+M/pcie/csrc/main.cpp 仅给 traffic::Service 传入 InputView(320,240,PixelOrder::BGR)。
+M/pcie/include/traffic_vision.h 新增私有拷贝函数 copy_camera_rgb()：截取指定块，并在私有缓冲中将 BGR 转为 RGB。
+M/pcie/csrc/traffic_service.cpp 的定位、颜色、跟踪统一使用这份正确 RGB；原始主缓冲不被修改。
+保存样本默认 RGB 回放方式保留，避免把已经正确的 RGB 测试图片再次红蓝互换。
+没有全局修改 rgb565_to_rgb888()，也没有换相机寄存器设置、曝光、FPGA 或 S 显示逻辑。
+原有车道/弯道代码本身已有历史颜色约定，直接全局交换会有影响，因此此次只修复交通灯分支。
+
+4. 同时修复的拼接边缘误报
+在无灯具的一帧中，实测有 x=0、宽约8.7、高约53像素、分数0.073的残影框被误当红灯。
+交通灯颜色分析现忽略左右各8像素的无效拼接边缘，拒绝仅在边缘的碎片，也不会让大框把这条残影统计成灯。
+图像显示、采集和车道缓冲本身不裁切、不移动。
+未扩大 HSV 范围、未降低定位门槛、未重训练、未替换模型；模型 SHA256 仍为
+38b08fb0875a00de86928f1591634fd6b209d9739fdcc8399b75fe151d6752da。
+
+5. 验证结果
+本次保存32帧真实相机输入并人工检查可见性：
+  14帧清晰灯具：绿4、黄6、红4，板端实际 RKNN 和正式目标仲裁均判对。
+  1帧模糊红灯：判对。
+  16帧灯具未入镜：均 UNKNOWN，包括之前边缘误红的那一帧。
+  1帧严重裁切绿灯：保守 UNKNOWN。
+样本是同一轮三种图片的多帧采样，已用于开发验证，不是14张独立道路照片，不能据此声称全场景准确率100%。
+模型会输出多个候选框；校验的是正式 Service 通过分数、位置、冲突处理后实际选中并发布的灯色，同时测试参考中心 x=0/160/320。
+不把一个低分辅助候选误等同于最终 LCD 状态。
+
+另用真实 BGR 样本构造 640x480 拼接输入，仅右下块放入灯图，从与正式程序完全相同的 InputView 入口回放：
+  RED -> GREEN -> YELLOW -> UNKNOWN 全部确认，通过真实 UDP 到 S，LCD 三色实屏抓图已保存。
+此时 M 正式采集暂停，截图背景不是回放输入视频，底部 UDP WAIT/M 0FPS 是该软件测试阶段的状态；之后已恢复正常完整视频。
+
+单元/内存安全：镜头块、BGR/RGB转换、带行跨度拷贝、越界拒绝、源图不可变、边缘残影、原颜色/确认/跟踪/TTL 均通过 ASan/UBSan。
+原车道、ego lane、单 NPU 顺序、可选分支异常隔离测试通过。
+M 7项原车道/弯道/UDP文件及 S 9项原程序/控制文件前后哈希一致；本地原有10项 FPGA/车道/FSPI保护文件也未变。
+
+6. 帧率与调度
+保留原有唯一 NPU 提交线程、车道先发布、弯道优先、低频交通灯及60ms软预算规则。
+同一最终候选交通灯关闭/开启 A/B：
+  M 视频 FPS: 30.002 -> 29.944
+  车道更新 Hz: 3.625 -> 3.563
+  最小车道剩余有效期 ms: 291.0 -> 327.8
+没有车道结果过期。
+安装后：M 采集 30.05 FPS，S 接收 M 完整帧 30.01 FPS。
+S 原有进程未重启，行人结果有效且年龄小于2秒；两端车道和交通灯状态 TTL 持续有效。
+
+7. 文件与备份
+源码仍直接位于：D:\Study_Object\image_recognition\image_recognition\udp_rk_rk_yolo
+主要改动：
+  M/pcie/csrc/main.cpp
+  M/pcie/include/traffic_service.h
+  M/pcie/csrc/traffic_service.cpp
+  M/pcie/include/traffic_vision.h
+  M/pcie/tests/test_traffic.cpp
+  M/pcie/tools/traffic_replay.cpp（增加真实BGR拼接/黄灯回放模式）
+  M/pcie/model/traffic_yolov5n_rk3568.json（输入约定说明）
+模型 rknn 文件不变。S 代码、HMI 文件、FPGA RTL/sbit/sfc 和既有车控逻辑不变，无需重新固化。
+M 板回退备份：/home/linaro/M/backup_traffic_color_fix_20261027/manifest.json
+新 M 正式日志：/home/linaro/M/runtime_traffic_color_fix_20261027
+本地同步核验：tmp/traffic_color_fix_20261027/synchronization_receipt.json
+本地旧 ARM 程序：tmp/traffic_color_fix_20261027/before_binaries
+
+颜色对照图：tmp/traffic_color_fix_20261027/color_order_comparison.png（左：原错序调试显示，右：正确RGB）
+实际RKNN逐帧结果：tmp/traffic_color_fix_20261027/M_evidence/real_recognition.json
+S端三色回放截图：tmp/traffic_color_fix_20261027/S_evidence/lcd_saved_red.jpg、lcd_saved_green.jpg、lcd_saved_yellow.jpg
+
+仍有边界：极小、严重过曝、遮挡或严重裁切的灯仍可能 UNKNOWN；本次不识别箭头通行方向，也不把颜色结果接入自动刹车。
+后续测试继续对 M 端中间镜头，并以上排中间那格是否看到灯具为准。

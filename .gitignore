@@ -1,0 +1,22 @@
+# 安装包/依赖
+*.whl
+*.egg
+*.tar.gz
+*.zip
+
+# 数据集/模型权重
+*.pth
+*.pt
+*.onnx
+*.ckpt
+data/
+datasets/
+weights/
+
+# 临时输出
+tmp/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+tmp/
+*.whl

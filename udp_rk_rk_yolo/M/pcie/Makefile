@@ -110,6 +110,32 @@ $(BUILD_DIR)/line_style_replay: tools/line_style_replay.cpp include/line_style_a
 
 line-style-replay: $(BUILD_DIR)/line_style_replay
 
+$(BUILD_DIR)/test_traffic: tests/test_traffic.cpp include/traffic_vision.h ../include/traffic_light.h ../include/traffic_light_ipc.h ../include/traffic_light_wire.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 $(INCLUDES) $< -o $@
+
+test-traffic: $(BUILD_DIR)/test_traffic
+	./$(BUILD_DIR)/test_traffic
+
+$(BUILD_DIR)/test_npu_scheduling: tests/test_npu_scheduling.cpp include/latest_lane_worker.h include/traffic_vision.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 -pthread $(INCLUDES) $< -o $@
+
+test-npu-scheduling: $(BUILD_DIR)/test_npu_scheduling
+	./$(BUILD_DIR)/test_npu_scheduling
+
+$(BUILD_DIR)/traffic_probe: tools/traffic_probe.cpp $(BUILD_DIR)/traffic_detector.o include/traffic_detector.h include/traffic_vision.h include/traffic_offline_guard.h ../include/traffic_light.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< $(BUILD_DIR)/traffic_detector.o -o $@ $(LIBS) -lm -pthread
+
+traffic-probe: $(BUILD_DIR)/traffic_probe
+
+$(BUILD_DIR)/traffic_replay: tools/traffic_replay.cpp $(BUILD_DIR)/traffic_detector.o $(BUILD_DIR)/traffic_service.o include/traffic_offline_guard.h include/traffic_service.h include/traffic_vision.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< $(BUILD_DIR)/traffic_detector.o $(BUILD_DIR)/traffic_service.o -o $@ $(LIBS) -lm -pthread
+
+traffic-replay: $(BUILD_DIR)/traffic_replay
+
 # One saved image through the real RKNN model. No capture/control publication.
 $(BUILD_DIR)/line_style_model_probe: tools/line_style_model_probe.cpp include/line_style_analyzer.h include/ego_lane_selector.h include/line_style_trace.h ../include/line_style.h $(BUILD_DIR)/yolo_integration.o $(BUILD_DIR)/preprocess.o $(SHARED_MEMORY_OBJ)
 	@mkdir -p $(BUILD_DIR)

@@ -40,6 +40,9 @@ struct ViewStatus {
     unsigned line_left_quality=0,line_right_quality=0;
     unsigned line_left_reason=9,line_right_reason=9;
     unsigned line_left_raw=0,line_right_raw=0;
+    unsigned traffic=0,traffic_raw=0,traffic_quality=0,traffic_detector_quality=0,traffic_flags=0;
+    bool traffic_live=false;
+    bool go_blocked=false,go_control_live=false,go_write_ok=false;
 };
 
 class Dashboard {
@@ -63,6 +66,7 @@ public:
         const uint64_t started = compositorClock();
         const bool fast = fastComposition();
         if (fast) {
+            restoreBackground({1110,44,438,70});
             // All changing text lies in these bands. Font metadata validates
             // the fixed 20/28px cells; restoring the whole width also covers
             // a long or clipped mode label. The remaining frame is static.
@@ -119,6 +123,7 @@ public:
             drawMotionCue(status.motion);
         if(status.lane_blocked&1)drawForbiddenCross(1282,475);
         if(status.lane_blocked&2)drawForbiddenCross(1490,475);
+        if(status.go_blocked)drawTrafficGoWarning(status);
         const char* names[]={"UNKNOWN","SOLID","DASHED"};
         char line_text[80];
         unsigned lt=status.line_left?status.line_left:status.line_left_raw;
@@ -134,6 +139,7 @@ public:
         centeredText(frame_,line_text,{1238,719,296,15},1,0xFFB9ACD7);
 
         const uint64_t car_done = compositorClock();
+        drawTraffic(status);
         const char* label = safeLabel(mode_label, overview);
         text(frame_, 1162 - textWidth(label, 1), 204, label, 1, 0xFFA1C4DA);
         if (overview && transition_progress < 0) {
@@ -143,10 +149,10 @@ public:
             text(frame_, 74, 781, "FOCUSED CAMERA / 4:3", 1, 0xFF658CA8);
         }
 
-        const uint32_t alert = status.person ? 0xFFFF748C : 0xFF6BDBE7;
+        const uint32_t alert = status.person||status.go_blocked ? 0xFFFF748C : 0xFF6BDBE7;
         fillChamfer(frame_, {1240, 744, 292, 30}, 7,
-                    status.person ? 0xFF281321 : 0xFF0A1B2A);
-        const char* detection = status.person ? "PERSON DETECTED" : "VISION MONITOR";
+                    status.person||status.go_blocked ? 0xFF281321 : 0xFF0A1B2A);
+        const char* detection = status.person ? "PERSON DETECTED" : status.go_blocked ? "RED LIGHT / GO HOLD" : "VISION MONITOR";
         centeredText(frame_, detection, {1240, 744, 292, 30}, 2, alert);
         circle(frame_, 1232, 204, 3.f, alert, 230);
 
@@ -178,6 +184,37 @@ private:
     std::vector<uint32_t> frame_;
     std::vector<uint8_t> font_atlas_;
     FontMetrics font_metrics_[3] = {};
+
+    void drawTrafficGoWarning(const ViewStatus& status) {
+        // Place the alert ahead of the car; leave the left/right X locations
+        // and the existing pedestrian alert visible at the same time.
+        const Point triangle[]={{1386,237},{1418,293},{1354,293},{1386,237}};
+        fillPolygon(frame_,triangle,3,0xFF6D142B,0xFF26101D,235);
+        path(frame_,triangle,4,0xFFFF526D,false);
+        line(frame_,{1386,254},{1386,272},0xFFFFE5EB,5,255);
+        circle(frame_,1386,282,3.f,0xFFFFE5EB,255);
+        fillChamfer(frame_,{1258,304,256,44},7,0xFF2A1020);
+        centeredText(frame_,"RED LIGHT / GO HOLD",{1258,307,256,18},1,0xFFFF8296);
+        const char* detail=!status.go_control_live?"CONTROL LINK LOST":
+            !status.go_write_ok?"SPI WRITE RETRY":"WAIT CONFIRMED GREEN";
+        centeredText(frame_,detail,{1258,327,256,14},1,0xFFFFC6D0);
+    }
+
+    void drawTraffic(const ViewStatus& status) {
+        fillChamfer(frame_,{1120,52,420,54},8,0xFF0A1428);
+        const uint32_t active[]={0xFF75869B,0xFFFF5368,0xFFFFCE63,0xFF43E6B2};
+        unsigned state=status.traffic_live?std::min(3u,status.traffic):0;
+        for(unsigned i=1;i<=3;++i) {
+            int x=1144+(i-1)*26;
+            circle(frame_,x,78,10.f,active[i],state==i?65:12);
+            circle(frame_,x,78,5.f,state==i?active[i]:0xFF334355,240);
+        }
+        const char* names[]={"UNKNOWN","RED","YELLOW","GREEN"};
+        char label[48];std::snprintf(label,sizeof(label),"TRAFFIC / %s",names[state]);
+        text(frame_,1220,63,label,2,active[state]);
+        std::snprintf(label,sizeof(label),"M FRONT / COLOR %u / BOX %u%s",status.traffic_quality,status.traffic_detector_quality,!state&&status.traffic_raw?" / WAIT":"");
+        text(frame_,1220,88,label,1,0xFF8DA5BD);
+    }
 
     uint64_t compositor_profile_start_ = 0, compositor_profile_calls_ = 0;
     uint64_t compositor_copy_ = 0, compositor_clear_ = 0, compositor_video_ = 0;

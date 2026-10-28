@@ -4,6 +4,7 @@
 #include "yolo_integration.h"
 #include "line_style_analyzer.h"
 #include "line_style_snapshot.h"
+#include "traffic_vision.h"
 #include <cstdio>
 #include <cstdlib>
 #include <atomic>
@@ -60,8 +61,8 @@ struct Totals {
  * this worker until stop() joins it; the caller may then clean up RKNN. */
 class LatestWorker {
 public:
-    LatestWorker(YOLOEngine* engine, int width, int height)
-        : engine_(engine), width_(width), height_(height),
+    LatestWorker(YOLOEngine* engine, int width, int height, traffic::NpuTask* optional_task=nullptr)
+        : engine_(engine), optional_task_(optional_task), width_(width), height_(height),
           pending_pixels_((size_t)width * height * 3),
           working_pixels_((size_t)width * height * 3) {
         thread_ = std::thread(&LatestWorker::run, this);
@@ -185,6 +186,17 @@ private:
                 // Both mask vectors own copies, never engine's next-frame buffers.
                 std::shared_ptr<const Snapshot> immutable = result;
                 std::atomic_store(&latest_, immutable);
+                // Publish the lane result first. There is no second NPU
+                // inference thread and no queue of old traffic-light frames.
+                if(optional_task_) {
+                    traffic::LaneBudget budget;budget.source=source;budget.captured=captured;
+                    budget.completed=result->completed_ns;budget.duration=inference_time+analysis_time;
+                    budget.fresh=result->fresh(clock_ns());
+                    budget.curve_active=result->curve.curve_type!=0&&result->curve.confidence>0;
+                    if(result->line_style.road_area)budget.reference_x=result->line_style.reference_x;
+                    try {optional_task_->after_lane(budget);}
+                    catch(...) {optional_task_=nullptr;std::fprintf(stderr,"Optional traffic task stopped; lane worker continues\n");}
+                }
             }
         } catch (...) {
             // The capture thread will invalidate curve confidence and keep
@@ -194,6 +206,7 @@ private:
     }
 
     YOLOEngine* engine_;
+    traffic::NpuTask* optional_task_;
     LineStyleAnalyzer line_analyzer_;
     SnapshotRequest snapshot_request_;
     uint64_t line_log_ns_=0,dump_ns_=0;

@@ -13,6 +13,7 @@
 #include "shared_memory.h"
 #include "video_transport_v2.h"
 #include "line_style_wire.h"
+#include "traffic_light_wire.h"
 #include <errno.h>
 #include <signal.h>
 #include <sys/uio.h>
@@ -397,12 +398,20 @@ int main(int argc, char* argv[]) {
     if (!pixels) { network_manager_cleanup(&network); return 1; }
     SourceConnection source;
     LineStyleIPC line_ipc={-1,nullptr};
+    TrafficLightIPC traffic_ipc={-1,nullptr};
     uint64_t last_line_send=0;
+    uint64_t last_traffic_send=0;
     printf("[UDP_TX] protocol=V3 packet=%zu curve_ttl_ms=500 (legacy/V2 video has no trusted NN identity)\n",
            sizeof(video_v2::WireHeader) + video_v2::LINE_BYTES);
     while (sender_running) {
         uint64_t now = monotonic_ns();
         report_sender(&network); probe_source(source, network, now);
+        if(!last_traffic_send||now-last_traffic_send>=100000000ULL) {
+            traffic_ipc_open(&traffic_ipc,0);TrafficLightData traffic={};uint8_t packet[traffic_wire::SIZE];
+            if(!traffic_ipc_read(&traffic_ipc,&traffic)&&traffic_wire::encode(packet,traffic,now))
+                sendto(network.socket_fd,packet,sizeof(packet),MSG_DONTWAIT,(sockaddr*)&network.target_addr,sizeof(network.target_addr));
+            last_traffic_send=now;
+        }
         if(!last_line_send||now-last_line_send>=50000000ULL) {
             line_ipc_open(&line_ipc,LINE_STYLE_KEY,0);LineStyleData line={};uint8_t packet[line_wire::SIZE];
             if(!line_ipc_read(&line_ipc,&line)&&line_wire::encode(packet,line,now))
@@ -443,6 +452,7 @@ int main(int argc, char* argv[]) {
         network_send_frame_source(&network, pixels, meta);
     }
     line_ipc_close(&line_ipc);
+    traffic_ipc_close(&traffic_ipc);
     detach_source(source); free(pixels); network_manager_cleanup(&network);
     return 0;
 }

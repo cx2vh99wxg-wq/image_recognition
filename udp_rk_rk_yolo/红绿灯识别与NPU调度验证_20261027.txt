@@ -1,0 +1,99 @@
+红绿灯识别与 NPU 调度实施、验证记录（2026-10-27）
+
+完成状态
+已通过 DEBUG 将新版 M/S 程序安装到原工程目录并启动；本地原目录的源码、模型、12 个实际 ARM 可执行文件均已同步并逐文件核对 SHA256。
+M: /home/linaro/M，COM8。S: /home/linaro/S，COM7。
+本地: D:\Study_Object\image_recognition\image_recognition\udp_rk_rk_yolo
+本次仅增加交通灯识别、状态传输和 LCD 显示。交通灯数据没有连接 STOP、person 刹停、reg5 或 HMI 控制；不包含红灯自动刹车决策。
+
+一、实现内容
+1. M 端新增预训练 YOLOv5n RK3568 模型，320x320，RKNN Toolkit2 2.3.2 转换，INT8；不重训练。
+   模型仍有原始 COCO 80 类输出头，但只解析 class 9 traffic light；没有复制 S 端 YOLOv5s 大模型。
+   模型: M/pcie/model/traffic_yolov5n_rk3568.rknn
+   SHA256: 38b08fb0875a00de86928f1591634fd6b209d9739fdcc8399b75fe151d6752da
+2. 输入为 M 端第 1 路摄像头（拼接图左上角）的原始 RGB，320x240，先复制再做原有车道覆盖，避免红/绿分割掩码污染颜色。
+3. YOLOv5 锚框解码、0.07 候选分数门槛、NMS 后，在框内做 HSV、亮度、色块连通性和局部暗灯壳对比度检查。
+   灯壳检查用于排除彩色路牌；灰色反光灯壳也允许通过，但要求亮灯与附近灯壳有对比。
+   候选分数低门槛用于小模型召回，不代表可以用 7% 定位分数直接驱动车辆。
+4. 颜色结果需连续 3 个不同采集帧确认；灯壳跟踪和颜色分析独立在 CPU 上运行，最高 10Hz。
+   输出 RED / YELLOW / GREEN / UNKNOWN；没框、颜色冲突、跟踪丢失、过期时回 UNKNOWN。
+   多个相近优先级灯具颜色冲突时保守 UNKNOWN；仅近似按本车道参考中心挑选目标，不保证识别哪组信号灯管辖本车道。
+5. 新增独立共享段 0x12345683，TFL1 独立 UDP 状态包；不改旧视频 V3、曲线、实虚线、HMI 控制 ABI。
+   TTL 750ms 从真实采集时间计算；缓存重复包不会延长有效期。NN 灯框最长沿用 1.8 秒且必须通过当前 RGB 跟踪。
+6. S 端 UDP 接收新状态，LCD 右上角新增 TRAFFIC 灯色卡片。
+   COLOR 为颜色证据质量，BOX 为原始定位分数，二者不是同一个“准确率”。
+   原来的车辆图、左右红叉、车道线型和行人报警仍保留。
+
+二、NPU 调度
+1. YOLOPv2 车道工作线程为运行期唯一 NPU 提交者；YOLOv5n 无独立并行 NPU 线程。
+   可选模型加载及第一次缓冲区预热在车道线程启动前完成。
+2. 先完成并发布车道快照，再考虑可选交通灯任务；不排队旧交通灯帧。
+3. 定位最高每秒一次，负载高时自动降频。正常尺度没有有效亮灯时，在预算内尝试 1/2、1/4 尺度，兼容近距离拍屏中的大灯具。
+   每次最多 3 次小模型推理，日志分别统计定位事件频率 locator_hz 和实际推理频率 npu_hz。
+4. 弯道结果有效且非直线时暂停新定位，优先原有弯道功能；旧灯框到期后 UNKNOWN。
+5. 车道结果太旧、车道耗时过长或可选任务预计超预算时跳过；软预算 60ms，超时后退避，连续超限会停用可选任务。
+   这是软件准入/退避，不是可以抢占已进入内核的硬实时 NPU 超时。
+6. 新模型缺失或出错时仅停用交通灯分支，原车道线程继续。VISION_TRAFFIC=0 可在重启 M 采集时关闭该分支。
+
+三、验证结果（不能当作完整道路准确率）
+1. 板端实际 RKNN 正负对照：3 张红灯、1 张绿灯得到正确灯色；实验室、车辆、纯色和两张针对性路牌样本无错误灯色。
+   原始单尺度存在漏检；增加预算内尺度重试，并加入灯壳约束后通过最终对照。
+2. 另 20 张未参与量化校准的裁剪灯具样本：红灯 6/10，绿灯 7/10；共 13 张得到正确灯色，7 张 UNKNOWN，未出现相反灯色。
+   这些样本已用于开发调试，不是严格盲测集；不能据此推导道路识别准确率。
+3. CPU ONNX + 实际 C++ 颜色规则对 128 张 COCO 场景回归：无最终灯色输出。
+   其中有小/暗交通灯也被判 UNKNOWN，因此这既包含保守漏检，也不能作为“零误报”的充分证据。
+4. 保存 RGB 红灯、绿灯、灰屏各 4 秒，走真实 Service -> IPC -> M UDP -> S UDP -> LCD：RED、GREEN、UNKNOWN 均通过。
+   S 实屏截图已保存。此项是明确的保存样本回放；当时 M 正式采集暂停，截图上排 WAIT/黑屏属于测试过程。
+   测试结束已停止临时发送器并恢复正式两端视频，不涉及任何车控命令。
+5. M 端同一候选关闭/开启交通灯 A/B（各连续采样约 18 秒）：
+   视频采集/发布 FPS: 29.978 -> 30.001
+   车道结果更新 Hz: 3.559 -> 3.500
+   最小剩余车道有效期 ms: 325.6 -> 325.9
+   没有视频掉速或车道结果过期。
+6. 最终正式运行连续采样约 10 秒：
+   M 采集/发布: 30.04 FPS；S 接收 M 完整帧: 30.00 FPS。
+   S 本地完整帧输入: 17.94 FPS。
+   S 全屏 X11 实际呈现日志约 12.8~13.1 FPS；这是显示次数，不等同上述输入帧率。本次没有另改显示通路性能逻辑。
+   车道/交通灯 TTL 持续有效；S 行人共享结果保持有效且年龄小于 2 秒；两端各正式进程均只有一个实例。
+7. 单元及内存安全：HSV/歧义/彩色路牌、独立帧确认、跟踪、TTL/乱序/重复/校验、单 NPU 顺序、可选任务异常隔离均通过。
+   旧实虚线单元、ego lane、异步工作线程和 UDP 编译回归通过；受保护核心文件本地 10 项、板端 M 4 项/S 7 项哈希核对未变。
+
+四、范围与限制
+HMI 文件、FPGA RTL、PDS/sbit/sfc、GO/BACK 锁存、左右瞬时按键、S/R、实线拦截/红叉、原有弯道判定、person 15% 刹停逻辑均没有修改。
+本次不需要重新固化 S/M FPGA。
+当前完成“识别与显示”，未接入交通灯自动制动；HMI AUTO_BREAK 仍维持原先的行人刹停含义。
+远处小灯、过曝、严重模糊、缺灯壳/颜色证据不足时仍会漏检 UNKNOWN；不判断箭头通行方向，不能将当前结果直接视为完整交通规则决策。
+弯道优先与严格预算会降低灯具定位频率，必要时宁可 UNKNOWN。
+
+五、代码位置（相对本地 udp_rk_rk_yolo）
+M/pcie/csrc/traffic_detector.cpp          小模型、缩放/NMS/RGB候选校验
+M/pcie/csrc/traffic_service.cpp           NPU 准入、CPU跟踪确认、独立IPC
+M/pcie/include/traffic_vision.h           HSV、灯壳检查、跟踪、确认、预算策略
+M/pcie/include/latest_lane_worker.h      原车道发布后调用可选任务
+M/pcie/csrc/main.cpp                     原始帧提交、生命周期管理
+M/include/traffic_light*.h               独立数据、IPC、UDP协议；S端相同副本
+M/udp/csrc/main.cpp                     非阻塞发送独立灯具状态
+S/udp/csrc/main.cpp                     独立状态接收
+S/x11/csrc/main.cpp / include/dashboard_ui.h  状态读取与LCD卡片
+M/pcie/tests/test_traffic.cpp、test_npu_scheduling.cpp  回归测试
+M/pcie/tools/traffic_probe.cpp、traffic_replay.cpp      保存样本验证工具
+离线工具会拒绝在采集/NPU应用正在运行时启动，避免再次产生双 NPU 负载。
+
+六、部署、备份和证据
+M 备份: /home/linaro/M/backup_traffic_light_20261027
+S 备份: /home/linaro/S/backup_traffic_light_20261027
+两边目录均有 manifest.json，记录原文件哈希和新增文件；保留之前版本，未覆盖旧备份。
+当前运行日志: /home/linaro/M/runtime_traffic_light_20261027 与 /home/linaro/S/runtime_traffic_light_20261027。
+本地同步核验: tmp/traffic_light_20261027/synchronization_receipt.json（M 29 项，S 8 项完全一致）。
+详细验证: tmp/traffic_light_20261027/M_evidence 与 S_evidence。
+实屏回放截图: S_evidence/lcd_saved_red.jpg、lcd_saved_green.jpg。
+本地原 ARM 文件备份: tmp/traffic_light_20261027/before_binaries。
+
+模型来源/复现资料
+https://github.com/airockchip/rknn_model_zoo/tree/main/examples/yolov5
+原始 ONNX 下载: https://ftrg.zbox.filez.com/v2/delivery/data/95f00b0fc900458ba134f8b180b3f7a1/examples/yolov5/yolov5n.onnx
+原 ONNX SHA256: b3237d0f59a5d90ff6ecec3dca220e0ada8abd929f8a158b08b12e1a3bad7232
+本地转换脚本及数据清单: tmp/traffic_light_20261027/convert_nano.py、calibration_320.txt、nano320_manifest.json。
+公开裁剪灯具测试图片: https://github.com/jeremyscatigna/Traffic_light_classifier/tree/master/traffic_light_images/test
+DEBUG 内部文件传输曾被特定字符序列触发的调试逃逸中断；传输工具已规避该序列并逐块校验，不需要修改板卡内核。
+对应官方实现: https://github.com/rockchip-linux/kernel/blob/develop-4.19/drivers/soc/rockchip/rk_fiq_debugger.c

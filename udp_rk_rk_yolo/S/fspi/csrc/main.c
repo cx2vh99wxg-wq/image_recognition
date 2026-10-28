@@ -23,6 +23,7 @@
 #include "brake_policy.h"
 #include "../include/shared_memory.h"
 #include "lane_rule.h"
+#include "traffic_go_rule.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -62,9 +63,13 @@ static int direction_release_failed = 0;
 static LineStyleIPC lane_input={-1,NULL},lane_warning={-1,NULL};
 static uint64_t lane_last_poll=0;
 static uint8_t lane_heartbeat=0;
+static TrafficLightIPC traffic_input={-1,NULL};
+static TrafficGoIPC traffic_warning={-1,NULL};
+static TrafficGoPolicy traffic_policy={0};
+static int traffic_policy_initialized=0;
 
-/* Runs in the same thread as all other SPI operations, including the 20ms
- * pulse wait. It never writes GO/BACK/LEFT/RIGHT/STOP registers 0..4. */
+/* Lane and traffic permissions share ONE writer and ONE atomic reg5 byte.
+ * Runs also during the 20ms turn wait. Does not touch motion registers 0..4. */
 static void monitor_lane_rule(void) {
     uint64_t now=line_clock_ns();
     if(lane_last_poll&&now-lane_last_poll<100000000ULL)return;
@@ -74,8 +79,34 @@ static void monitor_lane_rule(void) {
     LineStyleData data={0};
     if(line_ipc_read(&lane_input,&data)||!line_fresh(&data,now))data=(LineStyleData){0};
     unsigned denied=lane_denied_sides(&data,now);
-    lane_heartbeat^=0x80;
-    int written=fspi_write_data(5,(uint8_t)(0x40|lane_heartbeat|denied))==0;
+    traffic_go_open(&traffic_warning,1);
+    if(!traffic_policy_initialized) {
+        TrafficGoData old={0};
+        if(!traffic_go_read(&traffic_warning,&old)&&old.blocked==1)traffic_policy.blocked=1;
+        traffic_policy_initialized=1;
+    }
+    traffic_ipc_open(&traffic_input,0);
+    TrafficLightData signal={0};
+    int signal_valid=!traffic_ipc_read(&traffic_input,&signal)&&traffic_fresh(&signal,now);
+    unsigned color=signal_valid?traffic_go_color(&signal,now):TRAFFIC_UNKNOWN;
+    unsigned traffic_command=traffic_go_prepare(&traffic_policy,color);
+    // Retry the same next heartbeat after a failed write. Advancing it on
+    // failure could make the following successful byte look old to the FPGA.
+    uint8_t next_heartbeat=lane_heartbeat^0x80;
+    int written=fspi_write_data(5,(uint8_t)(0x40|next_heartbeat|denied|traffic_command))==0;
+    if(written)lane_heartbeat=next_heartbeat;
+    traffic_go_commit(&traffic_policy,traffic_command,written);
+    TrafficGoData go_status={0};
+    go_status.blocked=traffic_policy.blocked;go_status.write_ok=written;
+    go_status.signal_state=signal_valid?signal.state:TRAFFIC_UNKNOWN;
+    go_status.signal_fresh=signal_valid;go_status.session=signal.session;go_status.source_id=signal.source_id;
+    traffic_go_set_deadline(&go_status,now+400000000ULL);traffic_go_write(&traffic_warning,&go_status);
+    static int last_go_hold=-1,last_go_write=-1;
+    if(last_go_hold!=(int)traffic_policy.blocked||last_go_write!=written) {
+        printf("[TRAFFIC_GO] signal=%s confirmed=%s go_hold=%u reg5_write=%s (not pin readback); green restores stored GO, STOP/BACK remain independent\n",
+            traffic_state_name(go_status.signal_state),traffic_state_name(color),traffic_policy.blocked,written?"OK":"FAIL");
+        last_go_hold=(int)traffic_policy.blocked;last_go_write=written;
+    }
     uint8_t hmi=0;
     if(fspi_read_hmi_snapshot(&hmi))hmi=0;
     data.hmi_code=hmi;

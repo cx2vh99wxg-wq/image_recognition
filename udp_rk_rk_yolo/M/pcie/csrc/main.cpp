@@ -3,6 +3,7 @@
 #include "yolo_integration.h"
 #include "latest_lane_worker.h"
 #include "line_style_ipc.h"
+#include "traffic_service.h"
 #include "shared_memory.h"
 #include <stdio.h>
 #include <stdint.h>
@@ -984,6 +985,8 @@ int main() {
     yolopv2_result_t yolopv2_results = {};
     SharedMemoryManager pcie_shm_manager = {};  // PCIe共享内存管理器
     
+    // Declaration order also makes the NPU owner stop before its optional task.
+    std::unique_ptr<traffic::Service> traffic_service;
     std::unique_ptr<m_lane::LatestWorker> lane_worker;
     int frame_count = 0;
     struct timeval stream_start, current_time;
@@ -1153,7 +1156,14 @@ int main() {
     uint64_t last_raw_hash = 0, last_curve_source = 0, last_curve_capture_ns = 0;
     bool have_raw_hash = false, curve_fresh = false;
     if (asynchronous) {
-        try { lane_worker.reset(new m_lane::LatestWorker(&yolo_engine, IMAGE_WIDTH, IMAGE_HEIGHT)); }
+        try {
+            const char* traffic_model=getenv("VISION_TRAFFIC_MODEL");
+            // Physical M middle camera: UDP bottom-right, matching S 0x88.
+            // Normalize BGR only in the traffic-owned copy; lane/video stay intact.
+            traffic_service.reset(new traffic::Service(traffic_model&&*traffic_model?traffic_model:"model/traffic_yolov5n_rk3568.rknn",
+                traffic::InputView(320,240,traffic::PixelOrder::BGR)));
+            lane_worker.reset(new m_lane::LatestWorker(&yolo_engine, IMAGE_WIDTH, IMAGE_HEIGHT,traffic_service.get()));
+        }
         catch (const std::exception& error) {
             fprintf(stderr, "Cannot start M inference worker: %s\n", error.what());
             cleanup_all_resources(&pcie_manager, &pcie_shm_manager, &yolo_engine);
@@ -1175,6 +1185,7 @@ int main() {
         if (pcie_manager_capture_frame(&pcie_manager, image_buf_temp, temp_buffer_size) != 0) {
             if (!g_running) break;
             lane_worker.reset(); // join before RKNN and input buffers are released
+            traffic_service.reset();
             emergency_stop("PCIE帧采集失败", "PCIE数据采集");
             printf("!!! 可能的原因: !!!\n");
             printf("!!! 1. PCIE连接中断 !!!\n");
@@ -1201,6 +1212,7 @@ int main() {
 
         if (lane_worker) {
             uint64_t source_id = (uint64_t)frame_count + 1;
+            if(traffic_service)traffic_service->submit_raw(image_buf_888,IMAGE_WIDTH,IMAGE_HEIGHT,source_id,captured_ns);
             // Submit the unannotated image, never a previous mask overlay.
             if (frame_count % YOLO_DETECT_INTERVAL == 0)
                 lane_worker->submit(image_buf_888, source_id, captured_ns);
@@ -1331,6 +1343,7 @@ int main() {
     }
     
     lane_worker.reset(); // no in-flight RKNN calls beyond this point
+    traffic_service.reset();
 
     /////////////////////////////////////////////////////////////////////////////
     // 性能统计和结果保存区域
