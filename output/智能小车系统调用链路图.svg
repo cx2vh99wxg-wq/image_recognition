@@ -1,0 +1,200 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="1650" viewBox="0 0 2200 1650"><rect width="100%" height="100%" fill="white"/>
+<text x="1100" y="43" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="35" font-weight="bold" fill="#222">智能小车系统调用与软硬协同链路</text>
+<text x="1100" y="84" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="21" font-weight="normal" fill="#222">FPGA 图像采集及控制  ·  ARM 智能识别  ·  双板数据协同</text>
+<rect x="35" y="125" width="1030" height="1040" fill="#f6f6f6" stroke="#888" stroke-width="2"/>
+<text x="550" y="156" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="27" font-weight="bold" fill="#222">M 端｜RK3568_MES2L100H</text>
+<rect x="70" y="190" width="400" height="80" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="270.0" y="215.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="22" font-weight="bold" fill="#222">OV5640 × 3</text>
+<text x="270.0" y="245.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="normal" fill="#222">DVP 图像数据 / I²C 参数配置</text>
+<rect x="70" y="305" width="400" height="423" fill="#e7e7e7" stroke="#555" stroke-width="2"/>
+<text x="270" y="336" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="24" font-weight="bold" fill="#222">M-FPGA｜Logos-2</text>
+<rect x="95" y="365" width="350" height="86" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="270.0" y="393.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="21" font-weight="bold" fill="#222">OV5640 驱动与采集</text>
+<text x="270.0" y="423.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="19" font-weight="normal" fill="#222">帧同步 / RGB565 视频数据</text>
+<rect x="95" y="485" width="350" height="86" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="270.0" y="513.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="21" font-weight="bold" fill="#222">DDR3 控制与帧缓存</text>
+<text x="270.0" y="543.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="19" font-weight="normal" fill="#222">三路写入 / 帧数据整理</text>
+<rect x="95" y="605" width="350" height="86" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="270.0" y="633.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="21" font-weight="bold" fill="#222">PCIe DMA / 发送</text>
+<text x="270.0" y="663.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="19" font-weight="normal" fill="#222">从缓存读取并传输帧数据</text>
+<polyline fill="none" stroke="#444" stroke-width="3" points="270,270 270,305"/>
+<rect x="261" y="278" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="262,279 278,295"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="278,279 262,295"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="270,451 270,485"/>
+<rect x="261" y="459" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="262,460 278,476"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="278,460 262,476"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="270,571 270,605"/>
+<rect x="261" y="579" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="262,580 278,596"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="278,580 262,596"/>
+<rect x="545" y="190" width="485" height="852" fill="#e7e7e7" stroke="#555" stroke-width="2"/>
+<text x="787" y="221" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="24" font-weight="bold" fill="#222">M-RK3568J｜ARM / Linux</text>
+<rect x="570" y="255" width="435" height="86" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="787.5" y="283.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="21" font-weight="bold" fill="#222">PCIe 驱动与采集进程</text>
+<text x="787.5" y="313.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="19" font-weight="normal" fill="#222">接收图像帧 / 转换与发布</text>
+<rect x="570" y="377" width="435" height="86" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="787.5" y="405.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="21" font-weight="bold" fill="#222">本板共享内存</text>
+<text x="787.5" y="435.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="19" font-weight="normal" fill="#222">图像快照 / 状态 / 感知结果</text>
+<polyline fill="none" stroke="#444" stroke-width="3" points="470,648 510,648 510,298 545,298"/>
+<rect x="501" y="289" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="502,290 518,306"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="518,290 502,306"/>
+<text x="508" y="610" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="17" font-weight="bold" fill="#222">PCIe</text>
+<polyline fill="none" stroke="#444" stroke-width="3" points="787,341 787,377"/>
+<rect x="778" y="350" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="779,351 795,367"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="795,351 779,367"/>
+<rect x="570" y="505" width="435" height="121" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="787.5" y="535.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="bold" fill="#222">YOLOPv2 + 车道后处理</text>
+<text x="787.5" y="565.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="18" font-weight="normal" fill="#222">车道掩码 / 可行驶区域</text>
+<text x="787.5" y="595.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="18" font-weight="normal" fill="#222">漆线采样 → 实虚线 / 弯道</text>
+<rect x="570" y="670" width="435" height="121" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="787.5" y="700.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="bold" fill="#222">YOLOv5n + 颜色判断</text>
+<text x="787.5" y="730.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="18" font-weight="normal" fill="#222">定位信号灯 / RGB 像素分析</text>
+<text x="787.5" y="760.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="18" font-weight="normal" fill="#222">多帧确认灯色</text>
+<rect x="570" y="847" width="435" height="112" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="787.5" y="888.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="21" font-weight="bold" fill="#222">UDP 发送进程</text>
+<text x="787.5" y="918.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="19" font-weight="normal" fill="#222">图像帧 / 车道及灯色元数据</text>
+<polyline fill="none" stroke="#444" stroke-width="3" points="787,463 787,505"/>
+<rect x="778" y="475" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="779,476 795,492"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="795,476 779,492"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="570,420 555,420 555,903 570,903"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="555,565 570,565"/>
+<rect x="546" y="556" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="547,557 563,573"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="563,557 547,573"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="555,730 570,730"/>
+<rect x="546" y="721" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="547,722 563,738"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="563,722 547,738"/>
+<rect x="1135" y="125" width="1030" height="1040" fill="#f6f6f6" stroke="#888" stroke-width="2"/>
+<text x="1650" y="156" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="27" font-weight="bold" fill="#222">S 端｜RK3568_MES2L100H</text>
+<rect x="1170" y="190" width="400" height="80" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="1370.0" y="215.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="22" font-weight="bold" fill="#222">OV5640 × 3</text>
+<text x="1370.0" y="245.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="normal" fill="#222">DVP 图像数据 / I²C 参数配置</text>
+<rect x="1170" y="305" width="400" height="423" fill="#e7e7e7" stroke="#555" stroke-width="2"/>
+<text x="1370" y="336" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="24" font-weight="bold" fill="#222">S-FPGA｜Logos-2</text>
+<rect x="1195" y="365" width="350" height="86" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="1370.0" y="393.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="21" font-weight="bold" fill="#222">OV5640 驱动与采集</text>
+<text x="1370.0" y="423.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="19" font-weight="normal" fill="#222">帧同步 / RGB565 视频数据</text>
+<rect x="1195" y="485" width="350" height="86" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="1370.0" y="513.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="21" font-weight="bold" fill="#222">DDR3 控制与帧缓存</text>
+<text x="1370.0" y="543.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="19" font-weight="normal" fill="#222">三路写入 / 帧数据整理</text>
+<rect x="1195" y="605" width="350" height="86" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="1370.0" y="633.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="21" font-weight="bold" fill="#222">PCIe DMA / 发送</text>
+<text x="1370.0" y="663.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="19" font-weight="normal" fill="#222">从缓存读取并传输帧数据</text>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1370,270 1370,305"/>
+<rect x="1361" y="278" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1362,279 1378,295"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1378,279 1362,295"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1370,451 1370,485"/>
+<rect x="1361" y="459" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1362,460 1378,476"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1378,460 1362,476"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1370,571 1370,605"/>
+<rect x="1361" y="579" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1362,580 1378,596"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1378,580 1362,596"/>
+<rect x="1645" y="190" width="485" height="852" fill="#e7e7e7" stroke="#555" stroke-width="2"/>
+<text x="1887" y="221" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="24" font-weight="bold" fill="#222">S-RK3568J｜ARM / Linux</text>
+<rect x="1670" y="255" width="435" height="86" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="1887.5" y="283.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="21" font-weight="bold" fill="#222">PCIe 驱动与采集进程</text>
+<text x="1887.5" y="313.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="19" font-weight="normal" fill="#222">接收图像帧 / 转换与发布</text>
+<rect x="1670" y="377" width="435" height="86" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="1887.5" y="405.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="21" font-weight="bold" fill="#222">本板共享内存</text>
+<text x="1887.5" y="435.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="19" font-weight="normal" fill="#222">图像快照 / 状态 / 感知结果</text>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1570,648 1610,648 1610,298 1645,298"/>
+<rect x="1601" y="289" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1602,290 1618,306"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1618,290 1602,306"/>
+<text x="1608" y="610" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="17" font-weight="bold" fill="#222">PCIe</text>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1887,341 1887,377"/>
+<rect x="1878" y="350" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1879,351 1895,367"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1895,351 1879,367"/>
+<rect x="1670" y="505" width="435" height="121" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="1887.5" y="535.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="bold" fill="#222">YOLOv5s 目标识别</text>
+<text x="1887.5" y="565.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="18" font-weight="normal" fill="#222">通用目标 / person 触发判断</text>
+<text x="1887.5" y="595.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="18" font-weight="normal" fill="#222">发布制动请求</text>
+<rect x="1670" y="670" width="435" height="121" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="1887.5" y="700.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="bold" fill="#222">控制进程 / FSPI</text>
+<text x="1887.5" y="730.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="18" font-weight="normal" fill="#222">车道与灯色规则 / 行人制动</text>
+<text x="1887.5" y="760.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="18" font-weight="normal" fill="#222">读取共享内存并写控制寄存器</text>
+<rect x="1670" y="847" width="435" height="112" fill="#fff" stroke="#555" stroke-width="2"/>
+<text x="1887.5" y="888.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="bold" fill="#222">X11 图像合成与显示</text>
+<text x="1887.5" y="918.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="18" font-weight="normal" fill="#222">六路画面 / 识别叠加 / 方向报警</text>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1887,463 1887,505"/>
+<rect x="1878" y="475" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1879,476 1895,492"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1895,476 1879,492"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1887,626 1887,670"/>
+<rect x="1878" y="639" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1879,640 1895,656"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1895,640 1879,656"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1887,791 1887,847"/>
+<rect x="1878" y="810" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1879,811 1895,827"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1895,811 1879,827"/>
+<rect x="615" y="1210" width="970" height="75" fill="#ededed" stroke="#555" stroke-width="2"/>
+<text x="1100.0" y="1247.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="21" font-weight="bold" fill="#222">以太网 / UDP：M → S 视频帧 + 车道线型 / 弯道 / 信号灯信息</text>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1005,1084 1005,1187 775,1187 775,1210"/>
+<rect x="996" y="1178" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="997,1179 1013,1195"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1013,1179 997,1195"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1425,1210 1425,1187 1610,1187 1610,1028 1670,1028"/>
+<rect x="1601" y="1178" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1602,1179 1618,1195"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1618,1179 1602,1195"/>
+<rect x="35" y="1340" width="340" height="91" fill="#ededed" stroke="#555" stroke-width="2"/>
+<text x="205.0" y="1370.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="bold" fill="#222">CNN 单路夜视处理</text>
+<text x="205.0" y="1400.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="18" font-weight="normal" fill="#222">RGB 转换 / 卷积 / Gamma 校正</text>
+<rect x="415" y="1340" width="290" height="91" fill="#ededed" stroke="#555" stroke-width="2"/>
+<text x="560.0" y="1370.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="bold" fill="#222">HMI 串口屏</text>
+<text x="560.0" y="1400.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="18" font-weight="normal" fill="#222">操作 / 模式 / 夜视调节</text>
+<rect x="745" y="1340" width="390" height="91" fill="#ededed" stroke="#555" stroke-width="2"/>
+<text x="940.0" y="1355.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="bold" fill="#222">S-FPGA 控制模块</text>
+<text x="940.0" y="1385.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="18" font-weight="normal" fill="#222">UART 解析 / FSPI 寄存器</text>
+<text x="940.0" y="1415.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="18" font-weight="normal" fill="#222">方向仲裁 / 制动锁存</text>
+<rect x="1175" y="1340" width="275" height="91" fill="#ededed" stroke="#555" stroke-width="2"/>
+<text x="1312.5" y="1370.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="bold" fill="#222">FMC 扩展</text>
+<text x="1312.5" y="1400.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="18" font-weight="normal" fill="#222">控制信号引脚</text>
+<rect x="1490" y="1340" width="330" height="91" fill="#ededed" stroke="#555" stroke-width="2"/>
+<text x="1655.0" y="1370.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="bold" fill="#222">射频遥控信号板</text>
+<text x="1655.0" y="1400.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="18" font-weight="normal" fill="#222">方向与停止控制</text>
+<rect x="1860" y="1340" width="300" height="91" fill="#ededed" stroke="#555" stroke-width="2"/>
+<text x="2010.0" y="1370.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="bold" fill="#222">小车执行机构</text>
+<text x="2010.0" y="1400.5" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="18" font-weight="normal" fill="#222">前进 / 转向 / 制动</text>
+<polyline fill="none" stroke="#444" stroke-width="3" points="705,1385 745,1385"/>
+<rect x="716" y="1376" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="717,1377 733,1393"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="733,1377 717,1393"/>
+<text x="725" y="1364" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="15" font-weight="normal" fill="#222">UART</text>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1135,1385 1175,1385"/>
+<rect x="1146" y="1376" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1147,1377 1163,1393"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1163,1377 1147,1393"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1450,1385 1490,1385"/>
+<rect x="1461" y="1376" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1462,1377 1478,1393"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1478,1377 1462,1393"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1820,1385 1860,1385"/>
+<rect x="1831" y="1376" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1832,1377 1848,1393"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1848,1377 1832,1393"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="2105,855 2180,855 2180,1305 940,1305 940,1340"/>
+<rect x="2171" y="1296" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="2172,1297 2188,1313"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="2188,1297 2172,1313"/>
+<text x="1750" y="1280" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="19" font-weight="bold" fill="#222">FSPI：S 端控制进程写寄存器</text>
+<rect x="1710" y="1100" width="360" height="56" fill="#ededed" stroke="#555" stroke-width="2"/>
+<text x="1890.0" y="1128.0" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="19" font-weight="bold" fill="#222">HDMI：六路画面与识别结果</text>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1890,1084 1890,1100"/>
+<rect x="1881" y="1083" width="18" height="18" fill="#fff" stroke="#444" stroke-width="2"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1882,1084 1898,1100"/>
+<polyline fill="none" stroke="#444" stroke-width="3" points="1898,1084 1882,1100"/>
+<text x="1100" y="1495" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="19" font-weight="normal" fill="#222">说明：各板共享内存用于本板进程通信；两板间使用 UDP；方框内“×”表示接口连接。</text>
+<text x="1100" y="1531" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="19" font-weight="normal" fill="#222">CNN 接入的板卡以实际烧录固件为准；本图展示功能调用关系，不代表每个模块均经过逐项实车验证。</text>
+</svg>
