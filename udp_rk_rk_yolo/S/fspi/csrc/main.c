@@ -8,7 +8,7 @@
  *   - 弯道检测: 从UDP共享内存读取路况信息
  *   - 自动转向: 左弯→左转1秒，右弯→右转1秒，直道→停止转向
  *   - 人员检测: PCIe检测到人员时自动紧急制动
- *   - 显示切换: 0x11-0x88对应8个摄像头，0x99对应所有摄像头
+ *   - 显示切换: 六个物理视角22/33/44/66/77/88，99六路全景；11/55兼容归并到中间视角
  *
  * 创建时间：2025年10月20日
  * 修改时间：2025年11月18日 - 删除前进后退控制，只保留转向和制动
@@ -404,7 +404,7 @@ int main(int argc, char *argv[]) {
     printf("功能: 弯道检测自动左右转 + 人员检测紧急制动 + 显示控制\n");
     printf("工作模式说明:\n");
     printf("- 实时读取: 从FSPI寄存器0读取实际模式值\n");
-    printf("- 显示控制: 0x11-0x88对应8个摄像头，0x99对应所有摄像头\n");
+    printf("- 显示控制: 六个物理视角22/33/44/66/77/88，99六路全景；11/55兼容归并到中间视角\n");
     printf("- 左右转向: 完全由弯道检测自动控制\n");
     printf("- 原始制动请求: 有人或检测不可用写4=0，连续两秒无人写1仅清除请求\n");
     printf("- STOP锁存: FPGA保持低电平直到人工REARM；允许有人时强制解除当前报警\n");
@@ -493,7 +493,7 @@ int main(int argc, char *argv[]) {
     printf("=== 开始监控FSPI寄存器0 ===\n");
     printf("按钮逻辑: 按下时产生指令值，松开时回到0x00\n");
     printf("支持的指令值:\n");
-    printf("  显示控制: 0x11-0x88(单摄像头), 0x99(全部摄像头)\n");
+    printf("  显示控制: 22/33/44/66/77/88(六个物理视角), 99(六路全景)\n");
     printf("  左右转向: 完全由弯道检测自动控制\n");
     printf("  制动功能控制: S持续发布原始请求；HMI AUTO开关和实际STOP锁存由FPGA决定\n");
     printf("  紧急制动: 有人或检测失效写0，连续两秒无人写1；STOP锁存仅由人工REARM解除\n");
@@ -662,50 +662,9 @@ int main(int argc, char *argv[]) {
         // 检查是否是有效的显示模式值（非0x00且非车辆控制指令）
         DisplayMode new_mode = DISPLAY_MODE_ALL_CAMERAS;  // 默认值
         const char* mode_name = "未知模式";
-        int valid_mode = 1;
-        
-        switch (current_mode_value) {
-            case 0x11:
-                new_mode = DISPLAY_MODE_PCIE_TOP_LEFT;
-                mode_name = "PCIe左上角摄像头";
-                break;
-            case 0x22:
-                new_mode = DISPLAY_MODE_PCIE_BOTTOM_LEFT;
-                mode_name = "后左摄像头";
-                break;
-            case 0x33:
-                new_mode = DISPLAY_MODE_PCIE_TOP_RIGHT;
-                mode_name = "后右摄像头";
-                break;
-            case 0x44:
-                new_mode = DISPLAY_MODE_PCIE_BOTTOM_RIGHT;
-                mode_name = "PCIe右下角摄像头";
-                break;
-            case 0x55:
-                new_mode = DISPLAY_MODE_UDP_TOP_LEFT;
-                mode_name = "UDP左上角摄像头";
-                break;
-            case 0x66:
-                new_mode = DISPLAY_MODE_UDP_TOP_RIGHT;
-                mode_name = "UDP右上角摄像头";
-                break;
-            case 0x77:
-                new_mode = DISPLAY_MODE_UDP_BOTTOM_LEFT;
-                mode_name = "UDP左下角摄像头";
-                break;
-            case 0x88:
-                new_mode = DISPLAY_MODE_UDP_BOTTOM_RIGHT;
-                mode_name = "UDP右下角摄像头";
-                break;
-            case 0x99:
-                new_mode = DISPLAY_MODE_ALL_CAMERAS;
-                mode_name = "所有8个摄像头";
-                break;
-            default:
-                valid_mode = 0;  // 无效模式，跳过处理
-                break;
-        }
-        
+        int valid_mode = camera_mode_normalize(current_mode_value, &new_mode);
+        if (valid_mode) mode_name = camera_mode_name(new_mode);
+
         // 只在有效模式且与当前有效模式不同时更新
         if (valid_mode && current_mode_value != current_valid_mode) {
             time_t current_time = time(NULL);

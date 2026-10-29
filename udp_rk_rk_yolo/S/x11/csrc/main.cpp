@@ -29,6 +29,7 @@
 #include "traffic_light_ipc.h"
 #include "traffic_go_rule.h"
 #include "speed_status.h"
+#include "six_camera_render.h"
 
 /* 为了使用aligned_alloc，需要定义_ISOC11_SOURCE */
 #ifndef _ISOC11_SOURCE
@@ -355,28 +356,10 @@ void render_camera_block(uint32_t* display_pixels, const uint16_t* source_pixels
 }
 
 void get_camera_position(DisplayMode mode, int* src_x, int* src_y) {
-    switch (mode) {
-        case DISPLAY_MODE_PCIE_TOP_LEFT:
-            *src_x = 0; *src_y = 0; break;
-        case DISPLAY_MODE_PCIE_TOP_RIGHT:
-            *src_x = 320; *src_y = 0; break;
-        case DISPLAY_MODE_PCIE_BOTTOM_LEFT:
-            *src_x = 0; *src_y = 240; break;
-        case DISPLAY_MODE_PCIE_BOTTOM_RIGHT:
-            *src_x = 320; *src_y = 240; break;
-        case DISPLAY_MODE_UDP_TOP_LEFT:
-            *src_x = 640; *src_y = 0; break;
-        case DISPLAY_MODE_UDP_TOP_RIGHT:
-            *src_x = 960; *src_y = 0; break;
-        case DISPLAY_MODE_UDP_BOTTOM_LEFT:
-            *src_x = 640; *src_y = 240; break;
-        case DISPLAY_MODE_UDP_BOTTOM_RIGHT:
-            *src_x = 960; *src_y = 240; break;
-        default:
-            *src_x = 0; *src_y = 0; break;
-    }
+    const CameraView* view = camera_view_for_mode(mode);
+    *src_x = view ? view->source_x + (view->network_source ? 640 : 0) : 0;
+    *src_y = view ? view->source_y : 0;
 }
-
 
 
 void render_scaled_camera_block(uint32_t* display_pixels, const uint16_t* source_pixels,
@@ -435,18 +418,7 @@ void render_scaled_camera_block(uint32_t* display_pixels, const uint16_t* source
 }
 
 const char* get_camera_mode_name(DisplayMode mode) {
-    switch (mode) {
-        case DISPLAY_MODE_PCIE_TOP_LEFT: return "Rear Center (0x11)";
-        case DISPLAY_MODE_PCIE_TOP_RIGHT: return "Rear Right (0x22)";
-        case DISPLAY_MODE_PCIE_BOTTOM_LEFT: return "Rear Left (0x33)";
-        case DISPLAY_MODE_PCIE_BOTTOM_RIGHT: return "Rear Center (0x44)";
-        case DISPLAY_MODE_UDP_TOP_LEFT: return "Front Center (0x55)";
-        case DISPLAY_MODE_UDP_TOP_RIGHT: return "Front Right (0x66)";
-        case DISPLAY_MODE_UDP_BOTTOM_LEFT: return "Front Left (0x77)";
-        case DISPLAY_MODE_UDP_BOTTOM_RIGHT: return "Front Center (0x88)";
-        case DISPLAY_MODE_ALL_CAMERAS: return "Surround View (0x99)";
-        default: return "Unknown Mode";
-    }
+    return camera_mode_name(mode);
 }
 
 void draw_screen_flash(RenderEngine* engine, float alpha) {
@@ -740,7 +712,9 @@ void transition_animation_init(TransitionAnimation* anim) {
 }
 
 void transition_animation_start(TransitionAnimation* anim, DisplayMode from_mode, DisplayMode to_mode) {
-    if (from_mode == to_mode) return;  // 相同模式不需要动画
+    from_mode = camera_mode_or_overview(from_mode);
+    to_mode = camera_mode_or_overview(to_mode);
+    if (from_mode == to_mode) return;  // 相同物理摄像头不重复动画
     
     anim->is_active = 1;
     anim->from_mode = from_mode;
@@ -795,6 +769,7 @@ int render_engine_render_with_transition(RenderEngine* engine,
         return -1;
     }
     
+    current_mode = camera_mode_or_overview(current_mode);
     engine->presented_mode = current_mode;
     uint32_t* display_pixels = (uint32_t*)engine->display_buffer;
     const uint16_t* pcie_pixels = (const uint16_t*)pcie_data;
@@ -809,104 +784,16 @@ int render_engine_render_with_transition(RenderEngine* engine,
     // 动画渲染
     TransitionAnimation* anim = &engine->transition;
     
-    // 先渲染0x99模式的完整8摄像头画面作为背景（使用新的全景布局）
-    // Top row (UDP): 前左(0x77) | 前中复制(0x88) | 前右(0x66) | 前中(0x55)
-    // Bottom row (PCIe): 后右(0x33) | 后中复制(0x44) | 后左(0x22) | 后中(0x11)
-
+    // Animation and steady overview share the same six physical sources.
+    // No fourth column or spare transport quadrant is exposed during zoom.
+    const CameraView* target = camera_view_for_mode(anim->to_mode);
+    if (!target) {
+        anim->is_active = 0;
+        return render_engine_render_camera_view(engine, pcie_data, udp_data, current_mode);
+    }
     float dimming = 1.0f - (anim->progress * 0.7f);
-    int target_src_x, target_src_y;
-    get_camera_position(anim->to_mode, &target_src_x, &target_src_y);
+    six_camera::overview(display_pixels, pcie_pixels, udp_pixels, target, dimming);
 
-    // Top row - UDP cameras (y: 0-239)
-    for (int y = 0; y < CAMERA_BLOCK_HEIGHT; y++) {
-        // 前左 0x77
-        for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-            uint16_t pixel = udp_pixels[(y + 240) * UDP_IMAGE_WIDTH + x];
-            uint8_t b = ((pixel >> 11) & 0x1F) << 3;
-            uint8_t g = ((pixel >> 5) & 0x3F) << 2;
-            uint8_t r = (pixel & 0x1F) << 3;
-            bool in_target = (target_src_x == 640 && target_src_y == 240 && x < CAMERA_BLOCK_WIDTH && y < CAMERA_BLOCK_HEIGHT);
-            if (!in_target) { r *= dimming; g *= dimming; b *= dimming; }
-            display_pixels[y * COMBINED_IMAGE_WIDTH + x] = 0xFF000000 | (r << 16) | (g << 8) | b;
-        }
-        // 前中复制 0x88
-        for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-            uint16_t pixel = udp_pixels[(y + 240) * UDP_IMAGE_WIDTH + 320 + x];
-            uint8_t b = ((pixel >> 11) & 0x1F) << 3;
-            uint8_t g = ((pixel >> 5) & 0x3F) << 2;
-            uint8_t r = (pixel & 0x1F) << 3;
-            bool in_target = (target_src_x == 960 && target_src_y == 240);
-            if (!in_target) { r *= dimming; g *= dimming; b *= dimming; }
-            display_pixels[y * COMBINED_IMAGE_WIDTH + 320 + x] = 0xFF000000 | (r << 16) | (g << 8) | b;
-        }
-        // 前右 0x66
-        for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-            uint16_t pixel = udp_pixels[y * UDP_IMAGE_WIDTH + 320 + x];
-            uint8_t b = ((pixel >> 11) & 0x1F) << 3;
-            uint8_t g = ((pixel >> 5) & 0x3F) << 2;
-            uint8_t r = (pixel & 0x1F) << 3;
-            bool in_target = (target_src_x == 960 && target_src_y == 0);
-            if (!in_target) { r *= dimming; g *= dimming; b *= dimming; }
-            display_pixels[y * COMBINED_IMAGE_WIDTH + 640 + x] = 0xFF000000 | (r << 16) | (g << 8) | b;
-        }
-        // 前中 0x55
-        for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-            uint16_t pixel = udp_pixels[y * UDP_IMAGE_WIDTH + x];
-            uint8_t b = ((pixel >> 11) & 0x1F) << 3;
-            uint8_t g = ((pixel >> 5) & 0x3F) << 2;
-            uint8_t r = (pixel & 0x1F) << 3;
-            bool in_target = (target_src_x == 640 && target_src_y == 0);
-            if (!in_target) { r *= dimming; g *= dimming; b *= dimming; }
-            display_pixels[y * COMBINED_IMAGE_WIDTH + 960 + x] = 0xFF000000 | (r << 16) | (g << 8) | b;
-        }
-    }
-
-    // Bottom row - PCIe cameras (y: 240-479)
-    for (int y = 0; y < CAMERA_BLOCK_HEIGHT; y++) {
-        int display_y = y + 240;
-        int source_y = pcie_display_source_row(y);
-        // 后右 0x33
-        for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-            uint16_t pixel = pcie_pixels[(source_y + 240) * PCIE_IMAGE_WIDTH + x];
-            uint8_t b = ((pixel >> 11) & 0x1F) << 3;
-            uint8_t g = ((pixel >> 5) & 0x3F) << 2;
-            uint8_t r = (pixel & 0x1F) << 3;
-            bool in_target = (target_src_x == 0 && target_src_y == 240);
-            if (!in_target) { r *= dimming; g *= dimming; b *= dimming; }
-            display_pixels[display_y * COMBINED_IMAGE_WIDTH + x] = 0xFF000000 | (r << 16) | (g << 8) | b;
-        }
-        // 后中复制 0x44
-        for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-            uint16_t pixel = pcie_pixels[(source_y + 240) * PCIE_IMAGE_WIDTH + 320 + x];
-            uint8_t b = ((pixel >> 11) & 0x1F) << 3;
-            uint8_t g = ((pixel >> 5) & 0x3F) << 2;
-            uint8_t r = (pixel & 0x1F) << 3;
-            bool in_target = (target_src_x == 320 && target_src_y == 240);
-            if (!in_target) { r *= dimming; g *= dimming; b *= dimming; }
-            display_pixels[display_y * COMBINED_IMAGE_WIDTH + 320 + x] = 0xFF000000 | (r << 16) | (g << 8) | b;
-        }
-        // 后左 0x22
-        for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-            uint16_t pixel = pcie_pixels[source_y * PCIE_IMAGE_WIDTH + 320 + x];
-            uint8_t b = ((pixel >> 11) & 0x1F) << 3;
-            uint8_t g = ((pixel >> 5) & 0x3F) << 2;
-            uint8_t r = (pixel & 0x1F) << 3;
-            bool in_target = (target_src_x == 320 && target_src_y == 0);
-            if (!in_target) { r *= dimming; g *= dimming; b *= dimming; }
-            display_pixels[display_y * COMBINED_IMAGE_WIDTH + 640 + x] = 0xFF000000 | (r << 16) | (g << 8) | b;
-        }
-        // 后中 0x11
-        for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-            uint16_t pixel = pcie_pixels[source_y * PCIE_IMAGE_WIDTH + x];
-            uint8_t b = ((pixel >> 11) & 0x1F) << 3;
-            uint8_t g = ((pixel >> 5) & 0x3F) << 2;
-            uint8_t r = (pixel & 0x1F) << 3;
-            bool in_target = (target_src_x == 0 && target_src_y == 0);
-            if (!in_target) { r *= dimming; g *= dimming; b *= dimming; }
-            display_pixels[display_y * COMBINED_IMAGE_WIDTH + 960 + x] = 0xFF000000 | (r << 16) | (g << 8) | b;
-        }
-    }
-    
     // 在背景之上渲染放大的目标摄像头区域
     if (anim->progress > 0.1f) {  // 稍微延迟一下放大效果
         int src_x, src_y;
@@ -915,8 +802,8 @@ int render_engine_render_with_transition(RenderEngine* engine,
         const uint16_t* pixels = (src_x >= 640) ? udp_pixels : pcie_pixels;
         
         // 计算目标摄像头在原始画面中的位置
-        int original_x = (src_x >= 640) ? (PCIE_IMAGE_WIDTH + (src_x - 640)) : src_x;
-        int original_y = src_y;
+        int original_x = target->column * CAMERA_BLOCK_WIDTH;
+        int original_y = target->row * CAMERA_BLOCK_HEIGHT;
         int original_center_x = original_x + CAMERA_BLOCK_WIDTH / 2;
         int original_center_y = original_y + CAMERA_BLOCK_HEIGHT / 2;
         
@@ -1344,12 +1231,12 @@ static void record_display_perf(RenderEngine* engine, uint64_t start, uint64_t c
     engine->profile_present_ns += end - scale_done;
     bool overview = engine->presented_mode == DISPLAY_MODE_ALL_CAMERAS;
     if (engine->pcie_frame_id != engine->shown_pcie_id) {
-        if (overview || engine->presented_mode <= DISPLAY_MODE_PCIE_BOTTOM_RIGHT)
+        if (overview || (camera_view_for_mode(engine->presented_mode) && !camera_view_for_mode(engine->presented_mode)->network_source))
             engine->profile_s_shown++;
         engine->shown_pcie_id = engine->pcie_frame_id;
     }
     if (engine->udp_frame_id != engine->shown_udp_id) {
-        if (overview || (engine->presented_mode >= DISPLAY_MODE_UDP_TOP_LEFT && !overview))
+        if (overview || (camera_view_for_mode(engine->presented_mode) && camera_view_for_mode(engine->presented_mode)->network_source))
             engine->profile_m_shown++;
         engine->shown_udp_id = engine->udp_frame_id;
     }
@@ -1723,145 +1610,12 @@ int render_engine_render_camera_view(RenderEngine* engine,
     const uint16_t* pcie_pixels = (const uint16_t*)pcie_data;
     const uint16_t* udp_pixels = (const uint16_t*)udp_data;
     
-    // 清空显示缓冲区（黑色背景）
-    for (int i = 0; i < COMBINED_IMAGE_WIDTH * COMBINED_IMAGE_HEIGHT; i++) {
-        display_pixels[i] = 0xFF000000;  // 黑色背景
-    }
-    
-    // 根据显示模式选择不同的渲染方式
-    switch (mode) {
-        case DISPLAY_MODE_PCIE_TOP_LEFT: {
-            // Rear Center 0x11 (320x240)
-            render_camera_block(display_pixels, pcie_pixels, 0, 0, 0, 0);
-            break;
-        }
-        
-        case DISPLAY_MODE_PCIE_TOP_RIGHT: {
-            // Rear Left 0x22 (320x240)
-            render_camera_block(display_pixels, pcie_pixels, 320, 0, 320, 0);
-            break;
-        }
-        
-        case DISPLAY_MODE_PCIE_BOTTOM_LEFT: {
-            // Rear Right 0x33 (320x240)
-            render_camera_block(display_pixels, pcie_pixels, 0, 240, 0, 240);
-            break;
-        }
-        
-        case DISPLAY_MODE_PCIE_BOTTOM_RIGHT: {
-            // Rear Center 0x44 (320x240)
-            render_camera_block(display_pixels, pcie_pixels, 320, 240, 320, 240);
-            break;
-        }
-        
-        case DISPLAY_MODE_UDP_TOP_LEFT: {
-            // Front Center 0x55 (320x240)
-            render_camera_block(display_pixels, udp_pixels, 640, 0, 0, 0);
-            break;
-        }
-        
-        case DISPLAY_MODE_UDP_TOP_RIGHT: {
-            // Front Right 0x66 (320x240)  
-            render_camera_block(display_pixels, udp_pixels, 960, 0, 320, 0);
-            break;
-        }
-        
-        case DISPLAY_MODE_UDP_BOTTOM_LEFT: {
-            // Front Left 0x77 (320x240)
-            render_camera_block(display_pixels, udp_pixels, 640, 240, 0, 240);
-            break;
-        }
-        
-        case DISPLAY_MODE_UDP_BOTTOM_RIGHT: {
-            // Rear Left View 0x88 (320x240)
-            render_camera_block(display_pixels, udp_pixels, 960, 240, 320, 240);
-            break;
-        }
-        
-        case DISPLAY_MODE_ALL_CAMERAS:
-        default: {
-            // Surround View 0x99 - Panoramic layout
-            // Top row (UDP): 前左(0x77) | 前中复制(0x88) | 前右(0x66) | 前中(0x55)
-            // Bottom row (PCIe): 后右(0x33) | 后中复制(0x44) | 后左(0x22) | 后中(0x11)
+    mode = camera_mode_or_overview(mode);
+    engine->presented_mode = mode;
+    const CameraView* view = camera_view_for_mode(mode);
+    if (view) six_camera::focus(display_pixels, pcie_pixels, udp_pixels, *view);
+    else six_camera::overview(display_pixels, pcie_pixels, udp_pixels);
 
-            // Top row - UDP cameras (y: 0-239)
-            for (int y = 0; y < CAMERA_BLOCK_HEIGHT; y++) {
-                // 前左 0x77 (UDP bottom-left) -> display (0, 0)
-                for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-                    uint16_t pixel = udp_pixels[(y + 240) * UDP_IMAGE_WIDTH + x];
-                    uint8_t b = ((pixel >> 11) & 0x1F) << 3;
-                    uint8_t g = ((pixel >> 5) & 0x3F) << 2;
-                    uint8_t r = (pixel & 0x1F) << 3;
-                    display_pixels[y * COMBINED_IMAGE_WIDTH + x] = 0xFF000000 | (r << 16) | (g << 8) | b;
-                }
-
-                // 前中复制 0x88 (UDP bottom-right) -> display (320, 0)
-                for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-                    uint16_t pixel = udp_pixels[(y + 240) * UDP_IMAGE_WIDTH + 320 + x];
-                    uint8_t b = ((pixel >> 11) & 0x1F) << 3;
-                    uint8_t g = ((pixel >> 5) & 0x3F) << 2;
-                    uint8_t r = (pixel & 0x1F) << 3;
-                    display_pixels[y * COMBINED_IMAGE_WIDTH + 320 + x] = 0xFF000000 | (r << 16) | (g << 8) | b;
-                }
-
-                // 前右 0x66 (UDP top-right) -> display (640, 0)
-                for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-                    uint16_t pixel = udp_pixels[y * UDP_IMAGE_WIDTH + 320 + x];
-                    uint8_t b = ((pixel >> 11) & 0x1F) << 3;
-                    uint8_t g = ((pixel >> 5) & 0x3F) << 2;
-                    uint8_t r = (pixel & 0x1F) << 3;
-                    display_pixels[y * COMBINED_IMAGE_WIDTH + 640 + x] = 0xFF000000 | (r << 16) | (g << 8) | b;
-                }
-
-                // 前中 0x55 (UDP top-left) -> display (960, 0) - 不渲染,留给car.png
-                // 这部分被car.png替换
-            }
-
-            // Bottom row - PCIe cameras (y: 240-479)
-            for (int y = 0; y < CAMERA_BLOCK_HEIGHT; y++) {
-                int display_y = y + 240;
-                int source_y = pcie_display_source_row(y);
-
-                // 后右 0x33 (PCIe bottom-left) -> display (0, 240)
-                for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-                    uint16_t pixel = pcie_pixels[(source_y + 240) * PCIE_IMAGE_WIDTH + x];
-                    uint8_t b = ((pixel >> 11) & 0x1F) << 3;
-                    uint8_t g = ((pixel >> 5) & 0x3F) << 2;
-                    uint8_t r = (pixel & 0x1F) << 3;
-                    display_pixels[display_y * COMBINED_IMAGE_WIDTH + x] = 0xFF000000 | (r << 16) | (g << 8) | b;
-                }
-
-                // 后中复制 0x44 (PCIe bottom-right) -> display (320, 240)
-                for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-                    uint16_t pixel = pcie_pixels[(source_y + 240) * PCIE_IMAGE_WIDTH + 320 + x];
-                    uint8_t b = ((pixel >> 11) & 0x1F) << 3;
-                    uint8_t g = ((pixel >> 5) & 0x3F) << 2;
-                    uint8_t r = (pixel & 0x1F) << 3;
-                    display_pixels[display_y * COMBINED_IMAGE_WIDTH + 320 + x] = 0xFF000000 | (r << 16) | (g << 8) | b;
-                }
-
-                // 后左 0x22 (PCIe top-right) -> display (640, 240)
-                for (int x = 0; x < CAMERA_BLOCK_WIDTH; x++) {
-                    uint16_t pixel = pcie_pixels[source_y * PCIE_IMAGE_WIDTH + 320 + x];
-                    uint8_t b = ((pixel >> 11) & 0x1F) << 3;
-                    uint8_t g = ((pixel >> 5) & 0x3F) << 2;
-                    uint8_t r = (pixel & 0x1F) << 3;
-                    display_pixels[display_y * COMBINED_IMAGE_WIDTH + 640 + x] = 0xFF000000 | (r << 16) | (g << 8) | b;
-                }
-
-                // 后中 0x11 (PCIe top-left) -> display (960, 240) - 不渲染,留给car.png
-                // 这部分被car.png替换
-            }
-
-            // 渲染car.png到最右边320x480区域
-            // Vehicle artwork and its alert layer are presented in their own dashboard panel.
-
-            // 在PNG上方绘制车道线
-
-            break;
-        }
-    }
-    
     engine->last_layout_ns = display_clock_ns() - layout_started;
     return present_dashboard(engine);
 }
@@ -2288,7 +2042,7 @@ int main(int argc, char** argv) {
         if (display_control_shm && display_control_shm->valid) {
             uint32_t control_update = display_control_shm->last_update;
             if (control_update != last_control_update) {
-                DisplayMode new_mode = (DisplayMode)display_control_shm->mode;
+                DisplayMode new_mode = camera_mode_or_overview(display_control_shm->mode);
                 if (new_mode != current_display_mode) {
                     const char* mode_name = get_camera_mode_name(new_mode);
                     const char* old_mode_name = get_camera_mode_name(current_display_mode);

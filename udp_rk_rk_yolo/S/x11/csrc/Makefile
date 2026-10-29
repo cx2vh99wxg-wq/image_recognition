@@ -1,5 +1,5 @@
 # =============================================================================
-# X11八摄像头渲染程序 Makefile
+# X11六摄像头渲染程序 Makefile
 # =============================================================================
 
 # 项目配置
@@ -57,10 +57,19 @@ endif
 # 构建规则
 # =============================================================================
 
-.PHONY: all clean help run preview test-fps test-speed-warning
+.PHONY: all clean help run preview test-fps test-speed-warning test-six-camera
 
 # 默认目标
 all: $(BIN)
+
+$(BUILD_DIR)/test_six_camera: tests/test_six_camera.cpp include/six_camera_render.h ../../include/camera_views.h | $(BUILD_DIR)
+	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@
+
+test-six-camera: $(BUILD_DIR)/test_six_camera
+	"$(abspath $(BUILD_DIR)/test_six_camera)"
+
+$(BUILD_DIR)/test_camera_integration: tests/test_camera_integration.cpp main.cpp $(INCLUDES) $(BUILD_DIR)/shared_memory.o | $(BUILD_DIR)
+	$(CXX) -std=c++14 -O2 -Wall $(INCFLAGS) $< $(BUILD_DIR)/shared_memory.o $(X11_LIBS) -lrt -lpthread -o $@
 
 $(BUILD_DIR)/test_video_input_fps: tests/test_video_input_fps.cpp include/video_input_fps.h | $(BUILD_DIR)
 	$(CXX) -std=c++14 -Wall -Wextra -Werror -Iinclude $< -o $@
@@ -103,7 +112,7 @@ $(BUILD_DIR):
 
 # 运行程序
 run: $(BIN)
-	@echo "运行X11八摄像头渲染程序..."
+	@echo "运行X11六摄像头渲染程序..."
 	./$(BIN) $(RUN_ARGS)
 
 # 使用已保存的视频帧离线生成真实界面，无需连接采集/车控进程。
@@ -118,7 +127,7 @@ clean:
 
 # 显示帮助信息
 help:
-	@echo "=== X11八摄像头渲染程序构建系统 ==="
+	@echo "=== X11六摄像头渲染程序构建系统 ==="
 	@echo "可用目标："
 	@echo "  all     - 编译程序 (默认)"
 	@echo "  clean   - 清理构建文件"
@@ -128,7 +137,7 @@ help:
 	@echo ""
 	@echo "程序功能："
 	@echo "  - 读取PCIe和UDP共享内存"
-	@echo "  - 支持8个独立摄像头显示 (0x11-0x88)"
+	@echo "  - 六个物理摄像头: 22/33/44后左/后右/后中, 66/77/88前右/前左/前中"
 	@echo "  - 0x99: 六路3x2视频 + 独立车辆/报警面板"
 	@echo "  - 响应FSPI按钮控制的视角切换"
 	@echo "  - 单摄像头320x240放大到640x480显示"

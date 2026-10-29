@@ -106,7 +106,7 @@ $(BUILDDIR)/%.o: ../csrc/%.c | $(BUILDDIR)
 	@echo "编译共享内存文件: $<"
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-$(BUILDDIR)/main.o: $(INCDIR)/fspi_module.h $(INCDIR)/brake_policy.h ../include/shared_memory.h ../include/lane_rule.h ../include/traffic_go_rule.h ../include/traffic_light_ipc.h ../include/traffic_light.h ../include/speed_status.h
+$(BUILDDIR)/main.o: ../include/camera_views.h $(INCDIR)/fspi_module.h $(INCDIR)/brake_policy.h ../include/shared_memory.h ../include/lane_rule.h ../include/traffic_go_rule.h ../include/traffic_light_ipc.h ../include/traffic_light.h ../include/speed_status.h
 $(BUILDDIR)/fspi_module.o: $(INCDIR)/fspi_module.h ../include/speed_status.h ../include/control_status.h
 
 # 创建目录

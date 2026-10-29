@@ -51,18 +51,7 @@ typedef struct {
     uint8_t image_data[UDP_FRAME_SIZE];
 } UDPSharedMemory;
 
-typedef enum {
-    /* PCIe 与 UDP 各有四个 320×240 子画面，0x99 表示同时显示八路。 */
-    DISPLAY_MODE_PCIE_TOP_LEFT = 0x11,
-    DISPLAY_MODE_PCIE_TOP_RIGHT = 0x22,
-    DISPLAY_MODE_PCIE_BOTTOM_LEFT = 0x33,
-    DISPLAY_MODE_PCIE_BOTTOM_RIGHT = 0x44,
-    DISPLAY_MODE_UDP_TOP_LEFT = 0x55,
-    DISPLAY_MODE_UDP_TOP_RIGHT = 0x66,
-    DISPLAY_MODE_UDP_BOTTOM_LEFT = 0x77,
-    DISPLAY_MODE_UDP_BOTTOM_RIGHT = 0x88,
-    DISPLAY_MODE_ALL_CAMERAS = 0x99
-} DisplayMode;
+#include "camera_views.h"
 
 /* 仅供 S 端仪表盘显示的方向指令提示，不代表轮速或 FPGA 触点读回。 */
 typedef enum {
