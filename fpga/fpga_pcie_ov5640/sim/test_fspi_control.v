@@ -16,7 +16,7 @@ module test_fspi_control;
     wire rx_data_valid;
     wire [7:0] tx_data;
     wire tx_data_valid;
-    wire [7:0] mem0_out, mem1_out, mem2_out, mem3_out, mem4_out, mem5_out;
+    wire [7:0] mem0_out, mem1_out, mem2_out, mem3_out, mem4_out, mem5_out, mem6_out;
 
     fspi_slave u_slave (
         .spi_clk(spi_clk), .spi_cs(spi_cs), .spi_data(spi_data),
@@ -30,7 +30,8 @@ module test_fspi_control;
         .cmd(cmd), .tx_done(tx_data_valid), .wr_data(rx_data),
         .rx_valid(rx_data_valid), .select_rearview(4'ha),
         .rd_data(tx_data), .mem0_out(mem0_out), .mem1_out(mem1_out),
-        .mem2_out(mem2_out), .mem3_out(mem3_out), .mem4_out(mem4_out), .mem5_out(mem5_out)
+        .mem2_out(mem2_out), .mem3_out(mem3_out), .mem4_out(mem4_out), .mem5_out(mem5_out),
+        .mem6_out(mem6_out)
     );
 
     task send_nibble(input [3:0] value);
@@ -112,7 +113,17 @@ module test_fspi_control;
         expect_byte(mem0_out,8'h01,"permission leaves GO alone");
         expect_byte(mem2_out,8'h01,"permission leaves auto LEFT alone");
         expect_byte(mem4_out,8'h01,"permission leaves STOP alone");
-        $display("PASS: quad SPI writes update all five control registers");
+        expect_byte(mem6_out,8'h00,"gear calibration reset inactive");
+        write_reg(8'h06,8'ha5);
+        expect_byte(mem6_out,8'ha5,"gear calibration command");
+        expect_byte(mem0_out,8'h01,"calibration leaves GO alone");
+        expect_byte(mem4_out,8'h01,"calibration leaves STOP alone");
+        expect_byte(mem5_out,8'hc3,"calibration leaves permissions alone");
+        write_reg(8'h07,8'h00);
+        expect_byte(mem6_out,8'ha5,"invalid address does not alias calibration");
+        write_reg(8'h06,8'h00);
+        expect_byte(mem6_out,8'h00,"release calibration command");
+        $display("PASS: quad SPI writes isolate motion, permissions and gear calibration registers");
         $finish;
     end
 endmodule

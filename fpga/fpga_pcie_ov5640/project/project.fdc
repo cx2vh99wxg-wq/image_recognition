@@ -960,6 +960,24 @@ define_attribute {p:stop} {PAP_IO_STANDARD} {LVCMOS33}
 define_attribute {p:stop} {PAP_IO_DRIVE} {4}
 define_attribute {p:stop} {PAP_IO_NONE} {TRUE}
 define_attribute {p:stop} {PAP_IO_SLEW} {FAST}
+
+# SPEED: MES-FMC-LPC-IO J3 pin 34 / LA14_P / S carrier FPGA A18 (FBG484).
+# Same pressed-low/released-high-Z shared contact and IO properties as RIGHT.
+define_attribute {p:speed_key_n} {PAP_IO_DIRECTION} {INOUT}
+define_attribute {p:speed_key_n} {PAP_IO_LOC} {A18}
+define_attribute {p:speed_key_n} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:speed_key_n} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:speed_key_n} {PAP_IO_DRIVE} {4}
+define_attribute {p:speed_key_n} {PAP_IO_NONE} {TRUE}
+define_attribute {p:speed_key_n} {PAP_IO_SLEW} {FAST}
+
+# UART gear status -> screen RX: FMC LA20_N, daughter-board J3 pin 29.
+define_attribute {p:hmi_status_txd} {PAP_IO_DIRECTION} {OUTPUT}
+define_attribute {p:hmi_status_txd} {PAP_IO_LOC} {B22}
+define_attribute {p:hmi_status_txd} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:hmi_status_txd} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:hmi_status_txd} {PAP_IO_DRIVE} {4}
+define_attribute {p:hmi_status_txd} {PAP_IO_SLEW} {SLOW}
 #define_attribute {p:select_rearview} {PAP_IO_DIRECTION} {INPUT}
 #define_attribute {p:select_rearview} {PAP_IO_LOC} {C22}
 #define_attribute {p:select_rearview} {PAP_IO_VCCIO} {3.3}

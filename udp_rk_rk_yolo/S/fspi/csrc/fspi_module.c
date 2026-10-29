@@ -419,6 +419,37 @@ int fspi_read_hmi_snapshot(uint8_t *data)
     *data=a;return 0;
 }
 
+int fspi_read_speed_snapshot(SpeedSnapshot *data,uint8_t *raw_status)
+{
+    if(g_spi_fd<0||!data){errno=!data?EINVAL:ENODEV;return -1;}
+    uint8_t bytes[4]={0};
+    g_config.spi_mode=(g_config.spi_mode|SPI_RX_QUAD)&~SPI_TX_QUAD;
+    if(configure_spi_interface(g_spi_fd,&g_config))return -1;
+    struct spi_ioc_transfer tr={0};
+    tr.rx_buf=(unsigned long)bytes;tr.len=sizeof(bytes);tr.rx_nbits=4;
+    tr.bits_per_word=g_config.bits_per_word;tr.speed_hz=g_config.speed_hz;
+    int n=ioctl(g_spi_fd,SPI_IOC_MESSAGE(1),&tr);
+    if(raw_status)*raw_status=bytes[2];
+    if(n!=(int)sizeof(bytes)){if(n>=0)errno=EIO;return -1;}
+    if(speed_decode_packet(bytes,data)){errno=EPROTO;return -1;}
+    return 0;
+}
+
+int fspi_read_control_snapshot(ControlSnapshot *data)
+{
+    if(g_spi_fd<0||!data){errno=!data?EINVAL:ENODEV;return -1;}
+    uint8_t bytes[8]={0};
+    g_config.spi_mode=(g_config.spi_mode|SPI_RX_QUAD)&~SPI_TX_QUAD;
+    if(configure_spi_interface(g_spi_fd,&g_config))return -1;
+    struct spi_ioc_transfer tr={0};
+    tr.rx_buf=(unsigned long)bytes;tr.len=sizeof(bytes);tr.rx_nbits=4;
+    tr.bits_per_word=g_config.bits_per_word;tr.speed_hz=g_config.speed_hz;
+    int n=ioctl(g_spi_fd,SPI_IOC_MESSAGE(1),&tr);
+    if(n!=(int)sizeof(bytes)){if(n>=0)errno=EIO;return -1;}
+    if(control_decode_packet(bytes,data)){errno=EPROTO;return -1;}
+    return 0;
+}
+
 /* 独立开关读事务不能使用旧的分两次片选的模式读取路径。
  * 两个 transfer 属于同一个 SPI_IOC_MESSAGE；cs_change=0 保持片选。
  * 地址阶段后保留 1us，让 FPGA 发送端锁存状态，再切换四线接收。

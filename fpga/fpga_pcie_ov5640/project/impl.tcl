@@ -3500,3 +3500,41 @@ pnr -force_to_run -gplace_seed 3 -groute_seed 3
 pnr -force_to_run -gplace_seed 3 -groute_seed 3 
 report_timing -force_to_run 
 gen_bit_stream -force_to_run -compress_bitstream true -master_configuration_clock_frequency {40M} 
+set_arch -family Logos2 -device PG2L100H -speedgrade -6 -package FBG484
+compile -top_module image_pcie_capture
+synthesize -ads -selected_syn_tool_opt 2 
+dev_map 
+pnr -force_to_run -gplace_seed 3 -groute_seed 3 
+report_timing -force_to_run 
+report_power 
+gen_netlist 
+gen_bit_stream -force_to_run -compress_bitstream true -master_configuration_clock_frequency {40M} 
+set_arch -family Logos2 -device PG2L100H -speedgrade -6 -package FBG484
+compile -top_module image_pcie_capture
+synthesize -ads -selected_syn_tool_opt 2 
+dev_map 
+pnr -force_to_run -gplace_seed 3 -groute_seed 3 
+report_timing -force_to_run 
+report_power 
+gen_netlist 
+gen_bit_stream -force_to_run -compress_bitstream true -master_configuration_clock_frequency {40M} 
+set_arch -family Logos2 -device PG2L100H -speedgrade -6 -package FBG484
+compile -force_to_run -top_module image_pcie_capture
+synthesize -ads -selected_syn_tool_opt 2 
+dev_map -force_to_run 
+set_arch -family Logos2 -device PG2L100H -speedgrade -6 -package FBG484
+compile -force_to_run -top_module image_pcie_capture
+synthesize -ads -selected_syn_tool_opt 2 
+dev_map -force_to_run 
+set_arch -family Logos2 -device PG2L100H -speedgrade -6 -package FBG484
+compile -force_to_run -top_module image_pcie_capture
+synthesize -ads -selected_syn_tool_opt 2 
+dev_map -force_to_run 
+set_arch -family Logos2 -device PG2L100H -speedgrade -6 -package FBG484
+compile -force_to_run -top_module image_pcie_capture
+synthesize -force_to_run -ads -selected_syn_tool_opt 2 
+dev_map -force_to_run 
+set_arch -family Logos2 -device PG2L100H -speedgrade -6 -package FBG484
+compile -force_to_run -top_module image_pcie_capture
+synthesize -force_to_run -ads -selected_syn_tool_opt 2 
+dev_map -force_to_run 

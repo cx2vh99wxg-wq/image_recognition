@@ -29,6 +29,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
+#include <errno.h>
 #include <time.h>
 #include <sys/time.h>
 
@@ -67,6 +68,25 @@ static TrafficLightIPC traffic_input={-1,NULL};
 static TrafficGoIPC traffic_warning={-1,NULL};
 static TrafficGoPolicy traffic_policy={0};
 static int traffic_policy_initialized=0;
+static SpeedWarningIPC speed_warning={-1,NULL};
+static void monitor_speed_warning(uint64_t now) {
+    static SpeedWarningData state={0};static int previous=-1,previous_link=-1;
+    SpeedSnapshot snapshot={0};uint8_t raw=0;
+    int ok=fspi_read_speed_snapshot(&snapshot,&raw)==0;
+    state.link_ok=ok;state.read_errno=ok?0:(uint32_t)errno;state.raw_byte=raw;++state.poll_id;
+    if(ok) {
+        state.gear=snapshot.gear;state.known=snapshot.known;
+        state.pressed=snapshot.pressed;state.driving=snapshot.driving;
+        speed_set_deadline(&state,now+SPEED_WARNING_TTL_NS);
+    } // A failed read never extends the lifetime of the last good snapshot.
+    speed_ipc_open(&speed_warning,1);speed_ipc_write(&speed_warning,&state);
+    int display_gear=state.known?(int)state.gear:0;
+    if(display_gear!=previous||ok!=previous_link) {
+        printf("[SPEED_GEAR] estimated_gear=%d link=%s errno=%u warning=%s (no speed sensor; no motion writes)\n",
+            display_gear,ok?"OK":"OFFLINE",state.read_errno,display_gear>=2?"HIGH GEAR":"NONE");
+        previous=display_gear;previous_link=ok;
+    }
+}
 
 /* Lane and traffic permissions share ONE writer and ONE atomic reg5 byte.
  * Runs also during the 20ms turn wait. Does not touch motion registers 0..4. */
@@ -121,6 +141,7 @@ static void monitor_lane_rule(void) {
         previous=data.blocked;
     }
     line_set_deadline(&data,now+400000000ULL);line_ipc_write(&lane_warning,&data);
+    monitor_speed_warning(now);
 }
 
 /* 读端只接受检测程序最近两秒写入的状态。检测程序未启动、退出或卡住时保持制动请求。

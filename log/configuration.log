@@ -840,3 +840,1096 @@
 [Debug] [2026-10-28 15:10:07] COMMAND[Open config cable] execute successfully, takes 0.5 secs.
 [Debug] [2026-10-28 15:10:08] cfg_scan_chain succeed.
 [Info] [2026-10-28 15:10:08] /***************************End Configration***************************/
+[Info] [2026-10-28 16:14:28] /***************************Start Configuration***************************/
+[Info] [2026-10-28 16:14:28] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 16:14:28] Version: 146967
+[Info] [2026-10-28 16:14:29] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 16:14:29] PDS Dir Path: 
+[Debug] [2026-10-28 16:14:29] begin to get device info from CFG file...
+[Debug] [2026-10-28 16:14:29] end to get device info from CFG file...
+[Debug] [2026-10-28 16:14:29] begin to get device info from CFG file...
+[Debug] [2026-10-28 16:14:29] end to get device info from CFG file...
+[Info] [2026-10-28 16:14:29] /***************************End Configration***************************/
+[Info] [2026-10-28 18:05:32] /***************************Start Configuration***************************/
+[Info] [2026-10-28 18:05:32] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 18:05:32] Version: 146967
+[Info] [2026-10-28 18:05:33] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 18:05:33] PDS Dir Path: 
+[Debug] [2026-10-28 18:05:33] begin to get device info from CFG file...
+[Debug] [2026-10-28 18:05:33] end to get device info from CFG file...
+[Debug] [2026-10-28 18:05:33] begin to get device info from CFG file...
+[Debug] [2026-10-28 18:05:33] end to get device info from CFG file...
+[Info] [2026-10-28 18:05:33] /***************************End Configration***************************/
+[Info] [2026-10-28 21:18:26] /***************************Start Configuration***************************/
+[Info] [2026-10-28 21:18:26] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 21:18:26] Version: 146967
+[Info] [2026-10-28 21:18:27] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 21:18:27] PDS Dir Path: 
+[Debug] [2026-10-28 21:18:27] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-28 21:18:27] end to check the cfg_connect exec condition.
+[Debug] [2026-10-28 21:18:27] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-28 21:18:27] Client Local Address:10.17.104.77
+[Debug] [2026-10-28 21:18:27] Client Local Address:172.24.144.1
+[Debug] [2026-10-28 21:18:27] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-28 21:18:27] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-28 21:18:27] Finish.
+[Info] [2026-10-28 21:18:27] Connect server succeeded
+[Debug] [2026-10-28 21:18:27] Send RPC:1
+[Debug] [2026-10-28 21:18:27] Send cmd [check version information:40004] OK
+[Debug] [2026-10-28 21:18:28] Send RPC:2
+[Debug] [2026-10-28 21:18:28] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-28 21:18:28] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-28 21:18:28] COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-10-28 21:18:29] cfg_connect succeed.
+[Debug] [2026-10-28 21:18:30] Send RPC:3
+[Debug] [2026-10-28 21:18:30] Send cmd [Open config cable:20001] OK
+[Error] [2026-10-28 21:18:30] fail to exec Open config cable cmd...
+[Error] [2026-10-28 21:18:31] cfg_scan_chain failed.
+[Info] [2026-10-28 21:18:31] /***************************End Configration***************************/
+[Info] [2026-10-28 22:16:39] /***************************Start Configuration***************************/
+[Info] [2026-10-28 22:16:39] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 22:16:39] Version: 146967
+[Info] [2026-10-28 22:16:40] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 22:16:40] PDS Dir Path: 
+[Info] [2026-10-28 22:16:40] /***************************End Configration***************************/
+[Info] [2026-10-28 22:17:23] /***************************Start Configuration***************************/
+[Info] [2026-10-28 22:17:23] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 22:17:23] Version: 146967
+[Info] [2026-10-28 22:17:24] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 22:17:24] PDS Dir Path: 
+[Debug] [2026-10-28 22:17:24] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-28 22:17:24] end to check the cfg_connect exec condition.
+[Debug] [2026-10-28 22:17:24] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-28 22:17:24] Client Local Address:10.17.104.77
+[Debug] [2026-10-28 22:17:24] Client Local Address:172.24.144.1
+[Debug] [2026-10-28 22:17:24] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-28 22:17:24] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-28 22:17:24] Finish.
+[Info] [2026-10-28 22:17:24] Connect server succeeded
+[Debug] [2026-10-28 22:17:24] Send RPC:1
+[Debug] [2026-10-28 22:17:24] Send cmd [check version information:40004] OK
+[Debug] [2026-10-28 22:17:24] Send RPC:2
+[Debug] [2026-10-28 22:17:24] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-28 22:17:24] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-28 22:17:25] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-28 22:17:26] cfg_connect succeed.
+[Debug] [2026-10-28 22:17:26] Send RPC:3
+[Debug] [2026-10-28 22:17:26] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-28 22:17:27] begin the exec of open cable cmd...
+[Debug] [2026-10-28 22:17:27] Begin to deal with chain from server...
+[Debug] [2026-10-28 22:17:27] Begin to set user chain...
+[Debug] [2026-10-28 22:17:27] End to set user chain.
+[Debug] [2026-10-28 22:17:27] end the exec of open cable cmd.
+[Debug] [2026-10-28 22:17:27] COMMAND[Open config cable] execute successfully, takes 0.5 secs.
+[Debug] [2026-10-28 22:17:27] cfg_scan_chain succeed.
+[Info] [2026-10-28 22:17:28] /***************************End Configration***************************/
+[Info] [2026-10-28 22:42:43] /***************************Start Configuration***************************/
+[Info] [2026-10-28 22:42:43] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 22:42:43] Version: 146967
+[Info] [2026-10-28 22:42:44] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 22:42:44] PDS Dir Path: 
+[Debug] [2026-10-28 22:42:44] begin to get device info from CFG file...
+[Debug] [2026-10-28 22:42:44] end to get device info from CFG file...
+[Debug] [2026-10-28 22:42:44] begin to get device info from CFG file...
+[Debug] [2026-10-28 22:42:44] end to get device info from CFG file...
+[Info] [2026-10-28 22:42:44] /***************************End Configration***************************/
+[Info] [2026-10-28 22:42:49] /***************************Start Configuration***************************/
+[Info] [2026-10-28 22:42:49] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 22:42:49] Version: 146967
+[Info] [2026-10-28 22:42:50] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 22:42:50] PDS Dir Path: 
+[Debug] [2026-10-28 22:42:50] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-28 22:42:50] end to check the cfg_connect exec condition.
+[Debug] [2026-10-28 22:42:50] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-28 22:42:50] Client Local Address:10.17.104.77
+[Debug] [2026-10-28 22:42:50] Client Local Address:172.24.144.1
+[Debug] [2026-10-28 22:42:50] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-28 22:42:51] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-28 22:42:51] Finish.
+[Info] [2026-10-28 22:42:51] Connect server succeeded
+[Debug] [2026-10-28 22:42:51] Send RPC:1
+[Debug] [2026-10-28 22:42:51] Send cmd [check version information:40004] OK
+[Debug] [2026-10-28 22:42:51] Send RPC:2
+[Debug] [2026-10-28 22:42:51] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-28 22:42:51] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-28 22:42:52] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-28 22:42:52] cfg_connect succeed.
+[Debug] [2026-10-28 22:42:53] Send RPC:3
+[Debug] [2026-10-28 22:42:53] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-28 22:42:53] begin the exec of open cable cmd...
+[Debug] [2026-10-28 22:42:53] Begin to deal with chain from server...
+[Debug] [2026-10-28 22:42:53] Begin to set user chain...
+[Debug] [2026-10-28 22:42:53] End to set user chain.
+[Debug] [2026-10-28 22:42:53] end the exec of open cable cmd.
+[Debug] [2026-10-28 22:42:53] COMMAND[Open config cable] execute successfully, takes 0.4 secs.
+[Debug] [2026-10-28 22:42:54] cfg_scan_chain succeed.
+[Debug] [2026-10-28 22:42:54] begin to check the cfg_assign_file exec condition.
+[Debug] [2026-10-28 22:42:54] end to check the cfg_assign_file exec condition.
+[Debug] [2026-10-28 22:42:54] begin to get device info from CFG file...
+[Debug] [2026-10-28 22:42:54] end to get device info from CFG file...
+[Debug] [2026-10-28 22:42:54] cfg_assign_file succeed.
+[Debug] [2026-10-28 22:42:55] begin to check the cfg_program exec condition.
+[Debug] [2026-10-28 22:42:55] end to check the cfg_program exec condition.
+[Debug] [2026-10-28 22:42:55] Send RPC:4
+[Debug] [2026-10-28 22:42:55] Begin to send program data.
+[Debug] [2026-10-28 22:42:55] End to send program data.
+[Debug] [2026-10-28 22:42:55] Send cmd [Program:20002] OK
+[Debug] [2026-10-28 22:42:55] The value of Progress is 6
+[Debug] [2026-10-28 22:42:55] The value of Progress is 10
+[Debug] [2026-10-28 22:42:56] The value of Progress is 15
+[Debug] [2026-10-28 22:42:56] The value of Progress is 20
+[Debug] [2026-10-28 22:42:56] The value of Progress is 25
+[Debug] [2026-10-28 22:42:56] The value of Progress is 30
+[Debug] [2026-10-28 22:42:56] The value of Progress is 35
+[Debug] [2026-10-28 22:42:56] The value of Progress is 40
+[Debug] [2026-10-28 22:42:56] The value of Progress is 45
+[Debug] [2026-10-28 22:42:57] The value of Progress is 50
+[Debug] [2026-10-28 22:42:57] The value of Progress is 55
+[Debug] [2026-10-28 22:42:57] The value of Progress is 60
+[Debug] [2026-10-28 22:42:57] The value of Progress is 65
+[Debug] [2026-10-28 22:42:57] The value of Progress is 70
+[Debug] [2026-10-28 22:42:57] The value of Progress is 75
+[Debug] [2026-10-28 22:42:57] The value of Progress is 80
+[Debug] [2026-10-28 22:42:58] The value of Progress is 85
+[Debug] [2026-10-28 22:42:58] The value of Progress is 90
+[Debug] [2026-10-28 22:42:58] The value of Progress is 95
+[Debug] [2026-10-28 22:42:58] The value of Progress is 100
+[Debug] [2026-10-28 22:42:58] COMMAND[Program] execute successfully, takes 3.3 secs.
+[Debug] [2026-10-28 22:42:59] cfg_program succeed.
+[Debug] [2026-10-28 22:43:00] begin to check the cfg_verify exec condition.
+[Debug] [2026-10-28 22:43:00] Begin to check mask file.
+[Error] [2026-10-28 22:43:00] can not read back bit file because the wrctrl is not enable.
+[Warn] [2026-10-28 22:43:00] Mask file does not exist in Verify Operation..
+[Error] [2026-10-28 22:43:00] cfg_verify command can't be exec
+[Info] [2026-10-28 22:43:00] /***************************End Configration***************************/
+[Info] [2026-10-28 22:53:50] /***************************Start Configuration***************************/
+[Info] [2026-10-28 22:53:50] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 22:53:50] Version: 146967
+[Info] [2026-10-28 22:53:51] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 22:53:51] PDS Dir Path: 
+[Info] [2026-10-28 22:53:51] /***************************End Configration***************************/
+[Info] [2026-10-28 22:54:41] /***************************Start Configuration***************************/
+[Info] [2026-10-28 22:54:41] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 22:54:41] Version: 146967
+[Info] [2026-10-28 22:54:42] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 22:54:42] PDS Dir Path: 
+[Debug] [2026-10-28 22:54:42] begin to exec the cfg_help tcl cmd.
+[Debug] [2026-10-28 22:54:42] end to  exec the cfg_help tcl cmd.
+[Info] [2026-10-28 22:54:42] /***************************End Configration***************************/
+[Info] [2026-10-28 22:55:22] /***************************Start Configuration***************************/
+[Info] [2026-10-28 22:55:22] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 22:55:22] Version: 146967
+[Info] [2026-10-28 22:55:23] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 22:55:23] PDS Dir Path: 
+[Debug] [2026-10-28 22:55:23] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-28 22:55:23] end to check the cfg_connect exec condition.
+[Debug] [2026-10-28 22:55:23] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-28 22:55:23] Client Local Address:10.17.104.77
+[Debug] [2026-10-28 22:55:23] Client Local Address:172.24.144.1
+[Debug] [2026-10-28 22:55:23] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-28 22:55:24] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-28 22:55:24] Finish.
+[Info] [2026-10-28 22:55:24] Connect server succeeded
+[Debug] [2026-10-28 22:55:24] Send RPC:1
+[Debug] [2026-10-28 22:55:24] Send cmd [check version information:40004] OK
+[Debug] [2026-10-28 22:55:24] Send RPC:2
+[Debug] [2026-10-28 22:55:24] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-28 22:55:24] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-28 22:55:25] COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-10-28 22:55:25] cfg_connect succeed.
+[Debug] [2026-10-28 22:55:26] Send RPC:3
+[Debug] [2026-10-28 22:55:26] Send cmd [Open config cable:20001] OK
+[Error] [2026-10-28 22:55:26] fail to exec Open config cable cmd...
+[Error] [2026-10-28 22:55:27] cfg_scan_chain failed.
+[Info] [2026-10-28 22:55:27] /***************************End Configration***************************/
+[Info] [2026-10-28 22:59:47] /***************************Start Configuration***************************/
+[Info] [2026-10-28 22:59:47] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 22:59:47] Version: 146967
+[Info] [2026-10-28 22:59:48] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 22:59:48] PDS Dir Path: 
+[Debug] [2026-10-28 22:59:48] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-28 22:59:48] end to check the cfg_connect exec condition.
+[Debug] [2026-10-28 22:59:48] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-28 22:59:48] Client Local Address:10.17.104.77
+[Debug] [2026-10-28 22:59:48] Client Local Address:172.24.144.1
+[Debug] [2026-10-28 22:59:48] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-28 22:59:49] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-28 22:59:49] Finish.
+[Info] [2026-10-28 22:59:49] Connect server succeeded
+[Debug] [2026-10-28 22:59:49] Send RPC:1
+[Debug] [2026-10-28 22:59:49] Send cmd [check version information:40004] OK
+[Debug] [2026-10-28 22:59:49] Send RPC:2
+[Debug] [2026-10-28 22:59:49] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-28 22:59:49] COMMAND[check version information] execute successfully, takes 0.1 secs.
+[Debug] [2026-10-28 22:59:50] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-28 22:59:50] cfg_connect succeed.
+[Debug] [2026-10-28 22:59:51] Send RPC:3
+[Debug] [2026-10-28 22:59:51] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-28 22:59:51] begin the exec of open cable cmd...
+[Debug] [2026-10-28 22:59:51] Begin to deal with chain from server...
+[Debug] [2026-10-28 22:59:51] Begin to set user chain...
+[Debug] [2026-10-28 22:59:51] End to set user chain.
+[Debug] [2026-10-28 22:59:51] end the exec of open cable cmd.
+[Debug] [2026-10-28 22:59:51] COMMAND[Open config cable] execute successfully, takes 0.5 secs.
+[Debug] [2026-10-28 22:59:52] cfg_scan_chain succeed.
+[Debug] [2026-10-28 22:59:52] begin to check the cfg_debug_operate exec condition.
+[Error] [2026-10-28 22:59:52] cfg_debug_operate command can't be exec
+[Info] [2026-10-28 22:59:52] /***************************End Configration***************************/
+[Info] [2026-10-28 23:00:40] /***************************Start Configuration***************************/
+[Info] [2026-10-28 23:00:40] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 23:00:40] Version: 146967
+[Info] [2026-10-28 23:00:41] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 23:00:41] PDS Dir Path: 
+[Debug] [2026-10-28 23:00:41] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-28 23:00:41] end to check the cfg_connect exec condition.
+[Debug] [2026-10-28 23:00:41] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-28 23:00:41] Client Local Address:10.17.104.77
+[Debug] [2026-10-28 23:00:41] Client Local Address:172.24.144.1
+[Debug] [2026-10-28 23:00:41] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-28 23:00:41] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-28 23:00:41] Finish.
+[Info] [2026-10-28 23:00:41] Connect server succeeded
+[Debug] [2026-10-28 23:00:41] Send RPC:1
+[Debug] [2026-10-28 23:00:41] Send cmd [check version information:40004] OK
+[Debug] [2026-10-28 23:00:41] Send RPC:2
+[Debug] [2026-10-28 23:00:41] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-28 23:00:41] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-28 23:00:42] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-28 23:00:43] cfg_connect succeed.
+[Debug] [2026-10-28 23:00:43] Send RPC:3
+[Debug] [2026-10-28 23:00:43] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-28 23:00:44] begin the exec of open cable cmd...
+[Debug] [2026-10-28 23:00:44] Begin to deal with chain from server...
+[Debug] [2026-10-28 23:00:44] Begin to set user chain...
+[Debug] [2026-10-28 23:00:44] End to set user chain.
+[Debug] [2026-10-28 23:00:44] end the exec of open cable cmd.
+[Debug] [2026-10-28 23:00:44] COMMAND[Open config cable] execute successfully, takes 0.4 secs.
+[Debug] [2026-10-28 23:00:44] cfg_scan_chain succeed.
+[Debug] [2026-10-28 23:00:45] begin to check the cfg_debug_operate exec condition.
+[Debug] [2026-10-28 23:00:45] end to check the cfg_debug_operate exec condition.
+[Debug] [2026-10-28 23:00:45] Send RPC:4
+[Debug] [2026-10-28 23:00:45] Begin to send debug operate data.
+[Debug] [2026-10-28 23:00:45] End to send debug operate data.
+[Debug] [2026-10-28 23:00:45] Send cmd [Debug Operate:20027] OK
+[Debug] [2026-10-28 23:00:45] Show Info: The value Boundary Scan Chain Data is 0x1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff.
+[Debug] [2026-10-28 23:00:45] Show Info: The value at pin location 0 is 1.
+[Debug] [2026-10-28 23:00:45] begin to read data in cfgOperateEFlashCmd
+[Debug] [2026-10-28 23:00:45] end to read data in cfgOperateEFlashCmd
+[Debug] [2026-10-28 23:00:45] COMMAND[Debug Operate] execute successfully, takes 0.5 secs.
+[Debug] [2026-10-28 23:00:46] cfg_debug_operate succeed.
+[Info] [2026-10-28 23:00:46] /***************************End Configration***************************/
+[Info] [2026-10-28 23:29:17] /***************************Start Configuration***************************/
+[Info] [2026-10-28 23:29:17] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 23:29:17] Version: 146967
+[Info] [2026-10-28 23:29:18] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 23:29:18] PDS Dir Path: 
+[Info] [2026-10-28 23:29:18] /***************************End Configration***************************/
+[Info] [2026-10-28 23:30:08] /***************************Start Configuration***************************/
+[Info] [2026-10-28 23:30:08] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 23:30:08] Version: 146967
+[Info] [2026-10-28 23:30:09] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 23:30:09] PDS Dir Path: 
+[Debug] [2026-10-28 23:30:09] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-28 23:30:09] end to check the cfg_connect exec condition.
+[Debug] [2026-10-28 23:30:09] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-28 23:30:09] Client Local Address:10.17.104.77
+[Debug] [2026-10-28 23:30:09] Client Local Address:172.24.144.1
+[Debug] [2026-10-28 23:30:09] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-28 23:30:09] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-28 23:30:09] Finish.
+[Info] [2026-10-28 23:30:09] Connect server succeeded
+[Debug] [2026-10-28 23:30:09] Send RPC:1
+[Debug] [2026-10-28 23:30:09] Send cmd [check version information:40004] OK
+[Debug] [2026-10-28 23:30:09] Send RPC:2
+[Debug] [2026-10-28 23:30:09] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-28 23:30:09] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-28 23:30:10] COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-10-28 23:30:11] cfg_connect succeed.
+[Debug] [2026-10-28 23:30:11] Send RPC:3
+[Debug] [2026-10-28 23:30:11] Send cmd [Open config cable:20001] OK
+[Error] [2026-10-28 23:30:11] fail to exec Open config cable cmd...
+[Error] [2026-10-28 23:30:13] cfg_scan_chain failed.
+[Info] [2026-10-28 23:30:13] /***************************End Configration***************************/
+[Info] [2026-10-28 23:38:56] /***************************Start Configuration***************************/
+[Info] [2026-10-28 23:38:56] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 23:38:56] Version: 146967
+[Info] [2026-10-28 23:38:57] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 23:38:57] PDS Dir Path: 
+[Debug] [2026-10-28 23:38:57] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-28 23:38:57] end to check the cfg_connect exec condition.
+[Debug] [2026-10-28 23:38:57] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-28 23:38:57] Client Local Address:10.17.104.77
+[Debug] [2026-10-28 23:38:57] Client Local Address:172.24.144.1
+[Debug] [2026-10-28 23:38:57] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-28 23:38:58] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-28 23:38:58] Finish.
+[Info] [2026-10-28 23:38:58] Connect server succeeded
+[Debug] [2026-10-28 23:38:58] Send RPC:1
+[Debug] [2026-10-28 23:38:58] Send cmd [check version information:40004] OK
+[Debug] [2026-10-28 23:38:58] Send RPC:2
+[Debug] [2026-10-28 23:38:58] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-28 23:38:58] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-28 23:38:59] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-28 23:38:59] cfg_connect succeed.
+[Debug] [2026-10-28 23:39:00] Send RPC:3
+[Debug] [2026-10-28 23:39:00] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-28 23:39:00] begin the exec of open cable cmd...
+[Debug] [2026-10-28 23:39:00] Begin to deal with chain from server...
+[Debug] [2026-10-28 23:39:00] Begin to set user chain...
+[Debug] [2026-10-28 23:39:00] End to set user chain.
+[Debug] [2026-10-28 23:39:00] end the exec of open cable cmd.
+[Debug] [2026-10-28 23:39:00] COMMAND[Open config cable] execute successfully, takes 0.5 secs.
+[Debug] [2026-10-28 23:39:01] cfg_scan_chain succeed.
+[Info] [2026-10-28 23:39:02] /***************************End Configration***************************/
+[Info] [2026-10-28 23:41:10] /***************************Start Configuration***************************/
+[Info] [2026-10-28 23:41:10] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 23:41:10] Version: 146967
+[Info] [2026-10-28 23:41:11] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 23:41:11] PDS Dir Path: 
+[Debug] [2026-10-28 23:41:11] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-28 23:41:11] end to check the cfg_connect exec condition.
+[Debug] [2026-10-28 23:41:11] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-28 23:41:11] Client Local Address:10.17.104.77
+[Debug] [2026-10-28 23:41:11] Client Local Address:172.24.144.1
+[Debug] [2026-10-28 23:41:11] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-28 23:41:12] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-28 23:41:12] Finish.
+[Info] [2026-10-28 23:41:12] Connect server succeeded
+[Debug] [2026-10-28 23:41:12] Send RPC:1
+[Debug] [2026-10-28 23:41:12] Send cmd [check version information:40004] OK
+[Debug] [2026-10-28 23:41:12] Send RPC:2
+[Debug] [2026-10-28 23:41:12] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-28 23:41:12] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-28 23:41:13] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-28 23:41:14] cfg_connect succeed.
+[Debug] [2026-10-28 23:41:14] Send RPC:3
+[Debug] [2026-10-28 23:41:14] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-28 23:41:14] begin the exec of open cable cmd...
+[Debug] [2026-10-28 23:41:14] Begin to deal with chain from server...
+[Debug] [2026-10-28 23:41:14] Begin to set user chain...
+[Debug] [2026-10-28 23:41:14] End to set user chain.
+[Debug] [2026-10-28 23:41:14] end the exec of open cable cmd.
+[Debug] [2026-10-28 23:41:14] COMMAND[Open config cable] execute successfully, takes 0.4 secs.
+[Debug] [2026-10-28 23:41:15] cfg_scan_chain succeed.
+[Debug] [2026-10-28 23:41:16] begin to check the cfg_assign_file exec condition.
+[Debug] [2026-10-28 23:41:16] end to check the cfg_assign_file exec condition.
+[Debug] [2026-10-28 23:41:16] begin to get device info from CFG file...
+[Debug] [2026-10-28 23:41:16] end to get device info from CFG file...
+[Debug] [2026-10-28 23:41:16] cfg_assign_file succeed.
+[Debug] [2026-10-28 23:41:16] begin to check the cfg_program exec condition.
+[Debug] [2026-10-28 23:41:16] end to check the cfg_program exec condition.
+[Debug] [2026-10-28 23:41:16] Send RPC:4
+[Debug] [2026-10-28 23:41:16] Begin to send program data.
+[Debug] [2026-10-28 23:41:16] End to send program data.
+[Debug] [2026-10-28 23:41:16] Send cmd [Program:20002] OK
+[Debug] [2026-10-28 23:41:16] The value of Progress is 6
+[Debug] [2026-10-28 23:41:17] The value of Progress is 10
+[Debug] [2026-10-28 23:41:17] The value of Progress is 15
+[Debug] [2026-10-28 23:41:17] The value of Progress is 20
+[Debug] [2026-10-28 23:41:17] The value of Progress is 25
+[Debug] [2026-10-28 23:41:17] The value of Progress is 30
+[Debug] [2026-10-28 23:41:17] The value of Progress is 35
+[Debug] [2026-10-28 23:41:17] The value of Progress is 40
+[Debug] [2026-10-28 23:41:18] The value of Progress is 45
+[Debug] [2026-10-28 23:41:18] The value of Progress is 50
+[Debug] [2026-10-28 23:41:18] The value of Progress is 55
+[Debug] [2026-10-28 23:41:18] The value of Progress is 60
+[Debug] [2026-10-28 23:41:18] The value of Progress is 65
+[Debug] [2026-10-28 23:41:18] The value of Progress is 70
+[Debug] [2026-10-28 23:41:18] The value of Progress is 75
+[Debug] [2026-10-28 23:41:19] The value of Progress is 80
+[Debug] [2026-10-28 23:41:19] The value of Progress is 85
+[Debug] [2026-10-28 23:41:19] The value of Progress is 90
+[Debug] [2026-10-28 23:41:19] The value of Progress is 95
+[Debug] [2026-10-28 23:41:19] The value of Progress is 100
+[Debug] [2026-10-28 23:41:19] COMMAND[Program] execute successfully, takes 3.3 secs.
+[Debug] [2026-10-28 23:41:20] cfg_program succeed.
+[Info] [2026-10-28 23:41:21] /***************************End Configration***************************/
+[Info] [2026-10-28 23:57:14] /***************************Start Configuration***************************/
+[Info] [2026-10-28 23:57:14] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 23:57:14] Version: 146967
+[Info] [2026-10-28 23:57:15] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 23:57:15] PDS Dir Path: 
+[Debug] [2026-10-28 23:57:15] begin to get device info from CFG file...
+[Debug] [2026-10-28 23:57:15] end to get device info from CFG file...
+[Debug] [2026-10-28 23:57:15] begin to get device info from CFG file...
+[Debug] [2026-10-28 23:57:15] end to get device info from CFG file...
+[Info] [2026-10-28 23:57:15] /***************************End Configration***************************/
+[Info] [2026-10-28 23:57:37] /***************************Start Configuration***************************/
+[Info] [2026-10-28 23:57:37] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 23:57:37] Version: 146967
+[Info] [2026-10-28 23:57:38] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-28 23:57:38] PDS Dir Path: 
+[Debug] [2026-10-28 23:57:38] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-28 23:57:38] end to check the cfg_connect exec condition.
+[Debug] [2026-10-28 23:57:38] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-28 23:57:38] Client Local Address:10.17.104.77
+[Debug] [2026-10-28 23:57:38] Client Local Address:172.24.144.1
+[Debug] [2026-10-28 23:57:38] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-28 23:57:39] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-28 23:57:39] Finish.
+[Info] [2026-10-28 23:57:39] Connect server succeeded
+[Debug] [2026-10-28 23:57:39] Send RPC:1
+[Debug] [2026-10-28 23:57:39] Send cmd [check version information:40004] OK
+[Debug] [2026-10-28 23:57:39] Send RPC:2
+[Debug] [2026-10-28 23:57:39] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-28 23:57:39] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-28 23:57:39] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-28 23:57:40] cfg_connect succeed.
+[Debug] [2026-10-28 23:57:41] Send RPC:3
+[Debug] [2026-10-28 23:57:41] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-28 23:57:41] begin the exec of open cable cmd...
+[Debug] [2026-10-28 23:57:41] Begin to deal with chain from server...
+[Debug] [2026-10-28 23:57:41] Begin to set user chain...
+[Debug] [2026-10-28 23:57:41] End to set user chain.
+[Debug] [2026-10-28 23:57:41] end the exec of open cable cmd.
+[Debug] [2026-10-28 23:57:41] COMMAND[Open config cable] execute successfully, takes 0.4 secs.
+[Debug] [2026-10-28 23:57:42] cfg_scan_chain succeed.
+[Debug] [2026-10-28 23:57:42] begin to check the cfg_assign_file exec condition.
+[Debug] [2026-10-28 23:57:42] end to check the cfg_assign_file exec condition.
+[Debug] [2026-10-28 23:57:42] begin to get device info from CFG file...
+[Debug] [2026-10-28 23:57:42] end to get device info from CFG file...
+[Debug] [2026-10-28 23:57:42] cfg_assign_file succeed.
+[Debug] [2026-10-28 23:57:43] begin to check the cfg_program exec condition.
+[Debug] [2026-10-28 23:57:43] end to check the cfg_program exec condition.
+[Debug] [2026-10-28 23:57:43] Send RPC:4
+[Debug] [2026-10-28 23:57:43] Begin to send program data.
+[Debug] [2026-10-28 23:57:43] End to send program data.
+[Debug] [2026-10-28 23:57:43] Send cmd [Program:20002] OK
+[Debug] [2026-10-28 23:57:43] The value of Progress is 6
+[Debug] [2026-10-28 23:57:43] The value of Progress is 10
+[Debug] [2026-10-28 23:57:43] The value of Progress is 15
+[Debug] [2026-10-28 23:57:43] The value of Progress is 20
+[Debug] [2026-10-28 23:57:44] The value of Progress is 25
+[Debug] [2026-10-28 23:57:44] The value of Progress is 30
+[Debug] [2026-10-28 23:57:44] The value of Progress is 35
+[Debug] [2026-10-28 23:57:44] The value of Progress is 40
+[Debug] [2026-10-28 23:57:44] The value of Progress is 45
+[Debug] [2026-10-28 23:57:44] The value of Progress is 50
+[Debug] [2026-10-28 23:57:44] The value of Progress is 55
+[Debug] [2026-10-28 23:57:45] The value of Progress is 60
+[Debug] [2026-10-28 23:57:45] The value of Progress is 65
+[Debug] [2026-10-28 23:57:45] The value of Progress is 70
+[Debug] [2026-10-28 23:57:45] The value of Progress is 75
+[Debug] [2026-10-28 23:57:45] The value of Progress is 80
+[Debug] [2026-10-28 23:57:45] The value of Progress is 85
+[Debug] [2026-10-28 23:57:45] The value of Progress is 90
+[Debug] [2026-10-28 23:57:46] The value of Progress is 95
+[Debug] [2026-10-28 23:57:46] The value of Progress is 100
+[Debug] [2026-10-28 23:57:46] COMMAND[Program] execute successfully, takes 3.3 secs.
+[Debug] [2026-10-28 23:57:47] cfg_program succeed.
+[Info] [2026-10-28 23:57:47] /***************************End Configration***************************/
+[Info] [2026-10-29 10:44:25] /***************************Start Configuration***************************/
+[Info] [2026-10-29 10:44:25] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-29 10:44:25] Version: 146967
+[Info] [2026-10-29 10:44:26] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-29 10:44:26] PDS Dir Path: 
+[Debug] [2026-10-29 10:44:26] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-29 10:44:26] end to check the cfg_connect exec condition.
+[Debug] [2026-10-29 10:44:26] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-29 10:44:26] Client Local Address:10.17.104.77
+[Debug] [2026-10-29 10:44:26] Client Local Address:172.24.144.1
+[Debug] [2026-10-29 10:44:26] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-29 10:44:26] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-29 10:44:26] Finish.
+[Info] [2026-10-29 10:44:26] Connect server succeeded
+[Debug] [2026-10-29 10:44:26] Send RPC:1
+[Debug] [2026-10-29 10:44:26] Send cmd [check version information:40004] OK
+[Debug] [2026-10-29 10:44:26] Send RPC:2
+[Debug] [2026-10-29 10:44:26] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-29 10:44:26] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 10:44:27] COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-10-29 10:44:27] cfg_connect succeed.
+[Debug] [2026-10-29 10:44:28] Send RPC:3
+[Debug] [2026-10-29 10:44:28] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-29 10:44:28] begin the exec of open cable cmd...
+[Debug] [2026-10-29 10:44:28] Begin to deal with chain from server...
+[Debug] [2026-10-29 10:44:28] Begin to set user chain...
+[Debug] [2026-10-29 10:44:28] End to set user chain.
+[Debug] [2026-10-29 10:44:28] end the exec of open cable cmd.
+[Debug] [2026-10-29 10:44:28] COMMAND[Open config cable] execute successfully, takes 0.5 secs.
+[Debug] [2026-10-29 10:44:29] cfg_scan_chain succeed.
+[Info] [2026-10-29 10:44:29] /***************************End Configration***************************/
+[Info] [2026-10-29 10:58:25] /***************************Start Configuration***************************/
+[Info] [2026-10-29 10:58:25] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-29 10:58:25] Version: 146967
+[Info] [2026-10-29 10:58:26] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-29 10:58:26] PDS Dir Path: 
+[Debug] [2026-10-29 10:58:26] begin to get device info from CFG file...
+[Debug] [2026-10-29 10:58:26] end to get device info from CFG file...
+[Debug] [2026-10-29 10:58:26] begin to get device info from CFG file...
+[Debug] [2026-10-29 10:58:26] end to get device info from CFG file...
+[Info] [2026-10-29 10:58:26] /***************************End Configration***************************/
+[Info] [2026-10-29 10:58:48] /***************************Start Configuration***************************/
+[Info] [2026-10-29 10:58:48] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-29 10:58:48] Version: 146967
+[Info] [2026-10-29 10:58:49] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-29 10:58:49] PDS Dir Path: 
+[Debug] [2026-10-29 10:58:49] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-29 10:58:49] end to check the cfg_connect exec condition.
+[Debug] [2026-10-29 10:58:49] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-29 10:58:49] Client Local Address:10.17.104.77
+[Debug] [2026-10-29 10:58:49] Client Local Address:172.24.144.1
+[Debug] [2026-10-29 10:58:49] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-29 10:58:49] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-29 10:58:49] Finish.
+[Info] [2026-10-29 10:58:49] Connect server succeeded
+[Debug] [2026-10-29 10:58:49] Send RPC:1
+[Debug] [2026-10-29 10:58:49] Send cmd [check version information:40004] OK
+[Debug] [2026-10-29 10:58:49] Send RPC:2
+[Debug] [2026-10-29 10:58:49] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-29 10:58:49] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 10:58:50] COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-10-29 10:58:50] cfg_connect succeed.
+[Debug] [2026-10-29 10:58:50] Send RPC:3
+[Debug] [2026-10-29 10:58:50] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-29 10:58:51] begin the exec of open cable cmd...
+[Debug] [2026-10-29 10:58:51] Begin to deal with chain from server...
+[Debug] [2026-10-29 10:58:51] Begin to set user chain...
+[Debug] [2026-10-29 10:58:51] End to set user chain.
+[Debug] [2026-10-29 10:58:51] end the exec of open cable cmd.
+[Debug] [2026-10-29 10:58:51] COMMAND[Open config cable] execute successfully, takes 0.4 secs.
+[Debug] [2026-10-29 10:58:51] cfg_scan_chain succeed.
+[Debug] [2026-10-29 10:58:52] begin to check the cfg_assign_file exec condition.
+[Debug] [2026-10-29 10:58:52] end to check the cfg_assign_file exec condition.
+[Debug] [2026-10-29 10:58:52] begin to get device info from CFG file...
+[Debug] [2026-10-29 10:58:52] end to get device info from CFG file...
+[Debug] [2026-10-29 10:58:52] cfg_assign_file succeed.
+[Debug] [2026-10-29 10:58:52] begin to check the cfg_program exec condition.
+[Debug] [2026-10-29 10:58:52] end to check the cfg_program exec condition.
+[Debug] [2026-10-29 10:58:52] Send RPC:4
+[Debug] [2026-10-29 10:58:52] Begin to send program data.
+[Debug] [2026-10-29 10:58:52] End to send program data.
+[Debug] [2026-10-29 10:58:52] Send cmd [Program:20002] OK
+[Debug] [2026-10-29 10:58:53] The value of Progress is 6
+[Debug] [2026-10-29 10:58:53] The value of Progress is 10
+[Debug] [2026-10-29 10:58:53] The value of Progress is 15
+[Debug] [2026-10-29 10:58:53] The value of Progress is 20
+[Debug] [2026-10-29 10:58:53] The value of Progress is 25
+[Debug] [2026-10-29 10:58:53] The value of Progress is 30
+[Debug] [2026-10-29 10:58:54] The value of Progress is 35
+[Debug] [2026-10-29 10:58:54] The value of Progress is 40
+[Debug] [2026-10-29 10:58:54] The value of Progress is 45
+[Debug] [2026-10-29 10:58:54] The value of Progress is 50
+[Debug] [2026-10-29 10:58:54] The value of Progress is 55
+[Debug] [2026-10-29 10:58:54] The value of Progress is 60
+[Debug] [2026-10-29 10:58:54] The value of Progress is 65
+[Debug] [2026-10-29 10:58:55] The value of Progress is 70
+[Debug] [2026-10-29 10:58:55] The value of Progress is 75
+[Debug] [2026-10-29 10:58:55] The value of Progress is 80
+[Debug] [2026-10-29 10:58:55] The value of Progress is 85
+[Debug] [2026-10-29 10:58:55] The value of Progress is 90
+[Debug] [2026-10-29 10:58:55] The value of Progress is 95
+[Debug] [2026-10-29 10:58:55] The value of Progress is 100
+[Debug] [2026-10-29 10:58:56] COMMAND[Program] execute successfully, takes 3.3 secs.
+[Debug] [2026-10-29 10:58:56] cfg_program succeed.
+[Info] [2026-10-29 10:58:57] /***************************End Configration***************************/
+[Info] [2026-10-29 10:59:42] /***************************Start Configuration***************************/
+[Info] [2026-10-29 10:59:42] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-29 10:59:42] Version: 146967
+[Info] [2026-10-29 10:59:43] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-29 10:59:43] PDS Dir Path: 
+[Debug] [2026-10-29 10:59:43] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-29 10:59:43] end to check the cfg_connect exec condition.
+[Debug] [2026-10-29 10:59:43] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-29 10:59:43] Client Local Address:10.17.104.77
+[Debug] [2026-10-29 10:59:43] Client Local Address:172.24.144.1
+[Debug] [2026-10-29 10:59:43] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-29 10:59:43] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-29 10:59:43] Finish.
+[Info] [2026-10-29 10:59:43] Connect server succeeded
+[Debug] [2026-10-29 10:59:43] Send RPC:1
+[Debug] [2026-10-29 10:59:43] Send cmd [check version information:40004] OK
+[Debug] [2026-10-29 10:59:43] Send RPC:2
+[Debug] [2026-10-29 10:59:43] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-29 10:59:43] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 10:59:44] COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-10-29 10:59:44] cfg_connect succeed.
+[Debug] [2026-10-29 10:59:44] Send RPC:3
+[Debug] [2026-10-29 10:59:44] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-29 10:59:45] begin the exec of open cable cmd...
+[Debug] [2026-10-29 10:59:45] Begin to deal with chain from server...
+[Debug] [2026-10-29 10:59:45] Begin to set user chain...
+[Debug] [2026-10-29 10:59:45] End to set user chain.
+[Debug] [2026-10-29 10:59:45] end the exec of open cable cmd.
+[Debug] [2026-10-29 10:59:45] COMMAND[Open config cable] execute successfully, takes 0.4 secs.
+[Debug] [2026-10-29 10:59:45] cfg_scan_chain succeed.
+[Debug] [2026-10-29 10:59:46] begin to check the cfg_jtag_flash_scan_device exec condition.
+[Debug] [2026-10-29 10:59:46] end to check the cfg_jtag_flash_scan_device exec condition.
+[Debug] [2026-10-29 10:59:46] Send RPC:4
+[Debug] [2026-10-29 10:59:46] Send cmd [Scan Outer SPI Flash:20300] OK
+[Debug] [2026-10-29 10:59:46] begin to exec scan jtag flash cmd...
+[Debug] [2026-10-29 10:59:46] Begin to initialize JtagFlash for selected FPGA Device...
+[Debug] [2026-10-29 10:59:46] end to exec scan jtag flash cmd...
+[Debug] [2026-10-29 10:59:46] COMMAND[Scan Outer SPI Flash] execute successfully, takes 0.4 secs.
+[Debug] [2026-10-29 10:59:47] cfg_jtag_flash_scan_device succeed.
+[Debug] [2026-10-29 10:59:47] begin to check the cfg_jtag_flash_assign_file exec condition.
+[Debug] [2026-10-29 10:59:47] end to check the cfg_jtag_flash_assign_file exec condition.
+[Debug] [2026-10-29 10:59:47] begin to check SFC File and Flash Device Read Mode.
+[Debug] [2026-10-29 10:59:47] end to check SFC File and Flash Device Read Mode.
+[Debug] [2026-10-29 10:59:47] cfg_jtag_flash_assign_file succeed.
+[Debug] [2026-10-29 10:59:48] begin to check the cfg_jtag_flash_erase exec condition.
+[Debug] [2026-10-29 10:59:48] end to check the cfg_jtag_flash_erase exec condition.
+[Debug] [2026-10-29 10:59:48] Send RPC:5
+[Debug] [2026-10-29 10:59:48] Begin to send embed flash erase data.
+[Debug] [2026-10-29 10:59:48] Begin to send flash erase data.
+[Debug] [2026-10-29 10:59:48] End to send flash erase data.
+[Debug] [2026-10-29 10:59:48] End to send embed flash erase data.
+[Debug] [2026-10-29 10:59:48] Send cmd [Erase Outer Flash:20302] OK
+[Debug] [2026-10-29 10:59:48] The value of Progress is 1
+[Debug] [2026-10-29 10:59:50] The value of Progress is 7
+[Debug] [2026-10-29 10:59:51] The value of Progress is 11
+[Debug] [2026-10-29 10:59:51] The value of Progress is 16
+[Debug] [2026-10-29 10:59:52] The value of Progress is 20
+[Debug] [2026-10-29 10:59:53] The value of Progress is 25
+[Debug] [2026-10-29 10:59:54] The value of Progress is 31
+[Debug] [2026-10-29 10:59:55] The value of Progress is 35
+[Debug] [2026-10-29 10:59:56] The value of Progress is 40
+[Debug] [2026-10-29 10:59:57] The value of Progress is 46
+[Debug] [2026-10-29 10:59:57] The value of Progress is 50
+[Debug] [2026-10-29 10:59:58] The value of Progress is 55
+[Debug] [2026-10-29 10:59:59] The value of Progress is 61
+[Debug] [2026-10-29 11:00:00] The value of Progress is 66
+[Debug] [2026-10-29 11:00:01] The value of Progress is 70
+[Debug] [2026-10-29 11:00:02] The value of Progress is 75
+[Debug] [2026-10-29 11:00:03] The value of Progress is 81
+[Debug] [2026-10-29 11:00:04] The value of Progress is 85
+[Debug] [2026-10-29 11:00:05] The value of Progress is 90
+[Debug] [2026-10-29 11:00:06] The value of Progress is 96
+[Debug] [2026-10-29 11:00:06] The value of Progress is 100
+[Debug] [2026-10-29 11:00:06] COMMAND[Erase Outer Flash] execute finish, takes 18.0 secs.
+[Debug] [2026-10-29 11:00:06] cfg_jtag_flash_erase succeed.
+[Debug] [2026-10-29 11:00:07] begin to check the cfg_jtag_flash_program exec condition.
+[Debug] [2026-10-29 11:00:07] end to check the cfg_jtag_flash_program exec condition.
+[Debug] [2026-10-29 11:00:07] Send RPC:6
+[Debug] [2026-10-29 11:00:07] Begin to send jtag flash program data.
+[Debug] [2026-10-29 11:00:07] Begin to send flash program data.
+[Debug] [2026-10-29 11:00:07] End to send flash program data.
+[Debug] [2026-10-29 11:00:07] End to send embed flash program data.
+[Debug] [2026-10-29 11:00:07] Send cmd [Program Outer Flash:20301] OK
+[Debug] [2026-10-29 11:00:07] The value of Progress is 1
+[Debug] [2026-10-29 11:00:10] The value of Progress is 6
+[Debug] [2026-10-29 11:00:12] The value of Progress is 10
+[Debug] [2026-10-29 11:00:15] The value of Progress is 15
+[Debug] [2026-10-29 11:00:18] The value of Progress is 20
+[Debug] [2026-10-29 11:00:21] The value of Progress is 25
+[Debug] [2026-10-29 11:00:23] The value of Progress is 30
+[Debug] [2026-10-29 11:00:26] The value of Progress is 35
+[Debug] [2026-10-29 11:00:29] The value of Progress is 40
+[Debug] [2026-10-29 11:00:32] The value of Progress is 45
+[Debug] [2026-10-29 11:00:34] The value of Progress is 50
+[Debug] [2026-10-29 11:00:37] The value of Progress is 55
+[Debug] [2026-10-29 11:00:40] The value of Progress is 60
+[Debug] [2026-10-29 11:00:43] The value of Progress is 65
+[Debug] [2026-10-29 11:00:45] The value of Progress is 70
+[Debug] [2026-10-29 11:00:48] The value of Progress is 75
+[Debug] [2026-10-29 11:00:51] The value of Progress is 80
+[Debug] [2026-10-29 11:00:53] The value of Progress is 85
+[Debug] [2026-10-29 11:00:56] The value of Progress is 90
+[Debug] [2026-10-29 11:00:59] The value of Progress is 95
+[Debug] [2026-10-29 11:01:02] The value of Progress is 100
+[Debug] [2026-10-29 11:01:02] COMMAND[Program Outer Flash] execute finish, takes 55.2 secs.
+[Debug] [2026-10-29 11:01:02] cfg_jtag_flash_program succeed.
+[Debug] [2026-10-29 11:01:03] begin to check the cfg_jtag_flash_verify exec condition.
+[Debug] [2026-10-29 11:01:03] end to check the cfg_jtag_flash_verify exec condition.
+[Debug] [2026-10-29 11:01:03] Send RPC:7
+[Debug] [2026-10-29 11:01:03] Begin to send embed flash verify data.
+[Debug] [2026-10-29 11:01:03] Begin to send flash verify data.
+[Debug] [2026-10-29 11:01:03] End to send flash verify data.
+[Debug] [2026-10-29 11:01:03] End to send embed flash verify data.
+[Debug] [2026-10-29 11:01:03] Send cmd [Verify Outer Flash:20303] OK
+[Debug] [2026-10-29 11:01:03] The value of Progress is 1
+[Debug] [2026-10-29 11:01:03] The value of Progress is 6
+[Debug] [2026-10-29 11:01:03] The value of Progress is 10
+[Debug] [2026-10-29 11:01:03] The value of Progress is 15
+[Debug] [2026-10-29 11:01:04] The value of Progress is 20
+[Debug] [2026-10-29 11:01:04] The value of Progress is 25
+[Debug] [2026-10-29 11:01:04] The value of Progress is 30
+[Debug] [2026-10-29 11:01:04] The value of Progress is 35
+[Debug] [2026-10-29 11:01:04] The value of Progress is 40
+[Debug] [2026-10-29 11:01:05] The value of Progress is 45
+[Debug] [2026-10-29 11:01:05] The value of Progress is 50
+[Debug] [2026-10-29 11:01:05] The value of Progress is 55
+[Debug] [2026-10-29 11:01:05] The value of Progress is 60
+[Debug] [2026-10-29 11:01:05] The value of Progress is 65
+[Debug] [2026-10-29 11:01:05] The value of Progress is 70
+[Debug] [2026-10-29 11:01:06] The value of Progress is 75
+[Debug] [2026-10-29 11:01:06] The value of Progress is 80
+[Debug] [2026-10-29 11:01:06] The value of Progress is 85
+[Debug] [2026-10-29 11:01:06] The value of Progress is 90
+[Debug] [2026-10-29 11:01:06] The value of Progress is 95
+[Debug] [2026-10-29 11:01:06] The value of Progress is 100
+[Debug] [2026-10-29 11:01:07] COMMAND[Verify Outer Flash] execute successfully, takes 3.8 secs.
+[Debug] [2026-10-29 11:01:07] cfg_jtag_flash_verify succeed.
+[Info] [2026-10-29 11:01:07] /***************************End Configration***************************/
+[Info] [2026-10-29 11:01:49] /***************************Start Configuration***************************/
+[Info] [2026-10-29 11:01:49] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-29 11:01:49] Version: 146967
+[Info] [2026-10-29 11:01:50] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-29 11:01:50] PDS Dir Path: 
+[Debug] [2026-10-29 11:01:50] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-29 11:01:50] end to check the cfg_connect exec condition.
+[Debug] [2026-10-29 11:01:50] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-29 11:01:50] Client Local Address:10.17.104.77
+[Debug] [2026-10-29 11:01:50] Client Local Address:172.24.144.1
+[Debug] [2026-10-29 11:01:50] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-29 11:01:50] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-29 11:01:50] Finish.
+[Info] [2026-10-29 11:01:50] Connect server succeeded
+[Debug] [2026-10-29 11:01:50] Send RPC:1
+[Debug] [2026-10-29 11:01:50] Send cmd [check version information:40004] OK
+[Debug] [2026-10-29 11:01:50] Send RPC:2
+[Debug] [2026-10-29 11:01:50] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-29 11:01:50] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 11:01:51] COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-10-29 11:01:51] cfg_connect succeed.
+[Debug] [2026-10-29 11:01:51] Send RPC:3
+[Debug] [2026-10-29 11:01:51] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-29 11:01:52] begin the exec of open cable cmd...
+[Debug] [2026-10-29 11:01:52] Begin to deal with chain from server...
+[Debug] [2026-10-29 11:01:52] Begin to set user chain...
+[Debug] [2026-10-29 11:01:52] End to set user chain.
+[Debug] [2026-10-29 11:01:52] end the exec of open cable cmd.
+[Debug] [2026-10-29 11:01:52] COMMAND[Open config cable] execute successfully, takes 0.4 secs.
+[Debug] [2026-10-29 11:01:52] cfg_scan_chain succeed.
+[Debug] [2026-10-29 11:01:53] begin to check the cfg_assign_file exec condition.
+[Debug] [2026-10-29 11:01:53] end to check the cfg_assign_file exec condition.
+[Debug] [2026-10-29 11:01:53] begin to get device info from CFG file...
+[Debug] [2026-10-29 11:01:53] end to get device info from CFG file...
+[Debug] [2026-10-29 11:01:53] cfg_assign_file succeed.
+[Debug] [2026-10-29 11:01:53] begin to check the cfg_program exec condition.
+[Debug] [2026-10-29 11:01:53] end to check the cfg_program exec condition.
+[Debug] [2026-10-29 11:01:53] Send RPC:4
+[Debug] [2026-10-29 11:01:53] Begin to send program data.
+[Debug] [2026-10-29 11:01:53] End to send program data.
+[Debug] [2026-10-29 11:01:53] Send cmd [Program:20002] OK
+[Debug] [2026-10-29 11:01:54] The value of Progress is 6
+[Debug] [2026-10-29 11:01:54] The value of Progress is 10
+[Debug] [2026-10-29 11:01:54] The value of Progress is 15
+[Debug] [2026-10-29 11:01:54] The value of Progress is 20
+[Debug] [2026-10-29 11:01:54] The value of Progress is 25
+[Debug] [2026-10-29 11:01:55] The value of Progress is 30
+[Debug] [2026-10-29 11:01:55] The value of Progress is 35
+[Debug] [2026-10-29 11:01:55] The value of Progress is 40
+[Debug] [2026-10-29 11:01:55] The value of Progress is 45
+[Debug] [2026-10-29 11:01:55] The value of Progress is 50
+[Debug] [2026-10-29 11:01:55] The value of Progress is 55
+[Debug] [2026-10-29 11:01:55] The value of Progress is 60
+[Debug] [2026-10-29 11:01:56] The value of Progress is 65
+[Debug] [2026-10-29 11:01:56] The value of Progress is 70
+[Debug] [2026-10-29 11:01:56] The value of Progress is 75
+[Debug] [2026-10-29 11:01:56] The value of Progress is 80
+[Debug] [2026-10-29 11:01:56] The value of Progress is 85
+[Debug] [2026-10-29 11:01:56] The value of Progress is 90
+[Debug] [2026-10-29 11:01:56] The value of Progress is 95
+[Debug] [2026-10-29 11:01:57] The value of Progress is 100
+[Debug] [2026-10-29 11:01:57] COMMAND[Program] execute successfully, takes 3.3 secs.
+[Debug] [2026-10-29 11:01:58] cfg_program succeed.
+[Info] [2026-10-29 11:01:58] /***************************End Configration***************************/
+[Info] [2026-10-29 13:13:11] /***************************Start Configuration***************************/
+[Info] [2026-10-29 13:13:11] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-29 13:13:11] Version: 146967
+[Info] [2026-10-29 13:13:12] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-29 13:13:12] PDS Dir Path: 
+[Debug] [2026-10-29 13:13:12] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-29 13:13:12] end to check the cfg_connect exec condition.
+[Debug] [2026-10-29 13:13:12] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-29 13:13:12] Client Local Address:10.17.104.77
+[Debug] [2026-10-29 13:13:12] Client Local Address:172.24.144.1
+[Debug] [2026-10-29 13:13:12] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-29 13:13:12] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-29 13:13:12] Finish.
+[Info] [2026-10-29 13:13:12] Connect server succeeded
+[Debug] [2026-10-29 13:13:12] Send RPC:1
+[Debug] [2026-10-29 13:13:12] Send cmd [check version information:40004] OK
+[Debug] [2026-10-29 13:13:12] Send RPC:2
+[Debug] [2026-10-29 13:13:12] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-29 13:13:12] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 13:13:13] COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-10-29 13:13:13] cfg_connect succeed.
+[Debug] [2026-10-29 13:13:14] Send RPC:3
+[Debug] [2026-10-29 13:13:14] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-29 13:13:14] begin the exec of open cable cmd...
+[Debug] [2026-10-29 13:13:14] Begin to deal with chain from server...
+[Debug] [2026-10-29 13:13:14] Begin to set user chain...
+[Debug] [2026-10-29 13:13:14] End to set user chain.
+[Debug] [2026-10-29 13:13:14] end the exec of open cable cmd.
+[Debug] [2026-10-29 13:13:14] COMMAND[Open config cable] execute successfully, takes 0.5 secs.
+[Debug] [2026-10-29 13:13:15] cfg_scan_chain succeed.
+[Info] [2026-10-29 13:13:15] /***************************End Configration***************************/
+[Info] [2026-10-29 13:23:13] /***************************Start Configuration***************************/
+[Info] [2026-10-29 13:23:13] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-29 13:23:13] Version: 146967
+[Info] [2026-10-29 13:23:14] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-29 13:23:14] PDS Dir Path: 
+[Debug] [2026-10-29 13:23:14] begin to get device info from CFG file...
+[Debug] [2026-10-29 13:23:14] end to get device info from CFG file...
+[Debug] [2026-10-29 13:23:14] begin to get device info from CFG file...
+[Debug] [2026-10-29 13:23:14] end to get device info from CFG file...
+[Info] [2026-10-29 13:23:14] /***************************End Configration***************************/
+[Info] [2026-10-29 13:24:28] /***************************Start Configuration***************************/
+[Info] [2026-10-29 13:24:28] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-29 13:24:28] Version: 146967
+[Info] [2026-10-29 13:24:29] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-29 13:24:29] PDS Dir Path: 
+[Debug] [2026-10-29 13:24:29] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-29 13:24:29] end to check the cfg_connect exec condition.
+[Debug] [2026-10-29 13:24:29] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-29 13:24:29] Client Local Address:10.17.104.77
+[Debug] [2026-10-29 13:24:29] Client Local Address:172.24.144.1
+[Debug] [2026-10-29 13:24:29] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-29 13:24:29] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-29 13:24:29] Finish.
+[Info] [2026-10-29 13:24:29] Connect server succeeded
+[Debug] [2026-10-29 13:24:29] Send RPC:1
+[Debug] [2026-10-29 13:24:29] Send cmd [check version information:40004] OK
+[Debug] [2026-10-29 13:24:29] Send RPC:2
+[Debug] [2026-10-29 13:24:29] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-29 13:24:29] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 13:24:30] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-29 13:24:30] cfg_connect succeed.
+[Debug] [2026-10-29 13:24:30] Send RPC:3
+[Debug] [2026-10-29 13:24:30] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-29 13:24:31] begin the exec of open cable cmd...
+[Debug] [2026-10-29 13:24:31] Begin to deal with chain from server...
+[Debug] [2026-10-29 13:24:31] Begin to set user chain...
+[Debug] [2026-10-29 13:24:31] End to set user chain.
+[Debug] [2026-10-29 13:24:31] end the exec of open cable cmd.
+[Debug] [2026-10-29 13:24:31] COMMAND[Open config cable] execute successfully, takes 0.4 secs.
+[Debug] [2026-10-29 13:24:31] cfg_scan_chain succeed.
+[Debug] [2026-10-29 13:24:32] begin to check the cfg_assign_file exec condition.
+[Debug] [2026-10-29 13:24:32] end to check the cfg_assign_file exec condition.
+[Debug] [2026-10-29 13:24:32] begin to get device info from CFG file...
+[Debug] [2026-10-29 13:24:32] end to get device info from CFG file...
+[Debug] [2026-10-29 13:24:32] cfg_assign_file succeed.
+[Debug] [2026-10-29 13:24:32] begin to check the cfg_program exec condition.
+[Debug] [2026-10-29 13:24:32] end to check the cfg_program exec condition.
+[Debug] [2026-10-29 13:24:32] Send RPC:4
+[Debug] [2026-10-29 13:24:32] Begin to send program data.
+[Debug] [2026-10-29 13:24:32] End to send program data.
+[Debug] [2026-10-29 13:24:32] Send cmd [Program:20002] OK
+[Debug] [2026-10-29 13:24:33] The value of Progress is 6
+[Debug] [2026-10-29 13:24:33] The value of Progress is 10
+[Debug] [2026-10-29 13:24:33] The value of Progress is 15
+[Debug] [2026-10-29 13:24:33] The value of Progress is 20
+[Debug] [2026-10-29 13:24:33] The value of Progress is 25
+[Debug] [2026-10-29 13:24:33] The value of Progress is 30
+[Debug] [2026-10-29 13:24:33] The value of Progress is 35
+[Debug] [2026-10-29 13:24:34] The value of Progress is 40
+[Debug] [2026-10-29 13:24:34] The value of Progress is 45
+[Debug] [2026-10-29 13:24:34] The value of Progress is 50
+[Debug] [2026-10-29 13:24:34] The value of Progress is 55
+[Debug] [2026-10-29 13:24:34] The value of Progress is 60
+[Debug] [2026-10-29 13:24:34] The value of Progress is 65
+[Debug] [2026-10-29 13:24:35] The value of Progress is 70
+[Debug] [2026-10-29 13:24:35] The value of Progress is 75
+[Debug] [2026-10-29 13:24:35] The value of Progress is 80
+[Debug] [2026-10-29 13:24:35] The value of Progress is 85
+[Debug] [2026-10-29 13:24:35] The value of Progress is 90
+[Debug] [2026-10-29 13:24:35] The value of Progress is 95
+[Debug] [2026-10-29 13:24:35] The value of Progress is 100
+[Debug] [2026-10-29 13:24:36] COMMAND[Program] execute successfully, takes 3.3 secs.
+[Debug] [2026-10-29 13:24:36] cfg_program succeed.
+[Info] [2026-10-29 13:24:37] /***************************End Configration***************************/
+[Info] [2026-10-29 13:25:23] /***************************Start Configuration***************************/
+[Info] [2026-10-29 13:25:23] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-29 13:25:23] Version: 146967
+[Info] [2026-10-29 13:25:24] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-29 13:25:24] PDS Dir Path: 
+[Debug] [2026-10-29 13:25:24] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-29 13:25:24] end to check the cfg_connect exec condition.
+[Debug] [2026-10-29 13:25:24] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-29 13:25:24] Client Local Address:10.17.104.77
+[Debug] [2026-10-29 13:25:24] Client Local Address:172.24.144.1
+[Debug] [2026-10-29 13:25:24] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-29 13:25:24] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-29 13:25:24] Finish.
+[Info] [2026-10-29 13:25:24] Connect server succeeded
+[Debug] [2026-10-29 13:25:24] Send RPC:1
+[Debug] [2026-10-29 13:25:24] Send cmd [check version information:40004] OK
+[Debug] [2026-10-29 13:25:24] Send RPC:2
+[Debug] [2026-10-29 13:25:24] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-29 13:25:24] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 13:25:25] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-29 13:25:25] cfg_connect succeed.
+[Debug] [2026-10-29 13:25:26] Send RPC:3
+[Debug] [2026-10-29 13:25:26] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-29 13:25:26] begin the exec of open cable cmd...
+[Debug] [2026-10-29 13:25:26] Begin to deal with chain from server...
+[Debug] [2026-10-29 13:25:26] Begin to set user chain...
+[Debug] [2026-10-29 13:25:26] End to set user chain.
+[Debug] [2026-10-29 13:25:26] end the exec of open cable cmd.
+[Debug] [2026-10-29 13:25:26] COMMAND[Open config cable] execute successfully, takes 0.4 secs.
+[Debug] [2026-10-29 13:25:27] cfg_scan_chain succeed.
+[Debug] [2026-10-29 13:25:27] begin to check the cfg_jtag_flash_scan_device exec condition.
+[Debug] [2026-10-29 13:25:27] end to check the cfg_jtag_flash_scan_device exec condition.
+[Debug] [2026-10-29 13:25:27] Send RPC:4
+[Debug] [2026-10-29 13:25:27] Send cmd [Scan Outer SPI Flash:20300] OK
+[Debug] [2026-10-29 13:25:28] begin to exec scan jtag flash cmd...
+[Debug] [2026-10-29 13:25:28] Begin to initialize JtagFlash for selected FPGA Device...
+[Debug] [2026-10-29 13:25:28] end to exec scan jtag flash cmd...
+[Debug] [2026-10-29 13:25:28] COMMAND[Scan Outer SPI Flash] execute successfully, takes 0.5 secs.
+[Debug] [2026-10-29 13:25:28] cfg_jtag_flash_scan_device succeed.
+[Debug] [2026-10-29 13:25:29] begin to check the cfg_jtag_flash_assign_file exec condition.
+[Debug] [2026-10-29 13:25:29] end to check the cfg_jtag_flash_assign_file exec condition.
+[Debug] [2026-10-29 13:25:29] begin to check SFC File and Flash Device Read Mode.
+[Debug] [2026-10-29 13:25:29] end to check SFC File and Flash Device Read Mode.
+[Debug] [2026-10-29 13:25:29] cfg_jtag_flash_assign_file succeed.
+[Debug] [2026-10-29 13:25:29] begin to check the cfg_jtag_flash_erase exec condition.
+[Debug] [2026-10-29 13:25:29] end to check the cfg_jtag_flash_erase exec condition.
+[Debug] [2026-10-29 13:25:29] Send RPC:5
+[Debug] [2026-10-29 13:25:29] Begin to send embed flash erase data.
+[Debug] [2026-10-29 13:25:29] Begin to send flash erase data.
+[Debug] [2026-10-29 13:25:29] End to send flash erase data.
+[Debug] [2026-10-29 13:25:29] End to send embed flash erase data.
+[Debug] [2026-10-29 13:25:29] Send cmd [Erase Outer Flash:20302] OK
+[Debug] [2026-10-29 13:25:29] The value of Progress is 1
+[Debug] [2026-10-29 13:25:31] The value of Progress is 7
+[Debug] [2026-10-29 13:25:32] The value of Progress is 11
+[Debug] [2026-10-29 13:25:33] The value of Progress is 16
+[Debug] [2026-10-29 13:25:33] The value of Progress is 20
+[Debug] [2026-10-29 13:25:34] The value of Progress is 25
+[Debug] [2026-10-29 13:25:35] The value of Progress is 31
+[Debug] [2026-10-29 13:25:36] The value of Progress is 35
+[Debug] [2026-10-29 13:25:37] The value of Progress is 40
+[Debug] [2026-10-29 13:25:38] The value of Progress is 46
+[Debug] [2026-10-29 13:25:39] The value of Progress is 50
+[Debug] [2026-10-29 13:25:39] The value of Progress is 55
+[Debug] [2026-10-29 13:25:40] The value of Progress is 61
+[Debug] [2026-10-29 13:25:41] The value of Progress is 66
+[Debug] [2026-10-29 13:25:42] The value of Progress is 70
+[Debug] [2026-10-29 13:25:43] The value of Progress is 75
+[Debug] [2026-10-29 13:25:44] The value of Progress is 81
+[Debug] [2026-10-29 13:25:45] The value of Progress is 85
+[Debug] [2026-10-29 13:25:46] The value of Progress is 90
+[Debug] [2026-10-29 13:25:46] The value of Progress is 96
+[Debug] [2026-10-29 13:25:47] The value of Progress is 100
+[Debug] [2026-10-29 13:25:47] COMMAND[Erase Outer Flash] execute finish, takes 17.6 secs.
+[Debug] [2026-10-29 13:25:47] cfg_jtag_flash_erase succeed.
+[Debug] [2026-10-29 13:25:48] begin to check the cfg_jtag_flash_program exec condition.
+[Debug] [2026-10-29 13:25:48] end to check the cfg_jtag_flash_program exec condition.
+[Debug] [2026-10-29 13:25:48] Send RPC:6
+[Debug] [2026-10-29 13:25:48] Begin to send jtag flash program data.
+[Debug] [2026-10-29 13:25:48] Begin to send flash program data.
+[Debug] [2026-10-29 13:25:48] End to send flash program data.
+[Debug] [2026-10-29 13:25:48] End to send embed flash program data.
+[Debug] [2026-10-29 13:25:48] Send cmd [Program Outer Flash:20301] OK
+[Debug] [2026-10-29 13:25:48] The value of Progress is 1
+[Debug] [2026-10-29 13:25:51] The value of Progress is 6
+[Debug] [2026-10-29 13:25:53] The value of Progress is 10
+[Debug] [2026-10-29 13:25:56] The value of Progress is 15
+[Debug] [2026-10-29 13:25:59] The value of Progress is 20
+[Debug] [2026-10-29 13:26:02] The value of Progress is 25
+[Debug] [2026-10-29 13:26:05] The value of Progress is 30
+[Debug] [2026-10-29 13:26:07] The value of Progress is 35
+[Debug] [2026-10-29 13:26:10] The value of Progress is 40
+[Debug] [2026-10-29 13:26:13] The value of Progress is 45
+[Debug] [2026-10-29 13:26:16] The value of Progress is 50
+[Debug] [2026-10-29 13:26:18] The value of Progress is 55
+[Debug] [2026-10-29 13:26:21] The value of Progress is 60
+[Debug] [2026-10-29 13:26:24] The value of Progress is 65
+[Debug] [2026-10-29 13:26:27] The value of Progress is 70
+[Debug] [2026-10-29 13:26:29] The value of Progress is 75
+[Debug] [2026-10-29 13:26:32] The value of Progress is 80
+[Debug] [2026-10-29 13:26:35] The value of Progress is 85
+[Debug] [2026-10-29 13:26:38] The value of Progress is 90
+[Debug] [2026-10-29 13:26:40] The value of Progress is 95
+[Debug] [2026-10-29 13:26:43] The value of Progress is 100
+[Debug] [2026-10-29 13:26:43] COMMAND[Program Outer Flash] execute finish, takes 55.5 secs.
+[Debug] [2026-10-29 13:26:43] cfg_jtag_flash_program succeed.
+[Debug] [2026-10-29 13:26:44] begin to check the cfg_jtag_flash_verify exec condition.
+[Debug] [2026-10-29 13:26:44] end to check the cfg_jtag_flash_verify exec condition.
+[Debug] [2026-10-29 13:26:44] Send RPC:7
+[Debug] [2026-10-29 13:26:44] Begin to send embed flash verify data.
+[Debug] [2026-10-29 13:26:44] Begin to send flash verify data.
+[Debug] [2026-10-29 13:26:44] End to send flash verify data.
+[Debug] [2026-10-29 13:26:44] End to send embed flash verify data.
+[Debug] [2026-10-29 13:26:44] Send cmd [Verify Outer Flash:20303] OK
+[Debug] [2026-10-29 13:26:44] The value of Progress is 1
+[Debug] [2026-10-29 13:26:44] The value of Progress is 6
+[Debug] [2026-10-29 13:26:44] The value of Progress is 10
+[Debug] [2026-10-29 13:26:45] The value of Progress is 15
+[Debug] [2026-10-29 13:26:45] The value of Progress is 20
+[Debug] [2026-10-29 13:26:45] The value of Progress is 25
+[Debug] [2026-10-29 13:26:45] The value of Progress is 30
+[Debug] [2026-10-29 13:26:45] The value of Progress is 35
+[Debug] [2026-10-29 13:26:45] The value of Progress is 40
+[Debug] [2026-10-29 13:26:46] The value of Progress is 45
+[Debug] [2026-10-29 13:26:46] The value of Progress is 50
+[Debug] [2026-10-29 13:26:46] The value of Progress is 55
+[Debug] [2026-10-29 13:26:46] The value of Progress is 60
+[Debug] [2026-10-29 13:26:46] The value of Progress is 65
+[Debug] [2026-10-29 13:26:47] The value of Progress is 70
+[Debug] [2026-10-29 13:26:47] The value of Progress is 75
+[Debug] [2026-10-29 13:26:47] The value of Progress is 80
+[Debug] [2026-10-29 13:26:47] The value of Progress is 85
+[Debug] [2026-10-29 13:26:47] The value of Progress is 90
+[Debug] [2026-10-29 13:26:47] The value of Progress is 95
+[Debug] [2026-10-29 13:26:48] The value of Progress is 100
+[Debug] [2026-10-29 13:26:48] COMMAND[Verify Outer Flash] execute successfully, takes 3.9 secs.
+[Debug] [2026-10-29 13:26:48] cfg_jtag_flash_verify succeed.
+[Info] [2026-10-29 13:26:48] /***************************End Configration***************************/
+[Info] [2026-10-29 13:27:19] /***************************Start Configuration***************************/
+[Info] [2026-10-29 13:27:19] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-29 13:27:19] Version: 146967
+[Info] [2026-10-29 13:27:20] Current Path: D:/Study_Object/image_recognition/image_recognition
+[Info] [2026-10-29 13:27:20] PDS Dir Path: 
+[Debug] [2026-10-29 13:27:20] begin to check the cfg_connect exec condition.
+[Debug] [2026-10-29 13:27:20] end to check the cfg_connect exec condition.
+[Debug] [2026-10-29 13:27:20] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-29 13:27:20] Client Local Address:10.17.104.77
+[Debug] [2026-10-29 13:27:20] Client Local Address:172.24.144.1
+[Debug] [2026-10-29 13:27:20] Server Address:127.0.0.1, Port:65420
+[Info] [2026-10-29 13:27:20] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-29 13:27:20] Finish.
+[Info] [2026-10-29 13:27:20] Connect server succeeded
+[Debug] [2026-10-29 13:27:20] Send RPC:1
+[Debug] [2026-10-29 13:27:20] Send cmd [check version information:40004] OK
+[Debug] [2026-10-29 13:27:20] Send RPC:2
+[Debug] [2026-10-29 13:27:20] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-29 13:27:20] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 13:27:21] COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-10-29 13:27:21] cfg_connect succeed.
+[Debug] [2026-10-29 13:27:21] Send RPC:3
+[Debug] [2026-10-29 13:27:21] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-29 13:27:22] begin the exec of open cable cmd...
+[Debug] [2026-10-29 13:27:22] Begin to deal with chain from server...
+[Debug] [2026-10-29 13:27:22] Begin to set user chain...
+[Debug] [2026-10-29 13:27:22] End to set user chain.
+[Debug] [2026-10-29 13:27:22] end the exec of open cable cmd.
+[Debug] [2026-10-29 13:27:22] COMMAND[Open config cable] execute successfully, takes 0.4 secs.
+[Debug] [2026-10-29 13:27:22] cfg_scan_chain succeed.
+[Debug] [2026-10-29 13:27:23] begin to check the cfg_assign_file exec condition.
+[Debug] [2026-10-29 13:27:23] end to check the cfg_assign_file exec condition.
+[Debug] [2026-10-29 13:27:23] begin to get device info from CFG file...
+[Debug] [2026-10-29 13:27:23] end to get device info from CFG file...
+[Debug] [2026-10-29 13:27:23] cfg_assign_file succeed.
+[Debug] [2026-10-29 13:27:23] begin to check the cfg_program exec condition.
+[Debug] [2026-10-29 13:27:23] end to check the cfg_program exec condition.
+[Debug] [2026-10-29 13:27:23] Send RPC:4
+[Debug] [2026-10-29 13:27:23] Begin to send program data.
+[Debug] [2026-10-29 13:27:23] End to send program data.
+[Debug] [2026-10-29 13:27:23] Send cmd [Program:20002] OK
+[Debug] [2026-10-29 13:27:24] The value of Progress is 6
+[Debug] [2026-10-29 13:27:24] The value of Progress is 10
+[Debug] [2026-10-29 13:27:24] The value of Progress is 15
+[Debug] [2026-10-29 13:27:24] The value of Progress is 20
+[Debug] [2026-10-29 13:27:24] The value of Progress is 25
+[Debug] [2026-10-29 13:27:25] The value of Progress is 30
+[Debug] [2026-10-29 13:27:25] The value of Progress is 35
+[Debug] [2026-10-29 13:27:25] The value of Progress is 40
+[Debug] [2026-10-29 13:27:25] The value of Progress is 45
+[Debug] [2026-10-29 13:27:25] The value of Progress is 50
+[Debug] [2026-10-29 13:27:25] The value of Progress is 55
+[Debug] [2026-10-29 13:27:25] The value of Progress is 60
+[Debug] [2026-10-29 13:27:26] The value of Progress is 65
+[Debug] [2026-10-29 13:27:26] The value of Progress is 70
+[Debug] [2026-10-29 13:27:26] The value of Progress is 75
+[Debug] [2026-10-29 13:27:26] The value of Progress is 80
+[Debug] [2026-10-29 13:27:26] The value of Progress is 85
+[Debug] [2026-10-29 13:27:26] The value of Progress is 90
+[Debug] [2026-10-29 13:27:26] The value of Progress is 95
+[Debug] [2026-10-29 13:27:27] The value of Progress is 100
+[Debug] [2026-10-29 13:27:27] COMMAND[Program] execute successfully, takes 3.3 secs.
+[Debug] [2026-10-29 13:27:28] cfg_program succeed.
+[Info] [2026-10-29 13:27:28] /***************************End Configration***************************/

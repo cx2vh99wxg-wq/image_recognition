@@ -63,6 +63,7 @@ int lane_test_ioctl(int fd, unsigned long request, ...) {
     struct spi_ioc_transfer *tr = argument;
     const uint8_t *tx = (const uint8_t *)(uintptr_t)tr->tx_buf;
     if(!tx && tr->rx_buf) {
+        if(tr->len==4){memset((void*)(uintptr_t)tr->rx_buf,0,4);return 4;}
         assert(tr->len==1 && tr->rx_nbits==4);
         *(uint8_t *)(uintptr_t)tr->rx_buf=0;
         return 1;

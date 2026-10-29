@@ -82,11 +82,13 @@ module image_pcie_capture #(
     inout  wire       left,
     inout  wire       right,
     output wire       stop,
+    inout  wire       speed_key_n, // A18 / FMC LA14_P / J3-34: same 0/Z contact as RIGHT
     //test
     //output wire test,
 
     //UART interface
-    input RXD  //UART receive data
+    input RXD,  //UART receive data
+    output wire hmi_status_txd // B22 / FMC LA20_N -> HMI RX, 115200 8N1
 
     //Debug signals for waveform capture
     //output  wire    [7:0]   debug_mode,     //Mode signal for debug
@@ -332,6 +334,27 @@ module image_pcie_capture #(
   wire [  7:0] mem3_out;
   wire [  7:0] mem4_out;
   wire [  7:0] mem5_out;
+  wire [  7:0] mem6_out;
+  wire hmi_speed_slider_present;
+  wire hmi_speed_level,hmi_speed_target_toggle;
+  wire [1:0] hmi_speed_target;
+  wire [2:0] speed_phase_gray;
+  wire speed_ready, speed_pressed, speed_drive;
+  wire [3:0] hmi_select_sync;
+  // New SPEED uses the same 04 selector and stable CDC path as RIGHT.
+  // Keep 10 01/00 compatibility until the matching TFT has been installed.
+  wire hmi_speed_manual = (hmi_select_sync == 4'hf) | hmi_speed_level;
+  remote_speed_controller u_remote_speed_controller (
+      .clk(free_clk), .rst_n(board_rst_n), .key_n(speed_key_n),
+      .hmi_level_async(hmi_speed_manual), .sync_command_async(mem6_out),
+      .target_toggle_async(hmi_speed_target_toggle), .target_gear_async(hmi_speed_target),
+      .phase_gray(speed_phase_gray), .ready(speed_ready),
+      .pressed(speed_pressed), .drive_active(speed_drive)
+  );
+  // Exactly match LEFT/RIGHT electrically: sink the shared remote contact
+  // while pressed, otherwise release it to the remote's own pull-up.
+  // Input sense remains available for physical-key debounce and gear feedback.
+  assign speed_key_n = speed_drive ? 1'b0 : 1'bz;
   wire hmi_left_denied, hmi_right_denied, traffic_go_denied;
   lane_permission_guard u_lane_permission_guard (
       .clk(free_clk), .rst_n(board_rst_n), .async_permission(mem5_out),
@@ -355,7 +378,6 @@ module image_pcie_capture #(
 
   // UART commands originate on true_50M. A stable-value filter prevents a
   // multi-bit direction change from looking like a momentary E request.
-  wire [3:0] hmi_select_sync;
   wire hmi_rearm;
   hmi_control_synchronizer u_hmi_control_synchronizer (
       .clk          (free_clk),
@@ -430,12 +452,18 @@ module image_pcie_capture #(
       .spi_data       (spi_data),
       .select_rearview(select_rearview),             // 传递select_rearview信号
       .auto_brake_enable(auto_brake_enabled),
+      .speed_status_async({speed_ready,speed_pressed,speed_drive,speed_phase_gray}),
+      .control_status_async({board_rst_n,speed_ready,fspi_direction_armed,traffic_go_denied,
+          hmi_right_denied,hmi_left_denied,movement_blocked,auto_brake_enabled,
+          hmi_speed_manual,speed_key_n,speed_drive,~stop_pressed,
+          right_released,left_released,back_released,(go_released|traffic_go_denied)}),
       .mem0_out       (mem0_out),
       .mem1_out       (mem1_out),
       .mem2_out       (mem2_out),
       .mem3_out       (mem3_out),
       .mem4_out       (mem4_out),
-      .mem5_out       (mem5_out)
+      .mem5_out       (mem5_out),
+      .mem6_out       (mem6_out)
   );
 
   //===================================================================================================================
@@ -453,6 +481,13 @@ module image_pcie_capture #(
 
 
   //////////////////////UART通信控制///////////////////////////
+  // Status uses its own transmitter. The existing receive/command path is
+  // unchanged; never echo arbitrary HMI command bytes into the screen.
+  hmi_gear_feedback u_hmi_gear_feedback (
+      .clk(true_50M), .rst_n(board_rst_n),
+      .gear_async({speed_ready,speed_phase_gray}),
+      .slider_present(hmi_speed_slider_present), .txd(hmi_status_txd)
+  );
   uart_loopback u_uart_loopback (
       .sys_clk     (true_50M),
       .sys_rst_n   (board_rst_n),
@@ -470,7 +505,11 @@ module image_pcie_capture #(
       .uart_rx_valid(uart_rx_valid),
       .mode         (mode),
       .cnn_level    (select_rearview),
-      .auto_brake_enable(hmi_auto_brake_enable)
+      .auto_brake_enable(hmi_auto_brake_enable),
+      .speed_slider_present(hmi_speed_slider_present),
+      .speed_request_level(hmi_speed_level),
+      .speed_target_gear(hmi_speed_target),
+      .speed_target_toggle(hmi_speed_target_toggle)
   );
 
   wire [5:0] level;
@@ -1247,6 +1286,220 @@ vga_ctrl u_vga_ctrl
   assign i_dma_write_data = concatenated_data;
 
 endmodule
+
+// FPGA -> HMI status only, separate from RX commands and all vehicle outputs.
+// Screen uses GB2312: B5 B5 encodes Chinese 'gear'. Refresh also repairs the
+// display after page changes or a screen-only reboot. No local HMI counter.
+module hmi_gear_feedback #(
+    parameter integer CLK_FREQ=50000000,
+    parameter integer UART_BPS=115200,
+    parameter integer REFRESH_CYCLES=12500000
+) (
+    input wire clk,rst_n,
+    input wire [3:0] gear_async,
+    input wire slider_present,
+    output wire txd
+);
+  (* ASYNC_REG="TRUE" *) reg [3:0] gear_meta,gear_sync;
+  reg [23:0] refresh_count;
+  reg [15:0] byte_gap;
+  reg [1:0] state;
+  reg [5:0] index;
+  reg [7:0] gear_character,tx_data;
+  reg tx_enable;
+  reg slider_snapshot;
+  wire tx_busy;
+  function [7:0] gear_ascii(input [3:0] value);
+    if(!value[3])gear_ascii="?";
+    else case(value[2:0])
+      3'b000,3'b010:gear_ascii="1";
+      3'b001,3'b110:gear_ascii="2";
+      3'b011,3'b100:gear_ascii="3";
+      default:gear_ascii="?";
+    endcase
+  endfunction
+  function [7:0] frame_byte(input [5:0] n,input [7:0] gear);
+    case(n)
+        0:frame_byte=8'h70;
+        1:frame_byte=8'h61;
+        2:frame_byte=8'h67;
+        3:frame_byte=8'h65;
+        4:frame_byte=8'h30;
+        5:frame_byte=8'h2e;
+        6:frame_byte=8'h74;
+        7:frame_byte=8'h47;
+        8:frame_byte=8'h65;
+        9:frame_byte=8'h61;
+        10:frame_byte=8'h72;
+        11:frame_byte=8'h2e;
+        12:frame_byte=8'h74;
+        13:frame_byte=8'h78;
+        14:frame_byte=8'h74;
+        15:frame_byte=8'h3d;
+        16:frame_byte=8'h22;
+        17:frame_byte=gear;
+        18:frame_byte=8'hb5;
+        19:frame_byte=8'hb5;
+        20:frame_byte=8'h22;
+        21:frame_byte=8'hff;
+        22:frame_byte=8'hff;
+        23:frame_byte=8'hff;
+        24:frame_byte=8'h70;
+        25:frame_byte=8'h61;
+        26:frame_byte=8'h67;
+        27:frame_byte=8'h65;
+        28:frame_byte=8'h30;
+        29:frame_byte=8'h2e;
+        30:frame_byte=8'h76;
+        31:frame_byte=8'h61;
+        32:frame_byte=8'h47;
+        33:frame_byte=8'h65;
+        34:frame_byte=8'h61;
+        35:frame_byte=8'h72;
+        36:frame_byte=8'h41;
+        37:frame_byte=8'h63;
+        38:frame_byte=8'h74;
+        39:frame_byte=8'h75;
+        40:frame_byte=8'h61;
+        41:frame_byte=8'h6c;
+        42:frame_byte=8'h2e;
+        43:frame_byte=8'h76;
+        44:frame_byte=8'h61;
+        45:frame_byte=8'h6c;
+        46:frame_byte=8'h3d;
+        47:frame_byte=(gear=="?" ? "0" : gear);
+        48:frame_byte=8'hff;
+        49:frame_byte=8'hff;
+        50:frame_byte=8'hff;
+        default:frame_byte=8'hff;
+    endcase
+  endfunction
+  uart_tx #(.CLK_FREQ(CLK_FREQ),.UART_BPS(UART_BPS)) tx (
+      .clk(clk),.rst_n(rst_n),.uart_tx_en(tx_enable),.uart_tx_data(tx_data),
+      .uart_txd(txd),.uart_tx_busy(tx_busy)
+  );
+  always @(posedge clk or negedge rst_n) begin
+    if(!rst_n)begin
+      gear_meta<=0;gear_sync<=0;refresh_count<=REFRESH_CYCLES-1;
+      byte_gap<=0;state<=0;index<=0;gear_character<="?";tx_data<=0;tx_enable<=0;
+      slider_snapshot<=0;
+    end else begin
+      gear_meta<=gear_async;gear_sync<=gear_meta;tx_enable<=0;
+      case(state)
+        0:if(refresh_count>=REFRESH_CYCLES-1)begin
+          refresh_count<=0;index<=0;gear_character<=gear_ascii(gear_sync);state<=1;
+          slider_snapshot<=slider_present;
+        end else refresh_count<=refresh_count+1'b1;
+        1:if(!tx_busy)begin tx_data<=frame_byte(index,gear_character);tx_enable<=1;state<=2;end
+        2:if(tx_busy)state<=3;
+        3:if(!tx_busy)begin
+          if(byte_gap>=CLK_FREQ/UART_BPS)begin
+            byte_gap<=0;
+            if(index==50||(index==23&&!slider_snapshot))state<=0;
+            else begin index<=index+1'b1;state<=1;end
+          end else byte_gap<=byte_gap+1'b1;
+        end
+      endcase
+    end
+  end
+endmodule
+
+// SPEED is a direct momentary active-low contact. Slider requests use
+// bounded pulses, but a manual press is NEVER shortened to a fixed pulse.
+module remote_speed_controller #(
+    parameter integer DEBOUNCE_CYCLES=250000,
+    parameter integer PULSE_CYCLES=12500000, // slider: 500 ms at 25 MHz
+    parameter integer GAP_CYCLES=12500000
+) (
+    input wire clk,rst_n,key_n,
+    input wire hmi_level_async,
+    input wire target_toggle_async,
+    input wire [1:0] target_gear_async,
+    input wire [7:0] sync_command_async,
+    output reg [2:0] phase_gray,
+    output reg ready,pressed,
+    output wire drive_active
+);
+    (* ASYNC_REG="TRUE" *) reg [1:0] key_pipe,hmi_pipe;
+    (* ASYNC_REG="TRUE" *) reg [2:0] target_pipe;
+    (* ASYNC_REG="TRUE" *) reg [1:0] target_meta,target_sync;
+    (* ASYNC_REG="TRUE" *) reg [7:0] sync_meta,sync_value;
+    reg target_previous;
+    reg [7:0] previous_sync;
+    reg [23:0] debounce_count,release_count,pulse_count;
+    reg [1:0] auto_state,wanted,attempts_left;
+    reg pending;
+    reg [2:0] phase_at_press;
+    localparam IDLE=0,PRESS=1,GAP=2;
+    wire target_event=target_pipe[2]!=target_previous;
+    wire sensed_press=!key_pipe[1]&&!pressed&&(debounce_count>=DEBOUNCE_CYCLES-1);
+    // A contact press must not depend on the feedback input first reaching
+    // HIGH. RIGHT has no such prerequisite. Only queued absolute-gear
+    // pulses require a valid baseline; manual hold/release always works.
+    assign drive_active=rst_n&&(hmi_pipe[1]||(ready&&auto_state==PRESS));
+    function [2:0] next_phase(input [2:0] p);
+        case(p)
+          0:next_phase=1;1:next_phase=3;3:next_phase=2;
+          2:next_phase=6;6:next_phase=4;default:next_phase=0;
+        endcase
+    endfunction
+    function [1:0] gear(input [2:0] p);
+        case(p)0,2:gear=1;1,6:gear=2;3,4:gear=3;default:gear=0;endcase
+    endfunction
+    always @(posedge clk or negedge rst_n) begin
+        if(!rst_n)begin
+            key_pipe<=3;hmi_pipe<=0;target_pipe<=0;target_meta<=1;target_sync<=1;
+            sync_meta<=0;sync_value<=0;previous_sync<=0;target_previous<=0;
+            phase_gray<=0;ready<=0;pressed<=0;
+            debounce_count<=0;release_count<=0;pulse_count<=0;
+            auto_state<=IDLE;wanted<=1;attempts_left<=0;pending<=0;phase_at_press<=0;
+        end else begin
+            key_pipe<={key_pipe[0],key_n};hmi_pipe<={hmi_pipe[0],hmi_level_async};
+            target_pipe<={target_pipe[1:0],target_toggle_async};target_previous<=target_pipe[2];
+            target_meta<=target_gear_async;target_sync<=target_meta;
+            sync_meta<=sync_command_async;sync_value<=sync_meta;previous_sync<=sync_value;
+            if(key_pipe[1])begin
+                if(release_count<DEBOUNCE_CYCLES)release_count<=release_count+1'b1;
+                if(release_count>=DEBOUNCE_CYCLES-1)ready<=1;
+            end else release_count<=0;
+            if(key_pipe[1]==!pressed)debounce_count<=0;
+            else if(debounce_count>=DEBOUNCE_CYCLES-1)begin
+                debounce_count<=0;pressed<=!key_pipe[1];
+                if(!key_pipe[1]&&ready)phase_gray<=next_phase(phase_gray);
+            end else debounce_count<=debounce_count+1'b1;
+
+            case(auto_state)
+              IDLE:if(pending&&ready&&key_pipe[1]&&!pressed&&release_count>=DEBOUNCE_CYCLES)begin
+                if(gear(phase_gray)==wanted||attempts_left==0)pending<=0;
+                else begin
+                    auto_state<=PRESS;pulse_count<=0;phase_at_press<=phase_gray;
+                    attempts_left<=attempts_left-1'b1;
+                end
+              end
+              PRESS:if(pulse_count>=PULSE_CYCLES-1)begin
+                auto_state<=GAP;pulse_count<=0;
+                // No sensed contact edge: do not keep sending blind pulses.
+                if(phase_gray==phase_at_press)pending<=0;
+              end else pulse_count<=pulse_count+1'b1;
+              GAP:if(pulse_count>=GAP_CYCLES-1)begin auto_state<=IDLE;pulse_count<=0;end
+                  else pulse_count<=pulse_count+1'b1;
+              default:auto_state<=IDLE;
+            endcase
+            if(target_event&&ready&&target_sync>=1&&target_sync<=3)begin
+                wanted<=target_sync;pending<=1;attempts_left<=2;
+            end
+            // Human input takes priority over queued slider actions. Hold
+            // manual low for its entire press, release immediately on 00.
+            if(hmi_pipe[1]||(sensed_press&&auto_state!=PRESS))begin
+                pending<=0;auto_state<=IDLE;pulse_count<=0;
+            end
+            if(sync_value==8'ha5&&previous_sync!=8'ha5&&ready&&key_pipe[1]&&!pressed&&!drive_active)begin
+                phase_gray<=0;pending<=0;auto_state<=IDLE;
+            end
+        end
+    end
+endmodule
+
 
 // Traction and steering arbitrate independently. HMI GO/BACK must not mask
 // automatic LEFT/RIGHT. Each axis retains the original stale-command guard:

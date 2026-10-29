@@ -28,7 +28,11 @@ module uart_lcd #(
     output     [7:0]  cb_max,
     output     [7:0]  cr_min,
     output     [7:0]  cr_max,
-    output            auto_brake_enable
+    output            auto_brake_enable,
+    output reg        speed_slider_present,
+    output reg        speed_request_level,
+    output reg [1:0]  speed_target_gear,
+    output reg        speed_target_toggle
 );
 
     reg [7:0] mode_reg = 0;
@@ -111,6 +115,10 @@ module uart_lcd #(
             binarization_reg <= 8'd127;
             cnn_level_reg   <= 4'd0;
             auto_brake_enable_reg <= 1'b0;
+            speed_slider_present <= 1'b0;
+            speed_request_level <= 1'b0;
+            speed_target_gear <= 2'd1;
+            speed_target_toggle <= 1'b0;
             sobel_reg       <= 8'd40;
             isp_judge_reg   <= 1'b0;
             cb_min_reg      <= 8'd77;
@@ -140,6 +148,27 @@ module uart_lcd #(
                             auto_brake_enable_reg <= 1'b1;
                         else if (uart_rx == 8'hee)
                             auto_brake_enable_reg <= 1'b0;
+                    end
+                    // Direct momentary contact: held 01 stays pressed until
+                    // explicit 00. Duplicate press frames are not shifts.
+                    8'h10: begin
+                        if (uart_rx == 8'h01) begin
+                            speed_request_level <= 1'b1;
+                        end else if (uart_rx == 8'h00)
+                            speed_request_level <= 1'b0;
+                    end
+                    // Slider selects an absolute gear, never touches 04.
+                    8'h11: begin
+                        // 00 advertises the new slider without shifting.
+                        // Old TFTs never send it and receive legacy text only.
+                        if (uart_rx == 0 || (uart_rx >= 1 && uart_rx <= 3))
+                            speed_slider_present <= 1'b1;
+                        else if (uart_rx == 8'hee)
+                            speed_slider_present <= 1'b0;
+                        if (uart_rx >= 1 && uart_rx <= 3) begin
+                            speed_target_gear <= uart_rx[1:0];
+                            speed_target_toggle <= ~speed_target_toggle;
+                        end
                     end
                     default: ;
                 endcase

@@ -2,6 +2,8 @@
 #define FSPI_MODULE_H
 
 #include <stdint.h>
+#include "speed_status.h"
+#include "control_status.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,6 +24,11 @@ int fspi_read_data(uint16_t addr, uint8_t *data);
 
 /* Three immediate matching HMI samples for lane warning polling; no retry sleep. */
 int fspi_read_hmi_snapshot(uint8_t *data);
+
+/* One native RX-only 4-byte transaction: legacy HMI, A7, gear, CRC8.
+ * No writes or delays. Old FPGA/invalid signature returns -1/EPROTO. */
+int fspi_read_speed_snapshot(SpeedSnapshot *data, uint8_t *raw_status);
+int fspi_read_control_snapshot(ControlSnapshot *data);
 
 /* 独立持久开关：同一次片选发送四线 81 00 05，再四线读取 A1(开)/A0(关)。
  * 只接受带签名的状态，旧 FPGA、无效响应或总线失败返回 -1，且不改输出值。 */

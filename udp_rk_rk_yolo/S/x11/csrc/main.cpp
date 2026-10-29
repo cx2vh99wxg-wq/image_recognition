@@ -28,6 +28,7 @@
 #include "line_style_ipc.h"
 #include "traffic_light_ipc.h"
 #include "traffic_go_rule.h"
+#include "speed_status.h"
 
 /* 为了使用aligned_alloc，需要定义_ISOC11_SOURCE */
 #ifndef _ISOC11_SOURCE
@@ -1447,6 +1448,13 @@ int present_dashboard(RenderEngine* engine) {
         status.go_control_live=traffic_go_fresh(&go_status,display_clock_ns());
         status.go_write_ok=go_status.write_ok==1;
     }
+    static SpeedWarningIPC speed_status={-1,nullptr};
+    speed_ipc_open(&speed_status,0);SpeedWarningData speed={};
+    if(!speed_ipc_read(&speed_status,&speed)) {
+        status.gear=speed.gear;status.gear_known=speed.known==1;
+        status.gear_live=speed_fresh(&speed,display_clock_ns());
+        status.gear_shifting=speed.driving==1;
+    }
     static LineStyleIPC line_status={-1,nullptr};
     static LineStyleIPC line_detection={-1,nullptr};
     line_ipc_open(&line_detection,LINE_STYLE_KEY,0);
@@ -1464,6 +1472,11 @@ int present_dashboard(RenderEngine* engine) {
 
     }
     if(engine->headless) {
+        const char* gear_preview=getenv("VISION_PREVIEW_GEAR");
+        if(gear_preview) {
+            status.gear=(unsigned)atoi(gear_preview);status.gear_known=status.gear>=1&&status.gear<=3;
+            status.gear_live=status.gear_known;status.gear_shifting=false;
+        }
         const char* traffic_preview=getenv("VISION_PREVIEW_TRAFFIC");
         if(traffic_preview) {
             status.traffic=!strcmp(traffic_preview,"red")?1:!strcmp(traffic_preview,"yellow")?2:!strcmp(traffic_preview,"green")?3:0;

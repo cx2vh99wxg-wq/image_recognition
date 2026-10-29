@@ -57,7 +57,7 @@ endif
 # 构建规则
 # =============================================================================
 
-.PHONY: all clean help run preview test-fps
+.PHONY: all clean help run preview test-fps test-speed-warning
 
 # 默认目标
 all: $(BIN)
@@ -67,6 +67,13 @@ $(BUILD_DIR)/test_video_input_fps: tests/test_video_input_fps.cpp include/video_
 
 test-fps: $(BUILD_DIR)/test_video_input_fps
 	"$(abspath $(BUILD_DIR)/test_video_input_fps)"
+
+$(BUILD_DIR)/test_speed_warning: tests/test_speed_warning.cpp include/dashboard_ui.h include/speed_warning_glyphs.h | $(BUILD_DIR)
+	$(CXX) -std=c++14 -O2 -Wall -Wextra -Iinclude $< -o $@
+
+test-speed-warning: $(BUILD_DIR)/test_speed_warning
+	"$(abspath $(BUILD_DIR)/test_speed_warning)"
+	VISION_DASHBOARD_FAST=1 "$(abspath $(BUILD_DIR)/test_speed_warning)"
 
 # 链接可执行文件
 $(BIN): $(OBJECTS) | $(BUILD_DIR)

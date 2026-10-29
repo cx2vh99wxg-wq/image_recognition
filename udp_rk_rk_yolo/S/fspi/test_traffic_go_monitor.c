@@ -19,17 +19,20 @@
 static LineStyleSegment line_segment,warning_segment;
 static TrafficLightSegment signal_segment;
 static TrafficGoSegment go_segment;
+static SpeedWarningSegment speed_segment;
+static unsigned speed_reply=0xc1;
+static int speed_failed;
 static unsigned writes,last_permission,hmi_reply=0x0d;
 static int write_failed;
 int test_shmget(key_t key,size_t size,int flags) {
     (void)size;(void)flags;
     return key==LINE_STYLE_KEY?1:key==LINE_WARNING_KEY?2:
-           key==TRAFFIC_LIGHT_KEY?3:key==TRAFFIC_GO_KEY?4:-1;
+           key==TRAFFIC_LIGHT_KEY?3:key==TRAFFIC_GO_KEY?4:key==SPEED_WARNING_KEY?5:-1;
 }
 void* test_shmat(int id,const void* address,int flags) {
     (void)address;(void)flags;
     return id==1?(void*)&line_segment:id==2?(void*)&warning_segment:
-           id==3?(void*)&signal_segment:id==4?(void*)&go_segment:(void*)-1;
+           id==3?(void*)&signal_segment:id==4?(void*)&go_segment:id==5?(void*)&speed_segment:(void*)-1;
 }
 int test_shmdt(const void* p){(void)p;return 0;}
 void test_perror(const char* p){(void)p;}
@@ -38,7 +41,15 @@ int test_spi_ioctl(int fd,unsigned long request,...) {
     if(request==SPI_IOC_WR_MODE32||request==SPI_IOC_WR_BITS_PER_WORD||request==SPI_IOC_WR_MAX_SPEED_HZ)return 0;
     assert(request==SPI_IOC_MESSAGE(1));
     va_list a;va_start(a,request);struct spi_ioc_transfer* t=va_arg(a,void*);va_end(a);
-    if(t->rx_buf){assert(t->len==1);*(uint8_t*)(uintptr_t)t->rx_buf=(uint8_t)hmi_reply;return 1;}
+    if(t->rx_buf){
+        if(t->len==4){
+            uint8_t* b=(void*)(uintptr_t)t->rx_buf;
+            b[0]=0xdd;b[1]=0xa7;b[2]=(uint8_t)speed_reply;b[3]=speed_crc8(b[2]);
+            if(speed_failed){errno=ETIMEDOUT;return -1;}
+            return 4;
+        }
+        assert(t->len==1);*(uint8_t*)(uintptr_t)t->rx_buf=(uint8_t)hmi_reply;return 1;
+    }
     const uint8_t* b=(const uint8_t*)(uintptr_t)t->tx_buf;
     assert(t->len==3&&b[0]==0&&b[1]==5); // no write to motion/STOP
     ++writes;last_permission=b[2];return write_failed?-1:3;
@@ -74,6 +85,19 @@ int main(void) {
     traffic_policy.blocked=0;traffic_policy_initialized=0;
     publish(TRAFFIC_UNKNOWN,0,0);s=poll();assert(s.blocked&&(last_permission&4));
     assert((last_permission&0x40)&&warning.blocked==2&&writes>8);
+    // Gear warnings publish status without any motion/STOP writes. The
+    // ioctl double above rejects every write outside the existing reg5.
+    for(unsigned gear=1;gear<=3;++gear){
+        speed_reply=0xc0|gear;poll();SpeedWarningData status={0};
+        assert(!speed_ipc_read(&speed_warning,&status));
+        assert(status.gear==gear&&status.known&&speed_fresh(&status,speed_clock_ns()));
+    }
+    SpeedWarningData before={0},after={0};speed_ipc_read(&speed_warning,&before);
+    speed_failed=1;poll();assert(!speed_ipc_read(&speed_warning,&after));
+    assert(after.gear==3&&after.known&&!after.link_ok&&after.read_errno==ETIMEDOUT);
+    assert(speed_deadline(&after)==speed_deadline(&before));
+    speed_failed=0;speed_reply=0xc1;poll();speed_ipc_read(&speed_warning,&after);
+    assert(after.gear==1&&after.link_ok);
     puts("production monitor: atomic lane+traffic permissions, red/unknown/yellow/green, SPI retry, UI telemetry, restart PASS");
     return 0;
 }

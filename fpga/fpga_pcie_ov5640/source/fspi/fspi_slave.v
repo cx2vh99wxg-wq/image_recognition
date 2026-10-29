@@ -7,6 +7,8 @@ module	fspi_slave
 	input	wire			rst_n			,
 	input	wire	[3:0]		select_rearview	,	//从顶层传入的select_rearview信号
     input   wire            auto_brake_enable,
+    input   wire [5:0]      speed_status_async,
+    input   wire [15:0]     control_status_async,
 
 	//user	
 	output	wire	[1:0]	cmd				,	//2'b10:写   2'b01:读
@@ -37,6 +39,88 @@ reg [7:0] status_read_data;
 reg status_tx_started;
 reg [3:0] status_tx_nibble;
 wire [23:0] next_status_header = {status_header[19:0], spi_data};
+
+// The proven SMDT RX-only transaction supplies opcode 80 automatically.
+// Byte 0 remains the exact legacy repeated HMI nibble. A four-byte read adds
+// A7, a coherent gear snapshot, and CRC8. No addressed-81 read is required.
+(* ASYNC_REG="TRUE" *) reg [5:0] speed_meta,speed_sync;
+reg [4:0] extended_index;
+reg [3:0] extended_nibble;
+reg [3:0] hmi_snapshot;
+reg [7:0] speed_snapshot,speed_crc;
+(* ASYNC_REG="TRUE" *) reg [15:0] control_meta,control_sync;
+reg [15:0] control_snapshot;
+reg [7:0] control_crc;
+reg extended_active;
+function [2:0] decode_gear(input [2:0] g);
+    case(g)
+      3'b000,3'b010:decode_gear=1;
+      3'b001,3'b110:decode_gear=2;
+      3'b011,3'b100:decode_gear=3;
+      default:decode_gear=0;
+    endcase
+endfunction
+wire [2:0] sampled_gear=decode_gear(speed_sync[2:0]);
+wire [7:0] sampled_speed={1'b1,(speed_sync[5]&&sampled_gear!=0),
+                        speed_sync[4],speed_sync[3],1'b0,sampled_gear};
+function [7:0] speed_crc8(input [7:0] value);
+    reg [7:0] c;integer k;
+    begin
+      c=8'ha7;
+      for(k=0;k<8;k=k+1)c=c[7]?(c<<1)^8'h07:c<<1;
+      c=c^value;
+      for(k=0;k<8;k=k+1)c=c[7]?(c<<1)^8'h07:c<<1;
+      speed_crc8=c;
+    end
+endfunction
+function [7:0] crc_byte(input [7:0] c0,input [7:0] value);
+    reg [7:0] c;integer k;
+    begin
+      c=c0^value;
+      for(k=0;k<8;k=k+1)c=c[7]?(c<<1)^8'h07:c<<1;
+      crc_byte=c;
+    end
+endfunction
+wire [7:0] sampled_control_crc=crc_byte(crc_byte(crc_byte(0,8'hd7),control_sync[7:0]),control_sync[15:8]);
+always @(posedge spi_clk or negedge rst_n) begin
+    if(!rst_n) begin speed_meta<=0;speed_sync<=0;control_meta<=0;control_sync<=0;end
+    else begin speed_meta<=speed_status_async;speed_sync<=speed_meta;control_meta<=control_status_async;control_sync<=control_meta;end
+end
+always @(negedge spi_clk or negedge rst_n or posedge spi_cs) begin
+    if(!rst_n||spi_cs) begin
+      extended_index<=0;extended_nibble<=4'hf;extended_active<=0;
+      hmi_snapshot<=0;speed_snapshot<=0;speed_crc<=0;
+      control_snapshot<=0;control_crc<=0;
+    end else if(cmd_reg==2'b10) begin
+      extended_active<=1;
+      if(extended_index<16)extended_index<=extended_index+1'b1;
+      case(extended_index)
+        0:begin
+          extended_nibble<=select_rearview;hmi_snapshot<=select_rearview;
+          speed_snapshot<=sampled_speed;speed_crc<=speed_crc8(sampled_speed);
+          control_snapshot<=control_sync;control_crc<=sampled_control_crc;
+        end
+        1:extended_nibble<=hmi_snapshot;
+        2:extended_nibble<=4'ha;
+        3:extended_nibble<=4'h7;
+        4:extended_nibble<=speed_snapshot[7:4];
+        5:extended_nibble<=speed_snapshot[3:0];
+        6:extended_nibble<=speed_crc[7:4];
+        7:extended_nibble<=speed_crc[3:0];
+        // Optional bytes 4..7 expose logical contacts and gates. The first
+        // four bytes and legacy one-byte reads remain byte-for-byte intact.
+        8:extended_nibble<=4'hd;
+        9:extended_nibble<=4'h7;
+        10:extended_nibble<=control_snapshot[7:4];
+        11:extended_nibble<=control_snapshot[3:0];
+        12:extended_nibble<=control_snapshot[15:12];
+        13:extended_nibble<=control_snapshot[11:8];
+        14:extended_nibble<=control_crc[7:4];
+        15:extended_nibble<=control_crc[3:0];
+        default:extended_nibble<=4'hf;
+      endcase
+    end
+end
 
 always @(posedge spi_clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -87,7 +171,8 @@ end
 //-----------------assign---------------------
 //当片选拉低，且是写操作的时候数据发送给到RK。
 assign 	spi_data = (!spi_cs && status_tx_started) ? status_tx_nibble :
-                   ((!spi_cs && (cmd == 2'b10)) ? {select_rearview} : 4'bzzzz);
+                   ((!spi_cs && (cmd == 2'b10) && extended_active) ? extended_nibble :
+                   ((!spi_cs && (cmd == 2'b10)) ? {select_rearview} : 4'bzzzz));
 assign	tx_data_valid	=	tx_valid_reg;
 assign	cmd	=	cmd_reg;
 assign	rx_data	=	recv_data;

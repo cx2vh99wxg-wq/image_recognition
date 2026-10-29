@@ -30,6 +30,20 @@ $(BUILDDIR)/test_traffic_go_monitor: test_traffic_go_monitor.c $(SRCDIR)/main.c 
 test-traffic-go-monitor: $(BUILDDIR)/test_traffic_go_monitor
 	./$(BUILDDIR)/test_traffic_go_monitor
 
+$(BUILDDIR)/test_speed_transport: test_speed_transport.c $(SRCDIR)/fspi_module.c $(INCDIR)/fspi_module.h ../include/speed_status.h
+	@mkdir -p $(BUILDDIR)
+	$(CC) $(CFLAGS) -Wextra -ffunction-sections -fdata-sections $(INCLUDES) $< -Wl,--gc-sections -o $@
+
+test-speed: $(BUILDDIR)/test_speed_transport
+	./$(BUILDDIR)/test_speed_transport
+
+$(BUILDDIR)/test_control_status: test_control_status.c $(SRCDIR)/fspi_module.c $(INCDIR)/fspi_module.h ../include/control_status.h ../include/speed_status.h
+	@mkdir -p $(BUILDDIR)
+	$(CC) $(CFLAGS) -Wextra -ffunction-sections -fdata-sections $(INCLUDES) $< -Wl,--gc-sections -o $@
+
+test-control-status: $(BUILDDIR)/test_control_status
+	./$(BUILDDIR)/test_control_status
+
 # 目标程序
 TARGET_APP = $(BUILDDIR)/vehicle_control
 
@@ -68,7 +82,13 @@ LIBS = -lm -lpthread -lrt
 all: app
 
 # 编译应用程序
-app: $(TARGET_APP)
+app: $(TARGET_APP) $(BUILDDIR)/speed_gear_status $(BUILDDIR)/control_link_status
+
+$(BUILDDIR)/control_link_status: $(SRCDIR)/control_link_status.c $(BUILDDIR)/fspi_module.o ../include/control_status.h
+	$(CC) $(CFLAGS) $(INCLUDES) $(SRCDIR)/control_link_status.c $(BUILDDIR)/fspi_module.o $(LIBS) -o $@
+
+$(BUILDDIR)/speed_gear_status: $(SRCDIR)/speed_gear_status.c $(BUILDDIR)/fspi_module.o
+	$(CC) $(CFLAGS) $(INCLUDES) $^ $(LIBS) -o $@
 
 # 应用程序编译规则
 $(TARGET_APP): $(ALL_OBJECTS) | $(BUILDDIR)
@@ -86,8 +106,8 @@ $(BUILDDIR)/%.o: ../csrc/%.c | $(BUILDDIR)
 	@echo "编译共享内存文件: $<"
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-$(BUILDDIR)/main.o: $(INCDIR)/fspi_module.h $(INCDIR)/brake_policy.h ../include/shared_memory.h ../include/lane_rule.h ../include/traffic_go_rule.h ../include/traffic_light_ipc.h ../include/traffic_light.h
-$(BUILDDIR)/fspi_module.o: $(INCDIR)/fspi_module.h
+$(BUILDDIR)/main.o: $(INCDIR)/fspi_module.h $(INCDIR)/brake_policy.h ../include/shared_memory.h ../include/lane_rule.h ../include/traffic_go_rule.h ../include/traffic_light_ipc.h ../include/traffic_light.h ../include/speed_status.h
+$(BUILDDIR)/fspi_module.o: $(INCDIR)/fspi_module.h ../include/speed_status.h ../include/control_status.h
 
 # 创建目录
 $(BUILDDIR):

@@ -15,7 +15,8 @@ module spi_ram_crtl
 	output	wire	[7:0]		mem2_out	,	// 引出第2个地址的寄存器
 	output	wire	[7:0]		mem3_out	,	// 引出第3个地址的寄存器
 	output	wire	[7:0]		mem4_out,
-	output  wire    [7:0]        mem5_out    // lane permissions + heartbeat (independent of motion)
+    output  wire    [7:0]        mem5_out,   // lane/traffic permissions + heartbeat
+    output  wire    [7:0]        mem6_out    // A5 = declare known physical low-gear reference
 );
 
 //--------------------状态机定义--------------------
@@ -176,6 +177,14 @@ end
 
 //====================内存数组定义====================
 reg [7:0] mem [5:0];
+// Keep the original motion/permission bank and its decode unchanged.
+// The added calibration register uses a constant address rather than
+// expanding the 400 MHz indexed-write decoder for every existing register.
+reg [7:0] gear_reference;
+always @(negedge wr_clk or negedge rst_n) begin
+    if (!rst_n) gear_reference <= 8'd0;
+    else if (ram_wr_en && ram_addr == 16'd6) gear_reference <= wr_data_reg;
+end
 
 // 内存读写逻辑 - 统一使用negedge wr_clk与状态机保持一致
 always@(negedge wr_clk or negedge rst_n) begin
@@ -196,7 +205,7 @@ always@(negedge wr_clk or negedge rst_n) begin
 		end
 		
 		// 读操作 - 修正地址范围检查
-		if(ram_addr[15:0] < 16'd6) begin
+		if(ram_addr[15:0] < 16'd7) begin
 			rd_data <= {4'd0, select_rearview};  // 片选无效时输出select_rearview值
 		end
 		else begin
@@ -211,5 +220,6 @@ assign mem2_out = mem[2];
 assign mem3_out = mem[3];
 assign mem4_out = mem[4];
 assign mem5_out = mem[5];
+assign mem6_out = gear_reference;
 endmodule
 

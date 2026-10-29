@@ -76666,3 +76666,1055 @@ Cable index 0:USB Cable II/fffffffffffffffe
 [Debug] [2026-10-28 15:13:26] end to send jtag flash verify cmd
 [Debug] [2026-10-28 15:13:26] end to send jtag flash program cmd.
 [Debug] [2026-10-28 15:13:26] Log::Print : COMMAND[Verify Outer Flash] execute successfully, takes 3.9 secs.
+[Info] [2026-10-28 18:09:23] /***************************End Configration***************************/
+[Info] [2026-10-28 18:09:27] /***************************Start Configuration***************************/
+[Info] [2026-10-28 18:09:27] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 18:09:27] Version: 146967
+[Info] [2026-10-28 18:09:28] Current Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-28 18:09:28] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-28 18:09:31] Configuration is not connect with server. connect first then scan chain.
+[Debug] [2026-10-28 18:09:31] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-28 18:09:31] Client Local Address:10.17.104.77
+[Debug] [2026-10-28 18:09:31] Client Local Address:172.24.144.1
+[Debug] [2026-10-28 18:09:31] Server Address:127.0.0.1, Port:65420
+[Debug] [2026-10-28 18:09:31] Log::Print : Connecting to server[127.0.0.1 : 65420].
+[Info] [2026-10-28 18:09:32] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-28 18:09:32] Finish.
+[Info] [2026-10-28 18:09:32] Connect server succeeded
+[Debug] [2026-10-28 18:09:32] Send RPC:1
+[Debug] [2026-10-28 18:09:32] Send cmd [check version information:40004] OK
+[Debug] [2026-10-28 18:09:32] Log::Print : Connect to server[127.0.0.1 : 65420] successfully.
+[Debug] [2026-10-28 18:09:32] Send RPC:2
+[Debug] [2026-10-28 18:09:32] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-28 18:09:32] Begin to send initialize chain cmd...
+[Debug] [2026-10-28 18:09:32] Send RPC:3
+[Debug] [2026-10-28 18:09:32] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-28 18:09:32] End to send initialize chain cmd.
+[Debug] [2026-10-28 18:09:32] COMMAND[check version information] execute successfully, takes 0.1 secs.
+[Debug] [2026-10-28 18:09:32] Log::Print : COMMAND[check version information] execute successfully, takes 0.1 secs.
+[Debug] [2026-10-28 18:09:33] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-28 18:09:33] Log::Print : The cable List : 
+Cable index 0:USB Cable II/fffffffffffffffe 
+
+[Debug] [2026-10-28 18:09:33] Log::Print : COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-28 18:09:33] begin the exec of open cable cmd...
+[Debug] [2026-10-28 18:09:33] Begin to deal with chain from server...
+[Debug] [2026-10-28 18:09:33] Begin to set user chain...
+[Debug] [2026-10-28 18:09:33] End to set user chain.
+[Debug] [2026-10-28 18:09:33] Begin to update graphic item and tree item ...
+[Debug] [2026-10-28 18:09:33] End to update graphic item and tree item ...
+[Debug] [2026-10-28 18:09:33] Log::Print : PANGO USB CABLE II cable driver: D2XX DLL
+[Debug] [2026-10-28 18:09:33] Log::Print : PG2L100H
+[Debug] [2026-10-28 18:09:33] Log::Print : This device configure situation (done bit): 1
+[Info] [2026-10-28 18:09:37] set OpenLastPath: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_speed_warning_20261028.sbit
+[Debug] [2026-10-28 18:09:37] begin to get device info from CFG file...
+[Debug] [2026-10-28 18:09:37] end to get device info from CFG file...
+[Debug] [2026-10-28 18:09:37] Begin to update graphic item and tree item ...
+[Debug] [2026-10-28 18:09:37] End to update graphic item and tree item ...
+[Debug] [2026-10-28 18:09:37] Begin to update graphic item and tree item ...
+[Debug] [2026-10-28 18:09:37] End to update graphic item and tree item ...
+[Debug] [2026-10-28 18:09:37] End to deal wiht chain from server.
+[Debug] [2026-10-28 18:09:37] end the exec of open cable cmd.
+[Debug] [2026-10-28 18:09:37] COMMAND[Open config cable] execute successfully, takes 5.2 secs.
+[Debug] [2026-10-28 18:09:37] Log::Print : COMMAND[Open config cable] execute successfully, takes 5.2 secs.
+[Debug] [2026-10-28 18:09:40] Begin to send scan outer flash cmd...
+[Debug] [2026-10-28 18:09:40] Send RPC:4
+[Debug] [2026-10-28 18:09:40] Send cmd [Scan Outer SPI Flash:20300] OK
+[Debug] [2026-10-28 18:09:40] End to send scan outer flash cmd.
+[Debug] [2026-10-28 18:09:41] begin to exec scan jtag flash cmd...
+[Debug] [2026-10-28 18:09:41] Begin to initialize JtagFlash for selected FPGA Device...
+[Debug] [2026-10-28 18:09:41] Begin to update graphic item and tree item ...
+[Debug] [2026-10-28 18:09:41] End to update graphic item and tree item ...
+[Info] [2026-10-28 18:09:44] set OpenLastPath: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_speed_warning_20261028.sfc
+[Debug] [2026-10-28 18:09:44] begin to check SFC File and Flash Device Read Mode.
+[Debug] [2026-10-28 18:09:44] end to check SFC File and Flash Device Read Mode.
+[Debug] [2026-10-28 18:09:44] Begin to update graphic item and tree item ...
+[Debug] [2026-10-28 18:09:44] End to update graphic item and tree item ...
+[Debug] [2026-10-28 18:09:44] End to initialize OuterFlash for selected FPGA Device...
+[Debug] [2026-10-28 18:09:44] end to exec scan jtag flash cmd...
+[Debug] [2026-10-28 18:09:44] COMMAND[Scan Outer SPI Flash] execute successfully, takes 4.0 secs.
+[Debug] [2026-10-28 18:09:44] Log::Print : COMMAND[Scan Outer SPI Flash] execute successfully, takes 4.0 secs.
+[Debug] [2026-10-28 18:09:47] begin to send promgram jtag flash cmd.
+[Debug] [2026-10-28 18:09:47] begin to send jtag flash erase cmd
+[Debug] [2026-10-28 18:09:47] Send RPC:5
+[Debug] [2026-10-28 18:09:47] Begin to send embed flash erase data.
+[Debug] [2026-10-28 18:09:47] Begin to send flash erase data.
+[Debug] [2026-10-28 18:09:47] End to send flash erase data.
+[Debug] [2026-10-28 18:09:47] End to send embed flash erase data.
+[Debug] [2026-10-28 18:09:47] Send cmd [Erase Outer Flash:20302] OK
+[Debug] [2026-10-28 18:09:47] Log::Print : The start address of operating flash is 0x0.
+[Debug] [2026-10-28 18:09:48] The value of Progress is 1
+[Debug] [2026-10-28 18:09:49] The value of Progress is 7
+[Debug] [2026-10-28 18:09:50] The value of Progress is 11
+[Debug] [2026-10-28 18:09:50] The value of Progress is 15
+[Debug] [2026-10-28 18:09:51] The value of Progress is 20
+[Debug] [2026-10-28 18:09:52] The value of Progress is 26
+[Debug] [2026-10-28 18:09:53] The value of Progress is 30
+[Debug] [2026-10-28 18:09:54] The value of Progress is 35
+[Debug] [2026-10-28 18:09:55] The value of Progress is 41
+[Debug] [2026-10-28 18:09:56] The value of Progress is 45
+[Debug] [2026-10-28 18:09:57] The value of Progress is 50
+[Debug] [2026-10-28 18:09:58] The value of Progress is 56
+[Debug] [2026-10-28 18:09:58] The value of Progress is 60
+[Debug] [2026-10-28 18:09:59] The value of Progress is 66
+[Debug] [2026-10-28 18:10:00] The value of Progress is 71
+[Debug] [2026-10-28 18:10:01] The value of Progress is 75
+[Debug] [2026-10-28 18:10:02] The value of Progress is 81
+[Debug] [2026-10-28 18:10:03] The value of Progress is 86
+[Debug] [2026-10-28 18:10:03] The value of Progress is 90
+[Debug] [2026-10-28 18:10:04] The value of Progress is 96
+[Debug] [2026-10-28 18:10:05] The value of Progress is 100
+[Debug] [2026-10-28 18:10:05] COMMAND[Erase Outer Flash] execute finish, takes 17.5 secs.
+[Debug] [2026-10-28 18:10:05] end to send jtag flash erase cmd.
+[Debug] [2026-10-28 18:10:05] Send RPC:6
+[Debug] [2026-10-28 18:10:05] Begin to send jtag flash program data.
+[Debug] [2026-10-28 18:10:05] Begin to send flash program data.
+[Debug] [2026-10-28 18:10:05] End to send flash program data.
+[Debug] [2026-10-28 18:10:05] End to send embed flash program data.
+[Debug] [2026-10-28 18:10:05] Send cmd [Program Outer Flash:20301] OK
+[Debug] [2026-10-28 18:10:05] Log::Print : COMMAND[Erase Outer Flash] execute finish, takes 17.5 secs.
+[Debug] [2026-10-28 18:10:05] Log::Print : The start address of operating flash is 0x0.
+[Debug] [2026-10-28 18:10:05] The value of Progress is 1
+[Debug] [2026-10-28 18:10:08] The value of Progress is 6
+[Debug] [2026-10-28 18:10:10] The value of Progress is 10
+[Debug] [2026-10-28 18:10:13] The value of Progress is 15
+[Debug] [2026-10-28 18:10:16] The value of Progress is 20
+[Debug] [2026-10-28 18:10:19] The value of Progress is 25
+[Debug] [2026-10-28 18:10:21] The value of Progress is 30
+[Debug] [2026-10-28 18:10:24] The value of Progress is 35
+[Debug] [2026-10-28 18:10:27] The value of Progress is 40
+[Debug] [2026-10-28 18:10:29] The value of Progress is 45
+[Debug] [2026-10-28 18:10:32] The value of Progress is 50
+[Debug] [2026-10-28 18:10:35] The value of Progress is 55
+[Debug] [2026-10-28 18:10:38] The value of Progress is 60
+[Debug] [2026-10-28 18:10:40] The value of Progress is 65
+[Debug] [2026-10-28 18:10:43] The value of Progress is 70
+[Debug] [2026-10-28 18:10:46] The value of Progress is 75
+[Debug] [2026-10-28 18:10:48] The value of Progress is 80
+[Debug] [2026-10-28 18:10:51] The value of Progress is 85
+[Debug] [2026-10-28 18:10:54] The value of Progress is 90
+[Debug] [2026-10-28 18:10:56] The value of Progress is 95
+[Debug] [2026-10-28 18:10:59] The value of Progress is 100
+[Debug] [2026-10-28 18:10:59] COMMAND[Program Outer Flash] execute finish, takes 54.7 secs.
+[Debug] [2026-10-28 18:10:59] begin to send jtag flash verify cmd
+[Debug] [2026-10-28 18:10:59] Send RPC:7
+[Debug] [2026-10-28 18:10:59] Begin to send embed flash verify data.
+[Debug] [2026-10-28 18:10:59] Begin to send flash verify data.
+[Debug] [2026-10-28 18:10:59] End to send flash verify data.
+[Debug] [2026-10-28 18:10:59] End to send embed flash verify data.
+[Debug] [2026-10-28 18:10:59] Send cmd [Verify Outer Flash:20303] OK
+[Debug] [2026-10-28 18:10:59] Log::Print : COMMAND[Program Outer Flash] execute finish, takes 54.7 secs.
+[Debug] [2026-10-28 18:10:59] Log::Print : The start address of operating flash is 0x0.
+[Debug] [2026-10-28 18:11:00] The value of Progress is 1
+[Debug] [2026-10-28 18:11:00] The value of Progress is 6
+[Debug] [2026-10-28 18:11:00] The value of Progress is 10
+[Debug] [2026-10-28 18:11:00] The value of Progress is 15
+[Debug] [2026-10-28 18:11:00] The value of Progress is 20
+[Debug] [2026-10-28 18:11:01] The value of Progress is 25
+[Debug] [2026-10-28 18:11:01] The value of Progress is 30
+[Debug] [2026-10-28 18:11:01] The value of Progress is 35
+[Debug] [2026-10-28 18:11:01] The value of Progress is 40
+[Debug] [2026-10-28 18:11:01] The value of Progress is 45
+[Debug] [2026-10-28 18:11:01] The value of Progress is 50
+[Debug] [2026-10-28 18:11:02] The value of Progress is 55
+[Debug] [2026-10-28 18:11:02] The value of Progress is 60
+[Debug] [2026-10-28 18:11:02] The value of Progress is 65
+[Debug] [2026-10-28 18:11:02] The value of Progress is 70
+[Debug] [2026-10-28 18:11:02] The value of Progress is 75
+[Debug] [2026-10-28 18:11:02] The value of Progress is 80
+[Debug] [2026-10-28 18:11:03] The value of Progress is 85
+[Debug] [2026-10-28 18:11:03] The value of Progress is 90
+[Debug] [2026-10-28 18:11:03] The value of Progress is 95
+[Debug] [2026-10-28 18:11:03] The value of Progress is 100
+[Debug] [2026-10-28 18:11:03] COMMAND[Verify Outer Flash] execute successfully, takes 3.9 secs.
+[Debug] [2026-10-28 18:11:03] end to send jtag flash verify cmd
+[Debug] [2026-10-28 18:11:03] end to send jtag flash program cmd.
+[Debug] [2026-10-28 18:11:03] Log::Print : COMMAND[Verify Outer Flash] execute successfully, takes 3.9 secs.
+[Info] [2026-10-28 18:12:32] /***************************End Configration***************************/
+[Info] [2026-10-28 21:43:05] /***************************Start Configuration***************************/
+[Info] [2026-10-28 21:43:05] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 21:43:05] Version: 146967
+[Info] [2026-10-28 21:43:06] Current Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-28 21:43:06] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-28 21:43:08] Configuration is not connect with server. connect first then scan chain.
+[Debug] [2026-10-28 21:43:08] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-28 21:43:08] Client Local Address:10.17.104.77
+[Debug] [2026-10-28 21:43:08] Client Local Address:172.24.144.1
+[Debug] [2026-10-28 21:43:08] Server Address:127.0.0.1, Port:65420
+[Debug] [2026-10-28 21:43:08] Log::Print : Connecting to server[127.0.0.1 : 65420].
+[Info] [2026-10-28 21:43:09] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-28 21:43:09] Finish.
+[Info] [2026-10-28 21:43:09] Connect server succeeded
+[Debug] [2026-10-28 21:43:09] Send RPC:1
+[Debug] [2026-10-28 21:43:09] Send cmd [check version information:40004] OK
+[Debug] [2026-10-28 21:43:09] Log::Print : Connect to server[127.0.0.1 : 65420] successfully.
+[Debug] [2026-10-28 21:43:09] Send RPC:2
+[Debug] [2026-10-28 21:43:09] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-28 21:43:09] Begin to send initialize chain cmd...
+[Debug] [2026-10-28 21:43:09] Send RPC:3
+[Debug] [2026-10-28 21:43:09] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-28 21:43:09] End to send initialize chain cmd.
+[Debug] [2026-10-28 21:43:09] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-28 21:43:09] Log::Print : COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-28 21:43:10] COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-10-28 21:43:10] Log::Print : The cable List : 
+
+[Debug] [2026-10-28 21:43:10] Log::Print : COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Error] [2026-10-28 21:43:10] fail to exec Open config cable cmd...
+[Error] [2026-10-28 21:43:10] MsgOut: JtagServer-0306: No devices detected while scanning the JTAG chain, failed detecting JTAG device chain.
+[Warn] [2026-10-28 21:43:10] MsgOut: Please check the device power, cable connection situation and whether put the chip in the right way or not.
+   If these do not work, try to restart the software.
+[Error] [2026-10-28 21:43:10] MsgOut: Configuration-0008: The command 'Open config cable' execute fail.
+[Debug] [2026-10-28 21:43:22] Begin to send initialize chain cmd...
+[Debug] [2026-10-28 21:43:22] Send RPC:4
+[Debug] [2026-10-28 21:43:22] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-28 21:43:22] End to send initialize chain cmd.
+[Error] [2026-10-28 21:43:22] fail to exec Open config cable cmd...
+[Error] [2026-10-28 21:43:22] MsgOut: JtagServer-0306: No devices detected while scanning the JTAG chain, failed detecting JTAG device chain.
+[Warn] [2026-10-28 21:43:22] MsgOut: Please check the device power, cable connection situation and whether put the chip in the right way or not.
+   If these do not work, try to restart the software.
+[Error] [2026-10-28 21:43:22] MsgOut: Configuration-0008: The command 'Open config cable' execute fail.
+[Info] [2026-10-28 21:43:24] /***************************End Configration***************************/
+[Info] [2026-10-28 21:43:25] /***************************Start Configuration***************************/
+[Info] [2026-10-28 21:43:25] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-28 21:43:25] Version: 146967
+[Info] [2026-10-28 21:43:26] Current Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-28 21:43:26] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-28 21:43:28] Configuration is not connect with server. connect first then scan chain.
+[Debug] [2026-10-28 21:43:28] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-28 21:43:28] Client Local Address:10.17.104.77
+[Debug] [2026-10-28 21:43:28] Client Local Address:172.24.144.1
+[Debug] [2026-10-28 21:43:28] Server Address:127.0.0.1, Port:65420
+[Debug] [2026-10-28 21:43:28] Log::Print : Connecting to server[127.0.0.1 : 65420].
+[Info] [2026-10-28 21:43:29] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-28 21:43:29] Finish.
+[Info] [2026-10-28 21:43:29] Connect server succeeded
+[Debug] [2026-10-28 21:43:29] Send RPC:1
+[Debug] [2026-10-28 21:43:29] Send cmd [check version information:40004] OK
+[Debug] [2026-10-28 21:43:29] Log::Print : Connect to server[127.0.0.1 : 65420] successfully.
+[Debug] [2026-10-28 21:43:29] Send RPC:2
+[Debug] [2026-10-28 21:43:29] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-28 21:43:29] Begin to send initialize chain cmd...
+[Debug] [2026-10-28 21:43:29] Send RPC:3
+[Debug] [2026-10-28 21:43:29] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-28 21:43:29] End to send initialize chain cmd.
+[Debug] [2026-10-28 21:43:29] COMMAND[check version information] execute successfully, takes 0.1 secs.
+[Debug] [2026-10-28 21:43:29] Log::Print : COMMAND[check version information] execute successfully, takes 0.1 secs.
+[Debug] [2026-10-28 21:43:30] COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-10-28 21:43:30] Log::Print : The cable List : 
+Cable index 0:USB Cable II/fffffffffffffffe 
+
+[Debug] [2026-10-28 21:43:30] Log::Print : COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-10-28 21:43:30] begin the exec of open cable cmd...
+[Debug] [2026-10-28 21:43:30] Begin to deal with chain from server...
+[Debug] [2026-10-28 21:43:30] Begin to set user chain...
+[Debug] [2026-10-28 21:43:30] End to set user chain.
+[Debug] [2026-10-28 21:43:30] Begin to update graphic item and tree item ...
+[Debug] [2026-10-28 21:43:30] End to update graphic item and tree item ...
+[Debug] [2026-10-28 21:43:30] Log::Print : PANGO USB CABLE II cable driver: D2XX DLL
+[Debug] [2026-10-28 21:43:30] Log::Print : PG2L100H
+[Debug] [2026-10-28 21:43:30] Log::Print : This device configure situation (done bit): 1
+[Debug] [2026-10-28 21:43:47] selected file name is empty and ignore.
+[Debug] [2026-10-28 21:43:47] Begin to update graphic item and tree item ...
+[Debug] [2026-10-28 21:43:47] End to update graphic item and tree item ...
+[Debug] [2026-10-28 21:43:47] End to deal wiht chain from server.
+[Debug] [2026-10-28 21:43:47] end the exec of open cable cmd.
+[Debug] [2026-10-28 21:43:47] COMMAND[Open config cable] execute successfully, takes 18.6 secs.
+[Debug] [2026-10-28 21:43:48] Log::Print : COMMAND[Open config cable] execute successfully, takes 18.6 secs.
+[Info] [2026-10-28 21:43:50] /***************************End Configration***************************/
+[Info] [2026-10-29 00:10:12] /***************************Start Configuration***************************/
+[Info] [2026-10-29 00:10:12] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-29 00:10:12] Version: 146967
+[Info] [2026-10-29 00:10:13] Current Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-29 00:10:13] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-29 00:10:15] Configuration is not connect with server. connect first then scan chain.
+[Debug] [2026-10-29 00:10:15] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-29 00:10:15] Client Local Address:10.17.104.77
+[Debug] [2026-10-29 00:10:15] Client Local Address:172.24.144.1
+[Debug] [2026-10-29 00:10:15] Server Address:127.0.0.1, Port:65420
+[Debug] [2026-10-29 00:10:15] Log::Print : Connecting to server[127.0.0.1 : 65420].
+[Info] [2026-10-29 00:10:15] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-29 00:10:15] Finish.
+[Info] [2026-10-29 00:10:15] Connect server succeeded
+[Debug] [2026-10-29 00:10:15] Send RPC:1
+[Debug] [2026-10-29 00:10:15] Send cmd [check version information:40004] OK
+[Debug] [2026-10-29 00:10:15] Log::Print : Connect to server[127.0.0.1 : 65420] successfully.
+[Debug] [2026-10-29 00:10:15] Send RPC:2
+[Debug] [2026-10-29 00:10:15] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-29 00:10:15] Begin to send initialize chain cmd...
+[Debug] [2026-10-29 00:10:15] Send RPC:3
+[Debug] [2026-10-29 00:10:15] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-29 00:10:15] End to send initialize chain cmd.
+[Debug] [2026-10-29 00:10:15] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 00:10:15] Log::Print : COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 00:10:16] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-29 00:10:16] Log::Print : The cable List : 
+Cable index 0:USB Cable II/fffffffffffffffe 
+
+[Debug] [2026-10-29 00:10:16] Log::Print : COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-29 00:10:17] begin the exec of open cable cmd...
+[Debug] [2026-10-29 00:10:17] Begin to deal with chain from server...
+[Debug] [2026-10-29 00:10:17] Begin to set user chain...
+[Debug] [2026-10-29 00:10:17] End to set user chain.
+[Debug] [2026-10-29 00:10:17] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 00:10:17] End to update graphic item and tree item ...
+[Debug] [2026-10-29 00:10:17] Log::Print : PANGO USB CABLE II cable driver: D2XX DLL
+[Debug] [2026-10-29 00:10:17] Log::Print : PG2L100H
+[Debug] [2026-10-29 00:10:17] Log::Print : This device configure situation (done bit): 1
+[Info] [2026-10-29 00:10:23] set OpenLastPath: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_speed_pushpull_20261028.sbit
+[Debug] [2026-10-29 00:10:23] begin to get device info from CFG file...
+[Debug] [2026-10-29 00:10:23] end to get device info from CFG file...
+[Debug] [2026-10-29 00:10:23] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 00:10:23] End to update graphic item and tree item ...
+[Debug] [2026-10-29 00:10:23] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 00:10:23] End to update graphic item and tree item ...
+[Debug] [2026-10-29 00:10:23] End to deal wiht chain from server.
+[Debug] [2026-10-29 00:10:23] end the exec of open cable cmd.
+[Debug] [2026-10-29 00:10:23] COMMAND[Open config cable] execute successfully, takes 7.2 secs.
+[Debug] [2026-10-29 00:10:23] Log::Print : COMMAND[Open config cable] execute successfully, takes 7.2 secs.
+[Debug] [2026-10-29 00:10:25] Begin to send scan outer flash cmd...
+[Debug] [2026-10-29 00:10:25] Send RPC:4
+[Debug] [2026-10-29 00:10:25] Send cmd [Scan Outer SPI Flash:20300] OK
+[Debug] [2026-10-29 00:10:25] End to send scan outer flash cmd.
+[Debug] [2026-10-29 00:10:26] begin to exec scan jtag flash cmd...
+[Debug] [2026-10-29 00:10:26] Begin to initialize JtagFlash for selected FPGA Device...
+[Debug] [2026-10-29 00:10:26] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 00:10:26] End to update graphic item and tree item ...
+[Info] [2026-10-29 00:10:28] set OpenLastPath: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_speed_pushpull_20261028.sfc
+[Debug] [2026-10-29 00:10:28] begin to check SFC File and Flash Device Read Mode.
+[Debug] [2026-10-29 00:10:28] end to check SFC File and Flash Device Read Mode.
+[Debug] [2026-10-29 00:10:28] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 00:10:28] End to update graphic item and tree item ...
+[Debug] [2026-10-29 00:10:28] End to initialize OuterFlash for selected FPGA Device...
+[Debug] [2026-10-29 00:10:28] end to exec scan jtag flash cmd...
+[Debug] [2026-10-29 00:10:28] COMMAND[Scan Outer SPI Flash] execute successfully, takes 2.4 secs.
+[Debug] [2026-10-29 00:10:28] Log::Print : COMMAND[Scan Outer SPI Flash] execute successfully, takes 2.4 secs.
+[Debug] [2026-10-29 00:10:30] begin to send promgram jtag flash cmd.
+[Debug] [2026-10-29 00:10:30] begin to send jtag flash erase cmd
+[Debug] [2026-10-29 00:10:30] Send RPC:5
+[Debug] [2026-10-29 00:10:30] Begin to send embed flash erase data.
+[Debug] [2026-10-29 00:10:30] Begin to send flash erase data.
+[Debug] [2026-10-29 00:10:30] End to send flash erase data.
+[Debug] [2026-10-29 00:10:30] End to send embed flash erase data.
+[Debug] [2026-10-29 00:10:30] Send cmd [Erase Outer Flash:20302] OK
+[Debug] [2026-10-29 00:10:30] Log::Print : The start address of operating flash is 0x0.
+[Debug] [2026-10-29 00:10:30] The value of Progress is 1
+[Debug] [2026-10-29 00:10:31] The value of Progress is 7
+[Debug] [2026-10-29 00:10:32] The value of Progress is 11
+[Debug] [2026-10-29 00:10:33] The value of Progress is 16
+[Debug] [2026-10-29 00:10:34] The value of Progress is 20
+[Debug] [2026-10-29 00:10:35] The value of Progress is 25
+[Debug] [2026-10-29 00:10:36] The value of Progress is 31
+[Debug] [2026-10-29 00:10:36] The value of Progress is 35
+[Debug] [2026-10-29 00:10:37] The value of Progress is 40
+[Debug] [2026-10-29 00:10:38] The value of Progress is 46
+[Debug] [2026-10-29 00:10:39] The value of Progress is 50
+[Debug] [2026-10-29 00:10:40] The value of Progress is 55
+[Debug] [2026-10-29 00:10:41] The value of Progress is 61
+[Debug] [2026-10-29 00:10:42] The value of Progress is 66
+[Debug] [2026-10-29 00:10:43] The value of Progress is 70
+[Debug] [2026-10-29 00:10:44] The value of Progress is 75
+[Debug] [2026-10-29 00:10:45] The value of Progress is 81
+[Debug] [2026-10-29 00:10:45] The value of Progress is 85
+[Debug] [2026-10-29 00:10:46] The value of Progress is 90
+[Debug] [2026-10-29 00:10:47] The value of Progress is 96
+[Debug] [2026-10-29 00:10:47] The value of Progress is 100
+[Debug] [2026-10-29 00:10:48] COMMAND[Erase Outer Flash] execute finish, takes 17.9 secs.
+[Debug] [2026-10-29 00:10:48] end to send jtag flash erase cmd.
+[Debug] [2026-10-29 00:10:48] Send RPC:6
+[Debug] [2026-10-29 00:10:48] Begin to send jtag flash program data.
+[Debug] [2026-10-29 00:10:48] Begin to send flash program data.
+[Debug] [2026-10-29 00:10:48] End to send flash program data.
+[Debug] [2026-10-29 00:10:48] End to send embed flash program data.
+[Debug] [2026-10-29 00:10:48] Send cmd [Program Outer Flash:20301] OK
+[Debug] [2026-10-29 00:10:48] Log::Print : COMMAND[Erase Outer Flash] execute finish, takes 17.9 secs.
+[Debug] [2026-10-29 00:10:48] Log::Print : The start address of operating flash is 0x0.
+[Debug] [2026-10-29 00:10:48] The value of Progress is 1
+[Debug] [2026-10-29 00:10:51] The value of Progress is 6
+[Debug] [2026-10-29 00:10:53] The value of Progress is 10
+[Debug] [2026-10-29 00:10:56] The value of Progress is 15
+[Debug] [2026-10-29 00:10:59] The value of Progress is 20
+[Debug] [2026-10-29 00:11:01] The value of Progress is 25
+[Debug] [2026-10-29 00:11:04] The value of Progress is 30
+[Debug] [2026-10-29 00:11:07] The value of Progress is 35
+[Debug] [2026-10-29 00:11:10] The value of Progress is 40
+[Debug] [2026-10-29 00:11:12] The value of Progress is 45
+[Debug] [2026-10-29 00:11:15] The value of Progress is 50
+[Debug] [2026-10-29 00:11:18] The value of Progress is 55
+[Debug] [2026-10-29 00:11:20] The value of Progress is 60
+[Debug] [2026-10-29 00:11:23] The value of Progress is 65
+[Debug] [2026-10-29 00:11:26] The value of Progress is 70
+[Debug] [2026-10-29 00:11:29] The value of Progress is 75
+[Debug] [2026-10-29 00:11:31] The value of Progress is 80
+[Debug] [2026-10-29 00:11:34] The value of Progress is 85
+[Debug] [2026-10-29 00:11:37] The value of Progress is 90
+[Debug] [2026-10-29 00:11:39] The value of Progress is 95
+[Debug] [2026-10-29 00:11:42] The value of Progress is 100
+[Debug] [2026-10-29 00:11:42] COMMAND[Program Outer Flash] execute finish, takes 54.7 secs.
+[Debug] [2026-10-29 00:11:42] begin to send jtag flash verify cmd
+[Debug] [2026-10-29 00:11:42] Send RPC:7
+[Debug] [2026-10-29 00:11:42] Begin to send embed flash verify data.
+[Debug] [2026-10-29 00:11:42] Begin to send flash verify data.
+[Debug] [2026-10-29 00:11:42] End to send flash verify data.
+[Debug] [2026-10-29 00:11:42] End to send embed flash verify data.
+[Debug] [2026-10-29 00:11:42] Send cmd [Verify Outer Flash:20303] OK
+[Debug] [2026-10-29 00:11:42] Log::Print : COMMAND[Program Outer Flash] execute finish, takes 54.7 secs.
+[Debug] [2026-10-29 00:11:42] Log::Print : The start address of operating flash is 0x0.
+[Debug] [2026-10-29 00:11:42] The value of Progress is 1
+[Debug] [2026-10-29 00:11:43] The value of Progress is 6
+[Debug] [2026-10-29 00:11:43] The value of Progress is 10
+[Debug] [2026-10-29 00:11:43] The value of Progress is 15
+[Debug] [2026-10-29 00:11:43] The value of Progress is 20
+[Debug] [2026-10-29 00:11:43] The value of Progress is 25
+[Debug] [2026-10-29 00:11:43] The value of Progress is 30
+[Debug] [2026-10-29 00:11:44] The value of Progress is 35
+[Debug] [2026-10-29 00:11:44] The value of Progress is 40
+[Debug] [2026-10-29 00:11:44] The value of Progress is 45
+[Debug] [2026-10-29 00:11:44] The value of Progress is 50
+[Debug] [2026-10-29 00:11:44] The value of Progress is 55
+[Debug] [2026-10-29 00:11:45] The value of Progress is 60
+[Debug] [2026-10-29 00:11:45] The value of Progress is 65
+[Debug] [2026-10-29 00:11:45] The value of Progress is 70
+[Debug] [2026-10-29 00:11:45] The value of Progress is 75
+[Debug] [2026-10-29 00:11:45] The value of Progress is 80
+[Debug] [2026-10-29 00:11:45] The value of Progress is 85
+[Debug] [2026-10-29 00:11:46] The value of Progress is 90
+[Debug] [2026-10-29 00:11:46] The value of Progress is 95
+[Debug] [2026-10-29 00:11:46] The value of Progress is 100
+[Debug] [2026-10-29 00:11:46] COMMAND[Verify Outer Flash] execute successfully, takes 3.9 secs.
+[Debug] [2026-10-29 00:11:46] end to send jtag flash verify cmd
+[Debug] [2026-10-29 00:11:46] end to send jtag flash program cmd.
+[Debug] [2026-10-29 00:11:46] Log::Print : COMMAND[Verify Outer Flash] execute successfully, takes 3.9 secs.
+[Info] [2026-10-29 12:21:45] /***************************End Configration***************************/
+[Info] [2026-10-29 12:21:50] /***************************Start Configuration***************************/
+[Info] [2026-10-29 12:21:50] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-29 12:21:50] Version: 146967
+[Info] [2026-10-29 12:21:51] Current Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-29 12:21:51] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-29 12:21:54] Configuration is not connect with server. connect first then scan chain.
+[Debug] [2026-10-29 12:21:54] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-29 12:21:54] Client Local Address:10.17.104.77
+[Debug] [2026-10-29 12:21:54] Client Local Address:172.24.144.1
+[Debug] [2026-10-29 12:21:54] Server Address:127.0.0.1, Port:65420
+[Debug] [2026-10-29 12:21:54] Log::Print : Connecting to server[127.0.0.1 : 65420].
+[Info] [2026-10-29 12:21:55] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-29 12:21:55] Finish.
+[Info] [2026-10-29 12:21:55] Connect server succeeded
+[Debug] [2026-10-29 12:21:55] Send RPC:1
+[Debug] [2026-10-29 12:21:55] Send cmd [check version information:40004] OK
+[Debug] [2026-10-29 12:21:55] Log::Print : Connect to server[127.0.0.1 : 65420] successfully.
+[Debug] [2026-10-29 12:21:55] Send RPC:2
+[Debug] [2026-10-29 12:21:55] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-29 12:21:55] Begin to send initialize chain cmd...
+[Debug] [2026-10-29 12:21:55] Send RPC:3
+[Debug] [2026-10-29 12:21:55] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-29 12:21:55] End to send initialize chain cmd.
+[Debug] [2026-10-29 12:21:55] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 12:21:55] Log::Print : COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 12:21:56] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-29 12:21:56] Log::Print : The cable List : 
+Cable index 0:USB Cable II/fffffffffffffffe 
+
+[Debug] [2026-10-29 12:21:56] Log::Print : COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-29 12:21:56] begin the exec of open cable cmd...
+[Debug] [2026-10-29 12:21:56] Begin to deal with chain from server...
+[Debug] [2026-10-29 12:21:56] Begin to set user chain...
+[Debug] [2026-10-29 12:21:56] End to set user chain.
+[Debug] [2026-10-29 12:21:56] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 12:21:56] End to update graphic item and tree item ...
+[Debug] [2026-10-29 12:21:56] Log::Print : PANGO USB CABLE II cable driver: D2XX DLL
+[Debug] [2026-10-29 12:21:56] Log::Print : PG2L100H
+[Debug] [2026-10-29 12:21:56] Log::Print : This device configure situation (done bit): 1
+[Info] [2026-10-29 12:22:02] set OpenLastPath: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_speed_io_match_20261029.sbit
+[Debug] [2026-10-29 12:22:02] begin to get device info from CFG file...
+[Debug] [2026-10-29 12:22:02] end to get device info from CFG file...
+[Debug] [2026-10-29 12:22:02] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 12:22:02] End to update graphic item and tree item ...
+[Debug] [2026-10-29 12:22:02] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 12:22:02] End to update graphic item and tree item ...
+[Debug] [2026-10-29 12:22:02] End to deal wiht chain from server.
+[Debug] [2026-10-29 12:22:02] end the exec of open cable cmd.
+[Debug] [2026-10-29 12:22:02] COMMAND[Open config cable] execute successfully, takes 6.7 secs.
+[Debug] [2026-10-29 12:22:02] Log::Print : COMMAND[Open config cable] execute successfully, takes 6.7 secs.
+[Debug] [2026-10-29 12:22:06] Begin to send scan outer flash cmd...
+[Debug] [2026-10-29 12:22:06] Send RPC:4
+[Debug] [2026-10-29 12:22:06] Send cmd [Scan Outer SPI Flash:20300] OK
+[Debug] [2026-10-29 12:22:06] End to send scan outer flash cmd.
+[Debug] [2026-10-29 12:22:06] begin to exec scan jtag flash cmd...
+[Debug] [2026-10-29 12:22:06] Begin to initialize JtagFlash for selected FPGA Device...
+[Debug] [2026-10-29 12:22:06] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 12:22:06] End to update graphic item and tree item ...
+[Info] [2026-10-29 12:22:10] set OpenLastPath: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_speed_io_match_20261029.sfc
+[Debug] [2026-10-29 12:22:10] begin to check SFC File and Flash Device Read Mode.
+[Debug] [2026-10-29 12:22:10] end to check SFC File and Flash Device Read Mode.
+[Debug] [2026-10-29 12:22:10] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 12:22:10] End to update graphic item and tree item ...
+[Debug] [2026-10-29 12:22:10] End to initialize OuterFlash for selected FPGA Device...
+[Debug] [2026-10-29 12:22:10] end to exec scan jtag flash cmd...
+[Debug] [2026-10-29 12:22:10] COMMAND[Scan Outer SPI Flash] execute successfully, takes 4.0 secs.
+[Debug] [2026-10-29 12:22:10] Log::Print : COMMAND[Scan Outer SPI Flash] execute successfully, takes 4.0 secs.
+[Debug] [2026-10-29 12:22:15] begin to send promgram jtag flash cmd.
+[Debug] [2026-10-29 12:22:15] begin to send jtag flash erase cmd
+[Debug] [2026-10-29 12:22:15] Send RPC:5
+[Debug] [2026-10-29 12:22:15] Begin to send embed flash erase data.
+[Debug] [2026-10-29 12:22:15] Begin to send flash erase data.
+[Debug] [2026-10-29 12:22:15] End to send flash erase data.
+[Debug] [2026-10-29 12:22:15] End to send embed flash erase data.
+[Debug] [2026-10-29 12:22:15] Send cmd [Erase Outer Flash:20302] OK
+[Debug] [2026-10-29 12:22:15] Log::Print : The start address of operating flash is 0x0.
+[Debug] [2026-10-29 12:22:16] The value of Progress is 1
+[Debug] [2026-10-29 12:22:17] The value of Progress is 7
+[Debug] [2026-10-29 12:22:18] The value of Progress is 11
+[Debug] [2026-10-29 12:22:19] The value of Progress is 16
+[Debug] [2026-10-29 12:22:20] The value of Progress is 20
+[Debug] [2026-10-29 12:22:21] The value of Progress is 25
+[Debug] [2026-10-29 12:22:22] The value of Progress is 31
+[Debug] [2026-10-29 12:22:22] The value of Progress is 35
+[Debug] [2026-10-29 12:22:23] The value of Progress is 40
+[Debug] [2026-10-29 12:22:24] The value of Progress is 46
+[Debug] [2026-10-29 12:22:25] The value of Progress is 50
+[Debug] [2026-10-29 12:22:26] The value of Progress is 55
+[Debug] [2026-10-29 12:22:27] The value of Progress is 61
+[Debug] [2026-10-29 12:22:28] The value of Progress is 66
+[Debug] [2026-10-29 12:22:29] The value of Progress is 70
+[Debug] [2026-10-29 12:22:30] The value of Progress is 75
+[Debug] [2026-10-29 12:22:31] The value of Progress is 81
+[Debug] [2026-10-29 12:22:31] The value of Progress is 85
+[Debug] [2026-10-29 12:22:32] The value of Progress is 90
+[Debug] [2026-10-29 12:22:33] The value of Progress is 96
+[Debug] [2026-10-29 12:22:33] The value of Progress is 100
+[Debug] [2026-10-29 12:22:33] COMMAND[Erase Outer Flash] execute finish, takes 17.9 secs.
+[Debug] [2026-10-29 12:22:33] end to send jtag flash erase cmd.
+[Debug] [2026-10-29 12:22:33] Send RPC:6
+[Debug] [2026-10-29 12:22:33] Begin to send jtag flash program data.
+[Debug] [2026-10-29 12:22:33] Begin to send flash program data.
+[Debug] [2026-10-29 12:22:33] End to send flash program data.
+[Debug] [2026-10-29 12:22:33] End to send embed flash program data.
+[Debug] [2026-10-29 12:22:33] Send cmd [Program Outer Flash:20301] OK
+[Debug] [2026-10-29 12:22:33] Log::Print : COMMAND[Erase Outer Flash] execute finish, takes 17.9 secs.
+[Debug] [2026-10-29 12:22:33] Log::Print : The start address of operating flash is 0x0.
+[Debug] [2026-10-29 12:22:34] The value of Progress is 1
+[Debug] [2026-10-29 12:22:37] The value of Progress is 6
+[Debug] [2026-10-29 12:22:39] The value of Progress is 10
+[Debug] [2026-10-29 12:22:42] The value of Progress is 15
+[Debug] [2026-10-29 12:22:44] The value of Progress is 20
+[Debug] [2026-10-29 12:22:47] The value of Progress is 25
+[Debug] [2026-10-29 12:22:50] The value of Progress is 30
+[Debug] [2026-10-29 12:22:53] The value of Progress is 35
+[Debug] [2026-10-29 12:22:55] The value of Progress is 40
+[Debug] [2026-10-29 12:22:58] The value of Progress is 45
+[Debug] [2026-10-29 12:23:01] The value of Progress is 50
+[Debug] [2026-10-29 12:23:04] The value of Progress is 55
+[Debug] [2026-10-29 12:23:06] The value of Progress is 60
+[Debug] [2026-10-29 12:23:09] The value of Progress is 65
+[Debug] [2026-10-29 12:23:12] The value of Progress is 70
+[Debug] [2026-10-29 12:23:14] The value of Progress is 75
+[Debug] [2026-10-29 12:23:17] The value of Progress is 80
+[Debug] [2026-10-29 12:23:20] The value of Progress is 85
+[Debug] [2026-10-29 12:23:23] The value of Progress is 90
+[Debug] [2026-10-29 12:23:25] The value of Progress is 95
+[Debug] [2026-10-29 12:23:28] The value of Progress is 100
+[Debug] [2026-10-29 12:23:28] COMMAND[Program Outer Flash] execute finish, takes 54.7 secs.
+[Debug] [2026-10-29 12:23:28] begin to send jtag flash verify cmd
+[Debug] [2026-10-29 12:23:28] Send RPC:7
+[Debug] [2026-10-29 12:23:28] Begin to send embed flash verify data.
+[Debug] [2026-10-29 12:23:28] Begin to send flash verify data.
+[Debug] [2026-10-29 12:23:28] End to send flash verify data.
+[Debug] [2026-10-29 12:23:28] End to send embed flash verify data.
+[Debug] [2026-10-29 12:23:28] Send cmd [Verify Outer Flash:20303] OK
+[Debug] [2026-10-29 12:23:28] Log::Print : COMMAND[Program Outer Flash] execute finish, takes 54.7 secs.
+[Debug] [2026-10-29 12:23:28] Log::Print : The start address of operating flash is 0x0.
+[Debug] [2026-10-29 12:23:28] The value of Progress is 1
+[Debug] [2026-10-29 12:23:28] The value of Progress is 6
+[Debug] [2026-10-29 12:23:29] The value of Progress is 10
+[Debug] [2026-10-29 12:23:29] The value of Progress is 15
+[Debug] [2026-10-29 12:23:29] The value of Progress is 20
+[Debug] [2026-10-29 12:23:29] The value of Progress is 25
+[Debug] [2026-10-29 12:23:29] The value of Progress is 30
+[Debug] [2026-10-29 12:23:30] The value of Progress is 35
+[Debug] [2026-10-29 12:23:30] The value of Progress is 40
+[Debug] [2026-10-29 12:23:30] The value of Progress is 45
+[Debug] [2026-10-29 12:23:30] The value of Progress is 50
+[Debug] [2026-10-29 12:23:30] The value of Progress is 55
+[Debug] [2026-10-29 12:23:30] The value of Progress is 60
+[Debug] [2026-10-29 12:23:31] The value of Progress is 65
+[Debug] [2026-10-29 12:23:31] The value of Progress is 70
+[Debug] [2026-10-29 12:23:31] The value of Progress is 75
+[Debug] [2026-10-29 12:23:31] The value of Progress is 80
+[Debug] [2026-10-29 12:23:31] The value of Progress is 85
+[Debug] [2026-10-29 12:23:31] The value of Progress is 90
+[Debug] [2026-10-29 12:23:32] The value of Progress is 95
+[Debug] [2026-10-29 12:23:32] The value of Progress is 100
+[Debug] [2026-10-29 12:23:32] COMMAND[Verify Outer Flash] execute successfully, takes 3.9 secs.
+[Debug] [2026-10-29 12:23:32] end to send jtag flash verify cmd
+[Debug] [2026-10-29 12:23:32] end to send jtag flash program cmd.
+[Debug] [2026-10-29 12:23:32] Log::Print : COMMAND[Verify Outer Flash] execute successfully, takes 3.9 secs.
+[Info] [2026-10-29 18:10:47] /***************************End Configration***************************/
+[Info] [2026-10-29 18:11:04] /***************************Start Configuration***************************/
+[Info] [2026-10-29 18:11:04] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-29 18:11:04] Version: 146967
+[Info] [2026-10-29 18:11:05] Current Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-29 18:11:05] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-29 18:11:11] Configuration is not connect with server. connect first then scan chain.
+[Debug] [2026-10-29 18:11:11] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-29 18:11:11] Client Local Address:10.17.104.77
+[Debug] [2026-10-29 18:11:11] Client Local Address:172.24.144.1
+[Debug] [2026-10-29 18:11:11] Server Address:127.0.0.1, Port:65420
+[Debug] [2026-10-29 18:11:11] Log::Print : Connecting to server[127.0.0.1 : 65420].
+[Info] [2026-10-29 18:11:11] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-29 18:11:11] Finish.
+[Info] [2026-10-29 18:11:11] Connect server succeeded
+[Debug] [2026-10-29 18:11:11] Send RPC:1
+[Debug] [2026-10-29 18:11:11] Send cmd [check version information:40004] OK
+[Debug] [2026-10-29 18:11:11] Log::Print : Connect to server[127.0.0.1 : 65420] successfully.
+[Debug] [2026-10-29 18:11:11] Send RPC:2
+[Debug] [2026-10-29 18:11:11] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-29 18:11:11] Begin to send initialize chain cmd...
+[Debug] [2026-10-29 18:11:11] Send RPC:3
+[Debug] [2026-10-29 18:11:11] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-29 18:11:11] End to send initialize chain cmd.
+[Debug] [2026-10-29 18:11:11] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 18:11:11] Log::Print : COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 18:11:12] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-29 18:11:12] Log::Print : The cable List : 
+Cable index 0:USB Cable II/fffffffffffffffe 
+
+[Debug] [2026-10-29 18:11:12] Log::Print : COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-29 18:11:13] begin the exec of open cable cmd...
+[Debug] [2026-10-29 18:11:13] Begin to deal with chain from server...
+[Debug] [2026-10-29 18:11:13] Begin to set user chain...
+[Debug] [2026-10-29 18:11:13] End to set user chain.
+[Debug] [2026-10-29 18:11:13] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 18:11:13] End to update graphic item and tree item ...
+[Debug] [2026-10-29 18:11:13] Log::Print : PANGO USB CABLE II cable driver: D2XX DLL
+[Debug] [2026-10-29 18:11:13] Log::Print : PG2L100H
+[Debug] [2026-10-29 18:11:13] Log::Print : This device configure situation (done bit): 1
+[Info] [2026-10-29 18:11:17] set OpenLastPath: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_speed_right_la14p_20261029.sbit
+[Debug] [2026-10-29 18:11:17] begin to get device info from CFG file...
+[Debug] [2026-10-29 18:11:17] end to get device info from CFG file...
+[Debug] [2026-10-29 18:11:17] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 18:11:17] End to update graphic item and tree item ...
+[Debug] [2026-10-29 18:11:17] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 18:11:17] End to update graphic item and tree item ...
+[Debug] [2026-10-29 18:11:17] End to deal wiht chain from server.
+[Debug] [2026-10-29 18:11:17] end the exec of open cable cmd.
+[Debug] [2026-10-29 18:11:17] COMMAND[Open config cable] execute successfully, takes 5.2 secs.
+[Debug] [2026-10-29 18:11:17] Log::Print : COMMAND[Open config cable] execute successfully, takes 5.2 secs.
+[Debug] [2026-10-29 18:11:20] Begin to send scan outer flash cmd...
+[Debug] [2026-10-29 18:11:20] Send RPC:4
+[Debug] [2026-10-29 18:11:20] Send cmd [Scan Outer SPI Flash:20300] OK
+[Debug] [2026-10-29 18:11:20] End to send scan outer flash cmd.
+[Debug] [2026-10-29 18:11:20] begin to exec scan jtag flash cmd...
+[Debug] [2026-10-29 18:11:20] Begin to initialize JtagFlash for selected FPGA Device...
+[Debug] [2026-10-29 18:11:20] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 18:11:20] End to update graphic item and tree item ...
+[Info] [2026-10-29 18:11:24] set OpenLastPath: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_speed_right_la14p_20261029.sfc
+[Debug] [2026-10-29 18:11:24] begin to check SFC File and Flash Device Read Mode.
+[Debug] [2026-10-29 18:11:25] end to check SFC File and Flash Device Read Mode.
+[Debug] [2026-10-29 18:11:25] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 18:11:25] End to update graphic item and tree item ...
+[Debug] [2026-10-29 18:11:25] End to initialize OuterFlash for selected FPGA Device...
+[Debug] [2026-10-29 18:11:25] end to exec scan jtag flash cmd...
+[Debug] [2026-10-29 18:11:25] COMMAND[Scan Outer SPI Flash] execute successfully, takes 4.6 secs.
+[Debug] [2026-10-29 18:11:25] Log::Print : COMMAND[Scan Outer SPI Flash] execute successfully, takes 4.6 secs.
+[Debug] [2026-10-29 18:11:27] begin to send promgram jtag flash cmd.
+[Debug] [2026-10-29 18:11:27] begin to send jtag flash erase cmd
+[Debug] [2026-10-29 18:11:27] Send RPC:5
+[Debug] [2026-10-29 18:11:27] Begin to send embed flash erase data.
+[Debug] [2026-10-29 18:11:27] Begin to send flash erase data.
+[Debug] [2026-10-29 18:11:27] End to send flash erase data.
+[Debug] [2026-10-29 18:11:27] End to send embed flash erase data.
+[Debug] [2026-10-29 18:11:27] Send cmd [Erase Outer Flash:20302] OK
+[Debug] [2026-10-29 18:11:27] Log::Print : The start address of operating flash is 0x0.
+[Debug] [2026-10-29 18:11:27] The value of Progress is 1
+[Debug] [2026-10-29 18:11:29] The value of Progress is 7
+[Debug] [2026-10-29 18:11:30] The value of Progress is 11
+[Debug] [2026-10-29 18:11:30] The value of Progress is 16
+[Debug] [2026-10-29 18:11:31] The value of Progress is 20
+[Debug] [2026-10-29 18:11:32] The value of Progress is 25
+[Debug] [2026-10-29 18:11:33] The value of Progress is 31
+[Debug] [2026-10-29 18:11:34] The value of Progress is 35
+[Debug] [2026-10-29 18:11:35] The value of Progress is 40
+[Debug] [2026-10-29 18:11:36] The value of Progress is 46
+[Debug] [2026-10-29 18:11:36] The value of Progress is 50
+[Debug] [2026-10-29 18:11:37] The value of Progress is 55
+[Debug] [2026-10-29 18:11:38] The value of Progress is 61
+[Debug] [2026-10-29 18:11:39] The value of Progress is 66
+[Debug] [2026-10-29 18:11:40] The value of Progress is 70
+[Debug] [2026-10-29 18:11:41] The value of Progress is 75
+[Debug] [2026-10-29 18:11:42] The value of Progress is 81
+[Debug] [2026-10-29 18:11:43] The value of Progress is 85
+[Debug] [2026-10-29 18:11:43] The value of Progress is 90
+[Debug] [2026-10-29 18:11:44] The value of Progress is 96
+[Debug] [2026-10-29 18:11:45] The value of Progress is 100
+[Debug] [2026-10-29 18:11:45] COMMAND[Erase Outer Flash] execute finish, takes 17.9 secs.
+[Debug] [2026-10-29 18:11:45] end to send jtag flash erase cmd.
+[Debug] [2026-10-29 18:11:45] Send RPC:6
+[Debug] [2026-10-29 18:11:45] Begin to send jtag flash program data.
+[Debug] [2026-10-29 18:11:45] Begin to send flash program data.
+[Debug] [2026-10-29 18:11:45] End to send flash program data.
+[Debug] [2026-10-29 18:11:45] End to send embed flash program data.
+[Debug] [2026-10-29 18:11:45] Send cmd [Program Outer Flash:20301] OK
+[Debug] [2026-10-29 18:11:45] Log::Print : COMMAND[Erase Outer Flash] execute finish, takes 17.9 secs.
+[Debug] [2026-10-29 18:11:45] Log::Print : The start address of operating flash is 0x0.
+[Debug] [2026-10-29 18:11:45] The value of Progress is 1
+[Debug] [2026-10-29 18:11:49] The value of Progress is 6
+[Debug] [2026-10-29 18:11:51] The value of Progress is 10
+[Debug] [2026-10-29 18:11:54] The value of Progress is 15
+[Debug] [2026-10-29 18:11:56] The value of Progress is 20
+[Debug] [2026-10-29 18:11:59] The value of Progress is 25
+[Debug] [2026-10-29 18:12:02] The value of Progress is 30
+[Debug] [2026-10-29 18:12:56] Begin to send abort process cmd.
+[Debug] [2026-10-29 18:12:56] Begin to flush aborting cmd. 
+[Debug] [2026-10-29 18:12:56] End to flush aborting cmd. 
+[Debug] [2026-10-29 18:12:56] End to send abort process cmd.
+[Debug] [2026-10-29 18:12:56] end to send jtag flash program cmd.
+[Error] [2026-10-29 18:12:56] MsgOut: Configuration-0005: Try to abort Programming.
+[Info] [2026-10-29 18:12:59] /***************************End Configration***************************/
+[Info] [2026-10-29 18:13:03] /***************************Start Configuration***************************/
+[Info] [2026-10-29 18:13:03] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-29 18:13:03] Version: 146967
+[Info] [2026-10-29 18:13:04] Current Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-29 18:13:04] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-29 18:13:05] Configuration is not connect with server. connect first then scan chain.
+[Debug] [2026-10-29 18:13:06] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-29 18:13:06] Client Local Address:10.17.104.77
+[Debug] [2026-10-29 18:13:06] Client Local Address:172.24.144.1
+[Debug] [2026-10-29 18:13:06] Server Address:127.0.0.1, Port:65420
+[Debug] [2026-10-29 18:13:06] Log::Print : Connecting to server[127.0.0.1 : 65420].
+[Info] [2026-10-29 18:13:06] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-29 18:13:06] Finish.
+[Info] [2026-10-29 18:13:06] Connect server succeeded
+[Debug] [2026-10-29 18:13:06] Send RPC:1
+[Debug] [2026-10-29 18:13:06] Send cmd [check version information:40004] OK
+[Debug] [2026-10-29 18:13:06] Log::Print : Connect to server[127.0.0.1 : 65420] successfully.
+[Debug] [2026-10-29 18:13:06] Send RPC:2
+[Debug] [2026-10-29 18:13:06] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-29 18:13:06] Begin to send initialize chain cmd...
+[Debug] [2026-10-29 18:13:06] Send RPC:3
+[Debug] [2026-10-29 18:13:06] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-29 18:13:06] End to send initialize chain cmd.
+[Debug] [2026-10-29 18:13:06] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 18:13:06] Log::Print : COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 18:13:07] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-29 18:13:07] Log::Print : The cable List : 
+Cable index 0:USB Cable II/fffffffffffffffe 
+
+[Debug] [2026-10-29 18:13:07] Log::Print : COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Info] [2026-10-29 18:13:17] /***************************End Configration***************************/
+[Info] [2026-10-29 18:13:19] /***************************Start Configuration***************************/
+[Info] [2026-10-29 18:13:19] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-29 18:13:19] Version: 146967
+[Info] [2026-10-29 18:13:20] Current Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-29 18:13:20] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-29 18:13:22] Configuration is not connect with server. connect first then scan chain.
+[Debug] [2026-10-29 18:13:22] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-29 18:13:22] Client Local Address:10.17.104.77
+[Debug] [2026-10-29 18:13:22] Client Local Address:172.24.144.1
+[Debug] [2026-10-29 18:13:22] Server Address:127.0.0.1, Port:65420
+[Debug] [2026-10-29 18:13:22] Log::Print : Connecting to server[127.0.0.1 : 65420].
+[Info] [2026-10-29 18:13:22] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-29 18:13:22] Finish.
+[Info] [2026-10-29 18:13:22] Connect server succeeded
+[Debug] [2026-10-29 18:13:22] Send RPC:1
+[Debug] [2026-10-29 18:13:22] Send cmd [check version information:40004] OK
+[Debug] [2026-10-29 18:13:22] Log::Print : Connect to server[127.0.0.1 : 65420] successfully.
+[Debug] [2026-10-29 18:13:22] Send RPC:2
+[Debug] [2026-10-29 18:13:22] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-29 18:13:22] Begin to send initialize chain cmd...
+[Debug] [2026-10-29 18:13:22] Send RPC:3
+[Debug] [2026-10-29 18:13:22] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-29 18:13:22] End to send initialize chain cmd.
+[Debug] [2026-10-29 18:13:22] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 18:13:22] Log::Print : COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 18:13:23] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-29 18:13:23] Log::Print : The cable List : 
+Cable index 0:USB Cable II/fffffffffffffffe 
+
+[Debug] [2026-10-29 18:13:23] Log::Print : COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Info] [2026-10-29 18:13:27] /***************************End Configration***************************/
+[Info] [2026-10-29 18:16:07] /***************************Start Configuration***************************/
+[Info] [2026-10-29 18:16:07] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-29 18:16:07] Version: 146967
+[Info] [2026-10-29 18:16:08] Current Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-29 18:16:08] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-29 18:16:10] Configuration is not connect with server. connect first then scan chain.
+[Debug] [2026-10-29 18:16:10] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-29 18:16:10] Client Local Address:10.17.104.77
+[Debug] [2026-10-29 18:16:10] Server Address:127.0.0.1, Port:65420
+[Debug] [2026-10-29 18:16:10] Log::Print : Connecting to server[127.0.0.1 : 65420].
+[Info] [2026-10-29 18:16:11] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-29 18:16:11] Finish.
+[Info] [2026-10-29 18:16:11] Connect server succeeded
+[Debug] [2026-10-29 18:16:11] Send RPC:1
+[Debug] [2026-10-29 18:16:11] Send cmd [check version information:40004] OK
+[Debug] [2026-10-29 18:16:11] Log::Print : Connect to server[127.0.0.1 : 65420] successfully.
+[Debug] [2026-10-29 18:16:11] Send RPC:2
+[Debug] [2026-10-29 18:16:11] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-29 18:16:11] Begin to send initialize chain cmd...
+[Debug] [2026-10-29 18:16:11] Send RPC:3
+[Debug] [2026-10-29 18:16:11] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-29 18:16:11] End to send initialize chain cmd.
+[Debug] [2026-10-29 18:16:11] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 18:16:11] Log::Print : COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 18:16:12] COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-10-29 18:16:12] Log::Print : The cable List : 
+Cable index 0:USB Cable II/fffffffffffffffe 
+
+[Debug] [2026-10-29 18:16:12] Log::Print : COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-10-29 18:16:12] begin the exec of open cable cmd...
+[Debug] [2026-10-29 18:16:12] Begin to deal with chain from server...
+[Debug] [2026-10-29 18:16:12] Begin to set user chain...
+[Debug] [2026-10-29 18:16:12] End to set user chain.
+[Debug] [2026-10-29 18:16:12] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 18:16:12] End to update graphic item and tree item ...
+[Debug] [2026-10-29 18:16:12] Log::Print : PANGO USB CABLE II cable driver: D2XX DLL
+[Debug] [2026-10-29 18:16:12] Log::Print : PG2L100H
+[Debug] [2026-10-29 18:16:12] Log::Print : This device configure situation (done bit): 1
+[Info] [2026-10-29 18:16:15] set OpenLastPath: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_speed_right_la14p_20261029.sbit
+[Debug] [2026-10-29 18:16:15] begin to get device info from CFG file...
+[Debug] [2026-10-29 18:16:15] end to get device info from CFG file...
+[Debug] [2026-10-29 18:16:15] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 18:16:15] End to update graphic item and tree item ...
+[Debug] [2026-10-29 18:16:15] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 18:16:15] End to update graphic item and tree item ...
+[Debug] [2026-10-29 18:16:15] End to deal wiht chain from server.
+[Debug] [2026-10-29 18:16:15] end the exec of open cable cmd.
+[Debug] [2026-10-29 18:16:15] COMMAND[Open config cable] execute successfully, takes 3.7 secs.
+[Debug] [2026-10-29 18:16:15] Log::Print : COMMAND[Open config cable] execute successfully, takes 3.7 secs.
+[Debug] [2026-10-29 18:16:17] Begin to send scan outer flash cmd...
+[Debug] [2026-10-29 18:16:17] Send RPC:4
+[Debug] [2026-10-29 18:16:17] Send cmd [Scan Outer SPI Flash:20300] OK
+[Debug] [2026-10-29 18:16:17] End to send scan outer flash cmd.
+[Debug] [2026-10-29 18:16:18] begin to exec scan jtag flash cmd...
+[Debug] [2026-10-29 18:16:18] Begin to initialize JtagFlash for selected FPGA Device...
+[Debug] [2026-10-29 18:16:18] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 18:16:18] End to update graphic item and tree item ...
+[Info] [2026-10-29 18:16:20] set OpenLastPath: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_speed_right_la14p_20261029.sfc
+[Debug] [2026-10-29 18:16:20] begin to check SFC File and Flash Device Read Mode.
+[Debug] [2026-10-29 18:16:20] end to check SFC File and Flash Device Read Mode.
+[Debug] [2026-10-29 18:16:20] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 18:16:20] End to update graphic item and tree item ...
+[Debug] [2026-10-29 18:16:20] End to initialize OuterFlash for selected FPGA Device...
+[Debug] [2026-10-29 18:16:20] end to exec scan jtag flash cmd...
+[Debug] [2026-10-29 18:16:20] COMMAND[Scan Outer SPI Flash] execute successfully, takes 2.5 secs.
+[Debug] [2026-10-29 18:16:20] Log::Print : COMMAND[Scan Outer SPI Flash] execute successfully, takes 2.5 secs.
+[Debug] [2026-10-29 18:16:22] begin to send promgram jtag flash cmd.
+[Debug] [2026-10-29 18:16:22] begin to send jtag flash erase cmd
+[Debug] [2026-10-29 18:16:22] Send RPC:5
+[Debug] [2026-10-29 18:16:22] Begin to send embed flash erase data.
+[Debug] [2026-10-29 18:16:22] Begin to send flash erase data.
+[Debug] [2026-10-29 18:16:22] End to send flash erase data.
+[Debug] [2026-10-29 18:16:22] End to send embed flash erase data.
+[Debug] [2026-10-29 18:16:22] Send cmd [Erase Outer Flash:20302] OK
+[Debug] [2026-10-29 18:16:22] Log::Print : The start address of operating flash is 0x0.
+[Debug] [2026-10-29 18:16:22] The value of Progress is 1
+[Debug] [2026-10-29 18:16:24] The value of Progress is 7
+[Debug] [2026-10-29 18:16:24] The value of Progress is 11
+[Debug] [2026-10-29 18:16:25] The value of Progress is 16
+[Debug] [2026-10-29 18:16:26] The value of Progress is 20
+[Debug] [2026-10-29 18:16:27] The value of Progress is 25
+[Debug] [2026-10-29 18:16:28] The value of Progress is 31
+[Debug] [2026-10-29 18:16:29] The value of Progress is 35
+[Debug] [2026-10-29 18:16:29] The value of Progress is 40
+[Debug] [2026-10-29 18:16:30] The value of Progress is 46
+[Debug] [2026-10-29 18:16:31] The value of Progress is 50
+[Debug] [2026-10-29 18:16:32] The value of Progress is 55
+[Debug] [2026-10-29 18:16:33] The value of Progress is 61
+[Debug] [2026-10-29 18:16:34] The value of Progress is 66
+[Debug] [2026-10-29 18:16:35] The value of Progress is 70
+[Debug] [2026-10-29 18:16:36] The value of Progress is 75
+[Debug] [2026-10-29 18:16:37] The value of Progress is 81
+[Debug] [2026-10-29 18:16:37] The value of Progress is 85
+[Debug] [2026-10-29 18:16:38] The value of Progress is 90
+[Debug] [2026-10-29 18:16:39] The value of Progress is 96
+[Debug] [2026-10-29 18:16:40] The value of Progress is 100
+[Debug] [2026-10-29 18:16:40] COMMAND[Erase Outer Flash] execute finish, takes 17.9 secs.
+[Debug] [2026-10-29 18:16:40] end to send jtag flash erase cmd.
+[Debug] [2026-10-29 18:16:40] Send RPC:6
+[Debug] [2026-10-29 18:16:40] Begin to send jtag flash program data.
+[Debug] [2026-10-29 18:16:40] Begin to send flash program data.
+[Debug] [2026-10-29 18:16:40] End to send flash program data.
+[Debug] [2026-10-29 18:16:40] End to send embed flash program data.
+[Debug] [2026-10-29 18:16:40] Send cmd [Program Outer Flash:20301] OK
+[Debug] [2026-10-29 18:16:40] Log::Print : COMMAND[Erase Outer Flash] execute finish, takes 17.9 secs.
+[Debug] [2026-10-29 18:16:40] Log::Print : The start address of operating flash is 0x0.
+[Debug] [2026-10-29 18:16:40] The value of Progress is 1
+[Debug] [2026-10-29 18:16:43] The value of Progress is 6
+[Debug] [2026-10-29 18:16:46] The value of Progress is 10
+[Debug] [2026-10-29 18:16:48] The value of Progress is 15
+[Debug] [2026-10-29 18:16:51] The value of Progress is 20
+[Debug] [2026-10-29 18:16:54] The value of Progress is 25
+[Debug] [2026-10-29 18:16:57] The value of Progress is 30
+[Debug] [2026-10-29 18:19:21] Begin to send abort process cmd.
+[Debug] [2026-10-29 18:19:21] Begin to flush aborting cmd. 
+[Debug] [2026-10-29 18:19:21] End to flush aborting cmd. 
+[Debug] [2026-10-29 18:19:21] End to send abort process cmd.
+[Debug] [2026-10-29 18:19:21] end to send jtag flash program cmd.
+[Error] [2026-10-29 18:19:21] MsgOut: Configuration-0005: Try to abort Programming.
+[Error] [2026-10-29 18:19:25] fail to exec Program Outer Flash cmd...
+[Error] [2026-10-29 18:19:25] MsgOut: JtagServer-0016: Read instruction or data from PANGO USB CABLE II cable using JTAG protocol timeout.
+[Error] [2026-10-29 18:19:25] MsgOut: Configuration-0008: The command 'Program Outer Flash' execute fail.
+[Info] [2026-10-29 18:19:31] /***************************End Configration***************************/
+[Info] [2026-10-29 18:19:34] /***************************Start Configuration***************************/
+[Info] [2026-10-29 18:19:34] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-29 18:19:34] Version: 146967
+[Info] [2026-10-29 18:19:35] Current Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-29 18:19:35] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-29 18:19:37] Configuration is not connect with server. connect first then scan chain.
+[Debug] [2026-10-29 18:19:37] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-10-29 18:19:37] Client Local Address:10.17.104.77
+[Debug] [2026-10-29 18:19:37] Server Address:127.0.0.1, Port:65420
+[Debug] [2026-10-29 18:19:37] Log::Print : Connecting to server[127.0.0.1 : 65420].
+[Info] [2026-10-29 18:19:37] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-10-29 18:19:37] Finish.
+[Info] [2026-10-29 18:19:37] Connect server succeeded
+[Debug] [2026-10-29 18:19:37] Send RPC:1
+[Debug] [2026-10-29 18:19:37] Send cmd [check version information:40004] OK
+[Debug] [2026-10-29 18:19:37] Log::Print : Connect to server[127.0.0.1 : 65420] successfully.
+[Debug] [2026-10-29 18:19:37] Send RPC:2
+[Debug] [2026-10-29 18:19:37] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-10-29 18:19:37] Begin to send initialize chain cmd...
+[Debug] [2026-10-29 18:19:37] Send RPC:3
+[Debug] [2026-10-29 18:19:37] Send cmd [Open config cable:20001] OK
+[Debug] [2026-10-29 18:19:37] End to send initialize chain cmd.
+[Debug] [2026-10-29 18:19:37] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 18:19:37] Log::Print : COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-10-29 18:19:38] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-29 18:19:38] Log::Print : The cable List : 
+Cable index 0:USB Cable II/fffffffffffffffe 
+
+[Debug] [2026-10-29 18:19:38] Log::Print : COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-10-29 18:19:38] begin the exec of open cable cmd...
+[Debug] [2026-10-29 18:19:38] Begin to deal with chain from server...
+[Debug] [2026-10-29 18:19:38] Begin to set user chain...
+[Debug] [2026-10-29 18:19:38] End to set user chain.
+[Debug] [2026-10-29 18:19:38] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 18:19:38] End to update graphic item and tree item ...
+[Debug] [2026-10-29 18:19:38] Log::Print : PANGO USB CABLE II cable driver: D2XX DLL
+[Debug] [2026-10-29 18:19:38] Log::Print : PG2L100H
+[Debug] [2026-10-29 18:19:38] Log::Print : This device configure situation (done bit): 1
+[Info] [2026-10-29 18:19:40] set OpenLastPath: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_speed_right_la14p_20261029.sbit
+[Debug] [2026-10-29 18:19:40] begin to get device info from CFG file...
+[Debug] [2026-10-29 18:19:40] end to get device info from CFG file...
+[Debug] [2026-10-29 18:19:40] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 18:19:40] End to update graphic item and tree item ...
+[Debug] [2026-10-29 18:19:40] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 18:19:40] End to update graphic item and tree item ...
+[Debug] [2026-10-29 18:19:40] End to deal wiht chain from server.
+[Debug] [2026-10-29 18:19:40] end the exec of open cable cmd.
+[Debug] [2026-10-29 18:19:40] COMMAND[Open config cable] execute successfully, takes 3.1 secs.
+[Debug] [2026-10-29 18:19:40] Log::Print : COMMAND[Open config cable] execute successfully, takes 3.1 secs.
+[Debug] [2026-10-29 18:19:42] Begin to send scan outer flash cmd...
+[Debug] [2026-10-29 18:19:42] Send RPC:4
+[Debug] [2026-10-29 18:19:42] Send cmd [Scan Outer SPI Flash:20300] OK
+[Debug] [2026-10-29 18:19:42] End to send scan outer flash cmd.
+[Debug] [2026-10-29 18:19:43] begin to exec scan jtag flash cmd...
+[Debug] [2026-10-29 18:19:43] Begin to initialize JtagFlash for selected FPGA Device...
+[Debug] [2026-10-29 18:19:43] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 18:19:43] End to update graphic item and tree item ...
+[Info] [2026-10-29 18:19:44] set OpenLastPath: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project/generate_bitstream/image_pcie_capture_speed_right_la14p_20261029.sfc
+[Debug] [2026-10-29 18:19:44] begin to check SFC File and Flash Device Read Mode.
+[Debug] [2026-10-29 18:19:44] end to check SFC File and Flash Device Read Mode.
+[Debug] [2026-10-29 18:19:44] Begin to update graphic item and tree item ...
+[Debug] [2026-10-29 18:19:44] End to update graphic item and tree item ...
+[Debug] [2026-10-29 18:19:44] End to initialize OuterFlash for selected FPGA Device...
+[Debug] [2026-10-29 18:19:44] end to exec scan jtag flash cmd...
+[Debug] [2026-10-29 18:19:44] COMMAND[Scan Outer SPI Flash] execute successfully, takes 2.1 secs.
+[Debug] [2026-10-29 18:19:44] Log::Print : COMMAND[Scan Outer SPI Flash] execute successfully, takes 2.1 secs.
+[Debug] [2026-10-29 18:19:46] begin to send promgram jtag flash cmd.
+[Debug] [2026-10-29 18:19:46] begin to send jtag flash erase cmd
+[Debug] [2026-10-29 18:19:46] Send RPC:5
+[Debug] [2026-10-29 18:19:46] Begin to send embed flash erase data.
+[Debug] [2026-10-29 18:19:46] Begin to send flash erase data.
+[Debug] [2026-10-29 18:19:46] End to send flash erase data.
+[Debug] [2026-10-29 18:19:46] End to send embed flash erase data.
+[Debug] [2026-10-29 18:19:46] Send cmd [Erase Outer Flash:20302] OK
+[Debug] [2026-10-29 18:19:46] Log::Print : The start address of operating flash is 0x0.
+[Debug] [2026-10-29 18:19:46] The value of Progress is 1
+[Debug] [2026-10-29 18:19:48] The value of Progress is 7
+[Debug] [2026-10-29 18:19:48] The value of Progress is 11
+[Debug] [2026-10-29 18:19:49] The value of Progress is 16
+[Debug] [2026-10-29 18:19:50] The value of Progress is 20
+[Debug] [2026-10-29 18:19:51] The value of Progress is 25
+[Debug] [2026-10-29 18:19:52] The value of Progress is 31
+[Debug] [2026-10-29 18:19:53] The value of Progress is 35
+[Debug] [2026-10-29 18:19:54] The value of Progress is 40
+[Debug] [2026-10-29 18:19:55] The value of Progress is 46
+[Debug] [2026-10-29 18:19:55] The value of Progress is 50
+[Debug] [2026-10-29 18:19:56] The value of Progress is 55
+[Debug] [2026-10-29 18:19:57] The value of Progress is 61
+[Debug] [2026-10-29 18:19:58] The value of Progress is 66
+[Debug] [2026-10-29 18:19:59] The value of Progress is 70
+[Debug] [2026-10-29 18:20:00] The value of Progress is 75
+[Debug] [2026-10-29 18:20:01] The value of Progress is 81
+[Debug] [2026-10-29 18:20:01] The value of Progress is 85
+[Debug] [2026-10-29 18:20:02] The value of Progress is 90
+[Debug] [2026-10-29 18:20:03] The value of Progress is 96
+[Debug] [2026-10-29 18:20:04] The value of Progress is 100
+[Debug] [2026-10-29 18:20:04] COMMAND[Erase Outer Flash] execute finish, takes 17.9 secs.
+[Debug] [2026-10-29 18:20:04] end to send jtag flash erase cmd.
+[Debug] [2026-10-29 18:20:04] Send RPC:6
+[Debug] [2026-10-29 18:20:04] Begin to send jtag flash program data.
+[Debug] [2026-10-29 18:20:04] Begin to send flash program data.
+[Debug] [2026-10-29 18:20:04] End to send flash program data.
+[Debug] [2026-10-29 18:20:04] End to send embed flash program data.
+[Debug] [2026-10-29 18:20:04] Send cmd [Program Outer Flash:20301] OK
+[Debug] [2026-10-29 18:20:04] Log::Print : COMMAND[Erase Outer Flash] execute finish, takes 17.9 secs.
+[Debug] [2026-10-29 18:20:04] Log::Print : The start address of operating flash is 0x0.
+[Debug] [2026-10-29 18:20:04] The value of Progress is 1
+[Debug] [2026-10-29 18:20:07] The value of Progress is 6
+[Debug] [2026-10-29 18:20:10] The value of Progress is 10
+[Debug] [2026-10-29 18:20:12] The value of Progress is 15
+[Debug] [2026-10-29 18:20:15] The value of Progress is 20
+[Debug] [2026-10-29 18:20:18] The value of Progress is 25
+[Debug] [2026-10-29 18:20:21] The value of Progress is 30
+[Debug] [2026-10-29 18:20:23] The value of Progress is 35
+[Debug] [2026-10-29 18:20:26] The value of Progress is 40
+[Debug] [2026-10-29 18:20:29] The value of Progress is 45
+[Debug] [2026-10-29 18:20:32] The value of Progress is 50
+[Debug] [2026-10-29 18:20:34] The value of Progress is 55
+[Debug] [2026-10-29 18:20:37] The value of Progress is 60
+[Debug] [2026-10-29 18:20:40] The value of Progress is 65
+[Debug] [2026-10-29 18:20:43] The value of Progress is 70
+[Debug] [2026-10-29 18:20:45] The value of Progress is 75
+[Debug] [2026-10-29 18:20:48] The value of Progress is 80
+[Debug] [2026-10-29 18:20:51] The value of Progress is 85
+[Debug] [2026-10-29 18:20:54] The value of Progress is 90
+[Debug] [2026-10-29 18:20:56] The value of Progress is 95
+[Debug] [2026-10-29 18:20:59] The value of Progress is 100
+[Debug] [2026-10-29 18:20:59] COMMAND[Program Outer Flash] execute finish, takes 55.3 secs.
+[Debug] [2026-10-29 18:20:59] begin to send jtag flash verify cmd
+[Debug] [2026-10-29 18:20:59] Send RPC:7
+[Debug] [2026-10-29 18:20:59] Begin to send embed flash verify data.
+[Debug] [2026-10-29 18:20:59] Begin to send flash verify data.
+[Debug] [2026-10-29 18:20:59] End to send flash verify data.
+[Debug] [2026-10-29 18:20:59] End to send embed flash verify data.
+[Debug] [2026-10-29 18:20:59] Send cmd [Verify Outer Flash:20303] OK
+[Debug] [2026-10-29 18:20:59] Log::Print : COMMAND[Program Outer Flash] execute finish, takes 55.3 secs.
+[Debug] [2026-10-29 18:20:59] Log::Print : The start address of operating flash is 0x0.
+[Debug] [2026-10-29 18:20:59] The value of Progress is 1
+[Debug] [2026-10-29 18:21:00] The value of Progress is 6
+[Debug] [2026-10-29 18:21:00] The value of Progress is 10
+[Debug] [2026-10-29 18:21:00] The value of Progress is 15
+[Debug] [2026-10-29 18:21:00] The value of Progress is 20
+[Debug] [2026-10-29 18:21:00] The value of Progress is 25
+[Debug] [2026-10-29 18:21:00] The value of Progress is 30
+[Debug] [2026-10-29 18:21:01] The value of Progress is 35
+[Debug] [2026-10-29 18:21:01] The value of Progress is 40
+[Debug] [2026-10-29 18:21:01] The value of Progress is 45
+[Debug] [2026-10-29 18:21:01] The value of Progress is 50
+[Debug] [2026-10-29 18:21:01] The value of Progress is 55
+[Debug] [2026-10-29 18:21:01] The value of Progress is 60
+[Debug] [2026-10-29 18:21:02] The value of Progress is 65
+[Debug] [2026-10-29 18:21:02] The value of Progress is 70
+[Debug] [2026-10-29 18:21:02] The value of Progress is 75
+[Debug] [2026-10-29 18:21:02] The value of Progress is 80
+[Debug] [2026-10-29 18:21:02] The value of Progress is 85
+[Debug] [2026-10-29 18:21:03] The value of Progress is 90
+[Debug] [2026-10-29 18:21:03] The value of Progress is 95
+[Debug] [2026-10-29 18:21:03] The value of Progress is 100
+[Debug] [2026-10-29 18:21:03] COMMAND[Verify Outer Flash] execute successfully, takes 3.9 secs.
+[Debug] [2026-10-29 18:21:03] end to send jtag flash verify cmd
+[Debug] [2026-10-29 18:21:03] end to send jtag flash program cmd.
+[Debug] [2026-10-29 18:21:03] Log::Print : COMMAND[Verify Outer Flash] execute successfully, takes 3.9 secs.

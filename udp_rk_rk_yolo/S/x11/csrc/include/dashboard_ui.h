@@ -9,6 +9,7 @@
 #include <vector>
 #include <chrono>
 #include <cstdlib>
+#include "speed_warning_glyphs.h"
 
 // Display-only compositor. It never reads or changes vehicle control state.
 namespace perception_ui {
@@ -43,6 +44,8 @@ struct ViewStatus {
     unsigned traffic=0,traffic_raw=0,traffic_quality=0,traffic_detector_quality=0,traffic_flags=0;
     bool traffic_live=false;
     bool go_blocked=false,go_control_live=false,go_write_ok=false;
+    unsigned gear=0;
+    bool gear_known=false,gear_live=false,gear_shifting=false;
 };
 
 class Dashboard {
@@ -67,6 +70,7 @@ public:
         const bool fast = fastComposition();
         if (fast) {
             restoreBackground({1110,44,438,70});
+            restoreBackground({712,44,392,78});
             // All changing text lies in these bands. Font metadata validates
             // the fixed 20/28px cells; restoring the whole width also covers
             // a long or clipped mode label. The remaining frame is static.
@@ -140,6 +144,7 @@ public:
 
         const uint64_t car_done = compositorClock();
         drawTraffic(status);
+        drawGearStatus(status);
         const char* label = safeLabel(mode_label, overview);
         text(frame_, 1162 - textWidth(label, 1), 204, label, 1, 0xFFA1C4DA);
         if (overview && transition_progress < 0) {
@@ -185,6 +190,40 @@ private:
     std::vector<uint8_t> font_atlas_;
     FontMetrics font_metrics_[3] = {};
 
+    void drawGauge(int x,int y,int radius,uint32_t color,unsigned gear) {
+        circle(frame_,x,y,(float)radius+5,color,35);
+        circle(frame_,x,y,(float)radius,0xFF10141E,235);
+        Point arc[13];
+        for(int i=0;i<13;++i) {
+            float a=3.66519143f+i*4.1887902f/12;
+            arc[i]={x+(int)std::lround(std::cos(a)*radius),y+(int)std::lround(std::sin(a)*radius)};
+        }
+        path(frame_,arc,13,color,false);
+        float a=gear>=3?-.35f:gear==2?-1.10f:-2.30f;
+        Point tip={x+(int)std::lround(std::cos(a)*(radius-5)),y+(int)std::lround(std::sin(a)*(radius-5))};
+        line(frame_,{x,y},tip,color,3,255);circle(frame_,x,y,3.f,color,255);
+    }
+    void drawGearStatus(const ViewStatus& status) {
+        bool known=status.gear_known&&status.gear>=1&&status.gear<=3;
+        bool high=known&&status.gear>=2;
+        uint32_t color=high?0xFFFFBE55:known&&status.gear_live?0xFF6BDBE7:0xFF8A9AAD;
+        fillChamfer(frame_,{720,52,380,62},8,high?0xFF2B1E14:0xFF0A1428);
+        drawGauge(749,82,18,color,known?status.gear:1);
+        char label[40];
+        if(known)std::snprintf(label,sizeof(label),"GEAR %u / %s",status.gear,!status.gear_live?"STALE":high?"HIGH":"LOW");
+        else std::snprintf(label,sizeof(label),"GEAR / UNKNOWN");
+        text(frame_,782,63,label,2,color);
+        const char* detail=!status.gear_live?"GEAR LINK UNAVAILABLE":status.gear_shifting?"SPEED BUTTON HELD":"REMOTE GEAR ESTIMATE";
+        text(frame_,782,90,detail,1,high?0xFFE6BC82:0xFF8DA5BD);
+        if (high) {
+            // Right side of the gear card; refreshed with the card on every
+            // frame, so returning to gear 1 removes the warning immediately.
+            for (int y = 0; y < SPEED_WARNING_HEIGHT; ++y)
+                for (int x = 0; x < SPEED_WARNING_WIDTH; ++x)
+                    if (SPEED_WARNING_MASK[y][x / 8] & (0x80 >> (x % 8)))
+                        pixel(frame_, 1008 + x, 61 + y, 0xFFFF526D, 255);
+        }
+    }
     void drawTrafficGoWarning(const ViewStatus& status) {
         // Place the alert ahead of the car; leave the left/right X locations
         // and the existing pedestrian alert visible at the same time.
