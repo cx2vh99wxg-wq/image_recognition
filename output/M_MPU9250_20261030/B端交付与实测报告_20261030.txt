@@ -1,0 +1,110 @@
+B：M 端 MPU-9250 真实采集、相对测角及反馈交付
+日期：2026-10-30
+
+一、已上板的内容
+
+1. 使用 M 端 COM8 DEBUG 编译、安装 ARM64 采集与反馈工具。
+   安装目录：/home/linaro/M/imu
+   公共接口：/home/linaro/common/steering
+2. 新增独立 M FPGA 工程 project_m_imu，保留原 S/M 工程和原 RTL。
+   M Flash 已写入并通过 PANGO 读回校验；同一最终位流已加载运行，done=1。
+   原 M 位流备份在本目录 backup/M_flash_before_imu.sfc。
+   没有进行人工断电冷启动验收；当前运行验证通过 JTAG 加载完成。
+3. m-steering-imu.service 已启用并运行，发送到 192.168.100.20:54321。
+   使用现有 48 字节 STF1 v1 协议，不占用视频 UDP 或 curve_angle 字段。
+4. 原视觉源码、程序和模型的实板哈希未变；本地 249 个原源码/原工程受保护文件哈希未变。
+   HMI、S 端、车道、弯道和执行器逻辑不改。S 端接收及闭环不属于本次已上板范围。
+
+二、接线和实际芯片
+
+SCL -> M FMC 子卡 J3-36 / LA13_P / B20
+SDA -> M FMC 子卡 J3-35 / LA13_N / A20
+GND -> J3-37
+支持 3.3V 的模块电源脚 -> J3-39 / A3V3
+
+I2C 使用 0/Z 开漏，使用模块已有 3.3V 上拉，不主动输出高电平。
+实物读取：I2C 地址 0x68，WHO_AM_I=0x71。
+配置：100Hz，陀螺仪 ±250°/s，加速度 ±2g，读取数据就绪标志和完整 14 字节数据。
+新增 I2C 独立于摄像头控制。FPGA 上电默认关闭采集，ARM 工具确认 IMU1 后启用。
+
+三、采集和测角的实现
+
+FPGA 为新样本记录序号和微秒采集时刻，冻结 64 字节 IMU1 快照并加 CRC32。
+FSPI 保留旧读回的前 8 字节，在其后追加 IMU1；不修改旧视频命令。
+旧 M 视频启动仍用 100MHz FSPI；新 IMU 读回为 24MHz，FPGA 按较严的 100MHz 约束实现。
+最终时序没有新增 setup/hold 违例；原工程已有 7 类摄像头异步跨时钟报告保留，详细报告在 verification。
+
+ARM 按实际采集时间差对去偏后的轴向角速度做梯形积分，不使用串口打印间隔计算角度。
+采样时刻是 I2C 事务采集时刻，没有接传感器 INT 引脚，存在轮询相位不确定性。
+无设备、CRC 错、过期、会话或时钟异常不会伪造成正常转角。
+重复读取不生成新样本；断流后停止有效反馈。工具进程之间使用互斥锁。
+
+四、真实测试结果（不是模拟样本）
+
+1. 2000 样本静置零偏标定：19.993884 秒，0 个序号缺口。
+   gyro bias，单位 °/s：
+   X = -0.6493549605
+   Y = -2.3228664265
+   Z = +0.2573664150
+   标定平均温度约 30.08°C。
+2. 独立 6000 样本静置复核：60.013346 秒，99.9611Hz，0 个序号缺口，最大数据年龄 5ms。
+   暂用 Z 轴、应用上述零偏后的相对角度净漂移 -0.597783°。
+   SPI I/O、CRC、过期快照及 I2C 错误计数均为 0。
+   该结果只代表此段静止数据，不是绝对转角精度，也不保证不同温度/复位/运动条件下的漂移。
+3. 真实传感器到 STF1 UDP 回环：500 包，约 100.07Hz，CRC 错误 0，序号缺口 0。
+   所有包为真实 VALID，SIMULATED=0，ZERO_VALID=0；未进行 S 端接收验收。
+4. 原 M 视觉与 IMU 同时运行：视觉采集/显示约 24~26fps，推理约 3.6fps。
+   同期 2000 个 IMU 样本未丢样，SPI/CRC/I2C 错误均为 0。
+   最终位流上反向顺序（先 IMU 服务、后原视觉启动）也通过；服务没有异常重启。
+   视觉程序测试结束后恢复为测试前的停止状态。新增 IMU 服务继续运行。
+
+五、当前仍然没有验收的内容
+
+当前 axis=(0,0,1) 只是未确认的 Z 参考轴，不能当成方向盘安装轴。
+尚未确认左正右负、真实机械中位、已知角度误差、重复回零、电机干扰及整车运动干扰。
+因此开机服务永远不自动声明机械中位，ZERO_VALID=0，也不控制任何执行器。
+单只装在转向机构上的 IMU 同时感受整车运动；未做独立验证前，不能声称得到行车中的相对车身转角。
+本次服务使用实测零偏，但没有设置 --zero-at-center。更换安装方向或温度变化需重新核对。
+
+六、回来后的检查和使用
+
+查看持续采样：
+  systemctl status m-steering-imu --no-pager
+  journalctl -u m-steering-imu -n 10 --no-pager
+
+使用独立工具前先停止服务，避免两个工具占用同一链路：
+  systemctl stop m-steering-imu
+  cd /home/linaro/M/imu
+  ./build/imu_probe
+  ./build/imu_dump --backend fpga --samples 2000 --interval-ms 1 --print-every 500 --csv new_stationary.csv
+
+确认静止后重新标定零偏；--axis z 只是示例，需换成实际安装轴：
+  python3 tools/calibrate.py --input new_stationary.csv --output mounting.cal --stationary --axis z --sign 1
+
+如要从实际左向动作标定任意安装轴，固定车身，记录一段独立确认的左向转动（至少15度）：
+  python3 tools/calibrate.py --input new_stationary.csv --output mounting.cal --stationary --positive-left-csv known_left_sweep.csv
+
+先用指针/量角器验证 ±15、±30、±60度、往返至少5次，再核对电机和整车运动影响。
+只有安装轴确认、车身固定且实物确实在机械中位时，才允许显式台架归零：
+  ./build/angle_monitor --backend fpga --calibration mounting.cal --fixed-chassis --zero-at-center --samples 0 --interval-ms 1 --csv centered.csv
+
+服务的可选标定配置位于 /etc/default/m-steering-imu。
+不要把 --zero-at-center 写入开机服务，因为重启不代表机构处于机械中位。
+工具测试完成后可恢复默认相对反馈：
+  systemctl start m-steering-imu
+
+七、本地文件
+
+独立工程：fpga/fpga_pcie_ov5640/project_m_imu/project_m_imu.pds
+新增 RTL：fpga/fpga_pcie_ov5640/source/mpu9250/
+ARM 源码、ARM64 程序及标定工具：udp_rk_rk_yolo/M/imu/
+真实 CSV/JSON/标定结果：本目录 measurements/
+仿真、时序、烧录及实板证据：本目录 verification/
+SHA256 和本地/实板同步清单：delivery_manifest.json
+
+临时下载：image_pcie_capture_m_imu_20261030.sbit
+M Flash 固化：image_pcie_capture_m_imu_20261030.sfc
+上述文件仅适用于 M 端，不能覆盖 S 端固化文件。
+
+从新克隆重建时，先运行 project_m_imu/prepare_project.ps1 准备原 IP 资源及初始布局约束，
+再用 PDS 2022.2-SP6.4 运行 build_m_imu.tcl。重建后需重新检查时序，不应只看生成文件成功。

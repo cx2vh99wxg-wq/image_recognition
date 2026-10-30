@@ -1,0 +1,21 @@
+[Unit]
+Description=M FPGA MPU-9250 steering telemetry (no actuator control)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/linaro/M/imu
+# Physical center is deliberately NOT asserted by this telemetry service.
+Environment="IMU_CALIBRATION_ARGS="
+EnvironmentFile=-/etc/default/m-steering-imu
+ExecStart=/home/linaro/M/imu/build/angle_monitor --backend fpga --samples 0 --interval-ms 1 --print-every 100 --wait-device --send-to 192.168.100.20 --port 54321 $IMU_CALIBRATION_ARGS
+Restart=on-failure
+RestartSec=2
+SuccessExitStatus=130
+Nice=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

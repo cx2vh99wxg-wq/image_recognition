@@ -1,0 +1,11 @@
+systemctl start m-steering-imu; sleep 2; systemctl show m-steering-imu --property=ActiveState,SubState,MainPID,NRestarts; journalctl -u m-steering-imu -n 3 --no-pager; printf '\nSIX_CMD_DONE\n'
+[?2004lMainPID=33958[m
+NRestarts=0[m
+ActiveState=active[m
+SubState=running[m
+[KOct 30 02:31:43 linaro-alip angle_monitor[33958]: [REAL FPGA] axis=[0.00000 0.00000 1.00000] bias=[-0.64935 -2.32287 0.25737] ZERO_VALID=0; relative motion only, chassis uncompensated
+Oct 30 02:31:43 linaro-alip angle_monitor[33958]: REAL seq=1 t_ns=57911091915293 dt_ms=0.000 gap=0 age_ms=4 accel=[-0.8368 0.1113 9.8910] gyro=[-0.5725 -1.9466 0.0458] temp_c=27.895 relative_deg=0.00000 rate_dps=-0.21156 ZERO_VALID=0
+Oct 30 02:31:44 linaro-alip angle_monitor[33958]: REAL seq=101 t_ns=57912086767293 dt_ms=8.804 gap=0 age_ms=2 accel=[-0.7949 0.0838 9.8462] gyro=[-0.6718 -2.5115 0.1450] temp_c=29.560 relative_deg=-0.05485 rate_dps=-0.11233 ZERO_VALID=0
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

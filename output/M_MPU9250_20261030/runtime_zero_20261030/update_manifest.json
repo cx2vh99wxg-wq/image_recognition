@@ -1,0 +1,15 @@
+{
+  "feature": "SIGUSR2 relative zero; ZERO_VALID cleared; no sensor/service restart",
+  "installed_on": "M COM8",
+  "command": "sudo imu-zero",
+  "fpga_changed": false,
+  "source_binary_sha256": {
+    "udp_rk_rk_yolo/M/imu/tools/imu_tool.c": "657d9a4aaa7fae09e640d7d122e2f0df222afa1ac1e887c61b15f9a6b596d373",
+    "udp_rk_rk_yolo/M/imu/tools/imu_zero.sh": "4d8c8fa4b4c9b7b1c75c4a5d2dce703deead6a3e5dfb3fcb80dd2a221e6b65e8",
+    "udp_rk_rk_yolo/M/imu/tests/test_tools.py": "d31590c6ce679a3033ae3d272e5c6981d28ddcf732ff030d4653ee14abc2285f",
+    "udp_rk_rk_yolo/M/imu/README.md": "1db05e37d8fa5ff4015c14d67b3800358f5d9364007535b8f003cb54d1a9a5a5",
+    "udp_rk_rk_yolo/M/imu/build/angle_monitor": "648b600e6ef1a2095b13ff76774352dfb84a107aca6d81c4758360752d27df39",
+    "udp_rk_rk_yolo/M/imu/build/imu_dump": "c715dd708c035064c8963b665bb524b952cf7a86d699e4d09a2410a9bf17d441"
+  },
+  "hardware_observation": "One later I2C error caused the existing watchdog to restart sampling; separate from successful in-process zero tests."
+}

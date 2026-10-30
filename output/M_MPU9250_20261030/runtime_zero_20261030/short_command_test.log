@@ -1,0 +1,13 @@
+[?2004hroot@linaro-alip:/# [?2004l
+[?2004hroot@linaro-alip:/# test ! -e /usr/local/bin/imu-zero && install -m 755 /home/linaro/M/imu/tools/imu_zero.sh /usr/local/bin/imu-zero; /usr/local/bin/imu-zero; sleep 1; journalctl -u m-steering-imu -n 4 --no-pager; systemctl show m-steering-imu --property=MainPID,NRestarts,ActiveState; printf '\nSIX_CMD_DONE\n'
+[?2004lRelative zero requested. Look for RELATIVE ZERO set in the IMU journal.
+Oct 30 03:06:51 linaro-alip angle_monitor[3483]: REAL seq=1704 t_ns=1434514465608 dt_ms=8.804 gap=0 age_ms=4 accel=[8.5922 -2.5522 4.1611] gyro=[-32.9237 -22.9160 1.7634] temp_c=30.186 relative_deg=33.34308 rate_dps=1.50599 ZERO_VALID=0
+Oct 30 03:06:52 linaro-alip angle_monitor[3483]: RELATIVE ZERO set: seq=1728 relative_deg=0.00000 ZERO_VALID=0 session=792168564
+Oct 30 03:06:52 linaro-alip angle_monitor[3483]: REAL seq=1728 t_ns=1434755695608 dt_ms=10.565 gap=0 age_ms=3 accel=[8.6784 -2.2511 3.9289] gyro=[-21.6718 2.5038 3.7557] temp_c=30.207 relative_deg=0.00000 rate_dps=3.49836 ZERO_VALID=0
+Oct 30 03:06:52 linaro-alip angle_monitor[3483]: REAL seq=1804 t_ns=1435514600608 dt_ms=8.804 gap=0 age_ms=3 accel=[8.1576 -2.2913 3.6619] gyro=[-9.4504 -4.8931 2.6183] temp_c=30.249 relative_deg=0.27416 rate_dps=2.36095 ZERO_VALID=0
+MainPID=3483[m
+NRestarts=1[m
+ActiveState=active[m
+[K
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

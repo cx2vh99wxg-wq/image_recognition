@@ -1,52 +1,115 @@
-# B：M 端 MPU-9250 采集与转角估计
+# B：M 端 MPU-9250 原始采集、台架测角和反馈发送
 
-目标路径：MPU → FMC 扩展板 → M FPGA 的 I²C 主机 → M RK3568 计算转角 → UDP → S 端接收与控制。
-本目录完整归 B：传感器采样、测角、工具、测试和后续 UDP 发送都放在 M 端。
-FMC 上所选两根信号不是 RK 原生 I²C；不能凭线名假设某个 `/dev/i2c-*` 已连接到它们。
+实现：MPU-9250 → FMC A20/B20 → 独立 M FPGA I2C/快照 → M RK3568 → STF1 UDP。
+原有 S 端、HMI、视觉算法、视频数据格式和共同协议不改。
+硬件与 IMU1 格式见 [HARDWARE_AND_PROTOCOL.md](HARDWARE_AND_PROTOCOL.md)。
 
-## 当前边界
+## 构建
 
-- `mpu9250_transport.h` 定义读寄存器/写寄存器回调及 WHO_AM_I 检查。
-- `mpu9250_transport.c` 中的 `mpu9250_fpga_open()` 返回 NOT_READY，尚未定义实际 FSPI 操作码/寄存器布局。
-- `imu_source.c` 的 mock 可运行，FPGA 路径仍明确拒绝产生测量值。
-- `steering_angle.c` 只有台架单轴相对积分参考算法，不是完整姿态解算。
-- 公共头来自 `common/steering/contracts/`，不复制协议，不依赖 S 端源码。
-- 工具源码在本目录 `tools/`，测试在 `tests/`，编译产物在 `build/`。
-- `feedback/` 说明后续 M→S UDP 发送职责；当前没有实时发送器。
-
-## 独立构建和检查
-
-从仓库根目录执行，不会编译 S 端：
-
-```powershell
-python udp_rk_rk_yolo/M/imu/tools/build.py --test
-.\udp_rk_rk_yolo\M\imu\build\imu_dump.exe --backend mock --samples 100
-.\udp_rk_rk_yolo\M\imu\build\angle_monitor.exe --backend mock --mock-rate-dps 30 --samples 100
+```sh
+cd /home/linaro/M/imu
+python3 tools/build.py --test
+python3 tests/test_tools.py
 ```
 
-M 端 Linux 使用 `python3`，程序名去掉 `.exe`；在本目录也可 `make` 或 `make test`。
-需要同时拥有 `M/imu/` 和 `common/steering/`，无需 S 目录即可独立构建。
+本机源码位于 `udp_rk_rk_yolo/M/imu`，公共接口引用 `udp_rk_rk_yolo/common/steering`。
+单独编译不依赖 S；Linux 为真实硬件目标，Windows/mock 用于工具开发。
+FPGA 顶层在独立 `project_m_imu` 工程，不能把仅更新 ARM 软件当作已更新 FPGA。
 
-## B 的实现顺序
+## 使用前停止单一采集服务
 
-1. 核对接线与 IO 电平，新增 FPGA MPU 模块；先读 WHO_AM_I=0x71，明确无 ACK/超时错误。
-2. 实现 RK↔FPGA 的独立读回协议，先让 `mpu9250_read_identity()` 通过真实传输调用成功。
-3. 完成唤醒、量程/滤波/采样率配置，读取连续完整加速度、角速度和温度样本。
-4. FPGA 记录采样序号与采集时刻，读回保持一帧一致，不能将多次读取的字节拼成混合样本。
-5. 在 `imu_source_open/read()` 接入真实快照和单位换算，去掉该路径的 NOT_READY。
-6. 更新工具的真实/模拟显示分支；真实数据绝不带 SIMULATED，失败不刷新旧样本年龄。
-7. 做静态偏置、转轴和机械中位标定，并保存配置与独立物理参照结果。
-8. 验证静置漂移、正反转回零、方向盘锁定时整车转动/倾斜，以及电机开关影响。
-9. 在本目录接入 M→S UDP 发送器；A 在 `S/steering/feedback/` 接收，双方遵守共同接口的时间/会话/有效性规则。
+```sh
+sudo systemctl stop m-steering-imu
+./build/imu_probe
+```
 
-电路/引脚任务见 `fpga/fpga_pcie_ov5640/source/mpu9250/README.md`。
-第一版建议 I²C 100kHz，目标采样 100Hz；这是初始配置，不是已实测性能。
-四线方案不包含独立 INT，需通过数据就绪状态或 FIFO 等机制区分新样本。
-积分使用采样时间间隔，不能用终端打印或网络接收间隔替代。
+工具之间有硬件进程锁；不要同时启动两个真实采集工具。probe 必须看到 IMU1、WHO=71、flags=7、样本序号增长。
+错误码、旧 FPGA、CRC 错、无 ACK、超时、过期、重复数据均不伪造成角度。
 
-## FSPI 与既有功能
+## 原始记录和零偏
 
-M 端已有程序会初始化 FSPI。初次 bring-up 可独立运行；与视觉程序同时运行前，
-需统一总线访问所有者/串行化配置及事务，不允许两个进程抢同一设备模式。
-不要直接复用 S 端“运动寄存器”的地址含义，也不要把传感器数据塞入摄像头 DMA 格式。
-FPGA 采集建议默认关闭，只有 M 端配置明确启用；避免影响 S 端既有控制。
+先让模块与车身静止，通电稳定后采集；终端低频打印，完整样本写 CSV：
+
+```sh
+./build/imu_dump --backend fpga --samples 2000 --interval-ms 1 --print-every 500 --csv stationary.csv
+python3 tools/calibrate.py --input stationary.csv --output mounting.cal --stationary --axis z --sign 1
+```
+
+`--axis z --sign 1` 仅是示例，必须按安装转轴改。calibrate 检查静止时长、角速度方差、加速度模长和模拟标志；
+保存偏置、方差、温度与样本报告，但不建立机械中位。连续匀速旋转无法仅靠方差排除，静止必须由物理条件保证。
+
+需要从已知左向旋转标定任意安装轴时，另录一段固定车身、只沿转向轴向左转动至少15度的真实原始数据：
+
+```sh
+python3 tools/calibrate.py --input stationary.csv --output mounting.cal --stationary --positive-left-csv known_left_sweep.csv
+```
+
+转轴向量由去偏后的角速度积分求得，左向决定正号。输入必须是独立确认的左向动作，不能用软件输出预期角度充当真值。
+
+## 相对积分和显式机械归零
+
+运行中把当前位置设为相对 0°，无需重启传感器或服务：
+
+本次 M 板已安装短命令 `sudo imu-zero`（源文件 `tools/imu_zero.sh`）。
+完整等价命令如下：
+
+```sh
+sudo systemctl kill --kill-who=main --signal=USR2 m-steering-imu.service
+sudo journalctl -u m-steering-imu.service -n 5 -f
+```
+
+仅适用于已安装支持 SIGUSR2 的本版本工具。日志立即输出 `RELATIVE ZERO set`。
+采样序号、时间戳和进程继续运行，反馈 session 改变，`ZERO_VALID` 清零；不重新标定偏置。
+请在想设零的位置保持不动后发送命令。此操作是相对参考点，不能当作机械中位验收。
+若在重力辅助台架模式下使用，会关闭该辅助，避免继续依赖旧机械参考。
+
+不声明中位时：
+
+```sh
+./build/angle_monitor --backend fpga --calibration mounting.cal --samples 6000 --interval-ms 1 --csv relative.csv
+```
+
+该模式只表示沿标定轴的相对转动，ZERO_VALID=0。积分使用 FPGA 采集时刻差，支持多圈角度；不会用串口接收间隔积分。
+
+只有车身固定、安装轴已确认、实际机构放在机械中位时，才运行：
+
+```sh
+./build/angle_monitor --backend fpga --calibration mounting.cal --fixed-chassis --zero-at-center --samples 0 --interval-ms 1 --send-to 192.168.100.20 --port 54321 --csv centered.csv
+```
+
+运行中重新放到真实中位后，可向该进程发 SIGUSR1。仅上述显式台架模式接受归零；归零更换反馈 session。
+不要把 `--zero-at-center` 写入自动重启服务，否则不能证明重启时恰好在机械中位。
+断流、时钟/会话异常会退出并停止有效反馈，必须重新确认中位，不能自动把旧角度当0度。
+
+可选 `--gravity-gain 0.02` 是固定车身台架的重力辅助实验功能，默认关闭。
+转轴接近重力方向时不参与校正；加速度模长异常时也不校正。它不补偿整车转动、倾斜、振动和电机影响。
+单只 IMU 不能自动分离车身姿态与方向盘相对车身的转角，未完成整车运动干扰验收前不可声称可用于行驶闭环。
+
+## UDP 和开机服务
+
+`feedback/m-steering-imu.service` 默认发送 192.168.100.20:54321，使用已有48字节 STF1 v1。
+service 默认没有机械归零，ZERO_VALID=0，不向 S 发出任何执行器命令。A 的接收器必须遵守共同协议，只允许新鲜、真实且已归零的反馈进入控制。
+服务与 NPU/视频任务独立，SPI 每笔24MHz（板载驱动最低支持档），传感器100Hz；不修改 M 原有视觉进程。
+S 不在线时仍可本地采集，UDP 发送失败不会阻塞采样。
+
+```sh
+sudo systemctl start m-steering-imu
+journalctl -u m-steering-imu -n 20 --no-pager
+```
+
+## 实物验收，不能由仿真替代
+
+1. 指针/量角器给定 ±15、±30、±60度，记录正负号和最大误差。
+2. 往返至少5次回到同一刻度，记录回零误差。
+3. 固定机构静置60秒，记录漂移；记录温度与零偏变化。
+4. 保持机构相对车身锁定，转动/倾斜车身，记录混入角度。
+5. 比较电机关闭/开启时方差、丢样和漂移；架空后由现场人员操作。
+6. 拔传感器、重启采集、停止网络，确认反馈失效和 session 改变；后续由 A 检查输出撤销。
+
+统计工具：
+
+```sh
+python3 tools/analyze_recording.py --input relative.csv --expected-final-deg 0 --output return_zero_report.json
+```
+
+真实静止记录只能证明当时的数据与漂移，不能证明转角精度、轴向和运动干扰已经通过。现场误差容差由 A/B 商定。

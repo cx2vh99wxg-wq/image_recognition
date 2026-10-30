@@ -1,0 +1,12 @@
+systemctl show m-steering-imu --property=ActiveState,SubState,NRestarts,ExecMainStatus; journalctl -u m-steering-imu -n 2 --no-pager; grep -F "[PERF M]" /home/linaro/imu_B_20261030/final_vision_with_service.log | tail -2; printf '\nSIX_CMD_DONE\n'
+[?2004lNRestarts=0[m
+ExecMainStatus=0[m
+ActiveState=active[m
+SubState=running[m
+[KOct 29 17:40:43 linaro-alip angle_monitor[16599]: REAL seq=23301 t_ns=26050624058106 dt_ms=10.565 gap=0 age_ms=3 accel=[7.5627 0.1113 6.3039] gyro=[-0.6565 -2.2748 0.2443] temp_c=30.147 relative_deg=-0.35141 rate_dps=-0.01309 ZERO_VALID=0
+Oct 29 17:40:44 linaro-alip angle_monitor[16599]: REAL seq=23401 t_ns=26051624193106 dt_ms=10.565 gap=0 age_ms=3 accel=[7.5645 0.1209 6.2872] gyro=[-0.6107 -2.3664 0.2214] temp_c=30.156 relative_deg=-0.35899 rate_dps=-0.03599 ZERO_VALID=0
+[PERF M] capture_loop_fps=24.48 raw_changed_fps=24.48 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=24.48 dma_ms=15.03 color_ms=1.11 infer_ms=260.83 overlay_ms=7.39 analysis_ms=10.93 shm_ms=0.72 render_ms=18.16 pending_replaced=23 stale_results=0 worker_failed=0 dma_rows=1
+[PERF M] capture_loop_fps=25.13 raw_changed_fps=25.13 inference_fps=3.59 fresh_result_fps=3.59 publish_fps=25.13 dma_ms=14.92 color_ms=1.09 infer_ms=261.03 overlay_ms=7.39 analysis_ms=10.99 shm_ms=0.73 render_ms=16.78 pending_replaced=24 stale_results=0 worker_failed=0 dma_rows=1
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

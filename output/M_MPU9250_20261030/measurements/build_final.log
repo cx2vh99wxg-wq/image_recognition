@@ -1,0 +1,10 @@
+BUILT candidate/M/imu/build/imu_dump
+BUILT candidate/M/imu/build/angle_monitor
+BUILT candidate/M/imu/build/feedback_inspect
+BUILT candidate/M/imu/build/imu_probe
+BUILT candidate/M/imu/build/test_imu
+PASS IMU: variable dt, axis/bias, wrap, duplicate/gap/session faults, identity and simulation isolation
+BUILT candidate/M/imu/build/test_snapshot
+PASS IMU1: CRC vector, signed axes/temperature, endianness, torn packet, flags, clock reversal and old FPGA rejection
+PASS tools: stationary bias, vibration/simulation rejection, positive-left axis, real UDP STF1 CRC/timestamps/units, mock isolation, zero arming and CSV protection
+FINAL_BUILD_RC=0

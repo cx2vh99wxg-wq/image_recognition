@@ -8,6 +8,10 @@ typedef struct {
     float mock_rate_dps;
     uint32_t sequence;
     mpu9250_bus_t bus;
+    uint32_t session_id, generation;
+    uint64_t anchor_fpga_us, anchor_host_ns;
+    uint64_t captured_age_ns, capture_host_ns;
+    int anchored;
 } imu_source_t;
 steer_result_t imu_source_open(imu_source_t *source, imu_source_kind_t kind,
                                float mock_rate_dps);

@@ -1,0 +1,27 @@
+{
+  "axis": [
+    0.0,
+    0.0,
+    1.0
+  ],
+  "bias": [
+    -0.6961106675000001,
+    -2.485167942,
+    0.229790081
+  ],
+  "gyro_std": [
+    0.0423506578863026,
+    0.06497700807923598,
+    0.04369078761007214
+  ],
+  "accel_norm_mean": 9.848086145722787,
+  "samples": 2000,
+  "duration_s": 19.999166,
+  "temperature_c": 29.556242,
+  "physical_center_established": false,
+  "chassis_compensated": false,
+  "note": "Stationary declaration and mounting direction need independent physical verification",
+  "test_fixture": "hand bench, module rigidly attached to board",
+  "steering_mounting_verified": false,
+  "provisional_axis": true
+}

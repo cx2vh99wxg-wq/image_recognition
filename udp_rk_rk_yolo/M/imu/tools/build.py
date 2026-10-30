@@ -13,22 +13,28 @@ from build_support import compile_program, run
 
 INCLUDES = [COMMON / "contracts", ROOT / "include", ROOT / "tools"]
 SOURCES = [ROOT / "csrc" / name for name in
-           ["imu_source.c", "steering_angle.c", "mpu9250_transport.c"]]
+           ["imu_source.c", "steering_angle.c", "mpu9250_transport.c", "fpga_imu_snapshot.c"]]
 
 
 def build_imu() -> dict[str, Path]:
     outputs = {}
     for name in ["imu_dump", "angle_monitor"]:
         outputs[name] = compile_program(ROOT / "build" / name,
-            [*SOURCES, ROOT / "tools" / "imu_tool.c", ROOT / "tools" / f"{name}.c"], INCLUDES)
+            [*SOURCES, COMMON / "contracts" / "steering_feedback_wire.c",
+             ROOT / "tools" / "imu_tool.c", ROOT / "tools" / f"{name}.c"], INCLUDES)
     outputs["feedback_inspect"] = compile_program(ROOT / "build" / "feedback_inspect",
         [COMMON / "contracts" / "steering_feedback_wire.c", ROOT / "tools" / "feedback_inspect.c"], INCLUDES)
+    outputs["imu_probe"] = compile_program(ROOT / "build" / "imu_probe",
+        [*SOURCES, ROOT / "tools" / "imu_probe.c"], INCLUDES)
     return outputs
 
 
 def check_m() -> None:
     test = compile_program(ROOT / "build" / "test_imu", [*SOURCES, ROOT / "tests" / "test_imu.c"], INCLUDES)
     print(run(test, []).stdout.strip())
+    snapshot = compile_program(ROOT / "build" / "test_snapshot",
+        [ROOT / "csrc" / "fpga_imu_snapshot.c", ROOT / "tests" / "test_snapshot.c"], INCLUDES)
+    print(run(snapshot, []).stdout.strip())
 
 
 def main() -> int:

@@ -49,14 +49,14 @@ int main(void)
     assert(mpu9250_read_identity(&bus, &out) == STEER_OK && out == 0x71);
     id = 0x70;
     assert(mpu9250_read_identity(&bus, &out) == STEER_ERR_DEVICE && out == 0x71);
-    assert(mpu9250_fpga_open(&bus) == STEER_ERR_NOT_READY && !bus.read_registers);
+    /* Unit tests never open the real device, including when run on M itself. */
+    assert(mpu9250_fpga_open(NULL) == STEER_ERR_ARGUMENT);
     imu_source_t source;
-    assert(imu_source_open(&source, IMU_SOURCE_FPGA, 0) == STEER_ERR_NOT_READY);
     assert(imu_source_open(&source, IMU_SOURCE_MOCK, NAN) == STEER_ERR_ARGUMENT);
     assert(imu_source_open(&source, IMU_SOURCE_MOCK, 30) == STEER_OK);
     assert(imu_source_read(&source, &s) == STEER_OK);
     assert((s.flags & STEER_FEEDBACK_SIMULATED) && !(s.flags & STEER_FEEDBACK_ZERO_VALID));
     imu_source_close(&source);
-    puts("PASS IMU: variable dt, axis/bias, wrap, duplicate/gap/session faults, probe, explicit FPGA stub");
+    puts("PASS IMU: variable dt, axis/bias, wrap, duplicate/gap/session faults, identity and simulation isolation");
     return 0;
 }

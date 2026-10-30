@@ -1,0 +1,44 @@
+{
+  "samples": 36765,
+  "no_sequence_gaps": true,
+  "bias_dps": [
+    -0.6961106675000001,
+    -2.485167942,
+    0.229790081
+  ],
+  "phases": {
+    "left": {
+      "duration_s": 99.444702,
+      "z_angle_change_deg": 105.86037324206413,
+      "z_during_motion_deg": 100.51641861449778,
+      "z_during_below_1dps_deg": 5.343954627566349,
+      "below_1dps_duration_s": 85.199829,
+      "max_tilt_from_face_up_deg": 73.27564514904337,
+      "gyro_3d_net_rotation_from_reference_deg": 106.18605490537959,
+      "gyro_3d_vertical_twist_from_reference_deg": 105.96250146514649,
+      "last_1s_mean_raw_gyro_dps": [
+        -0.72893127,
+        -2.3455725,
+        0.3718321
+      ]
+    },
+    "returned": {
+      "duration_s": 83.136172,
+      "z_angle_change_deg": -82.11635580901444,
+      "z_during_motion_deg": -88.96636353880226,
+      "z_during_below_1dps_deg": 6.850007729787833,
+      "below_1dps_duration_s": 79.824107,
+      "max_tilt_from_face_up_deg": 71.89857014077683,
+      "gyro_3d_net_rotation_from_reference_deg": 25.068286192249637,
+      "gyro_3d_vertical_twist_from_reference_deg": 22.182721731508252,
+      "last_1s_mean_raw_gyro_dps": [
+        -0.66702289,
+        -2.3333587700000002,
+        0.24358777
+      ]
+    }
+  },
+  "independent_angle_reference": false,
+  "physical_steering_mounting_calibrated": false,
+  "note": "3D result is a diagnosis, not ground truth or a production algorithm change"
+}

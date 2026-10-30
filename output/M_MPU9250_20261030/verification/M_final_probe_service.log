@@ -1,0 +1,76 @@
+/home/linaro/M/imu/build/imu_probe; python3 /home/linaro/imu_B_20261030/M_pci_guard.py restore; systemctl enable --now m-steering-imu; systemctl show m-steering-imu --property=ActiveState,SubState,MainPID,NRestarts; printf '\nSIX_CMD_DONE\n'
+[?2004lIMU1 flags=1 who=0xFF address=0x68 i2c_error=0 errors=0 seq=0 fpga_us=34772683 sample_us=0 generation=1
+IMU1 flags=3 who=0x71 address=0x68 i2c_error=0 errors=0 seq=0 fpga_us=34875119 sample_us=0 generation=1
+IMU1 flags=3 who=0x71 address=0x68 i2c_error=0 errors=0 seq=0 fpga_us=34976988 sample_us=0 generation=1
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=0 seq=8 fpga_us=35078760 sample_us=35067994 generation=1
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=0 seq=19 fpga_us=35180595 sample_us=35177164 generation=1
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=0 seq=29 fpga_us=35282427 sample_us=35277529 generation=1
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=0 seq=39 fpga_us=35384210 sample_us=35377895 generation=1
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=0 seq=49 fpga_us=35486022 sample_us=35478260 generation=1
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=0 seq=59 fpga_us=35587845 sample_us=35578626 generation=1
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=0 seq=70 fpga_us=35689683 sample_us=35687796 generation=1
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=0 seq=80 fpga_us=35791522 sample_us=35788161 generation=1
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=0 seq=90 fpga_us=35893353 sample_us=35888527 generation=1
+REAL SENSOR DATA PRESENT; physical axis/center validation is still required
+[25728.668361] pcieport 0002:20:00.0: bridge configuration invalid ([bus 00-00]), reconfiguring
+[25728.668511] pci 0002:21:00.0: [0755:0755] type 00 class 0x058000
+[25728.668598] pci 0002:21:00.0: reg 0x10: [mem 0x00000000-0x00001fff]
+[25728.668641] pci 0002:21:00.0: reg 0x14: [mem 0x00000000-0x00000fff]
+[25728.668680] pci 0002:21:00.0: reg 0x18: [mem 0x00000000-0x00001fff]
+[25728.679409] pci_bus 0002:21: busn_res: [bus 21] end is updated to 21
+[25728.679481] pci 0002:21:00.0: BAR 0: assigned [mem 0xf0200000-0xf0201fff]
+[25728.679513] pci 0002:21:00.0: BAR 2: assigned [mem 0xf0202000-0xf0203fff]
+[25728.679540] pci 0002:21:00.0: BAR 1: assigned [mem 0xf0204000-0xf0204fff]
+[25728.679785] pci_driver_probe.
+[25728.679798] dev vendor : 0x755, device : 0x755
+[25728.679836] pango_pci_driver 0002:21:00.0: enabling device (0400 -> 0402)
+[25728.679875] pci_enable_device result : 0
+[25728.679884] Using 32-bit DMA mask
+[25728.679892] PCI Configuration Space:
+[25728.686724] Vendor ID: 0x755, 
+[25728.686759] Device ID: 0x755, 
+[25728.686776] Cmd Reg: 0x2, 
+[25728.686791] Stat Reg: 0x10, 
+[25728.686806] Revision ID: 0x0, 
+[25728.686820] Class Prog: 0x0, 
+[25728.686834] Device Class: 0x580, 
+[25728.686848] Cache Line Size: 0x0, 
+[25728.686863] Latency Timer: 0x0, 
+[25728.686877] Header Type: 0x0, 
+[25728.686891] BIST: 0x0
+[25728.686898] BAR0: Addr:0xf0200000 Len:0x2000,  
+[25728.686902] Region is for memory
+[25728.686913] BAR1: Addr:0xf0204000 Len:0x1000,  
+[25728.686916] Region is for memory
+[25728.686927] BAR2: Addr:0xf0202000 Len:0x2000,  
+[25728.686930] Region is for memory
+[25728.686940] BAR3: Addr:0x0 Len:0x0,  
+[25728.686943] BAR4: Addr:0x0 Len:0x0,  
+[25728.686950] BAR5: Addr:0x0 Len:0x0,  
+[25728.686958] 
+[25728.686975] CardBus CIS Pointer: 0x0, 
+[25728.686989] Subsystem Vendor ID: 0x0, 
+[25728.687003] Subsystem Device ID: 0x0
+[25728.687017] Expansion ROM Base Address: 0x0
+[25728.687031] IRQ Line: 0x38, 
+[25728.687040] IRQ Pin: 0x1, 
+[25728.687054] Min Gnt: 0x0, 
+[25728.687068] Max Lat: 0x0
+[25728.687127] Link Speed: 1
+[25728.687134] Link Width: x2
+[25728.687148] MPS: 128
+[25728.687155] MRRS: 512
+[25728.687191] cap id = 10; addr_offset = 70; next_offset = 0
+[25728.687273] pci_request_region result : 0
+[25728.687308] ioremap result : 0
+[25728.687326] pci_keep_intx_enabled.
+[25728.688006] pwm-backlight backlight1: supply power not found, using dummy regulator
+M_PCIE_RESTORED 0002:21:00.0 driver= True
+Created symlink /etc/systemd/system/multi-user.target.wants/m-steering-imu.service ??? /etc/systemd/system/m-steering-imu.service.
+MainPID=16494[m
+NRestarts=0[m
+ActiveState=active[m
+SubState=running[m
+[K
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

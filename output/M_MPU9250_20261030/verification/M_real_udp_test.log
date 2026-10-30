@@ -1,0 +1,14 @@
+python3 /home/linaro/imu_B_20261030/M_real_udp_test.py; printf '\nSIX_CMD_DONE\n'
+[?2004l{
+  "real_packets": 500,
+  "crc_errors": 0,
+  "sequence_gaps": 0,
+  "effective_hz": 100.06846367434554,
+  "flags": 1,
+  "physical_center_verified": false,
+  "s_board_receiver_tested": false,
+  "stdout": "[REAL FPGA] axis=[0.00000 0.00000 1.00000] bias=[-0.64935 -2.32287 0.25737] ZERO_VALID=0; relative motion only, chassis uncompensated\nREAL seq=1 t_ns=24621888916466 dt_ms=0.000 gap=0 age_ms=4 accel=[7.5615 0.1293 6.2465] gyro=[-0.5649 -1.8702 0.2366] temp_c=28.404 relative_deg=0.00000 rate_dps=-0.02073 ZERO_VALID=0\nREAL seq=101 t_ns=24622883768466 dt_ms=8.804 gap=0 age_ms=4 accel=[7.5531 0.0964 6.2782] gyro=[-0.6183 -2.2748 0.2366] temp_c=30.189 relative_deg=0.01657 rate_dps=-0.02073 ZERO_VALID=0\nREAL seq=201 t_ns=24623883903466 dt_ms=8.804 gap=0 age_ms=2 accel=[7.5675 0.1353 6.2668] gyro=[-0.6489 -2.3893 0.2748] temp_c=30.183 relative_deg=0.03935 rate_dps=0.01744 ZERO_VALID=0\nREAL seq=301 t_ns=24624885798466 dt_ms=10.565 gap=0 age_ms=4 accel=[7.5585 0.1119 6.2908] gyro=[-0.7176 -2.3206 0.2672] temp_c=30.192 relative_deg=0.05311 rate_dps=0.00981 ZERO_VALID=0\nREAL seq=401 t_ns=24625885932466 dt_ms=10.565 gap=0 age_ms=3 accel=[7.5681 0.1101 6.2549] gyro=[-0.5802 -2.2977 0.3130] temp_c=30.207 relative_deg=0.07103 rate_dps=0.05561 ZERO_VALID=0\nREAL seq=500 t_ns=24626875502466 dt_ms=8.804 gap=0 age_ms=3 accel=[7.5519 0.1203 6.2902] gyro=[-0.7099 -2.2214 0.2748] temp_c=30.207 relative_deg=0.08012 rate_dps=0.01744 ZERO_VALID=0\nLINK accepted=500 duplicate_reads=1778 transfers=4746 io_errors=0 crc_errors=0 stale_captures=0 i2c_errors=0\n"
+}
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 
