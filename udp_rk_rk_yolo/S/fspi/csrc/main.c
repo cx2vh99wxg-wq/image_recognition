@@ -394,6 +394,14 @@ static void publish_motion_hint(uint8_t hmi_code)
 }
 
 int main(int argc, char *argv[]) {
+    /* An explicit bench session must survive human observation pauses.
+     * Check before any SPI initialization or cleanup that could write contacts. */
+    if (access("/tmp/steering-bench.active", F_OK) == 0) {
+        fprintf(stderr, "STEERING_BENCH_ACTIVE: legacy vehicle_control is paused. "
+                "Finish the bench session and remove /tmp/steering-bench.active "
+                "before starting normal vehicle control.\n");
+        return 75;
+    }
     // 调试日志重定向到文件时也逐行输出，便于实机核对制动请求。
     setvbuf(stdout, NULL, _IOLBF, 0);
     (void)argc;

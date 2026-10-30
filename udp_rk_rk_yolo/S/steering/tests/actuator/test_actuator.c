@@ -1,5 +1,6 @@
 #include "steering_actuator.h"
 #include <assert.h>
+#include <limits.h>
 #include <stdio.h>
 
 typedef struct {
@@ -39,6 +40,19 @@ int main(void)
     assert(steering_actuator_tick(&a) == STEER_OK && f.actual == STEER_RELEASE);
     assert(a.status == ACTUATOR_IDLE);
 
+    calls = f.calls;
+    assert(steering_actuator_start(&a, STEER_LEFT, UINT_MAX) == STEER_ERR_ARGUMENT);
+    assert(steering_actuator_start_us(&a, STEER_LEFT, 200001) == STEER_ERR_ARGUMENT);
+    assert(f.calls == calls);
+    assert(steering_actuator_start_us(&a, STEER_RIGHT, 17500) == STEER_OK);
+    assert(a.requested_us == 17500 && a.deadline_ns - a.enable_end_ns == 17500000);
+    f.time_ns = a.enable_end_ns + 17000000;
+    assert(steering_actuator_tick(&a) == STEER_OK && f.actual == STEER_RIGHT);
+    f.time_ns = a.deadline_ns - 1;
+    assert(steering_actuator_tick(&a) == STEER_OK && f.actual == STEER_RIGHT);
+    ++f.time_ns;
+    assert(steering_actuator_tick(&a) == STEER_OK && f.actual == STEER_RELEASE);
+
     assert(steering_actuator_start(&a, STEER_RIGHT, 40) == STEER_OK);
     f.time_ns += 5000000;
     assert(steering_actuator_stop(&a) == STEER_OK && f.actual == STEER_RELEASE);
@@ -63,6 +77,6 @@ int main(void)
     assert(steering_actuator_stop(&a) == STEER_OK);
     assert(steering_actuator_start(&a, STEER_LEFT, 20) == STEER_ERR_IO);
     assert(a.status == ACTUATOR_FAULT && f.actual == STEER_RELEASE);
-    puts("PASS actuator: bounds, deadline, mutual exclusion, cancellation, uncertain writes, release faults");
+    puts("PASS actuator: ms/us bounds, fractional deadline, mutual exclusion, cancellation, uncertain writes, release faults");
     return 0;
 }

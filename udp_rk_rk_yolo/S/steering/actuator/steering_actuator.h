@@ -16,7 +16,8 @@ typedef struct {
     actuator_status_t status;
     steer_direction_t direction;
     steer_result_t last_error;
-    unsigned max_pulse_ms, requested_ms;
+    unsigned max_pulse_ms, requested_ms; /* requested_ms rounds up fractional ms. */
+    unsigned requested_us; /* Exact request; input resolution is not hardware accuracy. */
     uint64_t enable_begin_ns, enable_end_ns, deadline_ns;
     uint64_t release_begin_ns, release_end_ns;
 } steering_actuator_t;
@@ -26,6 +27,8 @@ steer_result_t steering_actuator_init(steering_actuator_t *actuator,
 /* Nonblocking after the initial register writes. Caller must keep ticking. */
 steer_result_t steering_actuator_start(steering_actuator_t *actuator,
                                      steer_direction_t direction, unsigned duration_ms);
+steer_result_t steering_actuator_start_us(steering_actuator_t *actuator,
+                                        steer_direction_t direction, unsigned duration_us);
 steer_result_t steering_actuator_tick(steering_actuator_t *actuator);
 steer_result_t steering_actuator_stop(steering_actuator_t *actuator);
 #endif
