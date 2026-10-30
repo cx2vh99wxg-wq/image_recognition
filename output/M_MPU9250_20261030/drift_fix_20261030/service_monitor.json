@@ -1,0 +1,15 @@
+{
+  "observation_s": 180.16055036599937,
+  "log_samples": 181,
+  "pid": 6137,
+  "service_restarted": false,
+  "zero_events": 1,
+  "angle_min": -4e-05,
+  "angle_max": 0.0016,
+  "angle_final": 0.00153,
+  "hold_fraction": 1.0,
+  "zero_valid": false,
+  "first_seq": 788,
+  "last_seq": 18703,
+  "mechanically_calibrated": false
+}

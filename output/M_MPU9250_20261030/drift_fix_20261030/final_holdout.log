@@ -1,0 +1,17 @@
+[REAL FPGA] axis=[0.00000 0.00000 1.00000] bias=[-0.67841 -2.38419 0.29960] ZERO_VALID=0; relative motion only, chassis uncompensated
+REAL seq=1 t_ns=5461018927545 dt_ms=0.000 gap=0 age_ms=2 accel=[0.0012 -6.7109 7.0707] gyro=[-0.5344 -1.9008 0.1679] temp_c=27.787 relative_deg=0.00000 rate_dps=-0.13166 ZERO_VALID=0 static_hold=0
+REAL seq=501 t_ns=5466016078545 dt_ms=10.565 gap=0 age_ms=2 accel=[0.0174 -6.6948 7.1257] gyro=[-0.6183 -2.3893 0.2824] temp_c=29.407 relative_deg=-0.03422 rate_dps=0.00000 ZERO_VALID=0 static_hold=1
+RELATIVE ZERO set: seq=978 relative_deg=0.00000 ZERO_VALID=0 session=1885125409
+REAL seq=978 t_ns=5470787846545 dt_ms=10.565 gap=0 age_ms=2 accel=[0.0144 -6.7157 7.0701] gyro=[-0.7481 -2.4351 0.3282] temp_c=29.386 relative_deg=0.00000 rate_dps=0.00000 ZERO_VALID=0 static_hold=1
+REAL seq=1001 t_ns=5471018510545 dt_ms=10.564 gap=0 age_ms=4 accel=[0.0227 -6.6828 7.1293] gyro=[-0.6947 -2.4122 0.2824] temp_c=29.410 relative_deg=0.00000 rate_dps=0.00000 ZERO_VALID=0 static_hold=1
+REAL seq=1501 t_ns=5476020943545 dt_ms=10.565 gap=0 age_ms=2 accel=[0.0287 -6.6924 7.0785] gyro=[-0.6794 -2.3740 0.2595] temp_c=29.419 relative_deg=0.00000 rate_dps=0.00000 ZERO_VALID=0 static_hold=1
+REAL seq=2001 t_ns=5481023376545 dt_ms=10.565 gap=0 age_ms=4 accel=[0.0407 -6.7103 7.0862] gyro=[-0.7328 -2.3664 0.3130] temp_c=29.401 relative_deg=0.00000 rate_dps=0.00000 ZERO_VALID=0 static_hold=1
+REAL seq=2501 t_ns=5486024048545 dt_ms=8.804 gap=0 age_ms=2 accel=[0.0413 -6.6954 7.1096] gyro=[-0.6489 -2.3359 0.2977] temp_c=29.428 relative_deg=0.00000 rate_dps=0.00000 ZERO_VALID=0 static_hold=1
+REAL seq=3001 t_ns=5491026481545 dt_ms=8.804 gap=0 age_ms=2 accel=[0.0545 -6.6798 7.1353] gyro=[-0.6565 -2.4275 0.2977] temp_c=29.431 relative_deg=-0.00068 rate_dps=0.00000 ZERO_VALID=0 static_hold=1
+REAL seq=3501 t_ns=5496028914545 dt_ms=8.804 gap=0 age_ms=3 accel=[0.0485 -6.6834 7.1096] gyro=[-0.6565 -2.4733 0.2977] temp_c=29.425 relative_deg=-0.00068 rate_dps=0.00000 ZERO_VALID=0 static_hold=1
+REAL seq=4001 t_ns=5501031346545 dt_ms=10.564 gap=0 age_ms=2 accel=[0.0269 -6.6924 7.1102] gyro=[-0.7634 -2.4427 0.3130] temp_c=29.401 relative_deg=-0.00068 rate_dps=0.00000 ZERO_VALID=0 static_hold=1
+REAL seq=4501 t_ns=5506033779545 dt_ms=10.565 gap=0 age_ms=2 accel=[0.0581 -6.6834 7.0677] gyro=[-0.6489 -2.3206 0.2672] temp_c=29.410 relative_deg=-0.00068 rate_dps=0.00000 ZERO_VALID=0 static_hold=1
+REAL seq=5001 t_ns=5511036212545 dt_ms=10.565 gap=0 age_ms=2 accel=[0.0467 -6.6930 7.1162] gyro=[-0.6336 -2.3359 0.2977] temp_c=29.416 relative_deg=-0.00068 rate_dps=0.00000 ZERO_VALID=0 static_hold=1
+REAL seq=5501 t_ns=5516038645545 dt_ms=10.565 gap=0 age_ms=2 accel=[0.0156 -6.6984 7.1347] gyro=[-0.6336 -2.4122 0.3435] temp_c=29.416 relative_deg=-0.00068 rate_dps=0.00000 ZERO_VALID=0 static_hold=1
+REAL seq=6000 t_ns=5521030513545 dt_ms=10.565 gap=0 age_ms=4 accel=[0.0383 -6.6822 7.1090] gyro=[-0.7252 -2.3740 0.3053] temp_c=29.410 relative_deg=-0.00068 rate_dps=0.00000 ZERO_VALID=0 static_hold=1
+LINK accepted=6000 duplicate_reads=22431 transfers=57062 io_errors=0 crc_errors=0 stale_captures=0 i2c_errors=1038

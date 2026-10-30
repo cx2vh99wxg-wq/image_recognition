@@ -13,7 +13,7 @@ from build_support import compile_program, run
 
 INCLUDES = [COMMON / "contracts", ROOT / "include", ROOT / "tools"]
 SOURCES = [ROOT / "csrc" / name for name in
-           ["imu_source.c", "steering_angle.c", "mpu9250_transport.c", "fpga_imu_snapshot.c"]]
+           ["imu_source.c", "steering_angle.c", "imu_stationary.c", "mpu9250_transport.c", "fpga_imu_snapshot.c"]]
 
 
 def build_imu() -> dict[str, Path]:
@@ -35,6 +35,10 @@ def check_m() -> None:
     snapshot = compile_program(ROOT / "build" / "test_snapshot",
         [ROOT / "csrc" / "fpga_imu_snapshot.c", ROOT / "tests" / "test_snapshot.c"], INCLUDES)
     print(run(snapshot, []).stdout.strip())
+    hold = compile_program(ROOT / "build" / "test_stationary",
+        [ROOT / "csrc" / "steering_angle.c", ROOT / "csrc" / "imu_stationary.c",
+         ROOT / "tests" / "test_stationary.c"], INCLUDES)
+    print(run(hold, []).stdout.strip())
 
 
 def main() -> int:

@@ -1,6 +1,7 @@
 #include "imu_tool.h"
 #include "imu_source.h"
 #include "steering_angle.h"
+#include "imu_stationary.h"
 #include "steering_platform.h"
 #include "steering_feedback_wire.h"
 #include <errno.h>
@@ -42,6 +43,7 @@ static void usage(void){
  " [--axis x|y|z] [--axis-sign 1|-1] [--mock-rate-dps N]\n"
  " [--calibration IMUCAL1_FILE] [--fixed-chassis --zero-at-center]\n"
  " [--gravity-gain 0..0.1] [--send-to IPv4 --port 54321]\n"
+ " [--stationary-hold] (bench: hold current angle after ~2s stationary evidence)\n"
  "Defaults: MOCK, 100 samples, 10ms, Z axis, no physical zero, no UDP.\n"
  "REAL FPGA: 100Hz sensor; fixed FPGA clock offset; duplicate reads are skipped.\n"
  "Only --fixed-chassis + calibration + --zero-at-center can assert ZERO_VALID.\n"
@@ -62,13 +64,14 @@ int imu_tool_main(int argc,char **argv,int estimate){
  const char *backend="mock",*axis_name="z",*csv_name=NULL,*cal_name=NULL,*target=NULL;
  unsigned count=100,interval=10,print_every=10,port=54321;
  float mock_rate=0,sign=1,gravity_gain=0;
- int fixed_chassis=0,request_zero=0,wait_device=0;
+ int fixed_chassis=0,request_zero=0,wait_device=0,stationary_hold=0;
  for(int i=1;i<argc;++i){
   const char *key=argv[i];
   if(!strcmp(key,"--help")){usage();return 0;}
   if(!strcmp(key,"--fixed-chassis")){fixed_chassis=1;continue;}
   if(!strcmp(key,"--zero-at-center")){request_zero=1;continue;}
   if(!strcmp(key,"--wait-device")){wait_device=1;continue;}
+  if(!strcmp(key,"--stationary-hold")){stationary_hold=1;continue;}
   if(i+1==argc){usage();return 2;}
   const char *v=argv[++i];
   if(!strcmp(key,"--backend"))backend=v;
@@ -90,11 +93,13 @@ int imu_tool_main(int argc,char **argv,int estimate){
  if((!fpga&&strcmp(backend,"mock"))||idx<0||!interval||interval>1000||!print_every||
    fabsf(mock_rate)>2000||(fpga&&mock_rate!=0)||!port||port>65535||gravity_gain<0||gravity_gain>.1f||
    (request_zero&&(!estimate||!fpga||!fixed_chassis||!cal_name))||
-   (gravity_gain>0&&!request_zero)||(target&&!estimate)){usage();return 2;}
+   (gravity_gain>0&&!request_zero)||(target&&!estimate)||
+   (stationary_hold&&(!estimate||gravity_gain>0))){usage();return 2;}
  float axis[3]={0},bias[3]={0};axis[idx]=sign;
  if(cal_name&&!load_calibration(cal_name,axis,bias)){fprintf(stderr,"Invalid calibration file\n");return 2;}
  steering_angle_t integrator;
  if(steering_angle_init(&integrator,axis,bias,100)!=STEER_OK)return 2;
+ imu_stationary_t hold;imu_stationary_init(&hold);
 #ifndef _WIN32
  int sock=-1;
  if(target){
@@ -119,7 +124,7 @@ int imu_tool_main(int argc,char **argv,int estimate){
  if(csv_name){
   csv=steering_create_csv(csv_name);
   if(!csv){perror("Create CSV (new filename required)");imu_source_close(&source);return 1;}
-  fputs("backend,session,seq,sample_time_ns,flags,ax_mps2,ay_mps2,az_mps2,gx_dps,gy_dps,gz_dps,temp_c,relative_deg,axis_rate_dps,zero_valid,dt_ms,seq_gap,source_age_ms\n",csv);
+  fputs("backend,session,seq,sample_time_ns,flags,ax_mps2,ay_mps2,az_mps2,gx_dps,gy_dps,gz_dps,temp_c,relative_deg,axis_rate_dps,zero_valid,dt_ms,seq_gap,source_age_ms,static_hold\n",csv);
   setvbuf(csv,NULL,_IOFBF,65536);
  }
  cancelled=0;center_requested=0;relative_zero_requested=0;
@@ -176,7 +181,8 @@ int imu_tool_main(int argc,char **argv,int estimate){
   }
   double relative=NAN;float projected=NAN;int did_relative_zero=0;
   if(estimate){
-   rc=steering_angle_update(&integrator,&sample,&relative,&projected);
+   rc=stationary_hold ? steering_angle_update_with_hold(&integrator,&hold,&sample,&relative,&projected) :
+       steering_angle_update(&integrator,&sample,&relative,&projected);
    if(rc!=STEER_OK){fprintf(stderr,"Integration fault: %s; zero lost\n",steer_result_name(rc));exit_code=1;break;}
    if(!have_sample)memcpy(gravity_ref,sample.accel_mps2,sizeof(gravity_ref));
    if(gravity_gain>0){
@@ -206,13 +212,13 @@ int imu_tool_main(int argc,char **argv,int estimate){
   unsigned gap=have_sample?(sample.sequence-previous_seq-1u):0;
   double dt=previous_stamp?(sample.sample_time_ns-previous_stamp)/1e6:0;
   if(did_relative_zero||produced%print_every==0||(count&&produced+1==count))
-   printf("%s seq=%u t_ns=%" PRIu64 " dt_ms=%.3f gap=%u age_ms=%u accel=[%.4f %.4f %.4f] gyro=[%.4f %.4f %.4f] temp_c=%.3f relative_deg=%.5f rate_dps=%.5f ZERO_VALID=%d\n",
+   printf("%s seq=%u t_ns=%" PRIu64 " dt_ms=%.3f gap=%u age_ms=%u accel=[%.4f %.4f %.4f] gyro=[%.4f %.4f %.4f] temp_c=%.3f relative_deg=%.5f rate_dps=%.5f ZERO_VALID=%d static_hold=%d\n",
     fpga?"REAL":"SIMULATED",sample.sequence,sample.sample_time_ns,dt,gap,age_ms,
-    sample.accel_mps2[0],sample.accel_mps2[1],sample.accel_mps2[2],sample.gyro_dps[0],sample.gyro_dps[1],sample.gyro_dps[2],sample.temperature_c,relative,projected,zero_valid);
+    sample.accel_mps2[0],sample.accel_mps2[1],sample.accel_mps2[2],sample.gyro_dps[0],sample.gyro_dps[1],sample.gyro_dps[2],sample.temperature_c,relative,projected,zero_valid,stationary_hold&&hold.holding);
   if(csv){
-   fprintf(csv,"%s,%u,%u,%" PRIu64 ",%u,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.4f,%.6f,%.6f,%d,%.6f,%u,%u\n",
+   fprintf(csv,"%s,%u,%u,%" PRIu64 ",%u,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.4f,%.6f,%.6f,%d,%.6f,%u,%u,%d\n",
     backend,session,sample.sequence,sample.sample_time_ns,sample.flags,sample.accel_mps2[0],sample.accel_mps2[1],sample.accel_mps2[2],
-    sample.gyro_dps[0],sample.gyro_dps[1],sample.gyro_dps[2],sample.temperature_c,relative,projected,zero_valid,dt,gap,age_ms);
+    sample.gyro_dps[0],sample.gyro_dps[1],sample.gyro_dps[2],sample.temperature_c,relative,projected,zero_valid,dt,gap,age_ms,stationary_hold&&hold.holding);
    if(ferror(csv)){perror("CSV write");exit_code=1;break;}
   }
 #ifndef _WIN32

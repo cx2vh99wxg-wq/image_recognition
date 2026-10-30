@@ -1,0 +1,13 @@
+[?2004hroot@linaro-alip:/# [?2004l
+[?2004hroot@linaro-alip:/# python3 /home/linaro/imu_drift_20261030/collect.py; cat /etc/default/m-steering-imu; systemctl is-enabled m-steering-imu; systemctl show m-steering-imu --property=MainPID,ActiveState,NRestarts; printf '\nSIX_CMD_DONE\n'
+[?2004lDRIFT_RESULTS_BYTES 284901
+# Bench/relative display only: Z mounting and mechanical center are unverified.
+# Optional stationary hold cannot distinguish near-zero constant rotation from bias.
+IMU_CALIBRATION_ARGS="--calibration /home/linaro/M/imu/calibration/drift_bias_20261030.cal --stationary-hold"
+enabled
+MainPID=6137[m
+NRestarts=0[m
+ActiveState=active[m
+[K
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

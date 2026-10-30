@@ -1,0 +1,12 @@
+{
+  "samples": 6000,
+  "duration_s": 60.011586,
+  "new_i2c_errors": 0,
+  "sequence_gaps": 0,
+  "post_zero_samples": 5023,
+  "post_zero_hold_fraction": 0.9998009157873781,
+  "post_zero_angle_min": -0.00068,
+  "post_zero_angle_max": 0.0,
+  "post_zero_final_angle": -0.00068,
+  "zero_valid": false
+}

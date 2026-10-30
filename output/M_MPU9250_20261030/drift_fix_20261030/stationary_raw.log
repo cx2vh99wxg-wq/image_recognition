@@ -1,0 +1,8 @@
+[REAL FPGA] axis=[0.00000 0.00000 1.00000] bias=[0.00000 0.00000 0.00000] ZERO_VALID=0; relative motion only, chassis uncompensated
+REAL seq=1 t_ns=4973999264077 dt_ms=0.000 gap=0 age_ms=4 accel=[0.0215 -6.7361 7.0743] gyro=[-0.5649 -1.8473 0.2214] temp_c=27.976 relative_deg=nan rate_dps=nan ZERO_VALID=0
+REAL seq=1001 t_ns=4983998847077 dt_ms=10.565 gap=0 age_ms=2 accel=[-0.0006 -6.6930 7.0904] gyro=[-0.7099 -2.3969 0.3053] temp_c=29.635 relative_deg=nan rate_dps=nan ZERO_VALID=0
+REAL seq=2001 t_ns=4994003712077 dt_ms=10.564 gap=0 age_ms=3 accel=[0.0198 -6.7062 7.1078] gyro=[-0.6565 -2.2901 0.2977] temp_c=29.638 relative_deg=nan rate_dps=nan ZERO_VALID=0
+REAL seq=3001 t_ns=5004006817077 dt_ms=8.804 gap=0 age_ms=2 accel=[0.0221 -6.6930 7.0958] gyro=[-0.6641 -2.4275 0.3588] temp_c=29.650 relative_deg=nan rate_dps=nan ZERO_VALID=0
+REAL seq=3500 t_ns=5009000446077 dt_ms=10.565 gap=0 age_ms=3 accel=[0.0006 -6.7092 7.1000] gyro=[-0.6260 -2.3817 0.2977] temp_c=29.641 relative_deg=nan rate_dps=nan ZERO_VALID=0
+LINK accepted=3500 duplicate_reads=13080 transfers=33352 io_errors=0 crc_errors=0 stale_captures=0 i2c_errors=1038
+CAPTURE_RC=0

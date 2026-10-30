@@ -1,0 +1,24 @@
+BUILT linaro/M/imu/build/imu_dump
+BUILT linaro/M/imu/build/angle_monitor
+BUILT linaro/M/imu/build/feedback_inspect
+BUILT linaro/M/imu/build/imu_probe
+BUILT linaro/M/imu/build/test_imu
+PASS IMU: variable dt, axis/bias, wrap, duplicate/gap/session faults, identity and simulation isolation
+BUILT linaro/M/imu/build/test_snapshot
+PASS IMU1: CRC vector, signed axes/temperature, endianness, torn packet, flags, clock reversal and old FPGA rejection
+BUILT linaro/M/imu/build/test_stationary
+PASS stationary hold: noisy static drift bounded, nonzero angle retained, slow/fast signed motion preserved, immediate release, vibration and stale data rejected
+PASS tools: calibration, UDP, mock isolation, zero arming, CSV protection; runtime relative zero preserves sampling/session semantics and never grants mechanical zero
+{
+  "samples": 6000,
+  "duration_s": 60.011586,
+  "new_i2c_errors": 0,
+  "sequence_gaps": 0,
+  "post_zero_samples": 5023,
+  "post_zero_hold_fraction": 0.9998009157873781,
+  "post_zero_angle_min": -0.00068,
+  "post_zero_angle_max": 0.0,
+  "post_zero_final_angle": -0.00068,
+  "zero_valid": false
+}
+DRIFT_HOLDOUT_PASS

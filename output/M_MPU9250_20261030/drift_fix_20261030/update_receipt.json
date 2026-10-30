@@ -1,0 +1,36 @@
+{
+  "local_board_hashes_match": true,
+  "files": 44,
+  "original_baseline_files_matching": 244,
+  "intervening_committed_S_changes": [
+    "udp_rk_rk_yolo\\S\\steering\\actuator\\steering_actuator.c",
+    "udp_rk_rk_yolo\\S\\steering\\actuator\\steering_actuator.h",
+    "udp_rk_rk_yolo\\S\\steering\\tools\\actuator\\steering_step.c",
+    "udp_rk_rk_yolo\\S\\steering\\tests\\actuator\\test_actuator.c",
+    "udp_rk_rk_yolo\\S\\fspi\\csrc\\main.c"
+  ],
+  "S_and_common_worktree_match_HEAD": true,
+  "HEAD": "06c81cde7bc63dbd9ba28ce521eb4539f95d93a4",
+  "fpga_unchanged": true,
+  "hmi_and_control_unchanged": true,
+  "relative_zero_available": true,
+  "mechanical_axis_verified": false,
+  "mechanical_zero_valid": false,
+  "optional_mode": "--stationary-hold",
+  "extremely_slow_rotation_ambiguity": true,
+  "real_static_observation": {
+    "observation_s": 180.16055036599937,
+    "log_samples": 181,
+    "pid": 6137,
+    "service_restarted": false,
+    "zero_events": 1,
+    "angle_min": -4e-05,
+    "angle_max": 0.0016,
+    "angle_final": 0.00153,
+    "hold_fraction": 1.0,
+    "zero_valid": false,
+    "first_seq": 788,
+    "last_seq": 18703,
+    "mechanically_calibrated": false
+  }
+}

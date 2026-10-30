@@ -1,0 +1,10 @@
+systemctl show m-steering-imu --property=MainPID,NRestarts,ActiveState; journalctl -u m-steering-imu -n 3 --no-pager; printf '\nSIX_CMD_DONE\n'
+[?2004lMainPID=6137[m
+NRestarts=0[m
+ActiveState=active[m
+[KOct 30 04:23:43 linaro-alip angle_monitor[6137]: REAL seq=44903 t_ns=6046405034526 dt_ms=8.804 gap=0 age_ms=3 accel=[0.0682 -6.6846 7.0713] gyro=[-0.6718 -2.2977 0.3435] temp_c=29.512 relative_deg=0.00315 rate_dps=0.00000 ZERO_VALID=0 static_hold=1
+Oct 30 04:23:44 linaro-alip angle_monitor[6137]: REAL seq=45003 t_ns=6047405169526 dt_ms=8.804 gap=0 age_ms=4 accel=[0.0425 -6.7050 7.0892] gyro=[-0.7099 -2.4427 0.2824] temp_c=29.506 relative_deg=0.00315 rate_dps=0.00000 ZERO_VALID=0 static_hold=1
+Oct 30 04:23:45 linaro-alip angle_monitor[6137]: REAL seq=45103 t_ns=6048407064526 dt_ms=10.565 gap=0 age_ms=2 accel=[0.0676 -6.6960 7.0916] gyro=[-0.7710 -2.4122 0.3282] temp_c=29.503 relative_deg=0.00315 rate_dps=0.00000 ZERO_VALID=0 static_hold=1
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

@@ -1,0 +1,31 @@
+[?2004hroot@linaro-alip:/# [?2004l
+[?2004hroot@linaro-alip:/# python3 /home/linaro/imu_drift_20261030/prepare_bias.py; printf '\nSIX_CMD_DONE\n'
+[?2004l{
+  "axis": [
+    0.0,
+    0.0,
+    1.0
+  ],
+  "bias": [
+    -0.678412192,
+    -2.3841870395,
+    0.299603082
+  ],
+  "gyro_std": [
+    0.04229443515225804,
+    0.04873254801683416,
+    0.044273688838914006
+  ],
+  "accel_norm_mean": 9.760854690343706,
+  "samples": 2000,
+  "duration_s": 19.999166,
+  "temperature_c": 29.6403316,
+  "physical_center_established": false,
+  "chassis_compensated": false,
+  "note": "Stationary declaration and mounting direction need independent physical verification",
+  "axis_verified": false,
+  "purpose": "Provisional Z static bias refresh only, no mechanical zero"
+}
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 
