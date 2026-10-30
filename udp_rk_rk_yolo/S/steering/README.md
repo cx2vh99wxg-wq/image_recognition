@@ -15,6 +15,7 @@ M端测角 → UDP → S/steering/feedback → controller → actuator → left/
 - `tools/actuator/`：已实现的独立 `steering_step` 工具。
 - `feedback/`：遥测缓存校验与只读UDP监测工具；正式控制接入函数仍返回NOT_READY。
 - `tools/feedback/`：Linux专用`steering_feedback_monitor`，记录M端相对角度，不访问执行器。
+- `tools/calibration/`：实测脉冲记录、经验响应模型和阶段三台架目标角度工具，见该目录说明。
 - `controller/`：S 端角度控制 API 及预留实现，目前明确返回 NOT_READY。
 - `tests/`：S 端执行器和未就绪边界测试。
 - `tools/build.py`：只构建 S 端，依赖公共头，不使用 M 端源码。
@@ -43,4 +44,6 @@ sudo ./actuator/build/steering_step_fspi --backend fspi --direction release
 默认仍是模拟。硬件测试需固定车辆、退出旧 FSPI 控制程序，详细限制和日志解释见 `tools/actuator/README.md`。
 释放控制不代表方向盘回中，工具不会报告实际角度已到位。
 
-真实M→S角度遥测已经进入联调，可用`python3 tools/build.py --monitor`构建接收工具；用法及状态见`feedback/README.md`。MPU尚未固定到转向机构，装车轴向、零位、时长—转角标定和闭环精度仍待物理验收，不能将相对角度输出当作已完成机械反馈控制。
+真实M→S角度遥测已恢复并完成带反馈的脉冲测试，可用`python3 tools/build.py --monitor`构建接收工具；用法及状态见`feedback/README.md`。2026-10-30用户确认MPU固定、左正右负，机械端点读数约±20°。第一阶段32次标定脉冲中有1次软件计时异常被模型排除；7次独立目标试验有5次进入±1°容差，另两次分别因无进展、分辨率限制退出，尚不能承诺任意角度精度。证据见`tests/feedback/evidence/precision_20261030.json`。
+
+用户要求覆盖大角度后，已增加显式±18°观测范围、最长60ms请求的台架选项，并完成A060～A063；随后M会话变化使A064在发脉冲前停止。重新置零必须先确认原物理标记并记录新会话参考，不能直接拼接不同会话的角度。连续较长脉冲与±15°目标覆盖尚未完成，正式整车控制API仍为NOT_READY。

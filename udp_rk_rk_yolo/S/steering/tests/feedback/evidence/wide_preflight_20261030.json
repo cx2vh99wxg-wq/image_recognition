@@ -1,0 +1,124 @@
+{
+  "date": "2026-10-30",
+  "phase": "wide calibration in progress; zero-reference change blocked actuation",
+  "archive": {
+    "size": 83825,
+    "sha256": "f01c1c7ec96cc487f5c1a08fa6827203afdc4798beda549fb7d4f841208d94a1",
+    "files": 44
+  },
+  "physical_pulses": 4,
+  "points": [
+    {
+      "trial": "A060_left_20000us_wide",
+      "reference_session": 95601018,
+      "zero_raw_deg": 0.151,
+      "requested_us": 20000,
+      "before_deg": -2.276,
+      "after_deg": 6.1365,
+      "delta_deg": 8.4125,
+      "result": "RECORDED"
+    },
+    {
+      "trial": "A061_left_20000us_wide",
+      "reference_session": 95601018,
+      "zero_raw_deg": 0.151,
+      "requested_us": 20000,
+      "before_deg": 6.107,
+      "after_deg": 6.107,
+      "delta_deg": 0.0,
+      "result": "RECORDED"
+    },
+    {
+      "trial": "A062_left_20000us_wide",
+      "reference_session": 95601018,
+      "zero_raw_deg": 0.151,
+      "requested_us": 20000,
+      "before_deg": 6.079000000000001,
+      "after_deg": 6.079000000000001,
+      "delta_deg": 0.0,
+      "result": "RECORDED"
+    },
+    {
+      "trial": "A063_left_20000us_wide",
+      "reference_session": 95601018,
+      "zero_raw_deg": 0.151,
+      "requested_us": 20000,
+      "before_deg": 6.079000000000001,
+      "after_deg": 10.592,
+      "delta_deg": 4.513,
+      "result": "RECORDED"
+    }
+  ],
+  "old_reference_session": 95601018,
+  "old_zero_raw_deg": 0.151,
+  "new_feedback": {
+    "session": 2895104455,
+    "raw_relative_deg": -0.359,
+    "flags": 1,
+    "frames": 251,
+    "source_age_max_ms": 4
+  },
+  "stopped_trial": {
+    "trial": "A064_left_17750us_wide",
+    "pulse_launched": false,
+    "error": "M reference session changed; re-confirm physical zero"
+  },
+  "left_right_released": true,
+  "continuous_25ms_trial_executed": false,
+  "plus15_goal_tested": false,
+  "full_angle_time_coverage_complete": false,
+  "reference_origin_confirmation_required": true,
+  "raw_readings_from_different_sessions_must_not_be_stitched": true,
+  "source_files_verified": [
+    {
+      "path": "tests/feedback/test_bench.py",
+      "size": 3662,
+      "sha256": "9e3b43095775b626f2bf1ca3262bb1ab59495429628b2f5f45a3a4548a8a5ecc"
+    },
+    {
+      "path": "tests/feedback/test_response_model.py",
+      "size": 2266,
+      "sha256": "83bd1261a03de602a33b1ca13b19eda642630eda91ffc484e8e689bc19d8b254"
+    },
+    {
+      "path": "tests/feedback/test_target.py",
+      "size": 4158,
+      "sha256": "2a16aee1125ca3ac7c39955f6554bdc0cebd2f290c59fe8afdb785493519f24e"
+    },
+    {
+      "path": "tests/feedback/test_udp_monitor.py",
+      "size": 5411,
+      "sha256": "fc3b156cb799d4b84d8a124eaae8b2f7446b5405b7829e1e5a3b495326c33e2b"
+    },
+    {
+      "path": "tools/build.py",
+      "size": 7817,
+      "sha256": "7d975380e64e3aa0398451a9e7fba073c9b17152745661c68094a28f5232116b"
+    },
+    {
+      "path": "tools/calibration/README.md",
+      "size": 5779,
+      "sha256": "a778e1b4d1d2558495cb23cdf13ae85789768894841f4bed2334da5fe9358f93"
+    },
+    {
+      "path": "tools/calibration/response_model.py",
+      "size": 5966,
+      "sha256": "69e2940a4b2862cd57f8d86789e81a9f4f23024a5901d20d018c68c309f3d35c"
+    },
+    {
+      "path": "tools/calibration/steering_bench.py",
+      "size": 14987,
+      "sha256": "058f0ab13978e913f3f0eb83ffb6453f4267e76abf12295226702b5dbbdf4864"
+    },
+    {
+      "path": "tools/calibration/steering_target.py",
+      "size": 6079,
+      "sha256": "10f99d3f6c59727e14abd459fe16397082be8c20ddaa7d39d4f271e1a623865c"
+    },
+    {
+      "path": "tools/feedback/steering_feedback_monitor.c",
+      "size": 7496,
+      "sha256": "d7572c796cd1fdab9be5c63d21ef4b530b91c02587f6a16f0b940f7aeba377da"
+    }
+  ]
+}

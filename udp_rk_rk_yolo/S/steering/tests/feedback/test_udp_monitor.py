@@ -67,6 +67,8 @@ with tempfile.TemporaryDirectory(prefix='feedback_udp_') as directory:
         with path.open() as handle:
             rows = list(csv.DictReader(handle))
         good = [r for r in rows if r['accepted'] == '1']
+        receive_stamps = [int(v) for v in re.findall(r'\brx_local_ns=(\d+)', out)]
+        assert receive_stamps == [int(r['rx_local_ns']) for r in good], out
         assert [r['cache_status'] for r in good] == ['REAL_RELATIVE','REAL_ZERO_VALID',
             'REAL_RELATIVE','SIMULATED','STALE','REAL_RELATIVE'], good
         assert good[-1]['raw_relative_deg'] == '-9.876'

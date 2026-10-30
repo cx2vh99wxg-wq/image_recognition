@@ -121,9 +121,9 @@ int main(int argc, char **argv)
         if (status == FEEDBACK_CENTERED) ++centered;
         if (status == FEEDBACK_SIMULATED) ++simulated;
         if (accepted == 1 || accepted % print_every == 0)
-            printf("RX session=%u seq=%u flags=%u raw_relative_deg=%.3f rate_dps=%.3f source_age_ms=%u status=%s actuator_enabled=0\n",
+            printf("RX session=%u seq=%u flags=%u raw_relative_deg=%.3f rate_dps=%.3f source_age_ms=%u status=%s rx_local_ns=%" PRIu64 " actuator_enabled=0\n",
                    incoming.session_id, incoming.sequence, incoming.flags, incoming.angle_mdeg / 1000.0,
-                   incoming.rate_mdps / 1000.0, incoming.source_age_ms, feedback_status_name(status));
+                   incoming.rate_mdps / 1000.0, incoming.source_age_ms, feedback_status_name(status), now);
     }
     printf("SUMMARY accepted=%" PRIu64 " rejected=%" PRIu64 " foreign=%" PRIu64
            " real_relative=%" PRIu64 " zero_flagged=%" PRIu64 " simulated=%" PRIu64

@@ -57,6 +57,12 @@ def check_s() -> None:
     run(cli, ["--backend", "fspi", "--direction", "left", "--duration-us", "20001",
               "--max-pulse-ms", "20"], 2)
     print("PASS CLI: microsecond input, fractional output, exclusive units and pre-open bound")
+    for name in ["test_bench.py", "test_response_model.py", "test_target.py"]:
+        result = subprocess.run([sys.executable, str(ROOT / "tests" / "feedback" / name)],
+                                text=True, capture_output=True, timeout=30)
+        if result.returncode:
+            raise AssertionError(f"{name} failed:\n{result.stdout}\n{result.stderr}")
+    print("PASS bench feedback/reference guards, empirical response limits and target orchestration")
     if sys.platform.startswith("linux"):
         fspi = ROOT.parent / "fspi"
         trace = compile_program(tests / "test_trace_cli",

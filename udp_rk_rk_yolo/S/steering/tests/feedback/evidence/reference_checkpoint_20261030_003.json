@@ -1,0 +1,18 @@
+{
+  "schema": "STEER_BENCH_REFERENCE_CHECKPOINT_V1",
+  "date": "2026-10-30",
+  "user_confirmed_original_physical_zero_before_capture": true,
+  "expected_session": 2895104455,
+  "observed_sessions": [
+    672063496
+  ],
+  "raw_angle_min_deg": -11.605,
+  "raw_angle_max_deg": -11.605,
+  "frames": 150,
+  "source_age_max_ms": 6,
+  "csv_sha256": "274e6f098e42fe6f853d719a8d7341177a410eb7370b4017a2d9f4c330bf47ff",
+  "result": "REFERENCE_NOT_BOUND",
+  "additional_motion_commands_sent": 0,
+  "reason": "Unexpected later session and nonzero angle; origin not inferred",
+  "reference_file_created": false
+}

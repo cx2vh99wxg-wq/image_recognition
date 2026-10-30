@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1250" viewBox="0 0 1600 1250">
+<rect width="100%" height="100%" fill="white"/>
+<text x="800" y="47" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="35" font-weight="bold" fill="#222">系统设计流程图</text>
+<text x="800" y="91" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="21" font-weight="normal" fill="#555">软件链路验证  →  硬件通路构建  →  智能感知与交互集成</text>
+<rect x="60" y="125" width="705" height="920" rx="9" fill="#f6f6f6" stroke="#bbb" stroke-width="2"/>
+<rect x="835" y="125" width="705" height="920" rx="9" fill="#f6f6f6" stroke="#bbb" stroke-width="2"/>
+<text x="412" y="158" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="23" font-weight="bold" fill="#222">链路建立与图像采集</text>
+<text x="1188" y="158" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="23" font-weight="bold" fill="#222">智能功能与系统交互</text>
+<rect x="100" y="190" width="620" height="145" rx="9" fill="#fff" stroke="#777" stroke-width="2"/>
+<rect x="118" y="210" width="66" height="53" rx="9" fill="#dedede" stroke="#aaa" stroke-width="2"/>
+<text x="151" y="237" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="23" font-weight="bold" fill="#222">01</text>
+<text x="450" y="242" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="26" font-weight="bold" fill="#222">验证 UDP 通信</text>
+<text x="450" y="289" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="normal" fill="#222">确认 M / S 板间通信协议与数据格式</text>
+<rect x="100" y="392" width="620" height="145" rx="9" fill="#fff" stroke="#777" stroke-width="2"/>
+<rect x="118" y="412" width="66" height="53" rx="9" fill="#dedede" stroke="#aaa" stroke-width="2"/>
+<text x="151" y="439" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="23" font-weight="bold" fill="#222">02</text>
+<text x="450" y="444" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="26" font-weight="bold" fill="#222">建立 PCIe 通道</text>
+<text x="450" y="491" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="normal" fill="#222">跑通驱动，连接 FPGA 与 ARM</text>
+<rect x="100" y="594" width="620" height="145" rx="9" fill="#fff" stroke="#777" stroke-width="2"/>
+<rect x="118" y="614" width="66" height="53" rx="9" fill="#dedede" stroke="#aaa" stroke-width="2"/>
+<text x="151" y="641" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="23" font-weight="bold" fill="#222">03</text>
+<text x="450" y="646" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="26" font-weight="bold" fill="#222">打通摄像头数据流</text>
+<text x="450" y="693" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="normal" fill="#222">接入 OV5640，验证图像采集</text>
+<rect x="100" y="796" width="620" height="145" rx="9" fill="#fff" stroke="#777" stroke-width="2"/>
+<rect x="118" y="816" width="66" height="53" rx="9" fill="#dedede" stroke="#aaa" stroke-width="2"/>
+<text x="151" y="843" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="23" font-weight="bold" fill="#222">04</text>
+<text x="450" y="848" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="26" font-weight="bold" fill="#222">组合六路摄像头画面</text>
+<text x="450" y="895" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="normal" fill="#222">合成多视角画面，形成统一显示</text>
+<rect x="880" y="190" width="620" height="145" rx="9" fill="#fff" stroke="#777" stroke-width="2"/>
+<rect x="898" y="210" width="66" height="53" rx="9" fill="#dedede" stroke="#aaa" stroke-width="2"/>
+<text x="931" y="237" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="23" font-weight="bold" fill="#222">05</text>
+<text x="1230" y="242" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="26" font-weight="bold" fill="#222">部署 YOLO 系列模型</text>
+<text x="1230" y="289" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="normal" fill="#222">识别车道线、道路区域与目标</text>
+<rect x="880" y="392" width="620" height="145" rx="9" fill="#fff" stroke="#777" stroke-width="2"/>
+<rect x="898" y="412" width="66" height="53" rx="9" fill="#dedede" stroke="#aaa" stroke-width="2"/>
+<text x="931" y="439" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="23" font-weight="bold" fill="#222">06</text>
+<text x="1230" y="444" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="26" font-weight="bold" fill="#222">实现 FPGA 夜视增强</text>
+<text x="1230" y="491" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="normal" fill="#222">CNN 判定 + Gamma 查表处理</text>
+<rect x="880" y="594" width="620" height="145" rx="9" fill="#fff" stroke="#777" stroke-width="2"/>
+<rect x="898" y="614" width="66" height="53" rx="9" fill="#dedede" stroke="#aaa" stroke-width="2"/>
+<text x="931" y="641" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="23" font-weight="bold" fill="#222">07</text>
+<text x="1230" y="646" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="26" font-weight="bold" fill="#222">打通射频无线链路</text>
+<text x="1230" y="693" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="normal" fill="#222">驱动射频信号板并联动车辆</text>
+<rect x="880" y="796" width="620" height="145" rx="9" fill="#fff" stroke="#777" stroke-width="2"/>
+<rect x="898" y="816" width="66" height="53" rx="9" fill="#dedede" stroke="#aaa" stroke-width="2"/>
+<text x="931" y="843" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="23" font-weight="bold" fill="#222">08</text>
+<text x="1230" y="848" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="26" font-weight="bold" fill="#222">接入 HMI 串口屏</text>
+<text x="1230" y="895" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="20" font-weight="normal" fill="#222">实现操作交互与车辆控制</text>
+<polyline fill="none" stroke="#555" stroke-width="3" points="410,335 410,392"/>
+<polygon fill="#555" points="410,392 403.99687071796075,380.46906600386933 416.00312928203925,380.46906600386933"/>
+<polyline fill="none" stroke="#555" stroke-width="3" points="410,537 410,594"/>
+<polygon fill="#555" points="410,594 403.99687071796075,582.4690660038693 416.00312928203925,582.4690660038693"/>
+<polyline fill="none" stroke="#555" stroke-width="3" points="410,739 410,796"/>
+<polygon fill="#555" points="410,796 403.99687071796075,784.4690660038693 416.00312928203925,784.4690660038693"/>
+<polyline fill="none" stroke="#555" stroke-width="3" points="1190,335 1190,392"/>
+<polygon fill="#555" points="1190,392 1183.9968707179607,380.46906600386933 1196.0031292820393,380.46906600386933"/>
+<polyline fill="none" stroke="#555" stroke-width="3" points="1190,537 1190,594"/>
+<polygon fill="#555" points="1190,594 1183.9968707179607,582.4690660038693 1196.0031292820393,582.4690660038693"/>
+<polyline fill="none" stroke="#555" stroke-width="3" points="1190,739 1190,796"/>
+<polygon fill="#555" points="1190,796 1183.9968707179607,784.4690660038693 1196.0031292820393,784.4690660038693"/>
+<polyline fill="none" stroke="#555" stroke-width="3" points="720,868 790,868 790,178 1190,178 1190,190"/>
+<polygon fill="#555" points="1190,190 1183.9968707179607,178.4690660038693 1196.0031292820393,178.4690660038693"/>
+<rect x="320" y="1090" width="960" height="90" rx="9" fill="#e8e8e8" stroke="#888" stroke-width="2"/>
+<text x="800" y="1120" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="24" font-weight="bold" fill="#222">系统联调与功能验证</text>
+<text x="800" y="1154" text-anchor="middle" dominant-baseline="central" font-family="Microsoft YaHei,sans-serif" font-size="22" font-weight="normal" fill="#222">感知 → 处理 → 传输 → 控制</text>
+<polyline fill="none" stroke="#555" stroke-width="3" points="1190,941 1190,1065 1000,1065 1000,1090"/>
+<polygon fill="#555" points="1000,1090 993.9968707179607,1078.4690660038693 1006.0031292820393,1078.4690660038693"/>
+</svg>

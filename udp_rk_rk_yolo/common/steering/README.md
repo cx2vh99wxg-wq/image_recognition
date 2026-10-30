@@ -13,7 +13,7 @@
 MPU-9250 → M端FMC/FPGA采集 → M端RK3568测角 → UDP → S端反馈接收 → S端闭环 → left/right
 ```
 
-当前真实FPGA采集、M端相对测角和M→S角度遥测已经进入实机联调；S端接收工具只测量和记录。MPU尚未固定到方向盘，安装标定、时长—转角函数和正式角度闭环仍待验证。
+真实FPGA采集、M端相对测角和M→S遥测已完成台架联调。用户确认MPU已固定到机械联动部件，左正右负、端点读数约±20°；这不替代独立测角精度验收。S的`tools/calibration/`已实现实测脉冲记录、保留无响应样本的经验模型及阶段三台架目标原型。首批7次目标试验5次进入±1°容差，两次因无进展或分辨率限制退出；连续长脉冲、±15°目标与完整范围覆盖尚未完成。M重启或置零改变会话后须重建已确认的物理零点参考。正式整车API与统一控制权接入仍未启用。
 
 ## 目录与所有权
 
@@ -38,6 +38,7 @@ udp_rk_rk_yolo/
     controller/             合并后：角度闭环及其 S 端 API，目前 NOT_READY
     tools/actuator/         A：steering_step 独立工具
     tools/feedback/         只读UDP角度监测、CSV记录，不访问执行器
+    tools/calibration/      联调：实测脉冲、经验模型、台架目标角度原型
     tools/build.py          A：只构建 S 端
     tests/                  A：执行器与 S 端控制边界测试
 fpga/fpga_pcie_ov5640/source/mpu9250/
