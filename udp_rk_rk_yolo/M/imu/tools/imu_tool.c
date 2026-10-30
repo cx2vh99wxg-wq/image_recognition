@@ -95,8 +95,8 @@ int imu_tool_main(int argc,char **argv,int estimate){
  if(cal_name&&!load_calibration(cal_name,axis,bias)){fprintf(stderr,"Invalid calibration file\n");return 2;}
  steering_angle_t integrator;
  if(steering_angle_init(&integrator,axis,bias,100)!=STEER_OK)return 2;
- int sock=-1;
 #ifndef _WIN32
+ int sock=-1;
  if(target){
   struct sockaddr_in dst={0};dst.sin_family=AF_INET;dst.sin_port=htons((uint16_t)port);
   if(inet_pton(AF_INET,target,&dst.sin_addr)!=1)return 2;

@@ -1,4 +1,4 @@
-"""Build A's S-side actuator, or test S-side logic. No M sources are required."""
+"""Build S actuator/UDP monitor or test S logic. No M sources are required."""
 from __future__ import annotations
 
 import argparse
@@ -45,6 +45,10 @@ def check_s() -> None:
         ROOT / "feedback" / "steering_feedback.c", ROOT / "tests" / "controller" / "test_controller.c"], INCLUDES)
     print(run(actuator, []).stdout.strip())
     print(run(controller, []).stdout.strip())
+    tracker = compile_program(tests / "test_feedback_tracker",
+        [ROOT / "feedback" / "feedback_tracker.c", ROOT / "tests" / "feedback" / "test_tracker.c",
+         COMMON / "contracts" / "steering_feedback_wire.c"], INCLUDES)
+    print(run(tracker, []).stdout.strip())
     cli = ROOT / "actuator" / "build" / ("steering_step.exe" if os.name == "nt" else "steering_step")
     fractional = run(cli, ["--direction", "left", "--duration-us", "17500"])
     if "requested_ms=17.500" not in fractional.stdout:
@@ -98,10 +102,19 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--hardware", action="store_true", help="Compile Linux FSPI tool; never run it")
     parser.add_argument("--test", action="store_true", help="Build mock tool and test S-side logic")
+    parser.add_argument("--monitor", action="store_true", help="Build Linux UDP angle monitor; no SPI access")
     args = parser.parse_args()
-    if args.hardware and args.test:
-        parser.error("Compile hardware separately from software tests.")
+    if sum([args.hardware, args.test, args.monitor]) > 1:
+        parser.error("Choose hardware, software tests, or the UDP monitor separately.")
     try:
+        if args.monitor:
+            if not sys.platform.startswith("linux"):
+                raise RuntimeError("UDP monitor requires Linux/POSIX; tracker tests also run on Windows.")
+            compile_program(ROOT / "feedback" / "build" / "steering_feedback_monitor",
+                [ROOT / "tools" / "feedback" / "steering_feedback_monitor.c",
+                 ROOT / "feedback" / "feedback_tracker.c", COMMON / "contracts" / "steering_feedback_wire.c"],
+                INCLUDES)
+            return 0
         build_actuator(args.hardware)
         if args.test:
             check_s()

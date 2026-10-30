@@ -13,7 +13,8 @@ M端测角 → UDP → S/steering/feedback → controller → actuator → left/
 
 - `actuator/`：已实现的脉冲状态机和 dry-run/FSPI 后端。
 - `tools/actuator/`：已实现的独立 `steering_step` 工具。
-- `feedback/`：M→S 反馈接收入口，目前没有 socket，明确返回 NOT_READY。
+- `feedback/`：遥测缓存校验与只读UDP监测工具；正式控制接入函数仍返回NOT_READY。
+- `tools/feedback/`：Linux专用`steering_feedback_monitor`，记录M端相对角度，不访问执行器。
 - `controller/`：S 端角度控制 API 及预留实现，目前明确返回 NOT_READY。
 - `tests/`：S 端执行器和未就绪边界测试。
 - `tools/build.py`：只构建 S 端，依赖公共头，不使用 M 端源码。
@@ -42,4 +43,4 @@ sudo ./actuator/build/steering_step_fspi --backend fspi --direction release
 默认仍是模拟。硬件测试需固定车辆、退出旧 FSPI 控制程序，详细限制和日志解释见 `tools/actuator/README.md`。
 释放控制不代表方向盘回中，工具不会报告实际角度已到位。
 
-当前只完成脉冲工具、共同协议和软件检查。真实测角反馈、网络链路及闭环精度仍待双方接入验证。
+真实M→S角度遥测已经进入联调，可用`python3 tools/build.py --monitor`构建接收工具；用法及状态见`feedback/README.md`。MPU尚未固定到转向机构，装车轴向、零位、时长—转角标定和闭环精度仍待物理验收，不能将相对角度输出当作已完成机械反馈控制。

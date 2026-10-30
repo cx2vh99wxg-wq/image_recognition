@@ -21,7 +21,25 @@ except ValueError:pass
 else:raise AssertionError('Vibrating calibration accepted')
 sweep=rows(rate=30.03)
 axis=cal.axis_from_left_sweep(sweep,[.01,-.02,.03]);assert abs(axis[2]-1)<1e-6
-with tempfile.TemporaryDirectory() as tmp:
+if os.name=='nt':
+    # The production UDP/signal backend is POSIX-only. Still verify portable CLI/CSV paths.
+    with tempfile.TemporaryDirectory(prefix='tools_test_',dir=ROOT/'build') as directory:
+        assert Path(directory).resolve().is_relative_to(ROOT.resolve())
+        csv_path=Path(directory)/'angle.csv'
+        program=ROOT/'build/angle_monitor.exe'
+        result=subprocess.run([str(program),'--samples','20','--interval-ms','10',
+          '--mock-rate-dps','30','--csv',str(csv_path)],capture_output=True,text=True,timeout=5)
+        assert result.returncode==0,(result.stdout,result.stderr)
+        with csv_path.open() as stream:logged=list(csv.DictReader(stream))
+        assert len(logged)==20 and all(r['zero_valid']=='0' and int(r['flags'])==5 for r in logged)
+        saved=csv_path.read_bytes()
+        result=subprocess.run([str(program),'--samples','1','--csv',str(csv_path)],capture_output=True,timeout=5)
+        assert result.returncode==1 and csv_path.read_bytes()==saved
+        result=subprocess.run([str(program),'--zero-at-center','--samples','1'],capture_output=True,timeout=5)
+        assert result.returncode==2
+    print('PASS Windows tools: calibration, mock isolation, CSV protection and zero arming; Linux UDP/signal cases run on the native board')
+    raise SystemExit(0)
+with tempfile.TemporaryDirectory(prefix='tools_test_',dir=ROOT/'build') as tmp:
     tmp=Path(tmp);csv_path=tmp/'angle.csv'
     sock=socket.socket(socket.AF_INET,socket.SOCK_DGRAM);sock.bind(('127.0.0.1',0));sock.settimeout(3)
     process=subprocess.Popen([str(ROOT/'build/angle_monitor'),'--samples','20','--interval-ms','10',

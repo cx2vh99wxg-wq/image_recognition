@@ -39,6 +39,12 @@ def check_isolated_builds(tests: Path) -> None:
             shutil.copytree(COMMON, project / "common" / "steering", ignore=ignore)
             destination = project / role / suffix
             shutil.copytree(source, destination, ignore=ignore)
+            if role == "S":
+                # Native fake-FSPI tests need S's SDK headers, not any M implementation.
+                for support in ["fspi/include", "include"]:
+                    sdk = S_ROOT.parent / support
+                    if sdk.exists():
+                        shutil.copytree(sdk, project / "S" / support, ignore=ignore)
             opposite = "S" if role == "M" else "M"
             assert not (project / opposite).exists()
             run_python(destination / "tools" / "build.py", "--test", quiet=True)
@@ -85,8 +91,11 @@ def check_cli(tests: Path, contract_test: Path) -> None:
         assert len(rows) == 4 and all(r["zero_valid"] == "0" for r in rows)
         dt = (int(rows[-1]["sample_time_ns"]) - int(rows[0]["sample_time_ns"])) / 1e9
         assert abs(float(rows[-1]["relative_deg"]) - 30 * dt) < 1e-4
-        assert "NOT_IMPLEMENTED_OR_NOT_READY" in run(
-            imu["imu_dump"], ["--backend", "fpga", "--samples", "1"], 1).stderr
+        # The merged Linux backend is real: never open SPI in a software-only test.
+        if sys.platform == "win32":
+            assert "NOT_IMPLEMENTED_OR_NOT_READY" in run(
+                imu["imu_dump"], ["--backend", "fpga", "--samples", "1"], 1).stderr
+        run(imu["angle_monitor"], ["--backend", "fpga", "--zero-at-center", "--samples", "1"], 2)
         run(imu["angle_monitor"], ["--mock-rate-dps", "nan"], 2)
     print("PASS CLI: simulation, pulse logs, bounds, no overwrite, sample timestamps and hardware stubs")
 

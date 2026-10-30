@@ -1,6 +1,6 @@
 # 转向控制共同框架 v1
 
-这是任务 1、2 分支前共用的起点。原有视觉、UDP、自动转向主程序、FPGA 顶层和引脚约束均未接入或替换。
+这是任务1、2的共同接口与合并入口。2026-10-30已将A执行器与B的M端MPU实现合入`codex/steering-integration`；原有视频UDP格式和视觉功能不改，B的独立M FPGA工程与S控制位流分开。
 
 整车工程复核见 [INTEGRATION_REVIEW.md](INTEGRATION_REVIEW.md)。当前框架适用于独立台架；正式接入应由现有 S 端控制进程统一管理 FSPI，保留行人、红灯、实线、HMI 和调速任务。S 端正式控制 API 仍待补齐控制权、门控与非阻塞更新设计，不能把本框架直接当作完整控制进程替代品。
 
@@ -13,7 +13,7 @@
 MPU-9250 → M端FMC/FPGA采集 → M端RK3568测角 → UDP → S端反馈接收 → S端闭环 → left/right
 ```
 
-这是目标数据流。真实 FPGA 采集、实时 UDP 收发和角度闭环目前仍待实现，不把模拟或格式检查称为链路已跑通。
+当前真实FPGA采集、M端相对测角和M→S角度遥测已经进入实机联调；S端接收工具只测量和记录。MPU尚未固定到方向盘，安装标定、时长—转角函数和正式角度闭环仍待验证。
 
 ## 目录与所有权
 
@@ -27,16 +27,17 @@ udp_rk_rk_yolo/
     README.md               本文：总体架构与分工
   M/imu/
     include/                B：MPU 传输抽象、采样和测角接口
-    csrc/                   B：采样与测角实现；mock 可用，FPGA 后端待实现
+    csrc/                   B：IMU1真实FPGA采样、mock和测角实现
     tools/                  B：imu_dump、angle_monitor、反馈包检查和独立构建脚本
     tests/                  B：采样边界和相对角度积分测试
-    feedback/               B：后续 M→S UDP 发送接入说明
+    feedback/               B：M→S UDP发送服务及说明
     Makefile                B：只构建 M 端
   S/steering/
     actuator/               A：脉冲状态机、模拟/FSPI 后端
-    feedback/               A/集成：S 端 UDP 反馈接收入口，目前 NOT_READY
+    feedback/               集成：遥测缓存校验；正式控制反馈API仍NOT_READY
     controller/             合并后：角度闭环及其 S 端 API，目前 NOT_READY
     tools/actuator/         A：steering_step 独立工具
+    tools/feedback/         只读UDP角度监测、CSV记录，不访问执行器
     tools/build.py          A：只构建 S 端
     tests/                  A：执行器与 S 端控制边界测试
 fpga/fpga_pcie_ov5640/source/mpu9250/
@@ -52,15 +53,15 @@ fpga/fpga_pcie_ov5640/source/mpu9250/
 |---|---|
 | A 的可输入时长脉冲工具 | 已实现；默认 dry-run，硬件版在 Linux/RK 单独编译 |
 | 非阻塞脉冲状态机 | 已实现；单调时钟截止、取消、限时、互斥、失败释放 |
-| FSPI 接入 | 复用 `S/fspi` 现有驱动，只写左右寄存器 2/3；尚未上板验证 |
+| FSPI 接入 | 已完成独立台架脉冲实测，只写左右寄存器2/3；逻辑触点已确认，真实电压波形尚未测量 |
 | B 的模拟原始采样、CSV | 已实现；输出始终带 SIMULATED 标记 |
 | 单轴相对转角积分 | 已实现台架参考版；实际时间间隔、轴投影、偏置参数、断流故障 |
-| MPU 芯片身份读取接口 | 已实现驱动边界；依赖 B 补齐真实传输 |
-| FPGA I²C 主机和快照读回 | 待 B 实现；硬件后端直接返回 NOT_READY，不产生假数据 |
+| MPU 芯片身份读取接口 | B已接通M端真实传输，WHO_AM_I验收见B报告 |
+| FPGA I²C 主机和快照读回 | B独立M工程、IMU1快照及真实后端已实现 |
 | 反馈包编解码 | 已实现 STF1 v1，含有符号角度、序号、源时刻、源年龄和 CRC32 |
-| 实时 UDP 反馈收发、S 端反馈缓存 | 待集成；现有视频协议未改动 |
+| 实时 UDP 角度遥测 | M发送器已实现；S只读监测及缓存校验可用，现有视频协议未改动 |
 | 给角度自动到位 | 阶段 3；当前 API 明确返回 NOT_READY |
-| 机械回中行为、步长、精度 | 待实测，框架不预设结论 |
+| 释放/步长/精度 | 已观察到保持与连续小步；17.75ms约4°为初测，装车IMU精度和可靠最小脉冲未定版 |
 
 ## 先在本机验证框架
 
@@ -96,7 +97,7 @@ Windows 运行 B 的模拟工具：
 .\udp_rk_rk_yolo\M\imu\build\angle_monitor.exe --backend mock --mock-rate-dps 30 --samples 100
 ```
 
-B 的 `--backend fpga` 目前必须报 NOT_READY。这代表硬件待接通，不能将 mock 的运行成功当作 MPU 已跑通。
+B的`--backend fpga`在M/Linux会访问真实硬件，不能作为无硬件软件检查的一部分；Windows仍明确返回NOT_READY。合并后的整体软件检查不会打开真实SPI。mock始终保留SIMULATED标记，不能自动取得机械零位。
 
 ## A 上板的起点
 
@@ -114,10 +115,9 @@ sudo ./actuator/build/steering_step_fspi --backend fspi --direction release
 硬件版仍默认模拟，必须显式 `--backend fspi` 才会接触设备。
 具体测试顺序、日志含义和限制见 `S/steering/tools/actuator/README.md`。
 
-## 分支前与合并约定
+## 分支与后续协作约定
 
-本次不自动创建 A/B 分支、不提交或推送。先把下面四个新目录作为**同一个共同基线提交**共享给 B，
-再各自从该提交开分支。不要把工作区已有的其他未跟踪目录一起提交。
+共同基线为d613989，A核心提交78dc40a、补充记录69f41a8，B提交922b199。集成分支保留双方历史；下面为最初的共同基线提交方式，后续不重复创建另一套contracts。
 
 ```sh
 git add udp_rk_rk_yolo/common/steering udp_rk_rk_yolo/S/steering udp_rk_rk_yolo/M/imu fpga/fpga_pcie_ov5640/source/mpu9250
@@ -133,7 +133,7 @@ A 从共同提交创建 `codex/steering-actuator`，B 从同一提交创建 `cod
 - `common/steering/` 与协议版本变更由一人统一提交；建议 A 负责协调。
 - 两端各自维护自己的构建脚本，不需要互相修改源码或构建入口。
 - FPGA 顶层、工程入口和约束由 B 统一接入。新增采集默认关闭，仅在 M 端启用；不得覆盖 S 端原控制配置。
-- 第一轮两人都不改原有 `S/fspi/csrc/main.c`、M 端视觉主程序或视频 UDP 格式。
+- M端视觉主程序和视频UDP格式保持既有路径；A已为S车控入口增加显式台架标记保护，避免测试间隙被整车程序重新拉起。正式整车控制仍须统一IO所有者。
 - 构建产物与 `logs/` 已忽略。A 的每次脉冲可能累积转角，不会自动重置起点。
 
 ## 第一轮共同验收
