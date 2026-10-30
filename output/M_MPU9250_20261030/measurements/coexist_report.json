@@ -1,0 +1,18 @@
+{
+  "vision_alive": true,
+  "imu_rc": 0,
+  "baseline_perf": [
+    "[PERF M] capture_loop_fps=21.76 raw_changed_fps=21.76 inference_fps=3.39 fresh_result_fps=3.19 publish_fps=21.76 dma_ms=15.55 color_ms=1.18 infer_ms=268.48 overlay_ms=7.63 analysis_ms=9.96 shm_ms=0.75 render_ms=23.19 pending_replaced=18 stale_results=1 worker_failed=0 dma_rows=1",
+    "[PERF M] capture_loop_fps=24.75 raw_changed_fps=24.75 inference_fps=3.59 fresh_result_fps=3.59 publish_fps=24.75 dma_ms=15.28 color_ms=1.11 infer_ms=264.68 overlay_ms=7.59 analysis_ms=10.44 shm_ms=0.74 render_ms=17.60 pending_replaced=23 stale_results=0 worker_failed=0 dma_rows=1",
+    "[PERF M] capture_loop_fps=24.76 raw_changed_fps=24.76 inference_fps=3.59 fresh_result_fps=3.59 publish_fps=24.76 dma_ms=15.20 color_ms=1.16 infer_ms=263.62 overlay_ms=7.48 analysis_ms=10.91 shm_ms=0.73 render_ms=17.88 pending_replaced=24 stale_results=0 worker_failed=0 dma_rows=1"
+  ],
+  "concurrent_perf": [
+    "[PERF M] capture_loop_fps=24.98 raw_changed_fps=24.98 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=24.98 dma_ms=15.12 color_ms=1.14 infer_ms=263.47 overlay_ms=7.52 analysis_ms=11.44 shm_ms=0.72 render_ms=17.42 pending_replaced=23 stale_results=0 worker_failed=0 dma_rows=1",
+    "[PERF M] capture_loop_fps=25.09 raw_changed_fps=25.09 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=25.09 dma_ms=14.88 color_ms=1.15 infer_ms=263.57 overlay_ms=7.47 analysis_ms=11.03 shm_ms=0.74 render_ms=17.20 pending_replaced=25 stale_results=0 worker_failed=0 dma_rows=1",
+    "[PERF M] capture_loop_fps=24.14 raw_changed_fps=24.14 inference_fps=3.59 fresh_result_fps=3.59 publish_fps=24.14 dma_ms=15.02 color_ms=1.16 infer_ms=262.83 overlay_ms=7.51 analysis_ms=11.41 shm_ms=0.76 render_ms=18.79 pending_replaced=22 stale_results=0 worker_failed=0 dma_rows=1",
+    "[PERF M] capture_loop_fps=25.67 raw_changed_fps=25.67 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=25.67 dma_ms=14.77 color_ms=1.10 infer_ms=264.49 overlay_ms=7.55 analysis_ms=10.09 shm_ms=0.74 render_ms=16.70 pending_replaced=25 stale_results=0 worker_failed=0 dma_rows=1"
+  ],
+  "imu_log": "[REAL FPGA] axis=[0.00000 0.00000 1.00000] bias=[-0.64935 -2.32287 0.25737] ZERO_VALID=0; relative motion only, chassis uncompensated\nREAL seq=1 t_ns=25158605650555 dt_ms=0.000 gap=0 age_ms=3 accel=[7.5950 0.1293 6.2932] gyro=[-0.5573 -1.8626 0.1679] temp_c=28.323 relative_deg=0.00000 rate_dps=-0.08943 ZERO_VALID=0\nREAL seq=501 t_ns=25163602801555 dt_ms=10.565 gap=0 age_ms=3 accel=[7.5669 0.1191 6.2842] gyro=[-0.6641 -2.2519 0.2137] temp_c=30.078 relative_deg=-0.05265 rate_dps=-0.04363 ZERO_VALID=0\nREAL seq=1001 t_ns=25168605234555 dt_ms=10.565 gap=0 age_ms=4 accel=[7.5818 0.1006 6.3099] gyro=[-0.7176 -2.3359 0.2901] temp_c=30.090 relative_deg=-0.13170 rate_dps=0.03271 ZERO_VALID=0\nREAL seq=1501 t_ns=25173607666555 dt_ms=10.564 gap=0 age_ms=4 accel=[7.5567 0.1018 6.2734] gyro=[-0.6718 -2.2519 0.2748] temp_c=30.120 relative_deg=-0.16356 rate_dps=0.01744 ZERO_VALID=0\nREAL seq=2000 t_ns=25178599534555 dt_ms=10.564 gap=0 age_ms=4 accel=[7.5747 0.1071 6.2896] gyro=[-0.7099 -2.3359 0.1756] temp_c=30.102 relative_deg=-0.23578 rate_dps=-0.08179 ZERO_VALID=0\nLINK accepted=2000 duplicate_reads=7261 transfers=18716 io_errors=0 crc_errors=0 stale_captures=0 i2c_errors=0\n",
+  "legacy_sources_changed": false,
+  "s_control_exercised": false
+}

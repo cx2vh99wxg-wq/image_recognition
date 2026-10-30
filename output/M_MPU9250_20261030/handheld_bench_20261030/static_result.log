@@ -1,0 +1,36 @@
+tail -5 /home/linaro/imu_bench_20261030/stationary.log; python3 /home/linaro/imu_bench_20261030/bench_analyze.py static; printf '\nSIX_CMD_DONE\n'
+[?2004lREAL seq=2001 t_ns=56800026795707 dt_ms=10.564 gap=0 age_ms=4 accel=[6.1034 0.1413 7.7225] gyro=[-0.7405 -2.5267 0.2137] temp_c=29.560 relative_deg=nan rate_dps=nan ZERO_VALID=0
+REAL seq=3001 t_ns=56810029900707 dt_ms=8.804 gap=0 age_ms=4 accel=[6.1076 0.1419 7.7428] gyro=[-0.7023 -2.4885 0.2519] temp_c=29.551 relative_deg=nan rate_dps=nan ZERO_VALID=0
+REAL seq=3500 t_ns=56815023529707 dt_ms=10.565 gap=0 age_ms=2 accel=[6.1046 0.1377 7.7309] gyro=[-0.7328 -2.6183 0.2366] temp_c=29.569 relative_deg=nan rate_dps=nan ZERO_VALID=0
+LINK accepted=3500 duplicate_reads=12335 transfers=31860 io_errors=0 crc_errors=0 stale_captures=0 i2c_errors=0
+STATIC_RC=0
+{
+  "axis": [
+    0.0,
+    0.0,
+    1.0
+  ],
+  "bias": [
+    -0.6961106675000001,
+    -2.485167942,
+    0.229790081
+  ],
+  "gyro_std": [
+    0.0423506578863026,
+    0.06497700807923598,
+    0.04369078761007214
+  ],
+  "accel_norm_mean": 9.848086145722787,
+  "samples": 2000,
+  "duration_s": 19.999166,
+  "temperature_c": 29.556242,
+  "physical_center_established": false,
+  "chassis_compensated": false,
+  "note": "Stationary declaration and mounting direction need independent physical verification",
+  "test_fixture": "hand bench, module rigidly attached to board",
+  "steering_mounting_verified": false,
+  "provisional_axis": true
+}
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

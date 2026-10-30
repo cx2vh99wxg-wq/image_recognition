@@ -1,0 +1,12 @@
+{
+  "seq": 10801,
+  "t_ns": 57417587831610,
+  "n": 10,
+  "relative_deg": 7.543937,
+  "window_spread_deg": 0.037850000000000605,
+  "mean_rate_dps": 0.036621,
+  "tilt_from_face_up_deg": 4.669058179755749,
+  "max_tilt_deg": 4.776834053612338,
+  "physical_center_established": false,
+  "steering_mounting_verified": false
+}

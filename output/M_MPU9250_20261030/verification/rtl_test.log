@@ -1,0 +1,5 @@
+PASS IMU RTL: bus ACK/NACK, repeated START, init, coherent raw bytes, CRC, frozen snapshot, legacy prefix, disconnect, disable
+- fpga/fpga_pcie_ov5640/source/mpu9250/test_imu_bridge.sv:137: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 325ms; walltime 1.888 s; speed 186.617 ms/s
+- Verilator: cpu 1.742 s on 1 threads; allocated 6 MB

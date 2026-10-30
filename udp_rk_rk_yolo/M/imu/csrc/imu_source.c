@@ -11,10 +11,8 @@ steer_result_t imu_source_open(imu_source_t *source, imu_source_kind_t kind, flo
     if (kind == IMU_SOURCE_FPGA) {
         steer_result_t rc = mpu9250_fpga_open(&source->bus);
         if (rc != STEER_OK) return rc;
-        /* Register configuration, data-ready/FIFO handling, scaling and complete
-         * timestamped motion snapshots still need B's implementation. */
-        mpu9250_fpga_close(&source->bus);
-        return STEER_ERR_NOT_READY;
+        source->session_id=(uint32_t)steering_now_ns()^(uint32_t)(steering_now_ns()>>32);
+        if(!source->session_id)source->session_id=1;
     }
     source->opened = 1;
     return STEER_OK;
@@ -22,7 +20,31 @@ steer_result_t imu_source_open(imu_source_t *source, imu_source_kind_t kind, flo
 steer_result_t imu_source_read(imu_source_t *source, steering_imu_sample_t *sample)
 {
     if (!source || !sample) return STEER_ERR_ARGUMENT;
-    if (!source->opened || source->kind != IMU_SOURCE_MOCK) return STEER_ERR_NOT_READY;
+    if (!source->opened) return STEER_ERR_NOT_READY;
+    if(source->kind==IMU_SOURCE_FPGA) {
+        fpga_imu_snapshot_t raw;uint64_t host=0;
+        steer_result_t rc=mpu9250_fpga_snapshot(&source->bus,&raw,&host);
+        if(rc!=STEER_OK)return rc;
+        if(raw.error||raw.identity!=0x71||(raw.flags&7)!=7||!raw.sample_us)
+            return STEER_ERR_NOT_READY;
+        if(raw.now_us-raw.sample_us>50000)return STEER_ERR_STALE;
+        source->captured_age_ns=(raw.now_us-raw.sample_us)*1000;
+        source->capture_host_ns=host;
+        if(source->anchored&&raw.generation!=source->generation)return STEER_ERR_STALE;
+        if(source->anchored&&raw.sequence==source->sequence)return STEER_ERR_BUSY;
+        if(!source->anchored) {
+            source->anchor_fpga_us=raw.now_us;source->anchor_host_ns=host;
+            source->generation=raw.generation;source->anchored=1;
+        }
+        int64_t delta_us=(int64_t)raw.sample_us-(int64_t)source->anchor_fpga_us;
+        int64_t stamp=(int64_t)source->anchor_host_ns+delta_us*1000;
+        if(stamp<=0)return STEER_ERR_STALE;
+        steering_imu_sample_t s={0};s.session_id=source->session_id;
+        s.sequence=raw.sequence;s.flags=STEER_FEEDBACK_VALID;s.sample_time_ns=(uint64_t)stamp;
+        for(unsigned k=0;k<3;++k){s.accel_mps2[k]=raw.accel[k]*(9.80665f/16384.f);s.gyro_dps[k]=raw.gyro[k]/131.f;}
+        s.temperature_c=raw.temperature/333.87f+21.f;
+        source->sequence=raw.sequence;*sample=s;return STEER_OK;
+    }
     uint64_t now = steering_now_ns();
     if (!now) return STEER_ERR_IO;
     *sample = (steering_imu_sample_t){0};

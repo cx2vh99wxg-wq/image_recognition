@@ -1,0 +1,21 @@
+[?2004hroot@linaro-alip:/# [?2004l
+[?2004hroot@linaro-alip:/# cp /home/linaro/M/imu/feedback/m-steering-imu.service /etc/systemd/system/m-steering-imu.service; systemctl daemon-reload; systemctl stop m-steering-imu; journalctl -u m-steering-imu -n 3 --no-pager; systemctl start m-steering-imu; python3 /home/linaro/imu_B_20261030/M_final_audit.py; printf '\nSIX_CMD_DONE\n'
+[?2004lOct 29 17:36:48 linaro-alip angle_monitor[16550]: REAL seq=2801 t_ns=25816031022723 dt_ms=8.804 gap=0 age_ms=3 accel=[7.5693 0.1006 6.2692] gyro=[-0.7176 -2.3893 0.2595] temp_c=30.135 relative_deg=0.60073 rate_dps=0.00218 ZERO_VALID=0
+Oct 29 17:36:49 linaro-alip angle_monitor[16550]: REAL seq=2901 t_ns=25817032917723 dt_ms=10.565 gap=0 age_ms=3 accel=[7.5519 0.1053 6.2968] gyro=[-0.6260 -2.2824 0.2214] temp_c=30.138 relative_deg=0.61776 rate_dps=-0.03599 ZERO_VALID=0
+Oct 29 17:36:49 linaro-alip angle_monitor[16550]: LINK accepted=2917 duplicate_reads=10535 transfers=27106 io_errors=0 crc_errors=0 stale_captures=0 i2c_errors=0
+{
+  "legacy_unchanged": true,
+  "axis_verified": false,
+  "physical_center_verified": false,
+  "service_active": "active",
+  "service_enabled": "enabled",
+  "service_properties": "MainPID=16599\nNRestarts=0\nExecMainStatus=0\n",
+  "pci": [
+    "0002:21:00.0"
+  ],
+  "sensor_feedback_zero_valid": false,
+  "s_board_modified": false
+}
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

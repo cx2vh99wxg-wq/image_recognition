@@ -1,0 +1,33 @@
+[?2004hroot@linaro-alip:/# [?2004l
+_bench_202[?2004hroot@linaro-alip:/# python3 /home/linaro/imu_bench_20261030/bench_analyze.py axis; printf '\nSIX_CMD_DONE\n'
+[?2004l{
+  "diagnostic_integral_deg": [
+    68.25321706218097,
+    -36.732162862890334,
+    33.704655690939674
+  ],
+  "path_deg": 182.52608429351037,
+  "net_deg": 84.5207503703551,
+  "coherence": 0.46306121504497866,
+  "gravity_start": [
+    6.108374615,
+    0.142682475,
+    7.716116975
+  ],
+  "gravity_end": [
+    9.62808465,
+    0.1358949,
+    1.84360716
+  ],
+  "gravity_direction_change_deg": 40.789330369735495
+}
+Traceback (most recent call last):
+  File "/home/linaro/imu_bench_20261030/bench_analyze.py", line 46, in <module>
+    baseline['axis']=cal.axis_from_left_sweep(rows,baseline['bias'])
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/linaro/M/imu/tools/calibrate.py", line 58, in axis_from_left_sweep
+    raise ValueError("Use a single-axis, >=15deg physically positive-left sweep")
+ValueError: Use a single-axis, >=15deg physically positive-left sweep
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

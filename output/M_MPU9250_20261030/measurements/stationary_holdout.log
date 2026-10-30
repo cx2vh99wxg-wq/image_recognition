@@ -1,0 +1,18 @@
+BUILT candidate/M/imu/build/imu_dump
+BUILT candidate/M/imu/build/angle_monitor
+BUILT candidate/M/imu/build/feedback_inspect
+BUILT candidate/M/imu/build/imu_probe
+BUILT candidate/M/imu/build/test_imu
+PASS IMU: variable dt, axis/bias, wrap, duplicate/gap/session faults, identity and simulation isolation
+BUILT candidate/M/imu/build/test_snapshot
+PASS IMU1: CRC vector, signed axes/temperature, endianness, torn packet, flags, clock reversal and old FPGA rejection
+[REAL FPGA] axis=[0.00000 0.00000 1.00000] bias=[-0.64935 -2.32287 0.25737] ZERO_VALID=0; relative motion only, chassis uncompensated
+REAL seq=1 t_ns=23881519339226 dt_ms=0.000 gap=0 age_ms=2 accel=[7.6070 0.0904 6.2626] gyro=[-0.5191 -1.9160 0.2061] temp_c=28.371 relative_deg=0.00000 rate_dps=-0.05126 ZERO_VALID=0
+REAL seq=1001 t_ns=23891518922226 dt_ms=10.565 gap=0 age_ms=2 accel=[7.5513 0.0970 6.2997] gyro=[-0.6412 -2.3664 0.3282] temp_c=30.111 relative_deg=-0.09973 rate_dps=0.07088 ZERO_VALID=0
+REAL seq=2001 t_ns=23901523787226 dt_ms=10.564 gap=0 age_ms=3 accel=[7.5711 0.1155 6.2884] gyro=[-0.6565 -2.2748 0.2824] temp_c=30.111 relative_deg=-0.20606 rate_dps=0.02508 ZERO_VALID=0
+REAL seq=3001 t_ns=23911528653226 dt_ms=10.565 gap=0 age_ms=3 accel=[7.5717 0.0982 6.2836] gyro=[-0.6183 -2.3282 0.1527] temp_c=30.120 relative_deg=-0.31802 rate_dps=-0.10469 ZERO_VALID=0
+REAL seq=4001 t_ns=23921533519226 dt_ms=10.565 gap=0 age_ms=2 accel=[7.5753 0.1161 6.2950] gyro=[-0.7023 -2.4656 0.2824] temp_c=30.126 relative_deg=-0.43012 rate_dps=0.02508 ZERO_VALID=0
+REAL seq=5001 t_ns=23931536623226 dt_ms=8.804 gap=0 age_ms=3 accel=[7.5567 0.1071 6.2740] gyro=[-0.5573 -2.3664 0.2061] temp_c=30.150 relative_deg=-0.51082 rate_dps=-0.05126 ZERO_VALID=0
+REAL seq=6000 t_ns=23941532685226 dt_ms=10.565 gap=0 age_ms=4 accel=[7.5747 0.1245 6.2620] gyro=[-0.5649 -2.2519 0.1908] temp_c=30.147 relative_deg=-0.59778 rate_dps=-0.06653 ZERO_VALID=0
+LINK accepted=6000 duplicate_reads=21306 transfers=54800 io_errors=0 crc_errors=0 stale_captures=0 i2c_errors=0
+HOLDOUT_RC=0

@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-30",
+  "fixture": "handheld, not attached to steering mechanism",
+  "physical_mounting_confirmed": false,
+  "independent_angle_reference": false,
+  "raw_acquisition_passed": true,
+  "direction_response_passed": true,
+  "angle_accuracy_accepted": false,
+  "axis_fit_accepted": false,
+  "mechanical_center_established": false,
+  "physical_zero_valid": false,
+  "default_calibration_changed": false,
+  "control_logic_changed": false,
+  "service_restored": true,
+  "counterclockwise_reading_deg": 105.86301,
+  "returned_reading_deg": 23.74092
+}

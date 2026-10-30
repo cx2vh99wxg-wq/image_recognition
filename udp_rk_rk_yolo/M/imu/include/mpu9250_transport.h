@@ -2,6 +2,7 @@
 #define MPU9250_TRANSPORT_H
 #include <stddef.h>
 #include "steering_types.h"
+#include "fpga_imu_snapshot.h"
 
 #define MPU9250_WHO_AM_I_REGISTER 0x75u
 #define MPU9250_EXPECTED_ID 0x71u
@@ -14,7 +15,12 @@ typedef struct {
     steer_result_t (*write_register)(void *context, uint8_t reg, uint8_t value);
 } mpu9250_bus_t;
 steer_result_t mpu9250_read_identity(const mpu9250_bus_t *bus, uint8_t *identity);
-/* Extension point: returns NOT_READY until FPGA + readback protocol exist. */
+/* Autonomous M FPGA sampler. Callbacks expose identity only; sensor register
+ * configuration belongs to the new FPGA state machine, not S motion regs. */
 steer_result_t mpu9250_fpga_open(mpu9250_bus_t *bus);
+steer_result_t mpu9250_fpga_snapshot(mpu9250_bus_t *bus, fpga_imu_snapshot_t *out,
+                                  uint64_t *capture_midpoint_ns);
+typedef struct { uint32_t transfers,io_errors,crc_errors,stale_captures,i2c_errors; } mpu9250_link_stats_t;
+void mpu9250_fpga_stats(const mpu9250_bus_t *bus, mpu9250_link_stats_t *stats);
 void mpu9250_fpga_close(mpu9250_bus_t *bus);
 #endif

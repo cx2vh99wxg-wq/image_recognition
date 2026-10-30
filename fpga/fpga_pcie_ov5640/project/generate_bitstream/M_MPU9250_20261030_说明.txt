@@ -1,0 +1,23 @@
+M 端 MPU-9250 当前固化文件
+
+临时下载：image_pcie_capture_m_imu_20261030.sbit
+Flash 固化：image_pcie_capture_m_imu_20261030.sfc
+每个文件大小：3,537,104 字节
+
+上述 M 专用版本已经烧入 M 板 Flash 并通过校验；不能用来覆盖 S 端 FPGA。
+目录内原 image_pcie_capture.sbit/.sfc 及其他旧文件保持原用途，不是本次 M MPU-9250 文件名。
+
+SHA256：
+sbit 38f306a48a63d3f271baba94b36e52632e183fb8fe87f4d1a8538cbc5859c625
+sfc  3e8130841f0bff4a9f0744c4cbb5480e74bb9df3eeb4dea5aefdc1fe3ceee122
+
+今后最终交付的烧录文件均存放在本目录，文件名区分 M/S 端。
+
+正常运行：M Linux 中 m-steering-imu.service 已设置开机启动，独立于原视频程序。
+当前通过原以太网发送 STF1 UDP 到 192.168.100.20:54321，约100Hz。
+包内为相对角度、轴向角速度、序号、时间和有效标志；不含完整原始三轴/温度数据。
+目前安装轴与机械中位尚未标定，ZERO_VALID=0，不能作为已确认的方向盘机械角度。
+
+S 端接收须在 ARM/Linux 软件实现。当前本地 S/steering/feedback/steering_feedback.c 为占位入口。
+先实现收包校验和日志/显示，不连接执行器；以后通过标定和时序验收后再合并闭环。
+仅接收这些 UDP 数据不需要重新修改或烧录 S FPGA。

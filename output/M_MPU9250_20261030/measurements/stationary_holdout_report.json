@@ -1,0 +1,18 @@
+{
+  "samples": 6000,
+  "duration_s": 60.01334599999973,
+  "effective_hz": 99.96109865295675,
+  "sequence_gaps": 0,
+  "max_age_ms": 5,
+  "start_deg": 0.0,
+  "final_deg": -0.597783,
+  "net_drift_deg": -0.597783,
+  "net_drift_deg_per_minute": -0.5976500627043885,
+  "min_deg": -0.597783,
+  "max_deg": 0.002086,
+  "simulated": false,
+  "physical_accuracy_verified": false,
+  "expected_final_deg": 0.0,
+  "final_error_deg": -0.597783,
+  "reference_note": "Expected angle supplied by operator; independent physical reference still required"
+}

@@ -1,0 +1,18 @@
+python3 /home/linaro/imu_bench_20261030/read_angle.py mark left; printf '\nSIX_CMD_DONE\n'
+[?2004l{
+  "seq": 20741,
+  "t_ns": 57517032532610,
+  "n": 10,
+  "display_age_ms": 88.30574,
+  "relative_deg": 113.406947,
+  "window_spread_deg": 0.12812999999999874,
+  "mean_rate_dps": 0.15189,
+  "tilt_from_face_up_deg": 5.016978891111523,
+  "max_tilt_deg": 5.1141451581817785,
+  "physical_center_established": false,
+  "steering_mounting_verified": false,
+  "bench_angle_deg": 105.86301
+}
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

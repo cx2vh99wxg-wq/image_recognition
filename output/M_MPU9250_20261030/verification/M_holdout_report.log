@@ -1,0 +1,26 @@
+tail -4 /home/linaro/imu_B_20261030/stationary_holdout.log; python3 /home/linaro/imu_B_20261030/candidate/M/imu/tools/analyze_recording.py --input /home/linaro/imu_B_20261030/stationary_holdout.csv --expected-final-deg 0 --output /home/linaro/imu_B_20261030/stationary_holdout_report.json; printf '\nSIX_CMD_DONE\n'
+[?2004lREAL seq=5001 t_ns=23931536623226 dt_ms=8.804 gap=0 age_ms=3 accel=[7.5567 0.1071 6.2740] gyro=[-0.5573 -2.3664 0.2061] temp_c=30.150 relative_deg=-0.51082 rate_dps=-0.05126 ZERO_VALID=0
+REAL seq=6000 t_ns=23941532685226 dt_ms=10.565 gap=0 age_ms=4 accel=[7.5747 0.1245 6.2620] gyro=[-0.5649 -2.2519 0.1908] temp_c=30.147 relative_deg=-0.59778 rate_dps=-0.06653 ZERO_VALID=0
+LINK accepted=6000 duplicate_reads=21306 transfers=54800 io_errors=0 crc_errors=0 stale_captures=0 i2c_errors=0
+HOLDOUT_RC=0
+{
+  "samples": 6000,
+  "duration_s": 60.01334599999973,
+  "effective_hz": 99.96109865295675,
+  "sequence_gaps": 0,
+  "max_age_ms": 5,
+  "start_deg": 0.0,
+  "final_deg": -0.597783,
+  "net_drift_deg": -0.597783,
+  "net_drift_deg_per_minute": -0.5976500627043885,
+  "min_deg": -0.597783,
+  "max_deg": 0.002086,
+  "simulated": false,
+  "physical_accuracy_verified": false,
+  "expected_final_deg": 0.0,
+  "final_error_deg": -0.597783,
+  "reference_note": "Expected angle supplied by operator; independent physical reference still required"
+}
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

@@ -1,0 +1,17 @@
+tail -12 /home/linaro/imu_zero_20261030/install.log; systemctl show m-steering-imu --property=ActiveState,MainPID,NRestarts; printf '\nSIX_CMD_DONE\n'
+[?2004lBUILT linaro/M/imu/build/imu_dump
+BUILT linaro/M/imu/build/angle_monitor
+BUILT linaro/M/imu/build/feedback_inspect
+BUILT linaro/M/imu/build/imu_probe
+BUILT linaro/M/imu/build/test_imu
+PASS IMU: variable dt, axis/bias, wrap, duplicate/gap/session faults, identity and simulation isolation
+BUILT linaro/M/imu/build/test_snapshot
+PASS IMU1: CRC vector, signed axes/temperature, endianness, torn packet, flags, clock reversal and old FPGA rejection
+PASS tools: calibration, UDP, mock isolation, zero arming, CSV protection; runtime relative zero preserves sampling/session semantics and never grants mechanical zero
+RUNTIME_ZERO_TESTS_PASS
+MainPID=3435[m
+NRestarts=0[m
+ActiveState=active[m
+[K
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

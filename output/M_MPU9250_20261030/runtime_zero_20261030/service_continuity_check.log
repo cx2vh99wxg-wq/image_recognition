@@ -1,0 +1,20 @@
+journalctl _PID=3435 -n 8 --no-pager; journalctl -u m-steering-imu -n 8 --no-pager; printf '\nSIX_CMD_DONE\n'
+[?2004lOct 30 03:06:15 linaro-alip angle_monitor[3435]: REAL seq=5201 t_ns=1397822017124 dt_ms=8.804 gap=0 age_ms=3 accel=[9.5660 0.1167 1.6442] gyro=[-0.6412 -4.2290 0.2214] temp_c=29.737 relative_deg=-0.34288 rate_dps=-0.03599 ZERO_VALID=0
+Oct 30 03:06:16 linaro-alip angle_monitor[3435]: REAL seq=5301 t_ns=1398823912124 dt_ms=10.565 gap=0 age_ms=2 accel=[9.1818 -0.6800 3.2830] gyro=[-39.0916 -8.9924 -27.8931] temp_c=29.746 relative_deg=-1.77626 rate_dps=-28.15050 ZERO_VALID=0
+Oct 30 03:06:17 linaro-alip angle_monitor[3435]: REAL seq=5401 t_ns=1399824047124 dt_ms=10.565 gap=0 age_ms=4 accel=[9.1016 0.1544 3.6009] gyro=[-30.0763 -34.9618 -6.0153] temp_c=29.794 relative_deg=0.16180 rate_dps=-6.27263 ZERO_VALID=0
+Oct 30 03:06:18 linaro-alip angle_monitor[3435]: REAL seq=5501 t_ns=1400824181124 dt_ms=10.565 gap=0 age_ms=3 accel=[8.9567 0.1161 4.0241] gyro=[-4.3435 18.4733 -0.4504] temp_c=30.072 relative_deg=-0.92769 rate_dps=-0.70775 ZERO_VALID=0
+Oct 30 03:06:19 linaro-alip angle_monitor[3435]: REAL seq=5601 t_ns=1401824315124 dt_ms=10.564 gap=0 age_ms=3 accel=[8.1349 -0.7769 6.1567] gyro=[22.3435 13.9313 22.1374] temp_c=30.171 relative_deg=-0.62959 rate_dps=21.88004 ZERO_VALID=0
+Oct 30 03:06:20 linaro-alip angle_monitor[3435]: REAL seq=5701 t_ns=1402824450124 dt_ms=8.804 gap=0 age_ms=2 accel=[7.5322 0.0754 6.2584] gyro=[-0.6489 -1.9618 0.2366] temp_c=30.216 relative_deg=-4.32424 rate_dps=-0.02073 ZERO_VALID=0
+Oct 30 03:06:20 linaro-alip angle_monitor[3435]: IMU fault/stale: NOT_IMPLEMENTED_OR_NOT_READY; ZERO_VALID revoked, no valid UDP; re-zero required.
+Oct 30 03:06:20 linaro-alip angle_monitor[3435]: LINK accepted=5721 duplicate_reads=21153 transfers=54026 io_errors=0 crc_errors=0 stale_captures=0 i2c_errors=1
+Oct 30 03:07:25 linaro-alip angle_monitor[3483]: REAL seq=5104 t_ns=1468529600608 dt_ms=8.804 gap=0 age_ms=4 accel=[8.6503 0.1598 4.6477] gyro=[-0.7099 -2.5420 0.2595] temp_c=29.614 relative_deg=-28.82999 rate_dps=0.00218 ZERO_VALID=0
+Oct 30 03:07:26 linaro-alip angle_monitor[3483]: REAL seq=5204 t_ns=1469531495608 dt_ms=10.565 gap=0 age_ms=4 accel=[8.6634 0.1598 4.6579] gyro=[-0.6565 -2.4198 0.2443] temp_c=29.623 relative_deg=-28.85867 rate_dps=-0.01309 ZERO_VALID=0
+Oct 30 03:07:27 linaro-alip angle_monitor[3483]: REAL seq=5304 t_ns=1470531629608 dt_ms=10.564 gap=0 age_ms=2 accel=[8.6461 0.1550 4.6046] gyro=[-0.6718 -2.4275 0.2137] temp_c=29.587 relative_deg=-28.87482 rate_dps=-0.04363 ZERO_VALID=0
+Oct 30 03:07:28 linaro-alip angle_monitor[3483]: REAL seq=5404 t_ns=1471531764608 dt_ms=10.565 gap=0 age_ms=3 accel=[8.6592 0.1496 4.6418] gyro=[-0.6183 -2.5573 0.2137] temp_c=29.614 relative_deg=-28.91448 rate_dps=-0.04363 ZERO_VALID=0
+Oct 30 03:07:29 linaro-alip angle_monitor[3483]: REAL seq=5504 t_ns=1472531898608 dt_ms=10.565 gap=0 age_ms=3 accel=[8.6568 0.1448 4.6382] gyro=[-0.6794 -2.4885 0.2137] temp_c=29.611 relative_deg=-28.93414 rate_dps=-0.04363 ZERO_VALID=0
+Oct 30 03:07:30 linaro-alip angle_monitor[3483]: REAL seq=5604 t_ns=1473532033608 dt_ms=8.804 gap=0 age_ms=4 accel=[8.6556 0.1604 4.6268] gyro=[-0.7023 -2.4351 0.2672] temp_c=29.629 relative_deg=-28.96017 rate_dps=0.00981 ZERO_VALID=0
+Oct 30 03:07:31 linaro-alip angle_monitor[3483]: REAL seq=5704 t_ns=1474532167608 dt_ms=8.804 gap=0 age_ms=2 accel=[8.6461 0.1802 4.6531] gyro=[-0.6947 -2.4733 0.2137] temp_c=29.629 relative_deg=-28.98667 rate_dps=-0.04363 ZERO_VALID=0
+Oct 30 03:07:32 linaro-alip angle_monitor[3483]: REAL seq=5804 t_ns=1475534062608 dt_ms=10.565 gap=0 age_ms=3 accel=[8.6562 0.1604 4.6238] gyro=[-0.6412 -2.4504 0.2901] temp_c=29.614 relative_deg=-29.01414 rate_dps=0.03271 ZERO_VALID=0
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 
