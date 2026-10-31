@@ -1,0 +1,108 @@
+{
+  "schema": "STEER_NATIVE_GOAL_ACCEPTANCE_V1",
+  "state": "COMPLETE",
+  "session": 290675832,
+  "zero_raw_deg": 0.0,
+  "target_tolerance_deg": 3.0,
+  "center_tolerance_deg": 3,
+  "records": [
+    {
+      "repeat": 0,
+      "target_deg": 12,
+      "tolerance_deg": 3.0,
+      "before_deg": 2.145,
+      "after_deg": 11.885,
+      "error_deg": 0.11500000000000021,
+      "controller_status": "SETTLED",
+      "exit_code": 0,
+      "elapsed_s": 1.9900262089977332,
+      "pass": true
+    },
+    {
+      "repeat": 0,
+      "target_deg": 0,
+      "tolerance_deg": 3,
+      "before_deg": 11.902,
+      "after_deg": 0.741,
+      "error_deg": -0.741,
+      "controller_status": "SETTLED",
+      "exit_code": 0,
+      "elapsed_s": 2.086346501000662,
+      "pass": true
+    },
+    {
+      "repeat": 0,
+      "target_deg": -12,
+      "tolerance_deg": 3.0,
+      "before_deg": 0.741,
+      "after_deg": -11.534,
+      "error_deg": -0.4659999999999993,
+      "controller_status": "SETTLED",
+      "exit_code": 0,
+      "elapsed_s": 2.0458057089999784,
+      "pass": true
+    },
+    {
+      "repeat": 0,
+      "target_deg": 0,
+      "tolerance_deg": 3,
+      "before_deg": -11.556,
+      "after_deg": 2.442,
+      "error_deg": -2.442,
+      "controller_status": "SETTLED",
+      "exit_code": 0,
+      "elapsed_s": 2.041047459002584,
+      "pass": true
+    },
+    {
+      "repeat": 0,
+      "target_deg": 15,
+      "tolerance_deg": 3.0,
+      "before_deg": 2.431,
+      "after_deg": 12.445,
+      "error_deg": 2.5549999999999997,
+      "controller_status": "SETTLED",
+      "exit_code": 0,
+      "elapsed_s": 2.0341440010015504,
+      "pass": true
+    },
+    {
+      "repeat": 0,
+      "target_deg": 0,
+      "tolerance_deg": 3,
+      "before_deg": 12.448,
+      "after_deg": 1.475,
+      "error_deg": -1.475,
+      "controller_status": "SETTLED",
+      "exit_code": 0,
+      "elapsed_s": 2.1035574600027758,
+      "pass": true
+    },
+    {
+      "repeat": 0,
+      "target_deg": -15,
+      "tolerance_deg": 3.0,
+      "before_deg": 1.472,
+      "after_deg": -12.561,
+      "error_deg": -2.439,
+      "controller_status": "SETTLED",
+      "exit_code": 0,
+      "elapsed_s": 2.0321495839998533,
+      "pass": true
+    },
+    {
+      "repeat": 0,
+      "target_deg": 0,
+      "tolerance_deg": 3,
+      "before_deg": -12.56,
+      "after_deg": 1.6844999999999999,
+      "error_deg": -1.6844999999999999,
+      "controller_status": "SETTLED",
+      "exit_code": 0,
+      "elapsed_s": 2.0405026260013983,
+      "pass": true
+    }
+  ],
+  "model_not_modified": true,
+  "all_passed": true
+}

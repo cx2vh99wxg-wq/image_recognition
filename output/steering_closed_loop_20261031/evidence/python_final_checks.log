@@ -1,0 +1,7 @@
+....AUTO_CALIBRATION_RESULT={"state": "PARTIAL_COVERAGE", "both_directions_measured": true, "returned_within_tolerance": false, "final_angle_deg": -7.1000000000000005}
+.
+----------------------------------------------------------------------
+Ran 5 tests in 2.921s
+
+OK
+PYTHON_FINAL_RELEASE_GUARD_NATIVE_TESTED_INSTALLED

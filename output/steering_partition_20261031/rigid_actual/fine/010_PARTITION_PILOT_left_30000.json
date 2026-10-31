@@ -1,0 +1,2 @@
+{
+"schema":"STEER_ACTION_TRIAL_V2","session":290675832,"zero_raw_deg":0,"priority":10,"memory_locked":true,"result":"RECORDED","direction":1,"first_us":30000,"brake_us":0,"gap_us":2000,"before_deg":-7.73165464,"after_deg":-4.36492586,"delta_deg":3.36672878,"peak_low_deg":-0.00134515762,"peak_high_deg":3.45165443,"samples":179,"max_age_ms":6,"error":"OK","timings":[{"direction":1,"duration_us":30000,"enable_begin_ns":19268006417728,"enable_end_ns":19268006445728,"release_begin_ns":19268036469895,"release_end_ns":19268036587145}]}

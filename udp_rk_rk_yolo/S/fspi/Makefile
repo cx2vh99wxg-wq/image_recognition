@@ -67,10 +67,12 @@ SHARED_MEMORY_SOURCES = ../csrc/shared_memory.c
 FSPI_OBJECTS = $(FSPI_SOURCES:$(SRCDIR)/%.c=$(BUILDDIR)/%.o)
 MAIN_OBJECTS = $(MAIN_SOURCES:$(SRCDIR)/%.c=$(BUILDDIR)/%.o)
 SHARED_MEMORY_OBJECTS = $(SHARED_MEMORY_SOURCES:../csrc/%.c=$(BUILDDIR)/%.o)
-ALL_OBJECTS = $(FSPI_OBJECTS) $(MAIN_OBJECTS) $(SHARED_MEMORY_OBJECTS)
+STEERING_NAMES = steering_controller steering_response steering_keepalive steering_runtime
+STEERING_OBJECTS = $(addprefix $(BUILDDIR)/controller_,$(addsuffix .o,$(STEERING_NAMES))) $(BUILDDIR)/feedback_steering_feedback.o $(BUILDDIR)/feedback_feedback_tracker.o $(BUILDDIR)/steering_actuator.o $(BUILDDIR)/steering_wire.o
+ALL_OBJECTS = $(FSPI_OBJECTS) $(MAIN_OBJECTS) $(SHARED_MEMORY_OBJECTS) $(STEERING_OBJECTS)
 
 # 包含路径（添加上级include目录）
-INCLUDES = -I$(INCDIR) -I../include
+INCLUDES = -I$(INCDIR) -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts
 
 # 链接库（添加pthread和rt库用于共享内存）
 LIBS = -lm -lpthread -lrt
@@ -80,6 +82,11 @@ LIBS = -lm -lpthread -lrt
 
 # 默认目标：编译应用程序
 all: app
+
+$(BUILDDIR)/test_spi_owner: test_spi_owner.c $(SRCDIR)/fspi_module.c | $(BUILDDIR)
+	$(CC) $(CFLAGS) $(INCLUDES) $< -o $@
+test-spi-owner: $(BUILDDIR)/test_spi_owner
+	"$(abspath $(BUILDDIR)/test_spi_owner)"
 
 # 编译应用程序
 app: $(TARGET_APP) $(BUILDDIR)/speed_gear_status $(BUILDDIR)/control_link_status
@@ -106,7 +113,16 @@ $(BUILDDIR)/%.o: ../csrc/%.c | $(BUILDDIR)
 	@echo "编译共享内存文件: $<"
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-$(BUILDDIR)/main.o: ../include/camera_views.h $(INCDIR)/fspi_module.h $(INCDIR)/brake_policy.h ../include/shared_memory.h ../include/lane_rule.h ../include/traffic_go_rule.h ../include/traffic_light_ipc.h ../include/traffic_light.h ../include/speed_status.h
+$(BUILDDIR)/controller_%.o: ../steering/controller/%.c $(wildcard ../steering/controller/*.h) | $(BUILDDIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+$(BUILDDIR)/feedback_%.o: ../steering/feedback/%.c $(wildcard ../steering/feedback/*.h) | $(BUILDDIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+$(BUILDDIR)/steering_actuator.o: ../steering/actuator/steering_actuator.c ../steering/actuator/steering_actuator.h | $(BUILDDIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+$(BUILDDIR)/steering_wire.o: ../../common/steering/contracts/steering_feedback_wire.c | $(BUILDDIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(BUILDDIR)/main.o: ../include/camera_views.h $(INCDIR)/fspi_module.h $(INCDIR)/brake_policy.h ../include/shared_memory.h ../include/lane_rule.h ../include/traffic_go_rule.h ../include/traffic_light_ipc.h ../include/traffic_light.h ../include/speed_status.h $(wildcard ../steering/controller/*.h)
 $(BUILDDIR)/fspi_module.o: $(INCDIR)/fspi_module.h ../include/speed_status.h ../include/control_status.h
 
 # 创建目录

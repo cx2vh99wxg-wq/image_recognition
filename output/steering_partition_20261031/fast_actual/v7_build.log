@@ -1,0 +1,130 @@
+BUILT candidate_v7/S/steering/actuator/build/steering_step
+BUILT candidate_v7/S/steering/actuator/build/steering_goal
+BUILT candidate_v7/S/steering/actuator/build/steering_lane_goal
+BUILT candidate_v7/S/steering/actuator/build/steering_action
+BUILT candidate_v7/S/steering/build/tests/test_actuator
+BUILT candidate_v7/S/steering/build/tests/test_controller
+PASS actuator: ms/us bounds, fractional deadline, mutual exclusion, cancellation, uncertain writes, release faults
+BUILT candidate_v7/S/steering/build/tests/test_sequence
+PASS bounded sequence: dead-time, mutual exclusion, deadline/cancel faults, original60ms and explicit long-action cap
+BUILT candidate_v7/S/steering/build/tests/test_predictive
+PASS predictive single-action release: signed target, RF/coast allowance, inward centering, guard and wrong-direction rejection
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=10000 current_deg=0.000 target_deg=10.000 guard_deg=6.300 expected_error_deg=5.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=10000 actual_us=10000.000 early_release=0
+[STEER_RESPONSE] pulse=1 before_deg=0.000 after_deg=5.000 delta_deg=5.000 error_deg=5.000
+[STEER_PULSE_BEGIN] pulse=2 direction=1 duration_us=10000 current_deg=5.000 target_deg=10.000 guard_deg=6.300 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=2 direction=1 requested_us=10000 actual_us=10000.000 early_release=0
+[STEER_RESPONSE] pulse=2 before_deg=5.000 after_deg=10.000 delta_deg=5.000 error_deg=0.000
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=10000 current_deg=0.000 target_deg=-10.000 guard_deg=6.300 expected_error_deg=5.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=10000 actual_us=10000.000 early_release=0
+[STEER_RESPONSE] pulse=1 before_deg=0.000 after_deg=-5.000 delta_deg=-5.000 error_deg=-5.000
+[STEER_PULSE_BEGIN] pulse=2 direction=2 duration_us=10000 current_deg=-5.000 target_deg=-10.000 guard_deg=6.300 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=2 direction=2 requested_us=10000 actual_us=10000.000 early_release=0
+[STEER_RESPONSE] pulse=2 before_deg=-5.000 after_deg=-10.000 delta_deg=-5.000 error_deg=0.000
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=10000 current_deg=0.000 target_deg=10.000 guard_deg=6.300 expected_error_deg=5.000 reposition=0
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=10000 current_deg=0.000 target_deg=10.000 guard_deg=6.300 expected_error_deg=5.000 reposition=0
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=10000 current_deg=0.000 target_deg=10.000 guard_deg=6.300 expected_error_deg=5.000 reposition=0
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=10000 current_deg=0.000 target_deg=10.000 guard_deg=6.300 expected_error_deg=5.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=10000 actual_us=10000.000 early_release=0
+[STEER_RESPONSE] pulse=1 before_deg=0.000 after_deg=0.000 delta_deg=0.000 error_deg=10.000
+[STEER_PULSE_BEGIN] pulse=2 direction=1 duration_us=10000 current_deg=0.000 target_deg=10.000 guard_deg=6.300 expected_error_deg=5.000 reposition=0
+[STEER_PULSE_END] pulse=2 direction=1 requested_us=10000 actual_us=10000.000 early_release=0
+[STEER_RESPONSE] pulse=2 before_deg=0.000 after_deg=0.000 delta_deg=0.000 error_deg=10.000
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=10000 current_deg=0.000 target_deg=10.000 guard_deg=6.300 expected_error_deg=5.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=10000 actual_us=10000.000 early_release=0
+[STEER_PULSE_BEGIN] pulse=2 direction=1 duration_us=10000 current_deg=0.000 target_deg=12.000 guard_deg=6.300 expected_error_deg=7.000 reposition=0
+[STEER_PULSE_END] pulse=2 direction=1 requested_us=10000 actual_us=10000.000 early_release=0
+[STEER_PULSE_BEGIN] pulse=3 direction=1 duration_us=10000 current_deg=0.000 target_deg=10.000 guard_deg=6.300 expected_error_deg=5.000 reposition=0
+[STEER_PULSE_END] pulse=3 direction=1 requested_us=10000 actual_us=10000.000 early_release=0
+[STEER_PULSE_BEGIN] pulse=4 direction=1 duration_us=10000 current_deg=0.000 target_deg=12.000 guard_deg=6.300 expected_error_deg=7.000 reposition=0
+[STEER_PULSE_END] pulse=4 direction=1 requested_us=10000 actual_us=10000.000 early_release=0
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=19000 current_deg=-12.000 target_deg=-15.000 guard_deg=2.820 expected_error_deg=1.000 reposition=1
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=19000 actual_us=19000.000 early_release=0
+[STEER_RESPONSE] pulse=1 before_deg=-12.000 after_deg=-10.000 delta_deg=2.000 error_deg=-5.000
+[STEER_PULSE_BEGIN] pulse=2 direction=2 duration_us=25000 current_deg=-10.000 target_deg=-15.000 guard_deg=6.900 expected_error_deg=1.000 reposition=0
+[STEER_PULSE_END] pulse=2 direction=2 requested_us=25000 actual_us=25000.000 early_release=0
+[STEER_RESPONSE] pulse=2 before_deg=-10.000 after_deg=-14.000 delta_deg=-4.000 error_deg=-1.000
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=-8.000 target_deg=-15.000 guard_deg=5.340 expected_error_deg=3.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30000.000 early_release=0
+[STEER_RESPONSE] pulse=1 before_deg=-8.000 after_deg=-12.000 delta_deg=-4.000 error_deg=-3.000
+[STEER_PULSE_BEGIN] pulse=2 direction=1 duration_us=19000 current_deg=-12.000 target_deg=-15.000 guard_deg=2.820 expected_error_deg=1.000 reposition=1
+[STEER_PULSE_END] pulse=2 direction=1 requested_us=19000 actual_us=19000.000 early_release=0
+[STEER_RESPONSE] pulse=2 before_deg=-12.000 after_deg=-10.000 delta_deg=2.000 error_deg=-5.000
+[STEER_PULSE_BEGIN] pulse=3 direction=2 duration_us=25000 current_deg=-10.000 target_deg=-15.000 guard_deg=6.900 expected_error_deg=1.000 reposition=0
+[STEER_PULSE_END] pulse=3 direction=2 requested_us=25000 actual_us=25000.000 early_release=0
+[STEER_RESPONSE] pulse=3 before_deg=-10.000 after_deg=-14.000 delta_deg=-4.000 error_deg=-1.000
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=19000 current_deg=0.000 target_deg=2.400 guard_deg=3.180 expected_error_deg=0.100 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=19000 actual_us=19000.000 early_release=0
+[STEER_RESPONSE] pulse=1 before_deg=0.000 after_deg=0.000 delta_deg=0.000 error_deg=2.400
+[STEER_PULSE_BEGIN] pulse=2 direction=1 duration_us=30000 current_deg=0.000 target_deg=2.400 guard_deg=2.820 expected_error_deg=0.400 reposition=0
+[STEER_PULSE_END] pulse=2 direction=1 requested_us=30000 actual_us=30000.000 early_release=0
+[STEER_RESPONSE] pulse=2 before_deg=0.000 after_deg=2.000 delta_deg=2.000 error_deg=0.400
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=60000 current_deg=0.000 target_deg=15.000 guard_deg=2.700 expected_error_deg=13.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=60000 actual_us=60000.000 early_release=0
+[STEER_RESPONSE] pulse=1 before_deg=0.000 after_deg=0.400 delta_deg=0.400 error_deg=14.600
+[STEER_PULSE_BEGIN] pulse=2 direction=1 duration_us=60000 current_deg=0.400 target_deg=15.000 guard_deg=2.700 expected_error_deg=12.600 reposition=0
+[STEER_PULSE_END] pulse=2 direction=1 requested_us=60000 actual_us=60000.000 early_release=0
+[STEER_RESPONSE] pulse=2 before_deg=0.400 after_deg=0.800 delta_deg=0.400 error_deg=14.200
+[STEER_PULSE_BEGIN] pulse=3 direction=1 duration_us=60000 current_deg=0.800 target_deg=15.000 guard_deg=2.700 expected_error_deg=12.200 reposition=0
+[STEER_PULSE_END] pulse=3 direction=1 requested_us=60000 actual_us=60000.000 early_release=0
+[STEER_RESPONSE] pulse=3 before_deg=0.800 after_deg=1.200 delta_deg=0.400 error_deg=13.800
+[STEER_PULSE_BEGIN] pulse=4 direction=1 duration_us=60000 current_deg=1.200 target_deg=15.000 guard_deg=2.700 expected_error_deg=11.800 reposition=0
+[STEER_PULSE_END] pulse=4 direction=1 requested_us=60000 actual_us=60000.000 early_release=0
+[STEER_RESPONSE] pulse=4 before_deg=1.200 after_deg=1.600 delta_deg=0.400 error_deg=13.400
+[STEER_PULSE_BEGIN] pulse=5 direction=1 duration_us=60000 current_deg=1.600 target_deg=15.000 guard_deg=2.700 expected_error_deg=11.400 reposition=0
+[STEER_PULSE_END] pulse=5 direction=1 requested_us=60000 actual_us=60000.000 early_release=0
+[STEER_RESPONSE] pulse=5 before_deg=1.600 after_deg=2.000 delta_deg=0.400 error_deg=13.000
+[STEER_PULSE_BEGIN] pulse=6 direction=1 duration_us=60000 current_deg=2.000 target_deg=15.000 guard_deg=2.700 expected_error_deg=11.000 reposition=0
+[STEER_PULSE_END] pulse=6 direction=1 requested_us=60000 actual_us=60000.000 early_release=0
+[STEER_RESPONSE] pulse=6 before_deg=2.000 after_deg=2.400 delta_deg=0.400 error_deg=12.600
+[STEER_PULSE_BEGIN] pulse=7 direction=1 duration_us=60000 current_deg=2.400 target_deg=15.000 guard_deg=2.700 expected_error_deg=10.600 reposition=0
+[STEER_PULSE_END] pulse=7 direction=1 requested_us=60000 actual_us=60000.000 early_release=0
+[STEER_RESPONSE] pulse=7 before_deg=2.400 after_deg=2.800 delta_deg=0.400 error_deg=12.200
+[STEER_PULSE_BEGIN] pulse=8 direction=1 duration_us=60000 current_deg=2.800 target_deg=15.000 guard_deg=2.700 expected_error_deg=10.200 reposition=0
+[STEER_PULSE_END] pulse=8 direction=1 requested_us=60000 actual_us=60000.000 early_release=0
+[STEER_RESPONSE] pulse=8 before_deg=2.800 after_deg=3.200 delta_deg=0.400 error_deg=11.800
+[STEER_PULSE_BEGIN] pulse=9 direction=1 duration_us=60000 current_deg=3.200 target_deg=15.000 guard_deg=2.700 expected_error_deg=9.800 reposition=0
+[STEER_PULSE_END] pulse=9 direction=1 requested_us=60000 actual_us=60000.000 early_release=0
+[STEER_RESPONSE] pulse=9 before_deg=3.200 after_deg=3.600 delta_deg=0.400 error_deg=11.400
+[STEER_PULSE_BEGIN] pulse=10 direction=1 duration_us=60000 current_deg=3.600 target_deg=15.000 guard_deg=2.700 expected_error_deg=9.400 reposition=0
+[STEER_PULSE_END] pulse=10 direction=1 requested_us=60000 actual_us=60000.000 early_release=0
+[STEER_RESPONSE] pulse=10 before_deg=3.600 after_deg=4.000 delta_deg=0.400 error_deg=11.000
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=10000 current_deg=0.000 target_deg=10.000 guard_deg=6.300 expected_error_deg=5.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=10000 actual_us=14000.000 early_release=0
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=10000 current_deg=0.000 target_deg=10.000 guard_deg=6.300 expected_error_deg=5.000 reposition=0
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=250000 current_deg=0.000 target_deg=15.000 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=250000 actual_us=200000.000 early_release=1
+[STEER_RESPONSE] pulse=1 before_deg=0.000 after_deg=15.000 delta_deg=15.000 error_deg=0.000
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=250000 current_deg=0.000 target_deg=-15.000 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=250000 actual_us=200000.000 early_release=1
+[STEER_RESPONSE] pulse=1 before_deg=0.000 after_deg=-15.000 delta_deg=-15.000 error_deg=0.000
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=250000 current_deg=0.000 target_deg=15.000 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=250000 current_deg=0.000 target_deg=15.000 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+PASS closed loop: multi-step signed targets, duplicate goals, session/stale/manual/simulated rejection, no-progress, timing, release failure, non-motion heartbeat
+BUILT candidate_v7/S/steering/build/tests/test_response_partition
+PASS C partition table: disjoint current zones, actual-start support, scheduling isolation, transient envelope and malformed-input rejection
+BUILT candidate_v7/S/steering/build/tests/test_live_receiver
+PASS live feedback receiver: real signed angles, duplicate/CRC/simulation rejection, expiry, one socket owner
+BUILT candidate_v7/S/steering/build/tests/test_runtime_integration
+BUILT candidate_v7/S/steering/build/tests/test_feedback_tracker
+PASS telemetry tracker: CRC/length, signed angles, wrap, duplicate expiry, ordering, clock faults, sessions, simulation, invalidation and age overflow
+PASS CLI: microsecond input, fractional output, exclusive units and pre-open bound
+PASS bench feedback/reference guards, empirical response limits and target orchestration
+BUILT candidate_v7/S/steering/build/tests/test_trace_cli
+PASS native CLI: active contact, STOP block, contact mismatch, read fault; both releases verified
+PASS native CLI: SIGTERM interrupts deadline sleep and releases both contacts
+BUILT candidate_v7/S/steering/actuator/build/steering_step_fspi
+BUILT candidate_v7/S/steering/actuator/build/steering_status
+BUILT candidate_v7/S/steering/actuator/build/steering_goal_fspi
+BUILT candidate_v7/S/steering/actuator/build/steering_lane_goal_fspi
+BUILT candidate_v7/S/steering/actuator/build/steering_action_fspi
+编译C文件: csrc/main.c
+gcc -Wall -O2 -std=c11 -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts -c csrc/main.c -o build/main.o
+gcc -Wall -O2 -std=c11 -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts -c ../steering/controller/steering_controller.c -o build/controller_steering_controller.o
+gcc -Wall -O2 -std=c11 -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts -c ../steering/controller/steering_response.c -o build/controller_steering_response.o
+gcc -Wall -O2 -std=c11 -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts -c ../steering/controller/steering_keepalive.c -o build/controller_steering_keepalive.o
+gcc -Wall -O2 -std=c11 -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts -c ../steering/controller/steering_runtime.c -o build/controller_steering_runtime.o
+链接应用程序: build/vehicle_control
+gcc build/fspi_module.o build/main.o build/shared_memory.o build/controller_steering_controller.o build/controller_steering_response.o build/controller_steering_keepalive.o build/controller_steering_runtime.o build/feedback_steering_feedback.o build/feedback_feedback_tracker.o build/steering_actuator.o build/steering_wire.o -lm -lpthread -lrt -o build/vehicle_control
+应用程序编译完成: build/vehicle_control
+V7_BUILD_COMPLETE_NO_ACTUATION

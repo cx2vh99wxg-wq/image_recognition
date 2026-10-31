@@ -24,6 +24,17 @@ def timing_valid(requested_us, actual_ms):
     return math.isfinite(actual_ms) and -.05 <= actual_ms-requested_us/1000 <= 2
 
 
+def pulse_elapsed_ms(record):
+    # Printed milliseconds are rounded to 1us. Prefer original timestamp
+    # fields, particularly at the +/- timing acceptance boundary.
+    if 'enable_end_ns' in record or 'release_end_ns' in record:
+        try:start=int(record['enable_end_ns']);end=int(record['release_end_ns'])
+        except (KeyError,TypeError,ValueError):return math.nan
+        return (end-start)/1e6 if start>0 and end>=start else math.nan
+    try:return float(record['software_elapsed_ms'])
+    except (KeyError,TypeError,ValueError):return math.nan
+
+
 def fields(line):
     return dict(re.findall(r'(\w+)=([^\s]+)', line))
 
@@ -71,6 +82,21 @@ def baseline_of(samples, zero):
     if max(angles) - min(angles) > .4 or max(abs(s['rate_dps']) for s in samples) > 2:
         raise RuntimeError('Steering is not settled')
     return statistics.median(angles) - zero
+
+
+def settled_after_pulse(monitor, zero, timeout_s=8):
+    # Preserve the original observation minimum: a delayed RF/servo response
+    # must not be mistaken for an already settled zero response.
+    start=time.monotonic();monitor.collect(2.3)
+    while True:
+        try:return baseline_of(monitor.samples[-60:],zero),time.monotonic()-start
+        except RuntimeError as exc:
+            if str(exc) not in ('Insufficient continuous stationary baseline','Steering is not settled'):raise
+        remaining=timeout_s-(time.monotonic()-start)
+        if remaining<=0:raise RuntimeError('Steering did not settle before observation timeout')
+        # Freshness, session, CRC/status and envelope failures propagate from
+        # collect immediately; this only waits longer for genuine settling.
+        monitor.collect(min(.2,remaining))
 
 
 def status():
@@ -236,8 +262,8 @@ def main():
         if actuator.poll() is None:
             raise RuntimeError('Actuator did not finish promptly')
         report['actuator_finished_local_ns'] = time.monotonic_ns()
-        monitor.collect(2.3)
-        report['after_deg'] = baseline_of(monitor.samples[-60:], args.zero_raw_deg)
+        report['after_deg'],settle_seconds=settled_after_pulse(monitor,args.zero_raw_deg)
+        report['settle_wait_ms']=settle_seconds*1000
         report['delta_deg'] = report['after_deg'] - before
         if report['delta_deg']*(1 if args.direction=='left' else -1)<-.4:
             raise RuntimeError('Measured movement opposes commanded direction')
@@ -268,7 +294,7 @@ def main():
                 report['pulse_records'] = list(csv.DictReader(f))
             if report['result']=='RECORDED':
                 records=report['pulse_records']
-                if len(records)!=1 or not timing_valid(args.duration_us,float(records[0]['software_elapsed_ms'])):
+                if len(records)!=1 or not timing_valid(args.duration_us,pulse_elapsed_ms(records[0])):
                     report['result']='TIMING_FAULT'
                     report['error']='Software pulse timing outside request -0.05/+2ms; exclude from response model'
         if monitor and monitor.samples:

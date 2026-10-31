@@ -1,0 +1,26 @@
+{
+  "schema": "STEER_RIG_PARTITION_RUN_V1",
+  "state": "COMPLETE",
+  "session": 290675832,
+  "zero_raw_deg": 0.0,
+  "stage": "center",
+  "current_deg": 2.368,
+  "physical_limit_deg": 18,
+  "center_tolerance_deg": 3,
+  "target_tolerance_deg": 2,
+  "fixed_chassis": true,
+  "goals": [
+    {
+      "target_deg": 0,
+      "tolerance_deg": 3,
+      "repeat": 0,
+      "before_deg": 2.368,
+      "actions": [],
+      "status": "REACHED",
+      "after_deg": 2.368,
+      "error_deg": -2.368
+    }
+  ],
+  "new_action_count": 35,
+  "model_qualified_for_road_control": false
+}

@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <sys/file.h>
 #include <unistd.h>
+#include <errno.h>
 
 static steer_result_t set_direction(void *context, steer_direction_t direction)
 {
@@ -30,11 +31,9 @@ steer_result_t steering_fspi_open(steering_fspi_t *backend)
 {
     if (!backend) return STEER_ERR_ARGUMENT;
     backend->initialized = 0; backend->lock_fd = -1;
-    int fd = open("/tmp/steering-actuator.lock", O_CREAT | O_RDWR | O_NOFOLLOW, 0600);
-    if (fd < 0) return STEER_ERR_IO;
-    if (flock(fd, LOCK_EX | LOCK_NB)) { close(fd); return STEER_ERR_BUSY; }
-    if (fspi_init()) { close(fd); return STEER_ERR_IO; }
-    backend->initialized = 1; backend->lock_fd = fd;
+    /* The module owns the same lock for vehicle_control AND standalone tools. */
+    if (fspi_init()) return errno==EWOULDBLOCK||errno==EAGAIN?STEER_ERR_BUSY:STEER_ERR_IO;
+    backend->initialized = 1; backend->lock_fd = -1;
     return STEER_OK;
 }
 void steering_fspi_close(steering_fspi_t *backend)

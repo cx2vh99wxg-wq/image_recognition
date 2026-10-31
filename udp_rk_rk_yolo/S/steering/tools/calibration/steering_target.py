@@ -30,12 +30,14 @@ def main():
     p.add_argument('--angle-limit-deg',type=float,default=10)
     p.add_argument('--target-limit-deg',type=float,default=8)
     p.add_argument('--request-limit-us',type=int,default=20000)
+    p.add_argument('--realtime-priority',type=int,default=0)
     args=p.parse_args()
-    if not re.fullmatch(r'[A-Za-z0-9_-]{1,60}',args.trial) or not 1<=args.max_pulses<=6:
+    if not re.fullmatch(r'[A-Za-z0-9_-]{1,60}',args.trial) or not 1<=args.max_pulses<=6 or not 0<=args.realtime_priority<=30:
         p.error('Invalid unique target ID or pulse bound')
     model_bytes=args.model.read_bytes();model=json.loads(model_bytes)
+    if model.get('simulation_only'):p.error('Simulated response table cannot drive a real actuator')
     envelope=dict(angle_limit=args.angle_limit_deg,target_limit=args.target_limit_deg,
-                  request_limit_us=args.request_limit_us)
+                  request_limit_us=args.request_limit_us,priority=args.realtime_priority)
     choose(model,0,args.target_deg,args.tolerance_deg,**envelope)
     if not reference_matches(model,args.reference_session,args.zero_raw_deg):
         p.error('Model/session mismatch; re-establish the measured reference')
@@ -74,6 +76,7 @@ def main():
                 '--guard-step-deg',str(decision['guard_step_deg']),
                 '--angle-limit-deg',str(args.angle_limit_deg),
                 '--request-limit-us',str(args.request_limit_us),
+                '--realtime-priority',str(args.realtime_priority),
                 '--expected-start-deg',str(current)]
             with open(str(ROOT/'logs'/pulse_id)+'.console.log','x') as output:
                 child=subprocess.Popen(command,stdout=output,stderr=subprocess.STDOUT)

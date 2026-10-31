@@ -1,0 +1,10 @@
+{
+  "state": "NEW_FIXED_MOUNT_PHYSICAL_REFERENCE",
+  "reference_session": 290675832,
+  "reference_file": "/home/linaro/steering_mount_20261031/center.reference",
+  "old_datasets_reference_only": true,
+  "target_tolerance_deg": 2,
+  "center_tolerance_deg": 3,
+  "limit_deg": 18,
+  "source_candidate": "/home/linaro/steering_partition_20261031/candidate"
+}

@@ -18,6 +18,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <errno.h>
+#include <sys/file.h>
 
 #define SPI_DEVICE "/dev/spidev4.0"
 #define SPI_SPEED 24000000
@@ -67,6 +68,7 @@ typedef struct
 
 static SpiTestConfig g_config;
 static int g_spi_fd = -1;
+static int g_spi_owner_lock = -1;
 static int g_auto_brake_errno;
 static int g_auto_brake_transfer_result = -1;
 static uint8_t g_auto_brake_raw_status = 0xff;
@@ -356,7 +358,11 @@ static int spi_read_direct_reliable(int fd, uint8_t *data)
 /* 装载固定配置，打开 SPI 设备并设置总线参数；配置失败时关闭句柄。 */
 int fspi_init(void)
 {
-
+    if(g_spi_fd>=0)return 0;
+    int owner=open("/tmp/steering-actuator.lock",O_CREAT|O_RDWR|O_CLOEXEC|O_NOFOLLOW,0600);
+    if(owner<0)return -1;
+    if(flock(owner,LOCK_EX|LOCK_NB)){int e=errno;close(owner);errno=e;return -1;}
+    g_spi_owner_lock=owner;
     g_config.speed_hz = SPI_SPEED;
     g_config.transfer_size = SPI_TRANSFER_SIZE;
     g_config.cycle_count = SPI_CYCLE_COUNT;
@@ -370,6 +376,7 @@ int fspi_init(void)
     if (g_spi_fd < 0)
     {
         perror("FSPI Device open failed");
+        close(g_spi_owner_lock);g_spi_owner_lock=-1;
         return -1;
     }
 
@@ -377,6 +384,7 @@ int fspi_init(void)
     {
         close(g_spi_fd);
         g_spi_fd = -1;
+        close(g_spi_owner_lock);g_spi_owner_lock=-1;
         return -1;
     }
 
@@ -396,6 +404,19 @@ int fspi_write_data(uint16_t addr, uint8_t data)
     }
 
     return spi_write_reliable(g_spi_fd, addr, data);
+}
+
+int fspi_write_direction_once(uint16_t addr,uint8_t data)
+{
+    if(g_spi_fd<0||addr<2||addr>3||data>1){errno=EINVAL;return -1;}
+    /* Timed steering must not call perror/stdio while a contact is active. */
+    g_config.spi_mode=(g_config.spi_mode|SPI_TX_QUAD)&~SPI_RX_QUAD;
+    if(ioctl(g_spi_fd,SPI_IOC_WR_MODE32,&g_config.spi_mode)<0||
+       ioctl(g_spi_fd,SPI_IOC_WR_BITS_PER_WORD,&g_config.bits_per_word)<0||
+       ioctl(g_spi_fd,SPI_IOC_WR_MAX_SPEED_HZ,&g_config.speed_hz)<0)return -1;
+    uint8_t bytes[3]={(uint8_t)(addr>>8),(uint8_t)addr,data};
+    int n=perform_transfer(g_spi_fd,bytes,NULL,&g_config);
+    if(n!=3){if(n>=0)errno=EIO;return -1;}return 0;
 }
 
 /* 公开的按地址可靠读取入口；读值由重复采样决定。 */
@@ -424,7 +445,9 @@ int fspi_read_speed_snapshot(SpeedSnapshot *data,uint8_t *raw_status)
     if(g_spi_fd<0||!data){errno=!data?EINVAL:ENODEV;return -1;}
     uint8_t bytes[4]={0};
     g_config.spi_mode=(g_config.spi_mode|SPI_RX_QUAD)&~SPI_TX_QUAD;
-    if(configure_spi_interface(g_spi_fd,&g_config))return -1;
+    if(ioctl(g_spi_fd,SPI_IOC_WR_MODE32,&g_config.spi_mode)<0||
+       ioctl(g_spi_fd,SPI_IOC_WR_BITS_PER_WORD,&g_config.bits_per_word)<0||
+       ioctl(g_spi_fd,SPI_IOC_WR_MAX_SPEED_HZ,&g_config.speed_hz)<0)return -1;
     struct spi_ioc_transfer tr={0};
     tr.rx_buf=(unsigned long)bytes;tr.len=sizeof(bytes);tr.rx_nbits=4;
     tr.bits_per_word=g_config.bits_per_word;tr.speed_hz=g_config.speed_hz;
@@ -614,4 +637,5 @@ void fspi_cleanup(void)
         g_spi_fd = -1;
         printf("FSPI resources cleaned up\n");
     }
+    if(g_spi_owner_lock>=0){close(g_spi_owner_lock);g_spi_owner_lock=-1;}
 }

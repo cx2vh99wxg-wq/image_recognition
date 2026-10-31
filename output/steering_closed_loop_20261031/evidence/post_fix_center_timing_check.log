@@ -1,0 +1,14 @@
+FSPI Configuration:
+  Device: /dev/spidev4.0
+  Speed: 24000000 Hz (24000 KHz)
+FSPI initialized successfully
+  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes
+[STEER_INIT] table=/home/linaro/S/steering/logs/batch_202610310009/response_model.table reference_session=290675830 zero_raw=0.018 max_pulse_us=60000 priority=0; awaiting fresh matching session
+[STEER_REFERENCE] explicitly confirmed current session; physical zero offset bound
+[STEER_STATE] state=5 name=SETTLING angle=3.089 target=0.000 error=-3.089 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=17750 current_deg=3.089 target_deg=0.000 guard_deg=6.246 expected_error_deg=2.477
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=17750 actual_us=18610.958
+[STEER_RESPONSE] pulse=1 before_deg=3.089 after_deg=-1.042 delta_deg=-4.131 error_deg=1.042
+[STEER_STATE] state=6 name=RESOLUTION_LIMIT angle=-1.042 target=0.000 error=1.042 result=NOT_IMPLEMENTED_OR_NOT_READY
+GOAL_RESULT status=6 target_deg=0.000 measured_deg=-1.042 error_deg=1.042 result=NOT_IMPLEMENTED_OR_NOT_READY state_name=RESOLUTION_LIMIT
+FSPI resources cleaned up

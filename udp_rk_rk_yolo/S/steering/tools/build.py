@@ -34,6 +34,16 @@ def build_actuator(hardware: bool = False) -> Path:
         compile_program(ROOT / "actuator" / "build" / "steering_status",
                         [ROOT / "tools" / "actuator" / "steering_status.c",
                          fspi / "csrc" / "fspi_module.c"], INCLUDES, extra)
+    goal_sources=[ROOT/'controller/steering_response.c',ROOT/'tools/actuator/steering_goal.c']
+    if hardware:
+        goal_sources += [ROOT/'controller'/n for n in ['steering_controller.c','steering_keepalive.c','steering_runtime.c']]
+        goal_sources += [ROOT/'actuator/steering_actuator.c',ROOT/'feedback/steering_feedback.c',ROOT/'feedback/feedback_tracker.c',COMMON/'contracts/steering_feedback_wire.c',ROOT.parent/'fspi/csrc/fspi_module.c']
+    compile_program(ROOT/'actuator/build'/('steering_goal_fspi' if hardware else 'steering_goal'),goal_sources,INCLUDES,extra)
+    lane_sources=[s for s in goal_sources if s.name!='steering_goal.c']+[ROOT/'tools/actuator/steering_lane_goal.c']
+    compile_program(ROOT/'actuator/build'/('steering_lane_goal_fspi' if hardware else 'steering_lane_goal'),lane_sources,INCLUDES,extra)
+    action_sources=[ROOT/'actuator/steering_sequence.c',ROOT/'actuator/steering_actuator.c',ROOT/'tools/actuator/steering_action.c']
+    if hardware:action_sources += [ROOT/'feedback/steering_feedback.c',ROOT/'feedback/feedback_tracker.c',COMMON/'contracts/steering_feedback_wire.c',fspi/'csrc/fspi_module.c']
+    compile_program(ROOT/'actuator/build'/('steering_action_fspi' if hardware else 'steering_action'),action_sources,INCLUDES,extra)
     return program
 
 
@@ -42,9 +52,34 @@ def check_s() -> None:
     actuator = compile_program(tests / "test_actuator", [ROOT / "actuator" / "steering_actuator.c",
         ROOT / "tests" / "actuator" / "test_actuator.c"], INCLUDES)
     controller = compile_program(tests / "test_controller", [ROOT / "controller" / "steering_controller.c",
-        ROOT / "feedback" / "steering_feedback.c", ROOT / "tests" / "controller" / "test_controller.c"], INCLUDES)
+        ROOT / "controller" / "steering_response.c", ROOT / "controller" / "steering_keepalive.c",
+        ROOT / "actuator" / "steering_actuator.c", ROOT / "feedback" / "steering_feedback.c",
+        ROOT / "feedback" / "feedback_tracker.c", COMMON / "contracts" / "steering_feedback_wire.c",
+        ROOT / "tests" / "controller" / "test_controller.c"], INCLUDES)
     print(run(actuator, []).stdout.strip())
+    sequence=compile_program(tests/'test_sequence',[ROOT/'actuator/steering_sequence.c',ROOT/'actuator/steering_actuator.c',ROOT/'tests/actuator/test_sequence.c'],INCLUDES)
+    print(run(sequence,[]).stdout.strip())
+    predictive=compile_program(tests/'test_predictive',[ROOT/'tests/actuator/test_predictive.c'],INCLUDES)
+    print(run(predictive,[]).stdout.strip())
+    action=ROOT/'actuator/build'/('steering_action.exe' if os.name=='nt' else 'steering_action')
+    assert 'no_device_access=1' in run(action,['--direction','left','--first-us','30000','--brake-us','17500','--gap-us','2000']).stdout
+    run(action,['--direction','right','--first-us','60001'],2)
+    run(action,['--direction','right','--brake-us','10000','--gap-us','1999'],2)
+    assert 'no_device_access=1' in run(action,['--direction','left','--max-phase-ms','120','--first-us','100000']).stdout
+    run(action,['--direction','left','--max-phase-ms','251','--first-us','100000'],2)
+    run(action,['--direction','left','--max-phase-ms','120','--first-us','100000','--brake-us','10000'],2)
     print(run(controller, []).stdout.strip())
+    partition=compile_program(tests/'test_response_partition',[ROOT/'controller/steering_response.c',ROOT/'tests/controller/test_response_partition.c'],INCLUDES)
+    print(run(partition,[str(tests/'partition_fixture.table')]).stdout.strip())
+    receiver=compile_program(tests/'test_live_receiver',[ROOT/'feedback/steering_feedback.c',ROOT/'feedback/feedback_tracker.c',
+        COMMON/'contracts/steering_feedback_wire.c',ROOT/'tests/feedback/test_live_receiver.c'],INCLUDES)
+    print(run(receiver,[]).stdout.strip())
+    if sys.platform.startswith('linux'):
+        compile_program(tests/'test_runtime_integration',[ROOT/'controller'/n for n in
+            ['steering_controller.c','steering_response.c','steering_keepalive.c','steering_runtime.c']]+
+            [ROOT/'actuator/steering_actuator.c',ROOT/'feedback/steering_feedback.c',ROOT/'feedback/feedback_tracker.c',
+             COMMON/'contracts/steering_feedback_wire.c',ROOT/'tests/controller/test_runtime_integration.c'],INCLUDES,
+             [f'-I{ROOT.parent / "fspi/include"}',f'-I{ROOT.parent / "include"}'])
     tracker = compile_program(tests / "test_feedback_tracker",
         [ROOT / "feedback" / "feedback_tracker.c", ROOT / "tests" / "feedback" / "test_tracker.c",
          COMMON / "contracts" / "steering_feedback_wire.c"], INCLUDES)
@@ -57,7 +92,7 @@ def check_s() -> None:
     run(cli, ["--backend", "fspi", "--direction", "left", "--duration-us", "20001",
               "--max-pulse-ms", "20"], 2)
     print("PASS CLI: microsecond input, fractional output, exclusive units and pre-open bound")
-    for name in ["test_bench.py", "test_response_model.py", "test_target.py"]:
+    for name in ["test_bench.py", "test_response_model.py", "test_partition_response.py", "test_target.py", "test_auto_calibration.py"]:
         result = subprocess.run([sys.executable, str(ROOT / "tests" / "feedback" / name)],
                                 text=True, capture_output=True, timeout=30)
         if result.returncode:

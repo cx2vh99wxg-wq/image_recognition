@@ -1,0 +1,610 @@
+[
+  {
+    "schema": "STEER_ACTION_TRIAL_V2",
+    "session": 290675830,
+    "zero_raw_deg": 0.0179999992,
+    "priority": 10,
+    "memory_locked": true,
+    "result": "RECORDED",
+    "direction": 1,
+    "first_us": 30000,
+    "brake_us": 0,
+    "gap_us": 2000,
+    "before_deg": -5.56200027,
+    "after_deg": -1.17791069,
+    "delta_deg": 4.38408947,
+    "peak_low_deg": 0,
+    "peak_high_deg": 4.56900024,
+    "samples": 183,
+    "max_age_ms": 5,
+    "error": "OK",
+    "timings": [
+      {
+        "direction": 1,
+        "duration_us": 30000,
+        "enable_begin_ns": 17015872352988,
+        "enable_end_ns": 17015872383905,
+        "release_begin_ns": 17015902405155,
+        "release_end_ns": 17015902482446
+      }
+    ],
+    "purpose": "PREPOSITION",
+    "trial": "/home/linaro/steering_partition_20261031/long_gap/001_PREPOSITION_left_0_2000"
+  },
+  {
+    "schema": "STEER_ACTION_TRIAL_V2",
+    "session": 290675830,
+    "zero_raw_deg": 0.0179999992,
+    "priority": 10,
+    "memory_locked": true,
+    "result": "RECORDED",
+    "direction": 1,
+    "first_us": 30000,
+    "brake_us": 25000,
+    "gap_us": 50000,
+    "before_deg": -1.1748929,
+    "after_deg": -0.989785731,
+    "delta_deg": 0.185107172,
+    "peak_low_deg": -0.00310707092,
+    "peak_high_deg": 3.75289297,
+    "samples": 191,
+    "max_age_ms": 6,
+    "error": "OK",
+    "timings": [
+      {
+        "direction": 1,
+        "duration_us": 30000,
+        "enable_begin_ns": 17018015305281,
+        "enable_end_ns": 17018015336197,
+        "release_begin_ns": 17018045350447,
+        "release_end_ns": 17018045392156
+      },
+      {
+        "direction": 2,
+        "duration_us": 25000,
+        "enable_begin_ns": 17018095495531,
+        "enable_end_ns": 17018095522947,
+        "release_begin_ns": 17018120537739,
+        "release_end_ns": 17018120615322
+      }
+    ],
+    "purpose": "SCREEN",
+    "trial": "/home/linaro/steering_partition_20261031/long_gap/002_SCREEN_left_25000_50000"
+  },
+  {
+    "schema": "STEER_ACTION_TRIAL_V2",
+    "session": 290675830,
+    "zero_raw_deg": 0.0179999992,
+    "priority": 10,
+    "memory_locked": true,
+    "result": "RECORDED",
+    "direction": 2,
+    "first_us": 30000,
+    "brake_us": 25000,
+    "gap_us": 50000,
+    "before_deg": -0.990625024,
+    "after_deg": -2.13387489,
+    "delta_deg": -1.14324987,
+    "peak_low_deg": -3.77537537,
+    "peak_high_deg": 0.00462502241,
+    "samples": 191,
+    "max_age_ms": 6,
+    "error": "OK",
+    "timings": [
+      {
+        "direction": 2,
+        "duration_us": 30000,
+        "enable_begin_ns": 17020204228907,
+        "enable_end_ns": 17020204259823,
+        "release_begin_ns": 17020234270865,
+        "release_end_ns": 17020234335032
+      },
+      {
+        "direction": 1,
+        "duration_us": 25000,
+        "enable_begin_ns": 17020284464948,
+        "enable_end_ns": 17020284493823,
+        "release_begin_ns": 17020309549157,
+        "release_end_ns": 17020309644823
+      }
+    ],
+    "purpose": "SCREEN",
+    "trial": "/home/linaro/steering_partition_20261031/long_gap/003_SCREEN_right_25000_50000"
+  },
+  {
+    "schema": "STEER_ACTION_TRIAL_V2",
+    "session": 290675830,
+    "zero_raw_deg": 0.0179999992,
+    "priority": 10,
+    "memory_locked": true,
+    "result": "RECORDED",
+    "direction": 1,
+    "first_us": 30000,
+    "brake_us": 30000,
+    "gap_us": 50000,
+    "before_deg": -2.14212704,
+    "after_deg": -1.26808929,
+    "delta_deg": 0.874037743,
+    "peak_low_deg": -0.00587296486,
+    "peak_high_deg": 4.11612701,
+    "samples": 191,
+    "max_age_ms": 5,
+    "error": "OK",
+    "timings": [
+      {
+        "direction": 1,
+        "duration_us": 30000,
+        "enable_begin_ns": 17022389709699,
+        "enable_end_ns": 17022389739158,
+        "release_begin_ns": 17022419783158,
+        "release_end_ns": 17022419906241
+      },
+      {
+        "direction": 2,
+        "duration_us": 30000,
+        "enable_begin_ns": 17022470044033,
+        "enable_end_ns": 17022470070283,
+        "release_begin_ns": 17022500095324,
+        "release_end_ns": 17022500145199
+      }
+    ],
+    "purpose": "SCREEN",
+    "trial": "/home/linaro/steering_partition_20261031/long_gap/004_SCREEN_left_30000_50000"
+  },
+  {
+    "schema": "STEER_ACTION_TRIAL_V2",
+    "session": 290675830,
+    "zero_raw_deg": 0.0179999992,
+    "priority": 10,
+    "memory_locked": true,
+    "result": "RECORDED",
+    "direction": 2,
+    "first_us": 30000,
+    "brake_us": 30000,
+    "gap_us": 50000,
+    "before_deg": -1.26663637,
+    "after_deg": -2.89965439,
+    "delta_deg": -1.63301802,
+    "peak_low_deg": -4.39636374,
+    "peak_high_deg": 0.0086363554,
+    "samples": 191,
+    "max_age_ms": 5,
+    "error": "OK",
+    "timings": [
+      {
+        "direction": 2,
+        "duration_us": 30000,
+        "enable_begin_ns": 17024585127284,
+        "enable_end_ns": 17024585153534,
+        "release_begin_ns": 17024615164867,
+        "release_end_ns": 17024615220575
+      },
+      {
+        "direction": 1,
+        "duration_us": 30000,
+        "enable_begin_ns": 17024665320450,
+        "enable_end_ns": 17024665348159,
+        "release_begin_ns": 17024695362409,
+        "release_end_ns": 17024695427159
+      }
+    ],
+    "purpose": "SCREEN",
+    "trial": "/home/linaro/steering_partition_20261031/long_gap/005_SCREEN_right_30000_50000"
+  },
+  {
+    "schema": "STEER_ACTION_TRIAL_V2",
+    "session": 290675830,
+    "zero_raw_deg": 0.0179999992,
+    "priority": 10,
+    "memory_locked": true,
+    "result": "RECORDED",
+    "direction": 1,
+    "first_us": 30000,
+    "brake_us": 25000,
+    "gap_us": 80000,
+    "before_deg": -2.88307142,
+    "after_deg": -4.60814285,
+    "delta_deg": -1.72507143,
+    "peak_low_deg": -1.88292885,
+    "peak_high_deg": 3.69307137,
+    "samples": 193,
+    "max_age_ms": 5,
+    "error": "OK",
+    "timings": [
+      {
+        "direction": 1,
+        "duration_us": 30000,
+        "enable_begin_ns": 17026773509868,
+        "enable_end_ns": 17026773536118,
+        "release_begin_ns": 17026803600243,
+        "release_end_ns": 17026803759493
+      },
+      {
+        "direction": 2,
+        "duration_us": 25000,
+        "enable_begin_ns": 17026883879743,
+        "enable_end_ns": 17026883906577,
+        "release_begin_ns": 17026908923993,
+        "release_end_ns": 17026908995743
+      }
+    ],
+    "purpose": "SCREEN",
+    "trial": "/home/linaro/steering_partition_20261031/long_gap/006_SCREEN_left_25000_80000"
+  },
+  {
+    "schema": "STEER_ACTION_TRIAL_V2",
+    "session": 290675830,
+    "zero_raw_deg": 0.0179999992,
+    "priority": 10,
+    "memory_locked": true,
+    "result": "RECORDED",
+    "direction": 2,
+    "first_us": 30000,
+    "brake_us": 25000,
+    "gap_us": 80000,
+    "before_deg": -4.59192896,
+    "after_deg": -10.6498537,
+    "delta_deg": -6.05792475,
+    "peak_low_deg": -6.27007055,
+    "peak_high_deg": 0.0049290657,
+    "samples": 194,
+    "max_age_ms": 5,
+    "error": "OK",
+    "timings": [
+      {
+        "direction": 2,
+        "duration_us": 30000,
+        "enable_begin_ns": 17029016623411,
+        "enable_end_ns": 17029016654619,
+        "release_begin_ns": 17029046689578,
+        "release_end_ns": 17029046805078
+      },
+      {
+        "direction": 1,
+        "duration_us": 25000,
+        "enable_begin_ns": 17029126935828,
+        "enable_end_ns": 17029126962953,
+        "release_begin_ns": 17029151974828,
+        "release_end_ns": 17029152129119
+      }
+    ],
+    "purpose": "SCREEN",
+    "trial": "/home/linaro/steering_partition_20261031/long_gap/007_SCREEN_right_25000_80000"
+  },
+  {
+    "schema": "STEER_ACTION_TRIAL_V2",
+    "session": 290675830,
+    "zero_raw_deg": 0.0179999992,
+    "priority": 10,
+    "memory_locked": true,
+    "result": "RECORDED",
+    "direction": 1,
+    "first_us": 30000,
+    "brake_us": 0,
+    "gap_us": 2000,
+    "before_deg": -10.6630888,
+    "after_deg": -5.10401821,
+    "delta_deg": 5.55907059,
+    "peak_low_deg": -0.00191116333,
+    "peak_high_deg": 5.76608849,
+    "samples": 183,
+    "max_age_ms": 6,
+    "error": "OK",
+    "timings": [
+      {
+        "direction": 1,
+        "duration_us": 30000,
+        "enable_begin_ns": 17031264453495,
+        "enable_end_ns": 17031264483245,
+        "release_begin_ns": 17031294504204,
+        "release_end_ns": 17031294610370
+      }
+    ],
+    "purpose": "PREPOSITION",
+    "trial": "/home/linaro/steering_partition_20261031/long_gap/008_PREPOSITION_left_0_2000"
+  },
+  {
+    "schema": "STEER_ACTION_TRIAL_V2",
+    "session": 290675830,
+    "zero_raw_deg": 0.0179999992,
+    "priority": 10,
+    "memory_locked": true,
+    "result": "RECORDED",
+    "direction": 1,
+    "first_us": 30000,
+    "brake_us": 0,
+    "gap_us": 2000,
+    "before_deg": -5.10626793,
+    "after_deg": -0.694089293,
+    "delta_deg": 4.41217852,
+    "peak_low_deg": -0.00373220444,
+    "peak_high_deg": 4.55726814,
+    "samples": 184,
+    "max_age_ms": 5,
+    "error": "OK",
+    "timings": [
+      {
+        "direction": 1,
+        "duration_us": 30000,
+        "enable_begin_ns": 17033403027288,
+        "enable_end_ns": 17033403054121,
+        "release_begin_ns": 17033433111830,
+        "release_end_ns": 17033433253288
+      }
+    ],
+    "purpose": "PREPOSITION",
+    "trial": "/home/linaro/steering_partition_20261031/long_gap/009_PREPOSITION_left_0_2000"
+  },
+  {
+    "schema": "STEER_ACTION_TRIAL_V2",
+    "session": 290675830,
+    "zero_raw_deg": 0.0179999992,
+    "priority": 10,
+    "memory_locked": true,
+    "result": "RECORDED",
+    "direction": 1,
+    "first_us": 30000,
+    "brake_us": 30000,
+    "gap_us": 80000,
+    "before_deg": -0.689785719,
+    "after_deg": -1.65607274,
+    "delta_deg": -0.966287017,
+    "peak_low_deg": -1.09421432,
+    "peak_high_deg": 4.0627861,
+    "samples": 194,
+    "max_age_ms": 5,
+    "error": "OK",
+    "timings": [
+      {
+        "direction": 1,
+        "duration_us": 30000,
+        "enable_begin_ns": 17035549079414,
+        "enable_end_ns": 17035549141247,
+        "release_begin_ns": 17035579287039,
+        "release_end_ns": 17035579558581
+      },
+      {
+        "direction": 2,
+        "duration_us": 30000,
+        "enable_begin_ns": 17035659639164,
+        "enable_end_ns": 17035659665414,
+        "release_begin_ns": 17035689701539,
+        "release_end_ns": 17035689768039
+      }
+    ],
+    "purpose": "SCREEN",
+    "trial": "/home/linaro/steering_partition_20261031/long_gap/010_SCREEN_left_30000_80000"
+  },
+  {
+    "schema": "STEER_ACTION_TRIAL_V2",
+    "session": 290675830,
+    "zero_raw_deg": 0.0179999992,
+    "priority": 10,
+    "memory_locked": true,
+    "result": "RECORDED",
+    "direction": 2,
+    "first_us": 30000,
+    "brake_us": 30000,
+    "gap_us": 80000,
+    "before_deg": -1.64612496,
+    "after_deg": -1.61276364,
+    "delta_deg": 0.0333613157,
+    "peak_low_deg": -5.04087543,
+    "peak_high_deg": 0.261124969,
+    "samples": 194,
+    "max_age_ms": 5,
+    "error": "OK",
+    "timings": [
+      {
+        "direction": 2,
+        "duration_us": 30000,
+        "enable_begin_ns": 17037803495040,
+        "enable_end_ns": 17037803525373,
+        "release_begin_ns": 17037833537582,
+        "release_end_ns": 17037833588623
+      },
+      {
+        "direction": 1,
+        "duration_us": 30000,
+        "enable_begin_ns": 17037913692832,
+        "enable_end_ns": 17037913721123,
+        "release_begin_ns": 17037943761915,
+        "release_end_ns": 17037943922040
+      }
+    ],
+    "purpose": "SCREEN",
+    "trial": "/home/linaro/steering_partition_20261031/long_gap/011_SCREEN_right_30000_80000"
+  },
+  {
+    "schema": "STEER_ACTION_TRIAL_V2",
+    "session": 290675830,
+    "zero_raw_deg": 0.0179999992,
+    "priority": 10,
+    "memory_locked": true,
+    "result": "RECORDED",
+    "direction": 1,
+    "first_us": 30000,
+    "brake_us": 25000,
+    "gap_us": 100000,
+    "before_deg": -1.60726786,
+    "after_deg": -3.21703553,
+    "delta_deg": -1.60976768,
+    "peak_low_deg": -1.769732,
+    "peak_high_deg": 4.17626762,
+    "samples": 195,
+    "max_age_ms": 5,
+    "error": "OK",
+    "timings": [
+      {
+        "direction": 1,
+        "duration_us": 30000,
+        "enable_begin_ns": 17040047144666,
+        "enable_end_ns": 17040047177333,
+        "release_begin_ns": 17040077228333,
+        "release_end_ns": 17040077323416
+      },
+      {
+        "direction": 2,
+        "duration_us": 25000,
+        "enable_begin_ns": 17040177432458,
+        "enable_end_ns": 17040177459583,
+        "release_begin_ns": 17040202534458,
+        "release_end_ns": 17040202605041
+      }
+    ],
+    "purpose": "SCREEN",
+    "trial": "/home/linaro/steering_partition_20261031/long_gap/012_SCREEN_left_25000_100000"
+  },
+  {
+    "schema": "STEER_ACTION_TRIAL_V2",
+    "session": 290675830,
+    "zero_raw_deg": 0.0179999992,
+    "priority": 10,
+    "memory_locked": true,
+    "result": "RECORDED",
+    "direction": 2,
+    "first_us": 30000,
+    "brake_us": 25000,
+    "gap_us": 100000,
+    "before_deg": -3.20250893,
+    "after_deg": -3.19400001,
+    "delta_deg": 0.00850892067,
+    "peak_low_deg": -0.0134909153,
+    "peak_high_deg": 0.0105090141,
+    "samples": 196,
+    "max_age_ms": 6,
+    "error": "OK",
+    "timings": [
+      {
+        "direction": 2,
+        "duration_us": 30000,
+        "enable_begin_ns": 17042291235584,
+        "enable_end_ns": 17042291262126,
+        "release_begin_ns": 17042321287459,
+        "release_end_ns": 17042321364751
+      },
+      {
+        "direction": 1,
+        "duration_us": 25000,
+        "enable_begin_ns": 17042421491876,
+        "enable_end_ns": 17042421521042,
+        "release_begin_ns": 17042446534376,
+        "release_end_ns": 17042446617792
+      }
+    ],
+    "purpose": "SCREEN",
+    "trial": "/home/linaro/steering_partition_20261031/long_gap/013_SCREEN_right_25000_100000"
+  },
+  {
+    "schema": "STEER_ACTION_TRIAL_V2",
+    "session": 290675830,
+    "zero_raw_deg": 0.0179999992,
+    "priority": 10,
+    "memory_locked": true,
+    "result": "RECORDED",
+    "direction": 1,
+    "first_us": 30000,
+    "brake_us": 0,
+    "gap_us": 2000,
+    "before_deg": -3.19400001,
+    "after_deg": 3.39509106,
+    "delta_deg": 6.5890913,
+    "peak_low_deg": 0,
+    "peak_high_deg": 6.82900047,
+    "samples": 184,
+    "max_age_ms": 5,
+    "error": "OK",
+    "timings": [
+      {
+        "direction": 1,
+        "duration_us": 30000,
+        "enable_begin_ns": 17044537204252,
+        "enable_end_ns": 17044537234002,
+        "release_begin_ns": 17044567258168,
+        "release_end_ns": 17044567339543
+      }
+    ],
+    "purpose": "PREPOSITION",
+    "trial": "/home/linaro/steering_partition_20261031/long_gap/014_PREPOSITION_left_0_2000"
+  },
+  {
+    "schema": "STEER_ACTION_TRIAL_V2",
+    "session": 290675830,
+    "zero_raw_deg": 0.0179999992,
+    "priority": 10,
+    "memory_locked": true,
+    "result": "RECORDED",
+    "direction": 1,
+    "first_us": 30000,
+    "brake_us": 30000,
+    "gap_us": 100000,
+    "before_deg": 3.39896369,
+    "after_deg": 2.61975002,
+    "delta_deg": -0.779213667,
+    "peak_low_deg": -0.828963518,
+    "peak_high_deg": 4.04303646,
+    "samples": 196,
+    "max_age_ms": 5,
+    "error": "OK",
+    "timings": [
+      {
+        "direction": 1,
+        "duration_us": 30000,
+        "enable_begin_ns": 17046684283336,
+        "enable_end_ns": 17046684313669,
+        "release_begin_ns": 17046714358836,
+        "release_end_ns": 17046714481628
+      },
+      {
+        "direction": 2,
+        "duration_us": 30000,
+        "enable_begin_ns": 17046814586586,
+        "enable_end_ns": 17046814615753,
+        "release_begin_ns": 17046844619211,
+        "release_end_ns": 17046844931878
+      }
+    ],
+    "purpose": "SCREEN",
+    "trial": "/home/linaro/steering_partition_20261031/long_gap/015_SCREEN_left_30000_100000"
+  },
+  {
+    "schema": "STEER_ACTION_TRIAL_V2",
+    "session": 290675830,
+    "zero_raw_deg": 0.0179999992,
+    "priority": 10,
+    "memory_locked": true,
+    "result": "RECORDED",
+    "direction": 2,
+    "first_us": 30000,
+    "brake_us": 30000,
+    "gap_us": 100000,
+    "before_deg": 2.61598229,
+    "after_deg": 1.02945459,
+    "delta_deg": -1.58652771,
+    "peak_low_deg": -5.93598223,
+    "peak_high_deg": 0.00301790237,
+    "samples": 196,
+    "max_age_ms": 5,
+    "error": "OK",
+    "timings": [
+      {
+        "direction": 2,
+        "duration_us": 30000,
+        "enable_begin_ns": 17048936164087,
+        "enable_end_ns": 17048936190920,
+        "release_begin_ns": 17048966220629,
+        "release_end_ns": 17048966364129
+      },
+      {
+        "direction": 1,
+        "duration_us": 30000,
+        "enable_begin_ns": 17049066462087,
+        "enable_end_ns": 17049066488920,
+        "release_begin_ns": 17049096505504,
+        "release_end_ns": 17049096566754
+      }
+    ],
+    "purpose": "SCREEN",
+    "trial": "/home/linaro/steering_partition_20261031/long_gap/016_SCREEN_right_30000_100000"
+  }
+]

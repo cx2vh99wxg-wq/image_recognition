@@ -1,0 +1,16 @@
+FSPI Configuration:
+  Device: /dev/spidev4.0
+  Speed: 24000000 Hz (24000 KHz)
+FSPI initialized successfully
+  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes
+[STEER_INIT] table=/home/linaro/steering_mount_20261031/fast_candidate.table reference_session=290675832 zero_raw=0.000 max_pulse_us=200000 priority=10 target_tolerance=3.0 center_tolerance=3.0; awaiting fresh matching session
+LANE_BENCH input=SIMULATED_LANE_INPUT feedback=REAL_M_UDP actuator=REAL_FSPI perception_and_hmi_unchanged=1
+[STEER_REFERENCE] explicitly confirmed current session; physical zero offset bound
+[STEER_LANE] frame=1 type=0 confidence=90 road_angle=0 target_deg=0.000 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=11.909 target=0.000 error=-11.909 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=200000 current_deg=11.909 target_deg=0.000 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=200000 actual_us=194524.167 early_release=1
+[STEER_RESPONSE] pulse=1 before_deg=11.909 after_deg=0.753 delta_deg=-11.156 error_deg=-0.753
+[STEER_STATE] state=2 name=SETTLED angle=0.753 target=0.000 error=-0.753 result=OK
+GOAL_RESULT status=2 target_deg=0.000 measured_deg=0.753 error_deg=-0.753 tolerance_deg=3.0 result=OK state_name=SETTLED
+FSPI resources cleaned up

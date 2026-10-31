@@ -1,0 +1,9 @@
+{
+  "schema": "STEER_PHYSICAL_REFERENCE_V1",
+  "session": 290675832,
+  "zero_raw_deg": 0.0,
+  "user_physical_center_confirmed": true,
+  "user_fixed_chassis_confirmed": true,
+  "samples": 100,
+  "mechanical_ZERO_VALID_granted": false
+}

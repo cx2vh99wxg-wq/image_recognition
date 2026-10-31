@@ -1,0 +1,5 @@
+{
+  "status": "NATIVE_CANDIDATE_BUILD_TESTS_PASS",
+  "source_manifest_sha256": "9f9829b5b900b611cc5a43f19d6412c0903c8ba7ab61f7f36a8705eeed9796cd",
+  "additional_check": "Exact-nanosecond Python calibration/review regressions PASS; native C and prior active-log regression unchanged"
+}

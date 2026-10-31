@@ -15,6 +15,8 @@ int fspi_init(void);
 /* SMDT会自动添加00前导；用户发送地址高/地址低/数据三字节。
  * 未初始化或最多15次完整写事务均失败时返回-1。 */
 int fspi_write_data(uint16_t addr, uint8_t data);
+/* Deadline-sensitive direction start: one complete 3-byte transaction, no retry sleep. */
+int fspi_write_direction_once(uint16_t addr,uint8_t data);
 
 /* 地址0直接接收HMI状态（SMDT自动添加80前导）。非零地址沿用旧接口，
  * 不提供真实方向寄存器回读保证。重复读取并选取出现频率最高的值；

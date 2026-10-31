@@ -1,0 +1,12 @@
+{
+  "repeat": 1,
+  "target_deg": 0,
+  "tolerance_deg": 3,
+  "before_deg": 13.026499999999999,
+  "after_deg": 1.049,
+  "error_deg": -1.049,
+  "controller_status": "SETTLED",
+  "exit_code": 0,
+  "elapsed_s": 2.0426317929996003,
+  "pass": true
+}

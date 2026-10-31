@@ -1,0 +1,93 @@
+[
+  {
+    "index": 1,
+    "target_deg": 5,
+    "returncode": 0,
+    "goal": [
+      "2",
+      "5.000",
+      "4.738",
+      "0.262",
+      "OK"
+    ],
+    "log": "C_goal_202610310007_01.log"
+  },
+  {
+    "index": 2,
+    "target_deg": -5,
+    "returncode": 1,
+    "goal": [
+      "6",
+      "-5.000",
+      "-7.205",
+      "2.205",
+      "NOT_IMPLEMENTED_OR_NOT_READY"
+    ],
+    "log": "C_goal_202610310007_02.log"
+  },
+  {
+    "index": 3,
+    "target_deg": 0,
+    "returncode": 1,
+    "goal": [
+      "6",
+      "0.000",
+      "-1.382",
+      "1.382",
+      "NOT_IMPLEMENTED_OR_NOT_READY"
+    ],
+    "log": "C_goal_202610310007_03.log"
+  },
+  {
+    "index": 4,
+    "target_deg": 10,
+    "returncode": 0,
+    "goal": [
+      "2",
+      "10.000",
+      "9.009",
+      "0.991",
+      "OK"
+    ],
+    "log": "C_goal_202610310007_04.log"
+  },
+  {
+    "index": 5,
+    "target_deg": -10,
+    "returncode": 1,
+    "goal": [
+      "6",
+      "-10.000",
+      "-2.918",
+      "-7.082",
+      "NOT_IMPLEMENTED_OR_NOT_READY"
+    ],
+    "log": "C_goal_202610310007_05.log"
+  },
+  {
+    "index": 6,
+    "target_deg": 15,
+    "returncode": 1,
+    "goal": [
+      "6",
+      "15.000",
+      "11.108",
+      "3.892",
+      "NOT_IMPLEMENTED_OR_NOT_READY"
+    ],
+    "log": "C_goal_202610310007_06.log"
+  },
+  {
+    "index": 7,
+    "target_deg": -15,
+    "returncode": 1,
+    "goal": [
+      "6",
+      "-15.000",
+      "11.104",
+      "-26.104",
+      "NOT_IMPLEMENTED_OR_NOT_READY"
+    ],
+    "log": "C_goal_202610310007_07.log"
+  }
+]

@@ -1,0 +1,210 @@
+{
+  "batch_state": "PARTIAL_COVERAGE",
+  "session": 290675830,
+  "attempted_trials": 108,
+  "accepted_trials": 107,
+  "moving_trials": 55,
+  "release_verified": true,
+  "coverage_skips": [],
+  "error": null,
+  "software_pulse_overrun_ms_max": 2.0002920000000017,
+  "accepted_time_range_ms": [
+    10.0,
+    40.0
+  ],
+  "observed_stable_angle_range_deg": [
+    -12.598,
+    11.103
+  ],
+  "max_accepted_overrun_ms": 1.5962080000000007,
+  "reviewed_candidate_not_independently_retested": true,
+  "road_closed_loop_enabled": false,
+  "all_lineage_skips": [
+    {
+      "direction": "right",
+      "us": 18500,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -7.462
+    },
+    {
+      "direction": "right",
+      "us": 19000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -9.323
+    },
+    {
+      "direction": "right",
+      "us": 25000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -0.796
+    },
+    {
+      "direction": "right",
+      "us": 30000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.482
+    },
+    {
+      "direction": "right",
+      "us": 30000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.482
+    },
+    {
+      "direction": "left",
+      "us": 30000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "right",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4770000000000003
+    },
+    {
+      "direction": "left",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "right",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "left",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "right",
+      "us": 50000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "left",
+      "us": 50000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "right",
+      "us": 50000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "left",
+      "us": 50000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "right",
+      "us": 60000,
+      "reason": "UNMEASURED_EXPLORATION_BOUND_TOO_LARGE"
+    },
+    {
+      "direction": "left",
+      "us": 60000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "right",
+      "us": 60000,
+      "reason": "UNMEASURED_EXPLORATION_BOUND_TOO_LARGE"
+    },
+    {
+      "direction": "left",
+      "us": 60000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "left",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -2.2079999999999997
+    },
+    {
+      "direction": "left",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -2.2079999999999997
+    },
+    {
+      "direction": "right",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 7.088
+    },
+    {
+      "direction": "right",
+      "us": 50000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 10.347999999999999
+    },
+    {
+      "direction": "left",
+      "us": 50000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -0.915
+    },
+    {
+      "direction": "left",
+      "us": 50000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -0.915
+    },
+    {
+      "direction": "right",
+      "us": 50000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 8.177
+    },
+    {
+      "direction": "right",
+      "us": 60000,
+      "reason": "UNMEASURED_EXPLORATION_BOUND_TOO_LARGE"
+    },
+    {
+      "direction": "left",
+      "us": 60000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -5.732
+    },
+    {
+      "direction": "left",
+      "us": 60000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -5.732
+    },
+    {
+      "direction": "right",
+      "us": 60000,
+      "reason": "UNMEASURED_EXPLORATION_BOUND_TOO_LARGE"
+    },
+    {
+      "direction": "right",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 9.880999999999998
+    },
+    {
+      "direction": "right",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 3.0060000000000002
+    }
+  ],
+  "unmeasured_requested_durations_us": [
+    50000,
+    60000
+  ]
+}

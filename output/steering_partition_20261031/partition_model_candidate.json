@@ -1,0 +1,893 @@
+{
+  "schema": "STEER_PARTITION_RESPONSE_V2",
+  "reference": [
+    290675830,
+    0.0179999992
+  ],
+  "partition_width_deg": 3.0,
+  "cells": [
+    {
+      "zone": -4,
+      "zone_low_deg": -13.5,
+      "zone_high_deg": -10.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -10.6630888,
+      "start_max_deg": -10.6630888,
+      "mean_deg": 5.55907059,
+      "stddev_deg": null,
+      "responses_deg": [
+        5.55907059
+      ],
+      "peak_low_deg": -0.00191116333,
+      "peak_high_deg": 5.76608849
+    },
+    {
+      "zone": -3,
+      "zone_low_deg": -10.5,
+      "zone_high_deg": -7.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -8.63201714,
+      "start_max_deg": -8.63201714,
+      "mean_deg": 5.37823153,
+      "stddev_deg": null,
+      "responses_deg": [
+        5.37823153
+      ],
+      "peak_low_deg": -0.00598239899,
+      "peak_high_deg": 5.58701706
+    },
+    {
+      "zone": -2,
+      "zone_low_deg": -7.5,
+      "zone_high_deg": -4.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 4,
+      "start_min_deg": -6.40787506,
+      "start_max_deg": -4.98794651,
+      "mean_deg": 4.714640617500001,
+      "stddev_deg": 0.39125750235786066,
+      "responses_deg": [
+        4.38408947,
+        4.41217852,
+        4.86063766,
+        5.20165682
+      ],
+      "peak_low_deg": -0.0061249733,
+      "peak_high_deg": 5.39587498
+    },
+    {
+      "zone": -2,
+      "zone_low_deg": -7.5,
+      "zone_high_deg": -4.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 15000,
+      "gap_us": 10000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -5.20494652,
+      "start_max_deg": -5.20494652,
+      "mean_deg": 7.57253599,
+      "stddev_deg": null,
+      "responses_deg": [
+        7.57253599
+      ],
+      "peak_low_deg": -0.0080537796,
+      "peak_high_deg": 7.85994673
+    },
+    {
+      "zone": -2,
+      "zone_low_deg": -7.5,
+      "zone_high_deg": -4.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 17500,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -5.37751818,
+      "start_max_deg": -5.37751818,
+      "mean_deg": 6.62366104,
+      "stddev_deg": null,
+      "responses_deg": [
+        6.62366104
+      ],
+      "peak_low_deg": -0.00348186493,
+      "peak_high_deg": 6.88351822
+    },
+    {
+      "zone": -2,
+      "zone_low_deg": -7.5,
+      "zone_high_deg": -4.5,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 25000,
+      "gap_us": 80000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -4.59192896,
+      "start_max_deg": -4.59192896,
+      "mean_deg": -6.05792475,
+      "stddev_deg": null,
+      "responses_deg": [
+        -6.05792475
+      ],
+      "peak_low_deg": -6.27007055,
+      "peak_high_deg": 0.0049290657
+    },
+    {
+      "zone": -1,
+      "zone_low_deg": -4.5,
+      "zone_high_deg": -1.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 2,
+      "start_min_deg": -3.19400001,
+      "start_max_deg": -2.43105435,
+      "mean_deg": 5.435718295,
+      "stddev_deg": 1.6311157461460113,
+      "responses_deg": [
+        6.5890913,
+        4.28234529
+      ],
+      "peak_low_deg": -0.00294542313,
+      "peak_high_deg": 6.82900047
+    },
+    {
+      "zone": -1,
+      "zone_low_deg": -4.5,
+      "zone_high_deg": -1.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 10000,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -2.86201787,
+      "start_max_deg": -2.86201787,
+      "mean_deg": 6.15528584,
+      "stddev_deg": null,
+      "responses_deg": [
+        6.15528584
+      ],
+      "peak_low_deg": -0.00198197365,
+      "peak_high_deg": 6.38501787
+    },
+    {
+      "zone": -1,
+      "zone_low_deg": -4.5,
+      "zone_high_deg": -1.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 10000,
+      "gap_us": 10000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -3.63580346,
+      "start_max_deg": -3.63580346,
+      "mean_deg": 9.82585812,
+      "stddev_deg": null,
+      "responses_deg": [
+        9.82585812
+      ],
+      "peak_low_deg": -0.00319647789,
+      "peak_high_deg": 10.1168032
+    },
+    {
+      "zone": -1,
+      "zone_low_deg": -4.5,
+      "zone_high_deg": -1.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 15000,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -3.49379992,
+      "start_max_deg": -3.49379992,
+      "mean_deg": 7.0950861,
+      "stddev_deg": null,
+      "responses_deg": [
+        7.0950861
+      ],
+      "peak_low_deg": -0.00219988823,
+      "peak_high_deg": 7.32980013
+    },
+    {
+      "zone": -1,
+      "zone_low_deg": -4.5,
+      "zone_high_deg": -1.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 17500,
+      "gap_us": 10000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -3.2506249,
+      "start_max_deg": -3.2506249,
+      "mean_deg": 3.73655224,
+      "stddev_deg": null,
+      "responses_deg": [
+        3.73655224
+      ],
+      "peak_low_deg": -0.00237488747,
+      "peak_high_deg": 3.85862494
+    },
+    {
+      "zone": -1,
+      "zone_low_deg": -4.5,
+      "zone_high_deg": -1.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 25000,
+      "gap_us": 80000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -2.88307142,
+      "start_max_deg": -2.88307142,
+      "mean_deg": -1.72507143,
+      "stddev_deg": null,
+      "responses_deg": [
+        -1.72507143
+      ],
+      "peak_low_deg": -1.88292885,
+      "peak_high_deg": 3.69307137
+    },
+    {
+      "zone": -1,
+      "zone_low_deg": -4.5,
+      "zone_high_deg": -1.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 25000,
+      "gap_us": 100000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -1.60726786,
+      "start_max_deg": -1.60726786,
+      "mean_deg": -1.60976768,
+      "stddev_deg": null,
+      "responses_deg": [
+        -1.60976768
+      ],
+      "peak_low_deg": -1.769732,
+      "peak_high_deg": 4.17626762
+    },
+    {
+      "zone": -1,
+      "zone_low_deg": -4.5,
+      "zone_high_deg": -1.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 30000,
+      "gap_us": 50000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -2.14212704,
+      "start_max_deg": -2.14212704,
+      "mean_deg": 0.874037743,
+      "stddev_deg": null,
+      "responses_deg": [
+        0.874037743
+      ],
+      "peak_low_deg": -0.00587296486,
+      "peak_high_deg": 4.11612701
+    },
+    {
+      "zone": -1,
+      "zone_low_deg": -4.5,
+      "zone_high_deg": -1.5,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 25000,
+      "gap_us": 100000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -3.20250893,
+      "start_max_deg": -3.20250893,
+      "mean_deg": 0.00850892067,
+      "stddev_deg": null,
+      "responses_deg": [
+        0.00850892067
+      ],
+      "peak_low_deg": -0.0134909153,
+      "peak_high_deg": 0.0105090141
+    },
+    {
+      "zone": -1,
+      "zone_low_deg": -4.5,
+      "zone_high_deg": -1.5,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 30000,
+      "gap_us": 80000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -1.64612496,
+      "start_max_deg": -1.64612496,
+      "mean_deg": 0.0333613157,
+      "stddev_deg": null,
+      "responses_deg": [
+        0.0333613157
+      ],
+      "peak_low_deg": -5.04087543,
+      "peak_high_deg": 0.261124969
+    },
+    {
+      "zone": 0,
+      "zone_low_deg": -1.5,
+      "zone_high_deg": 1.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -1.10000002,
+      "start_max_deg": -1.10000002,
+      "mean_deg": 3.96929121,
+      "stddev_deg": null,
+      "responses_deg": [
+        3.96929121
+      ],
+      "peak_low_deg": 0,
+      "peak_high_deg": 4.15199995
+    },
+    {
+      "zone": 0,
+      "zone_low_deg": -1.5,
+      "zone_high_deg": 1.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 20000,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -0.132196426,
+      "start_max_deg": -0.132196426,
+      "mean_deg": 8.76101494,
+      "stddev_deg": null,
+      "responses_deg": [
+        8.76101494
+      ],
+      "peak_low_deg": -0.00280356407,
+      "peak_high_deg": 9.07219696
+    },
+    {
+      "zone": 0,
+      "zone_low_deg": -1.5,
+      "zone_high_deg": 1.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 20000,
+      "gap_us": 10000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -1.1985091,
+      "start_max_deg": -1.1985091,
+      "mean_deg": 10.0427055,
+      "stddev_deg": null,
+      "responses_deg": [
+        10.0427055
+      ],
+      "peak_low_deg": -0.00349092484,
+      "peak_high_deg": 10.3565092
+    },
+    {
+      "zone": 0,
+      "zone_low_deg": -1.5,
+      "zone_high_deg": 1.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 25000,
+      "gap_us": 50000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -1.1748929,
+      "start_max_deg": -1.1748929,
+      "mean_deg": 0.185107172,
+      "stddev_deg": null,
+      "responses_deg": [
+        0.185107172
+      ],
+      "peak_low_deg": -0.00310707092,
+      "peak_high_deg": 3.75289297
+    },
+    {
+      "zone": 0,
+      "zone_low_deg": -1.5,
+      "zone_high_deg": 1.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 30000,
+      "gap_us": 80000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -0.689785719,
+      "start_max_deg": -0.689785719,
+      "mean_deg": -0.966287017,
+      "stddev_deg": null,
+      "responses_deg": [
+        -0.966287017
+      ],
+      "peak_low_deg": -1.09421432,
+      "peak_high_deg": 4.0627861
+    },
+    {
+      "zone": 0,
+      "zone_low_deg": -1.5,
+      "zone_high_deg": 1.5,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 17500,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": 1.24437499,
+      "start_max_deg": 1.24437499,
+      "mean_deg": -6.22737503,
+      "stddev_deg": null,
+      "responses_deg": [
+        -6.22737503
+      ],
+      "peak_low_deg": -6.33437538,
+      "peak_high_deg": 0.00662505627
+    },
+    {
+      "zone": 0,
+      "zone_low_deg": -1.5,
+      "zone_high_deg": 1.5,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 17500,
+      "gap_us": 10000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": 0.492446423,
+      "start_max_deg": 0.492446423,
+      "mean_deg": -6.90177393,
+      "stddev_deg": null,
+      "responses_deg": [
+        -6.90177393
+      ],
+      "peak_low_deg": -7.19044638,
+      "peak_high_deg": 0.00355356932
+    },
+    {
+      "zone": 0,
+      "zone_low_deg": -1.5,
+      "zone_high_deg": 1.5,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 25000,
+      "gap_us": 50000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -0.990625024,
+      "start_max_deg": -0.990625024,
+      "mean_deg": -1.14324987,
+      "stddev_deg": null,
+      "responses_deg": [
+        -1.14324987
+      ],
+      "peak_low_deg": -3.77537537,
+      "peak_high_deg": 0.00462502241
+    },
+    {
+      "zone": 0,
+      "zone_low_deg": -1.5,
+      "zone_high_deg": 1.5,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 30000,
+      "gap_us": 50000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -1.26663637,
+      "start_max_deg": -1.26663637,
+      "mean_deg": -1.63301802,
+      "stddev_deg": null,
+      "responses_deg": [
+        -1.63301802
+      ],
+      "peak_low_deg": -4.39636374,
+      "peak_high_deg": 0.0086363554
+    },
+    {
+      "zone": 1,
+      "zone_low_deg": 1.5,
+      "zone_high_deg": 4.5,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 30000,
+      "gap_us": 100000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": 3.39896369,
+      "start_max_deg": 3.39896369,
+      "mean_deg": -0.779213667,
+      "stddev_deg": null,
+      "responses_deg": [
+        -0.779213667
+      ],
+      "peak_low_deg": -0.828963518,
+      "peak_high_deg": 4.04303646
+    },
+    {
+      "zone": 1,
+      "zone_low_deg": 1.5,
+      "zone_high_deg": 4.5,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 2,
+      "start_min_deg": 1.84909093,
+      "start_max_deg": 2.88553596,
+      "mean_deg": -5.0104043449999995,
+      "stddev_deg": 0.43154697864436925,
+      "responses_deg": [
+        -5.31555414,
+        -4.70525455
+      ],
+      "peak_low_deg": -5.42153549,
+      "peak_high_deg": 0.00446414948
+    },
+    {
+      "zone": 1,
+      "zone_low_deg": 1.5,
+      "zone_high_deg": 4.5,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 10000,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": 3.29385471,
+      "start_max_deg": 3.29385471,
+      "mean_deg": -6.77998161,
+      "stddev_deg": null,
+      "responses_deg": [
+        -6.77998161
+      ],
+      "peak_low_deg": -6.96585464,
+      "peak_high_deg": 0.00314545631
+    },
+    {
+      "zone": 1,
+      "zone_low_deg": 1.5,
+      "zone_high_deg": 4.5,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 15000,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": 3.59233928,
+      "start_max_deg": 3.59233928,
+      "mean_deg": -8.94937515,
+      "stddev_deg": null,
+      "responses_deg": [
+        -8.94937515
+      ],
+      "peak_low_deg": -9.42033958,
+      "peak_high_deg": 0.00266075134
+    },
+    {
+      "zone": 1,
+      "zone_low_deg": 1.5,
+      "zone_high_deg": 4.5,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 15000,
+      "gap_us": 10000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": 2.37162519,
+      "start_max_deg": 2.37162519,
+      "mean_deg": -11.0002851,
+      "stddev_deg": null,
+      "responses_deg": [
+        -11.0002851
+      ],
+      "peak_low_deg": -12.1036243,
+      "peak_high_deg": 0.00337481499
+    },
+    {
+      "zone": 1,
+      "zone_low_deg": 1.5,
+      "zone_high_deg": 4.5,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 20000,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": 3.49552751,
+      "start_max_deg": 3.49552751,
+      "mean_deg": -7.13539982,
+      "stddev_deg": null,
+      "responses_deg": [
+        -7.13539982
+      ],
+      "peak_low_deg": -7.25852728,
+      "peak_high_deg": 0.00247263908
+    },
+    {
+      "zone": 1,
+      "zone_low_deg": 1.5,
+      "zone_high_deg": 4.5,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 30000,
+      "gap_us": 100000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": 2.61598229,
+      "start_max_deg": 2.61598229,
+      "mean_deg": -1.58652771,
+      "stddev_deg": null,
+      "responses_deg": [
+        -1.58652771
+      ],
+      "peak_low_deg": -5.93598223,
+      "peak_high_deg": 0.00301790237
+    },
+    {
+      "zone": 2,
+      "zone_low_deg": 4.5,
+      "zone_high_deg": 7.5,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 10000,
+      "gap_us": 10000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": 6.18966055,
+      "start_max_deg": 6.18966055,
+      "mean_deg": -11.3993511,
+      "stddev_deg": null,
+      "responses_deg": [
+        -11.3993511
+      ],
+      "peak_low_deg": -11.9246607,
+      "peak_high_deg": 0.00633955002
+    },
+    {
+      "zone": 2,
+      "zone_low_deg": 4.5,
+      "zone_high_deg": 7.5,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 20000,
+      "gap_us": 10000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": 5.36985683,
+      "start_max_deg": 5.36985683,
+      "mean_deg": -10.9438038,
+      "stddev_deg": null,
+      "responses_deg": [
+        -10.9438038
+      ],
+      "peak_low_deg": -11.5908566,
+      "peak_high_deg": 0.00714302063
+    },
+    {
+      "zone": 3,
+      "zone_low_deg": 7.5,
+      "zone_high_deg": 10.5,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 2,
+      "start_min_deg": 8.6235714,
+      "start_max_deg": 8.85373211,
+      "mean_deg": -4.3113482,
+      "stddev_deg": 1.1551470042888898,
+      "responses_deg": [
+        -5.12816048,
+        -3.49453592
+      ],
+      "peak_low_deg": -5.24257135,
+      "peak_high_deg": 0.00726795197
+    }
+  ],
+  "sources": [
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\long_gap\\001_PREPOSITION_left_0_2000.json",
+      "sha256": "b45473c6e5bf3ba6b99e15513a8a3abd3047ca7124b945ab0d82b2929e5f8b15"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\long_gap\\002_SCREEN_left_25000_50000.json",
+      "sha256": "4ad4847059e04ded2b315b04ec67e8b1aab3dc50d899db5051db6e5cf0233c08"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\long_gap\\003_SCREEN_right_25000_50000.json",
+      "sha256": "b79c877641bddd74509159c5779cd1b024ecc78153259608c229fc46a7f50b52"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\long_gap\\004_SCREEN_left_30000_50000.json",
+      "sha256": "ad3fc5607127285d4b1e99256b0929b93ecf9bbaa4dd19d4a4eb12ce78a4a6b3"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\long_gap\\005_SCREEN_right_30000_50000.json",
+      "sha256": "017a94949347f5387c8c743eb754102c46070652adfb18d98880a520a4aa78e5"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\long_gap\\006_SCREEN_left_25000_80000.json",
+      "sha256": "dec5d138483db7c650171a67b89c9e010ff9dbac0bc92a917da9cfeba9b8677f"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\long_gap\\007_SCREEN_right_25000_80000.json",
+      "sha256": "0367a988dbbec7cf9657ba499f6615b2c472d3116832e9afa3a603c133a2d8f5"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\long_gap\\008_PREPOSITION_left_0_2000.json",
+      "sha256": "cf3105ed5bcc8fd7231643d03a0fbdce8818e10f17f0fbbc921b87026096b0f0"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\long_gap\\009_PREPOSITION_left_0_2000.json",
+      "sha256": "251ba34de01c3a56eb8dd47173f4120096e650ebcb2dbb788cd0fd34ac4bce35"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\long_gap\\010_SCREEN_left_30000_80000.json",
+      "sha256": "e79558ec7b0f604900d545f11b71a55186fca8295d70f54d8f67656b9443ba0d"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\long_gap\\011_SCREEN_right_30000_80000.json",
+      "sha256": "412614c141f3c3d84dcfd18562c0ac44d5c28eafc35331f9a07a1c5486360f73"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\long_gap\\012_SCREEN_left_25000_100000.json",
+      "sha256": "83739aa4c8c1d88a6a124e20f1b927cbd63c9fa71eecb7021165055c55a6080f"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\long_gap\\013_SCREEN_right_25000_100000.json",
+      "sha256": "d281b1b9793cef37b2590afb907e33c365057eaddd14bb8a719a51ff0b6a4cf2"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\long_gap\\014_PREPOSITION_left_0_2000.json",
+      "sha256": "7c04a100ad760414d48c6f29ca6d9f9423fefdec77355033f5d4812ce54a6376"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\long_gap\\015_SCREEN_left_30000_100000.json",
+      "sha256": "c36c9bc08b7251823af1b967ff29318bca0ce9b7c0eaf0958ccf1f78a0c912d3"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\long_gap\\016_SCREEN_right_30000_100000.json",
+      "sha256": "817a8c67fb5242e301c71273f52b04a44c97af4a0fce0719d75bf0102eb40df6"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\001_SCREEN_left_0_2000.json",
+      "sha256": "b1f538ec5c33a18864e053acccf1ee9f09a8a0f5d3f471e20438c39b0b4431a9"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\002_SCREEN_right_0_2000.json",
+      "sha256": "3986734f1f99e467ee2f32829cf630a2131b71d4e303e2368e683bddc8194780"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\003_SCREEN_left_0_2000.json",
+      "sha256": "0c30080ed79891665eb599e3af5d14799bbdc018efb6de272c11685455201541"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\004_SCREEN_right_0_2000.json",
+      "sha256": "f126c7e6df5da1f76f969e0f1a4b624534f988d7cf69051736da4a9821c10cc5"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\005_SCREEN_left_10000_2000.json",
+      "sha256": "4e9c34fd7bd45385a0234734f0cfb07035f77d5deb031fdf683c6866d3dbbec2"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\006_SCREEN_right_10000_2000.json",
+      "sha256": "ef3e00a65040b5df1b6d0fcdcef09dca1819227f7ec0e223e68e67d0190a8ca5"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\007_SCREEN_left_15000_2000.json",
+      "sha256": "17ac5c55b21927112dd645158ce7719dda6eb0439fafbefc5c775580b5806929"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\008_SCREEN_right_15000_2000.json",
+      "sha256": "16e301cd5652f28f81ed57ee771baa2fbb4564897296c30bce24987f7bc153ae"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\009_SCREEN_left_17500_2000.json",
+      "sha256": "0fd24c9c4456ee6a617896bd987c75df3ef15508558d724506bbe3e03d53fa85"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\010_SCREEN_right_17500_2000.json",
+      "sha256": "7eade39c70c6672979d4d80cb586cdb265cbaaa7e3776f346f58cf75bfb66f46"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\011_PREPOSITION_left_0_2000.json",
+      "sha256": "b6436cfe1537ebdb39ee6ed5ec2b7b20e94fde1fabaf0e8cd5dc2761d7546cf2"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\012_SCREEN_left_20000_2000.json",
+      "sha256": "24040cf7d3841aec57a7ccfed60db83215d9a1a6d8ec0491b2212749bac69d70"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\013_PREPOSITION_right_0_2000.json",
+      "sha256": "086b924e0525614dd2cc61c295b65a7b421ed0f2dc462616449aa52ab585a869"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\014_SCREEN_right_20000_2000.json",
+      "sha256": "d1d617ef4f32cfa8273bb9e422a398a6dfb5855ec7fbf516cea267b0551b0398"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\015_SCREEN_left_10000_10000.json",
+      "sha256": "041f9c2d7dcb5753786ced2e2515dd051f54b2885b3e0adb1d5566aaef68200d"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\016_SCREEN_right_10000_10000.json",
+      "sha256": "bcf3f026e77e5fd9dc29f6066d4de02b3e9799d57ae816411f689088fc70b882"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\017_SCREEN_left_15000_10000.json",
+      "sha256": "dfe852fe075a9b542e072bb515428538d782f881a3bf4232878d45052a66954f"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\018_SCREEN_right_15000_10000.json",
+      "sha256": "c7fa10dfad3aa79c7e7ad8e17edee6fb7e1a75c8f9fe692eba7ebec42ea67488"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\019_PREPOSITION_left_0_2000.json",
+      "sha256": "998888c2e535d1b64487570fe886b754e9534b68755b2839b648cc4536b5bcbe"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\020_SCREEN_left_17500_10000.json",
+      "sha256": "c39f9c3b2fe8efd385086ed86050fda779b2cbdb1374576da2bede6cef590035"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\021_SCREEN_right_17500_10000.json",
+      "sha256": "c20821b9c66da85d2b20a51f3cc92d64dbb5213b8c62f71629a44b2a79f5743b"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\022_PREPOSITION_left_0_2000.json",
+      "sha256": "d1372792ab4c58ecde1d384c53cbf96a9fd6646efdd31897f1ab42e47fb1a6b5"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\023_SCREEN_left_20000_10000.json",
+      "sha256": "2c5799a35dff2e68f880571a7a113825d579c9370587b141b6b68f1744194dc8"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\024_PREPOSITION_right_0_2000.json",
+      "sha256": "d81b7fdfc7c7e72b6ef286e48c8ed2532a280286e24d08b52f65da42ba041208"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen\\025_SCREEN_right_20000_10000.json",
+      "sha256": "9b1bba47f5459d7f038d643cef7664f5967a89035c400c1c9970c5616f1b43de"
+    }
+  ],
+  "rejected": [
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\long_gap_progress.json",
+      "reason": "unrecorded or wrong action schema"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\actual\\screen_progress.json",
+      "reason": "unrecorded or wrong action schema"
+    }
+  ],
+  "qualified_for_road_control": false
+}

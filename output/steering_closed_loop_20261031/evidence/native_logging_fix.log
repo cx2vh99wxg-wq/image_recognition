@@ -1,0 +1,12 @@
+BUILT candidate/S/steering/build/tests/test_runtime_integration
+.
+----------------------------------------------------------------------
+Ran 1 test in 1.638s
+
+OK
+BUILT candidate/S/steering/actuator/build/steering_goal_fspi
+gcc -Wall -O2 -std=c11 -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts -c ../steering/controller/steering_runtime.c -o build/controller_steering_runtime.o
+链接应用程序: build/vehicle_control
+gcc build/fspi_module.o build/main.o build/shared_memory.o build/controller_steering_controller.o build/controller_steering_response.o build/controller_steering_keepalive.o build/controller_steering_runtime.o build/feedback_steering_feedback.o build/feedback_feedback_tracker.o build/steering_actuator.o build/steering_wire.o -lm -lpthread -lrt -o build/vehicle_control
+应用程序编译完成: build/vehicle_control
+NATIVE_ACTIVE_LOGGING_FIX_PASS

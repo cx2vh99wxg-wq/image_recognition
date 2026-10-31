@@ -1,0 +1,1165 @@
+{
+  "schema": "STEER_AUTO_CALIBRATION_V1",
+  "run": "202610310006",
+  "reference_session": 290675830,
+  "zero_raw_deg": 0.018,
+  "user_fixed_chassis_confirmed": true,
+  "user_physical_zero_confirmed": true,
+  "simulation_only": false,
+  "angle_limit_deg": 18,
+  "request_limit_us": 60000,
+  "trials": [
+    {
+      "id": "A202610310006_001_left_10000us",
+      "direction": "left",
+      "requested_us": 10000,
+      "before_deg": 0.0,
+      "after_deg": 0.0,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_002_right_10000us",
+      "direction": "right",
+      "requested_us": 10000,
+      "before_deg": 0.0,
+      "after_deg": 0.0,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_003_left_10000us",
+      "direction": "left",
+      "requested_us": 10000,
+      "before_deg": 0.0,
+      "after_deg": 0.0,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_004_right_10000us",
+      "direction": "right",
+      "requested_us": 10000,
+      "before_deg": 0.0,
+      "after_deg": 0.0,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_005_left_15000us",
+      "direction": "left",
+      "requested_us": 15000,
+      "before_deg": 0.0,
+      "after_deg": 0.0,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_006_right_15000us",
+      "direction": "right",
+      "requested_us": 15000,
+      "before_deg": 0.0,
+      "after_deg": 0.0,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_007_left_15000us",
+      "direction": "left",
+      "requested_us": 15000,
+      "before_deg": 0.0,
+      "after_deg": 0.0,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_008_right_15000us",
+      "direction": "right",
+      "requested_us": 15000,
+      "before_deg": 0.0,
+      "after_deg": 0.0,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_009_left_17000us",
+      "direction": "left",
+      "requested_us": 17000,
+      "before_deg": 0.0,
+      "after_deg": 0.0,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_010_right_17000us",
+      "direction": "right",
+      "requested_us": 17000,
+      "before_deg": 0.0,
+      "after_deg": 0.0,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_011_left_17000us",
+      "direction": "left",
+      "requested_us": 17000,
+      "before_deg": 0.0,
+      "after_deg": 5.07,
+      "delta_deg": 5.07
+    },
+    {
+      "id": "A202610310006_012_right_17000us",
+      "direction": "right",
+      "requested_us": 17000,
+      "before_deg": 5.079000000000001,
+      "after_deg": 5.079000000000001,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_013_right_17500us",
+      "direction": "right",
+      "requested_us": 17500,
+      "before_deg": 5.079000000000001,
+      "after_deg": 5.079000000000001,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_014_left_17500us",
+      "direction": "left",
+      "requested_us": 17500,
+      "before_deg": 5.079000000000001,
+      "after_deg": 5.079000000000001,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_015_right_17500us",
+      "direction": "right",
+      "requested_us": 17500,
+      "before_deg": 5.079000000000001,
+      "after_deg": 5.079000000000001,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_016_left_17500us",
+      "direction": "left",
+      "requested_us": 17500,
+      "before_deg": 5.079000000000001,
+      "after_deg": 5.079000000000001,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_017_right_17750us",
+      "direction": "right",
+      "requested_us": 17750,
+      "before_deg": 5.079000000000001,
+      "after_deg": 5.079000000000001,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_018_left_17750us",
+      "direction": "left",
+      "requested_us": 17750,
+      "before_deg": 5.079000000000001,
+      "after_deg": 5.079000000000001,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_019_right_17750us",
+      "direction": "right",
+      "requested_us": 17750,
+      "before_deg": 5.079000000000001,
+      "after_deg": 0.12399999999999999,
+      "delta_deg": -4.955000000000001
+    },
+    {
+      "id": "A202610310006_020_left_17750us",
+      "direction": "left",
+      "requested_us": 17750,
+      "before_deg": 0.12100000000000001,
+      "after_deg": 0.12100000000000001,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_021_right_18000us",
+      "direction": "right",
+      "requested_us": 18000,
+      "before_deg": 0.12100000000000001,
+      "after_deg": 0.12100000000000001,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_022_left_18000us",
+      "direction": "left",
+      "requested_us": 18000,
+      "before_deg": 0.12100000000000001,
+      "after_deg": 0.12100000000000001,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_023_right_18000us",
+      "direction": "right",
+      "requested_us": 18000,
+      "before_deg": 0.12100000000000001,
+      "after_deg": 0.12100000000000001,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_024_left_18000us",
+      "direction": "left",
+      "requested_us": 18000,
+      "before_deg": 0.12100000000000001,
+      "after_deg": 0.12100000000000001,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_025_right_18500us",
+      "direction": "right",
+      "requested_us": 18500,
+      "before_deg": 0.12100000000000001,
+      "after_deg": -7.463,
+      "delta_deg": -7.5840000000000005
+    },
+    {
+      "id": "A202610310006_026_left_18500us",
+      "direction": "left",
+      "requested_us": 18500,
+      "before_deg": -7.462,
+      "after_deg": -7.462,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_027_left_18500us",
+      "direction": "left",
+      "requested_us": 18500,
+      "before_deg": -7.462,
+      "after_deg": -7.462,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_029_left_19000us",
+      "direction": "left",
+      "requested_us": 19000,
+      "before_deg": -7.462,
+      "after_deg": -0.966,
+      "delta_deg": 6.4959999999999996
+    },
+    {
+      "id": "A202610310006_030_right_19000us",
+      "direction": "right",
+      "requested_us": 19000,
+      "before_deg": -0.962,
+      "after_deg": -9.323,
+      "delta_deg": -8.361
+    },
+    {
+      "id": "A202610310006_031_left_19000us",
+      "direction": "left",
+      "requested_us": 19000,
+      "before_deg": -9.323,
+      "after_deg": -9.323,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_033_left_20000us",
+      "direction": "left",
+      "requested_us": 20000,
+      "before_deg": -9.323,
+      "after_deg": -3.206,
+      "delta_deg": 6.117000000000001
+    },
+    {
+      "id": "A202610310006_034_right_20000us",
+      "direction": "right",
+      "requested_us": 20000,
+      "before_deg": -3.2079999999999997,
+      "after_deg": -3.2079999999999997,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_035_left_20000us",
+      "direction": "left",
+      "requested_us": 20000,
+      "before_deg": -3.2079999999999997,
+      "after_deg": -3.2079999999999997,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_036_right_20000us",
+      "direction": "right",
+      "requested_us": 20000,
+      "before_deg": -3.2079999999999997,
+      "after_deg": -12.380500000000001,
+      "delta_deg": -9.172500000000001
+    },
+    {
+      "id": "A202610310006_037_left_25000us",
+      "direction": "left",
+      "requested_us": 25000,
+      "before_deg": -12.384,
+      "after_deg": -5.998,
+      "delta_deg": 6.386
+    },
+    {
+      "id": "A202610310006_039_left_25000us",
+      "direction": "left",
+      "requested_us": 25000,
+      "before_deg": -0.796,
+      "after_deg": -0.796,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310006_041_right_25000us",
+      "direction": "right",
+      "requested_us": 25000,
+      "before_deg": 3.854,
+      "after_deg": -1.65,
+      "delta_deg": -5.504
+    },
+    {
+      "id": "A202610310006_042_left_30000us",
+      "direction": "left",
+      "requested_us": 30000,
+      "before_deg": -1.648,
+      "after_deg": 2.484,
+      "delta_deg": 4.132
+    }
+  ],
+  "coverage_skips": [
+    {
+      "direction": "right",
+      "us": 18500,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -7.462
+    },
+    {
+      "direction": "right",
+      "us": 19000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -9.323
+    },
+    {
+      "direction": "right",
+      "us": 25000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -0.796
+    },
+    {
+      "direction": "right",
+      "us": 30000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.482
+    },
+    {
+      "direction": "right",
+      "us": 30000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.482
+    },
+    {
+      "direction": "left",
+      "us": 30000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "right",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4770000000000003
+    },
+    {
+      "direction": "left",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "right",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "left",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "right",
+      "us": 50000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "left",
+      "us": 50000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "right",
+      "us": 50000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "left",
+      "us": 50000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "right",
+      "us": 60000,
+      "reason": "UNMEASURED_EXPLORATION_BOUND_TOO_LARGE"
+    },
+    {
+      "direction": "left",
+      "us": 60000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    },
+    {
+      "direction": "right",
+      "us": 60000,
+      "reason": "UNMEASURED_EXPLORATION_BOUND_TOO_LARGE"
+    },
+    {
+      "direction": "left",
+      "us": 60000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 2.4800000000000004
+    }
+  ],
+  "state": "NO_MEASURED_MOTION",
+  "requested_durations_us": [
+    10000,
+    15000,
+    17000,
+    17500,
+    17750,
+    18000,
+    18500,
+    19000,
+    20000,
+    25000,
+    30000,
+    40000,
+    50000,
+    60000
+  ],
+  "requested_repeats": 2,
+  "initial_angle_deg": 0.0,
+  "reposition": [
+    {
+      "trial": "T202610310006_028",
+      "target_deg": 6.063,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "474920630f87b18abe3a44f541e5a721c6a0bcc8a043bcc3dc9a292ef69ee65c",
+      "pulses": [],
+      "status": "RESOLUTION_LIMIT",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": -7.462,
+      "final_deg": -7.462,
+      "error_deg": 13.524999999999999
+    },
+    {
+      "trial": "T202610310006_032",
+      "target_deg": 6.6457500000000005,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "3edf024edd493695f52b2f253b5bf489217b6d3c46d81dc034fcd1b09729318c",
+      "pulses": [
+        {
+          "id": "T202610310006_032_p01",
+          "decision": {
+            "status": "PULSE",
+            "direction": "left",
+            "duration_us": 19000,
+            "guard_step_deg": 8.0952,
+            "error_deg": 15.96875,
+            "predicted_mean_deg": 3.2479999999999998,
+            "observed_range_deg": [
+              0.0,
+              6.4959999999999996
+            ],
+            "samples": 2
+          },
+          "result": {
+            "trial": "T202610310006_032_p01",
+            "reference_session": 290675830,
+            "zero_raw_deg": 0.018,
+            "direction": "left",
+            "requested_us": 19000,
+            "max_request_us": 60000,
+            "planned_angle_limit_deg": 18.0,
+            "guard_step_deg": 8.0952,
+            "actuator_realtime_priority": 0,
+            "mechanical_zero_valid_granted": false,
+            "absolute_network_delay_measured": false,
+            "pulse_launch_attempted": true,
+            "result": "RECORDED",
+            "preflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "pre_pulse_status": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "before_deg": -9.323,
+            "launch_local_ns": 13105539547123,
+            "actuator_finished_local_ns": 13105576543873,
+            "after_deg": -9.323,
+            "settle_wait_ms": 2304.748833999838,
+            "delta_deg": 0.0,
+            "postflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "pulse_records": [
+              {
+                "backend": "fspi",
+                "pulse": "1",
+                "direction": "left",
+                "requested_ms": "19.000",
+                "enable_begin_ns": "13105550073665",
+                "enable_end_ns": "13105550100790",
+                "release_begin_ns": "13105569177248",
+                "release_end_ns": "13105569247832",
+                "software_elapsed_ms": "19.147",
+                "result": "COMMAND_COMPLETED"
+              }
+            ],
+            "samples": 377,
+            "observed_min_deg": -9.323,
+            "observed_max_deg": -9.323,
+            "last_observed_deg": -9.323
+          }
+        },
+        {
+          "id": "T202610310006_032_p02",
+          "decision": {
+            "status": "PULSE",
+            "direction": "left",
+            "duration_us": 19000,
+            "guard_step_deg": 8.0952,
+            "error_deg": 15.96875,
+            "predicted_mean_deg": 3.2479999999999998,
+            "observed_range_deg": [
+              0.0,
+              6.4959999999999996
+            ],
+            "samples": 2
+          },
+          "result": {
+            "trial": "T202610310006_032_p02",
+            "reference_session": 290675830,
+            "zero_raw_deg": 0.018,
+            "direction": "left",
+            "requested_us": 19000,
+            "max_request_us": 60000,
+            "planned_angle_limit_deg": 18.0,
+            "guard_step_deg": 8.0952,
+            "actuator_realtime_priority": 0,
+            "mechanical_zero_valid_granted": false,
+            "absolute_network_delay_measured": false,
+            "pulse_launch_attempted": true,
+            "result": "RECORDED",
+            "preflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "pre_pulse_status": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "before_deg": -9.323,
+            "launch_local_ns": 13110619195126,
+            "actuator_finished_local_ns": 13110649654751,
+            "after_deg": -9.323,
+            "settle_wait_ms": 2302.795543000684,
+            "delta_deg": 0.0,
+            "postflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "pulse_records": [
+              {
+                "backend": "fspi",
+                "pulse": "1",
+                "direction": "left",
+                "requested_ms": "19.000",
+                "enable_begin_ns": "13110624907126",
+                "enable_end_ns": "13110624935126",
+                "release_begin_ns": "13110644143417",
+                "release_end_ns": "13110644236167",
+                "software_elapsed_ms": "19.301",
+                "result": "COMMAND_COMPLETED"
+              }
+            ],
+            "samples": 370,
+            "observed_min_deg": -9.323,
+            "observed_max_deg": -9.323,
+            "last_observed_deg": -9.323
+          }
+        }
+      ],
+      "status": "NO_PROGRESS",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": -9.323,
+      "final_deg": -9.323,
+      "error_deg": 15.96875
+    },
+    {
+      "trial": "T202610310006_038",
+      "target_deg": 8.97421875,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "cc9142ed62ffdbc9d8ddc03e94fff5eb75d2800fde9217c267fa39bce2823ef0",
+      "pulses": [
+        {
+          "id": "T202610310006_038_p01",
+          "decision": {
+            "status": "PULSE",
+            "direction": "left",
+            "duration_us": 19000,
+            "guard_step_deg": 8.0952,
+            "error_deg": 14.973218750000001,
+            "predicted_mean_deg": 3.2479999999999998,
+            "observed_range_deg": [
+              0.0,
+              6.4959999999999996
+            ],
+            "samples": 2
+          },
+          "result": {
+            "trial": "T202610310006_038_p01",
+            "reference_session": 290675830,
+            "zero_raw_deg": 0.018,
+            "direction": "left",
+            "requested_us": 19000,
+            "max_request_us": 60000,
+            "planned_angle_limit_deg": 18.0,
+            "guard_step_deg": 8.0952,
+            "actuator_realtime_priority": 0,
+            "mechanical_zero_valid_granted": false,
+            "absolute_network_delay_measured": false,
+            "pulse_launch_attempted": true,
+            "result": "RECORDED",
+            "preflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "pre_pulse_status": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "before_deg": -5.999,
+            "launch_local_ns": 13150366367353,
+            "actuator_finished_local_ns": 13150404296270,
+            "after_deg": -5.999,
+            "settle_wait_ms": 2305.519125999126,
+            "delta_deg": 0.0,
+            "postflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "pulse_records": [
+              {
+                "backend": "fspi",
+                "pulse": "1",
+                "direction": "left",
+                "requested_ms": "19.000",
+                "enable_begin_ns": "13150373413436",
+                "enable_end_ns": "13150373441728",
+                "release_begin_ns": "13150392531895",
+                "release_end_ns": "13150392607728",
+                "software_elapsed_ms": "19.166",
+                "result": "COMMAND_COMPLETED"
+              }
+            ],
+            "samples": 372,
+            "observed_min_deg": -5.999,
+            "observed_max_deg": -5.999,
+            "last_observed_deg": -5.999
+          }
+        },
+        {
+          "id": "T202610310006_038_p02",
+          "decision": {
+            "status": "PULSE",
+            "direction": "left",
+            "duration_us": 19000,
+            "guard_step_deg": 8.0952,
+            "error_deg": 14.973218750000001,
+            "predicted_mean_deg": 3.2479999999999998,
+            "observed_range_deg": [
+              0.0,
+              6.4959999999999996
+            ],
+            "samples": 2
+          },
+          "result": {
+            "trial": "T202610310006_038_p02",
+            "reference_session": 290675830,
+            "zero_raw_deg": 0.018,
+            "direction": "left",
+            "requested_us": 19000,
+            "max_request_us": 60000,
+            "planned_angle_limit_deg": 18.0,
+            "guard_step_deg": 8.0952,
+            "actuator_realtime_priority": 0,
+            "mechanical_zero_valid_granted": false,
+            "absolute_network_delay_measured": false,
+            "pulse_launch_attempted": true,
+            "result": "RECORDED",
+            "preflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "pre_pulse_status": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "before_deg": -5.999,
+            "launch_local_ns": 13155467313147,
+            "actuator_finished_local_ns": 13155506717022,
+            "after_deg": -0.799,
+            "settle_wait_ms": 2310.196876000191,
+            "delta_deg": 5.199999999999999,
+            "postflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "pulse_records": [
+              {
+                "backend": "fspi",
+                "pulse": "1",
+                "direction": "left",
+                "requested_ms": "19.000",
+                "enable_begin_ns": "13155479437730",
+                "enable_end_ns": "13155479466314",
+                "release_begin_ns": "13155498568439",
+                "release_end_ns": "13155498641064",
+                "software_elapsed_ms": "19.175",
+                "result": "COMMAND_COMPLETED"
+              }
+            ],
+            "samples": 374,
+            "observed_min_deg": -5.999,
+            "observed_max_deg": -0.6,
+            "last_observed_deg": -0.8
+          }
+        },
+        {
+          "id": "T202610310006_038_p03",
+          "decision": {
+            "status": "PULSE",
+            "direction": "left",
+            "duration_us": 17000,
+            "guard_step_deg": 6.384,
+            "error_deg": 9.77321875,
+            "predicted_mean_deg": 2.535,
+            "observed_range_deg": [
+              0.0,
+              5.07
+            ],
+            "samples": 2
+          },
+          "result": {
+            "trial": "T202610310006_038_p03",
+            "reference_session": 290675830,
+            "zero_raw_deg": 0.018,
+            "direction": "left",
+            "requested_us": 17000,
+            "max_request_us": 60000,
+            "planned_angle_limit_deg": 18.0,
+            "guard_step_deg": 6.384,
+            "actuator_realtime_priority": 0,
+            "mechanical_zero_valid_granted": false,
+            "absolute_network_delay_measured": false,
+            "pulse_launch_attempted": true,
+            "result": "RECORDED",
+            "preflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "pre_pulse_status": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "before_deg": -0.796,
+            "launch_local_ns": 13160637123483,
+            "actuator_finished_local_ns": 13160670018816,
+            "after_deg": -0.796,
+            "settle_wait_ms": 2310.873835000166,
+            "delta_deg": 0.0,
+            "postflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "pulse_records": [
+              {
+                "backend": "fspi",
+                "pulse": "1",
+                "direction": "left",
+                "requested_ms": "17.000",
+                "enable_begin_ns": "13160642678566",
+                "enable_end_ns": "13160642706275",
+                "release_begin_ns": "13160659851316",
+                "release_end_ns": "13160659937358",
+                "software_elapsed_ms": "17.231",
+                "result": "COMMAND_COMPLETED"
+              }
+            ],
+            "samples": 371,
+            "observed_min_deg": -0.796,
+            "observed_max_deg": -0.796,
+            "last_observed_deg": -0.796
+          }
+        },
+        {
+          "id": "T202610310006_038_p04",
+          "decision": {
+            "status": "PULSE",
+            "direction": "left",
+            "duration_us": 17000,
+            "guard_step_deg": 6.384,
+            "error_deg": 9.77021875,
+            "predicted_mean_deg": 2.535,
+            "observed_range_deg": [
+              0.0,
+              5.07
+            ],
+            "samples": 2
+          },
+          "result": {
+            "trial": "T202610310006_038_p04",
+            "reference_session": 290675830,
+            "zero_raw_deg": 0.018,
+            "direction": "left",
+            "requested_us": 17000,
+            "max_request_us": 60000,
+            "planned_angle_limit_deg": 18.0,
+            "guard_step_deg": 6.384,
+            "actuator_realtime_priority": 0,
+            "mechanical_zero_valid_granted": false,
+            "absolute_network_delay_measured": false,
+            "pulse_launch_attempted": true,
+            "result": "RECORDED",
+            "preflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "pre_pulse_status": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "before_deg": -0.796,
+            "launch_local_ns": 13165801799902,
+            "actuator_finished_local_ns": 13165830591485,
+            "after_deg": -0.796,
+            "settle_wait_ms": 2309.574752000117,
+            "delta_deg": 0.0,
+            "postflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "pulse_records": [
+              {
+                "backend": "fspi",
+                "pulse": "1",
+                "direction": "left",
+                "requested_ms": "17.000",
+                "enable_begin_ns": "13165808553735",
+                "enable_end_ns": "13165808581444",
+                "release_begin_ns": "13165825678652",
+                "release_end_ns": "13165825774319",
+                "software_elapsed_ms": "17.193",
+                "result": "COMMAND_COMPLETED"
+              }
+            ],
+            "samples": 372,
+            "observed_min_deg": -0.796,
+            "observed_max_deg": -0.796,
+            "last_observed_deg": -0.796
+          }
+        }
+      ],
+      "status": "NO_PROGRESS",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": -5.999,
+      "final_deg": -0.796,
+      "error_deg": 9.77021875
+    },
+    {
+      "trial": "T202610310006_040",
+      "target_deg": 8.97421875,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "8369b72d83aeb758f96f0f1b286dc4c94e646099bc05c8b36855dd943bfb9786",
+      "pulses": [
+        {
+          "id": "T202610310006_040_p01",
+          "decision": {
+            "status": "PULSE",
+            "direction": "left",
+            "duration_us": 25000,
+            "guard_step_deg": 7.9632,
+            "error_deg": 9.77021875,
+            "predicted_mean_deg": 3.193,
+            "observed_range_deg": [
+              0.0,
+              6.386
+            ],
+            "samples": 2
+          },
+          "result": {
+            "trial": "T202610310006_040_p01",
+            "reference_session": 290675830,
+            "zero_raw_deg": 0.018,
+            "direction": "left",
+            "requested_us": 25000,
+            "max_request_us": 60000,
+            "planned_angle_limit_deg": 18.0,
+            "guard_step_deg": 7.9632,
+            "actuator_realtime_priority": 0,
+            "mechanical_zero_valid_granted": false,
+            "absolute_network_delay_measured": false,
+            "pulse_launch_attempted": true,
+            "result": "RECORDED",
+            "preflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "pre_pulse_status": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "before_deg": -0.796,
+            "launch_local_ns": 13181158443659,
+            "actuator_finished_local_ns": 13181196756701,
+            "after_deg": 3.854,
+            "settle_wait_ms": 2301.208584000051,
+            "delta_deg": 4.65,
+            "postflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "pulse_records": [
+              {
+                "backend": "fspi",
+                "pulse": "1",
+                "direction": "left",
+                "requested_ms": "25.000",
+                "enable_begin_ns": "13181166837826",
+                "enable_end_ns": "13181166865534",
+                "release_begin_ns": "13181192290118",
+                "release_end_ns": "13181192435076",
+                "software_elapsed_ms": "25.570",
+                "result": "COMMAND_COMPLETED"
+              }
+            ],
+            "samples": 373,
+            "observed_min_deg": -0.796,
+            "observed_max_deg": 4.054,
+            "last_observed_deg": 3.8550000000000004
+          }
+        }
+      ],
+      "status": "RESOLUTION_LIMIT",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": -0.796,
+      "final_deg": 3.854,
+      "error_deg": 5.12021875
+    },
+    {
+      "trial": "T202610310006_043",
+      "target_deg": 10.694062500000001,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "9b4be26087ec2dedccb0b9ec67f9cfa6da42323de18cd81e9be29f491b0d7253",
+      "pulses": [],
+      "status": "RESOLUTION_LIMIT",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": 2.482,
+      "final_deg": 2.482,
+      "error_deg": 8.212062500000002
+    },
+    {
+      "trial": "T202610310006_044",
+      "target_deg": 10.694062500000001,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "9b4be26087ec2dedccb0b9ec67f9cfa6da42323de18cd81e9be29f491b0d7253",
+      "pulses": [],
+      "status": "RESOLUTION_LIMIT",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": 2.482,
+      "final_deg": 2.482,
+      "error_deg": 8.212062500000002
+    },
+    {
+      "trial": "T202610310006_045",
+      "target_deg": -8.067631578947367,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "9b4be26087ec2dedccb0b9ec67f9cfa6da42323de18cd81e9be29f491b0d7253",
+      "pulses": [],
+      "status": "RESOLUTION_LIMIT",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": 2.479,
+      "final_deg": 2.479,
+      "error_deg": -10.546631578947366
+    },
+    {
+      "trial": "T202610310006_046",
+      "target_deg": 14.0,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "9b4be26087ec2dedccb0b9ec67f9cfa6da42323de18cd81e9be29f491b0d7253",
+      "pulses": [],
+      "status": "RESOLUTION_LIMIT",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": 2.479,
+      "final_deg": 2.479,
+      "error_deg": 11.521
+    },
+    {
+      "trial": "T202610310006_047",
+      "target_deg": -10.631842105263157,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "9b4be26087ec2dedccb0b9ec67f9cfa6da42323de18cd81e9be29f491b0d7253",
+      "pulses": [],
+      "status": "RESOLUTION_LIMIT",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": 2.4800000000000004,
+      "final_deg": 2.4800000000000004,
+      "error_deg": -13.111842105263158
+    },
+    {
+      "trial": "T202610310006_048",
+      "target_deg": 14.0,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "9b4be26087ec2dedccb0b9ec67f9cfa6da42323de18cd81e9be29f491b0d7253",
+      "pulses": [],
+      "status": "RESOLUTION_LIMIT",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": 2.4800000000000004,
+      "final_deg": 2.4800000000000004,
+      "error_deg": 11.52
+    },
+    {
+      "trial": "T202610310006_049",
+      "target_deg": -10.631842105263157,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "9b4be26087ec2dedccb0b9ec67f9cfa6da42323de18cd81e9be29f491b0d7253",
+      "pulses": [],
+      "status": "RESOLUTION_LIMIT",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": 2.4800000000000004,
+      "final_deg": 2.4800000000000004,
+      "error_deg": -13.111842105263158
+    },
+    {
+      "trial": "T202610310006_050",
+      "target_deg": 14.0,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "9b4be26087ec2dedccb0b9ec67f9cfa6da42323de18cd81e9be29f491b0d7253",
+      "pulses": [],
+      "status": "RESOLUTION_LIMIT",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": 2.4800000000000004,
+      "final_deg": 2.4800000000000004,
+      "error_deg": 11.52
+    },
+    {
+      "trial": "T202610310006_051",
+      "target_deg": -13.196052631578947,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "9b4be26087ec2dedccb0b9ec67f9cfa6da42323de18cd81e9be29f491b0d7253",
+      "pulses": [],
+      "status": "RESOLUTION_LIMIT",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": 2.4800000000000004,
+      "final_deg": 2.4800000000000004,
+      "error_deg": -15.676052631578948
+    },
+    {
+      "trial": "T202610310006_052",
+      "target_deg": 14.0,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "9b4be26087ec2dedccb0b9ec67f9cfa6da42323de18cd81e9be29f491b0d7253",
+      "pulses": [],
+      "status": "RESOLUTION_LIMIT",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": 2.4800000000000004,
+      "final_deg": 2.4800000000000004,
+      "error_deg": 11.52
+    },
+    {
+      "trial": "T202610310006_053",
+      "target_deg": -13.196052631578947,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "9b4be26087ec2dedccb0b9ec67f9cfa6da42323de18cd81e9be29f491b0d7253",
+      "pulses": [],
+      "status": "RESOLUTION_LIMIT",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": 2.4800000000000004,
+      "final_deg": 2.4800000000000004,
+      "error_deg": -15.676052631578948
+    },
+    {
+      "trial": "T202610310006_054",
+      "target_deg": -14.0,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "9b4be26087ec2dedccb0b9ec67f9cfa6da42323de18cd81e9be29f491b0d7253",
+      "pulses": [],
+      "status": "RESOLUTION_LIMIT",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": 2.4800000000000004,
+      "final_deg": 2.4800000000000004,
+      "error_deg": -16.48
+    },
+    {
+      "trial": "T202610310006_055",
+      "target_deg": -14.0,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "9b4be26087ec2dedccb0b9ec67f9cfa6da42323de18cd81e9be29f491b0d7253",
+      "pulses": [],
+      "status": "RESOLUTION_LIMIT",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": 2.4800000000000004,
+      "final_deg": 2.4800000000000004,
+      "error_deg": -16.48
+    },
+    {
+      "trial": "T202610310006_056",
+      "target_deg": 0.0,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "9b4be26087ec2dedccb0b9ec67f9cfa6da42323de18cd81e9be29f491b0d7253",
+      "pulses": [],
+      "status": "RESOLUTION_LIMIT",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": 2.4800000000000004,
+      "final_deg": 2.4800000000000004,
+      "error_deg": -2.4800000000000004
+    }
+  ],
+  "returned_within_tolerance": false,
+  "final_angle_deg": 2.4800000000000004,
+  "both_directions_measured": false,
+  "release_verified_by_command": true
+}

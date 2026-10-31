@@ -1,0 +1,42 @@
+{
+  "trial": "A202610310009_006_left_30000us",
+  "reference_session": 290675830,
+  "zero_raw_deg": 0.018,
+  "direction": "left",
+  "requested_us": 30000,
+  "max_request_us": 60000,
+  "planned_angle_limit_deg": 18.0,
+  "guard_step_deg": 11.364000000000003,
+  "actuator_realtime_priority": 0,
+  "mechanical_zero_valid_granted": false,
+  "absolute_network_delay_measured": false,
+  "pulse_launch_attempted": true,
+  "result": "RECORDED",
+  "preflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+  "pre_pulse_status": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+  "before_deg": 4.638,
+  "launch_local_ns": 14506244598291,
+  "actuator_finished_local_ns": 14506286812375,
+  "after_deg": 11.005999999999998,
+  "settle_wait_ms": 2310.271834001469,
+  "delta_deg": 6.3679999999999986,
+  "postflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+  "pulse_records": [
+    {
+      "backend": "fspi",
+      "pulse": "1",
+      "direction": "left",
+      "requested_ms": "30.000",
+      "enable_begin_ns": "14506249167250",
+      "enable_end_ns": "14506249194083",
+      "release_begin_ns": "14506279553083",
+      "release_end_ns": "14506279754916",
+      "software_elapsed_ms": "30.561",
+      "result": "COMMAND_COMPLETED"
+    }
+  ],
+  "samples": 371,
+  "observed_min_deg": 4.638,
+  "observed_max_deg": 11.234,
+  "last_observed_deg": 11.008999999999999
+}

@@ -1,0 +1,11 @@
+{
+  "state": "FROZEN_VALID_OBSERVATIONS_FOR_NATIVE_VALIDATION",
+  "session": 290675832,
+  "observations": 307,
+  "cells": 29,
+  "source_batch_state": "STOPPED",
+  "last_preflight_had_no_output": true,
+  "model_sha256": "b6043c7513c0a3da43e6e2e4dc66af5df104745b66d63711d56cba53f2468583",
+  "table_sha256": "da14e9e34e0154dd9dcb7be3e660ea9f676770be23adfe515e363a982161f83a",
+  "native_validation_passed": false
+}

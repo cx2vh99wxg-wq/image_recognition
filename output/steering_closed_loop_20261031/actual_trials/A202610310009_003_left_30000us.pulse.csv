@@ -1,0 +1,2 @@
+backend,pulse,direction,requested_ms,enable_begin_ns,enable_end_ns,release_begin_ns,release_end_ns,software_elapsed_ms,result
+fspi,1,left,30.000,14487988863991,14487988891116,14488019028158,14488019166116,30.275,COMMAND_COMPLETED

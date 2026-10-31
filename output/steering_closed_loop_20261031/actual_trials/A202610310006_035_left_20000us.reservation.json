@@ -1,0 +1,15 @@
+{
+  "trial": "A202610310006_035_left_20000us",
+  "reference_session": 290675830,
+  "zero_raw_deg": 0.018,
+  "direction": "left",
+  "requested_us": 20000,
+  "max_request_us": 60000,
+  "planned_angle_limit_deg": 18.0,
+  "guard_step_deg": 11.006842105263157,
+  "actuator_realtime_priority": 0,
+  "mechanical_zero_valid_granted": false,
+  "absolute_network_delay_measured": false,
+  "pulse_launch_attempted": false,
+  "result": "RESERVED"
+}

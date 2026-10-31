@@ -7,7 +7,7 @@ import math
 from pathlib import Path
 import re
 import statistics
-from steering_bench import timing_valid
+from steering_bench import timing_valid,pulse_elapsed_ms
 
 SCHEMA = 'STEER_BENCH_RESPONSE_V1'
 
@@ -24,7 +24,7 @@ def reference_matches(model,session,zero_raw):
         math.isfinite(zero_raw) and abs(binding.get('zero_raw_deg',math.inf)-zero_raw)<.000001)
 
 
-def fit(paths):
+def fit(paths, *, allow_simulated=False):
     groups = defaultdict(list)
     excluded = []
     records = []
@@ -33,11 +33,16 @@ def fit(paths):
         r = json.loads(data)
         if 'trial' not in r or 'requested_us' not in r:
             continue
+        if r.get('invalidated'):
+            excluded.append(dict(file=path.name,reason=r.get('invalidation_reason','INVALIDATED_TRIAL')));continue
+        if r.get('simulation_only') and not allow_simulated:
+            excluded.append(dict(file=path.name,reason='SIMULATED_TRIAL'));continue
         pulses = r.get('pulse_records', [])
         if r.get('result') != 'RECORDED' or len(pulses) != 1 or pulses[0]['result'] != 'COMMAND_COMPLETED':
             excluded.append(path.name)
             continue
-        if not timing_valid(r['requested_us'],float(pulses[0]['software_elapsed_ms'])):
+        actual_ms=pulse_elapsed_ms(pulses[0])
+        if not timing_valid(r['requested_us'],actual_ms):
             excluded.append(dict(file=path.name,reason='software timing outlier'))
             continue
         sign = 1 if r['direction']=='left' else -1
@@ -48,7 +53,7 @@ def fit(paths):
         record = dict(trial=r['trial'],direction=r['direction'],duration_us=r['requested_us'],
                       priority=r.get('actuator_realtime_priority',0),response_deg=response,
                       before_deg=r['before_deg'],after_deg=r['after_deg'],
-                      actual_ms=float(pulses[0]['software_elapsed_ms']),
+                      actual_ms=actual_ms,
                       session=r['reference_session'],launch_ns=r['launch_local_ns'],
                       sha256=hashlib.sha256(data).hexdigest())
         groups[(record['direction'],record['duration_us'],record['priority'])].append(record)
@@ -71,7 +76,7 @@ def fit(paths):
 
 def choose(model,current,target,tolerance=1,min_samples=2,priority=0,
            angle_limit=10,target_limit=8,request_limit_us=20000):
-    if model.get('schema') != SCHEMA:
+    if model.get('schema') != SCHEMA or model.get('invalidated'):
         raise ValueError('Unknown model schema')
     if not all(math.isfinite(v) for v in [current,target,tolerance,angle_limit,target_limit]) or not 0<target_limit<=angle_limit<=18 or not 1<=request_limit_us<=60000 or abs(current)>angle_limit or abs(target)>target_limit or not .1<=tolerance<=3:
         raise ValueError('Outside bench target/tolerance envelope')

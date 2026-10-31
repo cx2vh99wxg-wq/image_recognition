@@ -1,0 +1,2 @@
+{
+"schema":"STEER_ACTION_TRIAL_V2","session":290675832,"zero_raw_deg":0,"priority":0,"memory_locked":false,"result":"STOPPED","direction":1,"first_us":30000,"brake_us":0,"gap_us":2000,"before_deg":9.45094585,"after_deg":null,"delta_deg":null,"peak_low_deg":-0.004945755,"peak_high_deg":0.00305461884,"samples":80,"max_age_ms":5,"error":"INVALID_ARGUMENT","timings":[]}

@@ -1,0 +1,121 @@
+{
+  "schema": "STEER_BURST_PROFILE_V1",
+  "reference": [
+    290675832,
+    0
+  ],
+  "maximum_us": 200000,
+  "directions": {
+    "1": {
+      "coast_ms": 138,
+      "guard_ms": 220,
+      "coast_cap_deg": 6,
+      "guard_cap_deg": 10
+    },
+    "2": {
+      "coast_ms": 172,
+      "guard_ms": 400,
+      "coast_cap_deg": 9,
+      "guard_cap_deg": 13
+    }
+  },
+  "sources": [
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\burst80\\B01_left_80000.json",
+      "sha256": "7ecf59dc01c7074af88a432421046d325cc0b3c6d6ab2e4b365d8c7501553fa1"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\burst80\\B02_right_80000.json",
+      "sha256": "4d0e02fff9f61ac4c209c2e6587b87cf0f527f90762db56264ff5feafa64010a"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\burst80\\B03_left_80000.json",
+      "sha256": "8188f4897c8e945c49d058d43b8fa11120a338d8dda2ebc5abb1b6e7d74f2fea"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\burst80\\B04_right_80000.json",
+      "sha256": "16ffcdadd554edd442381ae5ba586a7ae595444cb707f419d90fd68b17660a02"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\burst80\\B05_left_80000.json",
+      "sha256": "663fa8228074224671de4562719f6c06a7b4bdba8ac8208b11b79032b7114cbb"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\burst80\\B06_right_80000.json",
+      "sha256": "4d555b1f34f55475ecd06d1080af4b7a9a766f543cc4f99b118c0537eb1daf5c"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\burst100\\B01_left_100000.json",
+      "sha256": "6dd7becc2d4705ba0af5e9768748078f0a6386b84e3ffdd42073cad21432db21"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\burst100\\B02_right_100000.json",
+      "sha256": "1bb0d335515688edbb565614feacf62ac11a12ab4aafab4ac5b4423d92e8f92a"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\burst100\\B03_left_100000.json",
+      "sha256": "de1d5921c32ec82569e630d0c383f554b8e1c0def42c2362f60ad40e8f15892f"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\burst100\\B04_right_100000.json",
+      "sha256": "0620af858a52a9d9f9be5eb36cbbed18634e8f415536adf04222e25163490817"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\burst100\\B05_left_100000.json",
+      "sha256": "e3072dbfb9c77d9ca7dc26292986d9cfe07f90322d13b71e31f91a43e6bf3745"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\burst100\\B06_right_100000.json",
+      "sha256": "8182a24e64ba70d78e42655c8d811f86d6823ef095c062347d84759895e1c830"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\predictive120\\B01_left_120000.json",
+      "sha256": "2665df3a6feccf7cb2661d61855632f11c86ef4ef4a9ad1986e00b0abbbb24d0"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\predictive120\\B02_right_120000.json",
+      "sha256": "92c85699b0b998f1c66181de3fb0e3e8f401079b34e8e26e7c77194d720601d7"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\predictive120\\B03_left_120000.json",
+      "sha256": "9a0eaafa06e1032d456d228db228f32c2d8a27e013fc5f72a73b6d8156f970cf"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\predictive120\\B04_right_120000.json",
+      "sha256": "6c486bec9c47d312d64b07fee6f784d12dd08fc5670384ae4d2a78e129e2025b"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\predictive160\\B01_left_160000.json",
+      "sha256": "64200428e396607bb8220c4499bc4fe95a2a5e7774bde6ab0f5000cda8f00ea9"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\predictive160\\B02_right_160000.json",
+      "sha256": "5dae7bb728c28fb7d3c1ad4548256d0c96ab1ba20d59bd6eb76f27e1e59b215e"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\predictive160\\B03_left_160000.json",
+      "sha256": "4a228df0ebe1d4673562304989fb620e68974b67196071c5b1f90947d904eeb7"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\predictive160\\B04_right_160000.json",
+      "sha256": "cdf0e4263ad50cd7cadfbeeea5e2deadd7ae96bb057040f5a91c92501adf8907"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\predictive200\\B01_left_200000.json",
+      "sha256": "c022fba300def56593b51c64a2a1ce2589b066c587af44ab8195519ab75016cc"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\predictive200\\B02_right_200000.json",
+      "sha256": "aa8da5da256b67d4241315f215aefb86215c43e09f44060d0f62a7ad989c3e44"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\predictive200\\B03_left_200000.json",
+      "sha256": "8652f436b16d5b7faf01c3c2f701f1535457b955de0cee86abfad2f5fde7c76c"
+    },
+    {
+      "file": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\steering_partition_20261031\\fast_actual\\predictive200\\B04_right_200000.json",
+      "sha256": "279e45549511560f88a1ecb18f44521dbdef9198336da97bf9705f253068eb00"
+    }
+  ],
+  "approved_for_runtime": false
+}

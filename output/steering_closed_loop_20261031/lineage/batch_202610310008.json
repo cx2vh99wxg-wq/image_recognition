@@ -1,0 +1,188 @@
+{
+  "schema": "STEER_AUTO_CALIBRATION_V1",
+  "run": "202610310008",
+  "reference_session": 290675830,
+  "zero_raw_deg": 0.018,
+  "user_fixed_chassis_confirmed": true,
+  "user_physical_zero_confirmed": true,
+  "simulation_only": false,
+  "angle_limit_deg": 18,
+  "request_limit_us": 60000,
+  "trials": [
+    {
+      "id": "A202610310008_001_right_30000us",
+      "direction": "right",
+      "requested_us": 30000,
+      "before_deg": 11.103,
+      "after_deg": 6.62,
+      "delta_deg": -4.483
+    },
+    {
+      "id": "A202610310008_002_right_25000us",
+      "direction": "right",
+      "requested_us": 25000,
+      "before_deg": 6.622,
+      "after_deg": -0.134,
+      "delta_deg": -6.756
+    },
+    {
+      "id": "A202610310008_003_left_30000us",
+      "direction": "left",
+      "requested_us": 30000,
+      "before_deg": -0.134,
+      "after_deg": 4.845000000000001,
+      "delta_deg": 4.979000000000001
+    },
+    {
+      "id": "A202610310008_004_right_30000us",
+      "direction": "right",
+      "requested_us": 30000,
+      "before_deg": 4.843,
+      "after_deg": 1.098,
+      "delta_deg": -3.745
+    },
+    {
+      "id": "A202610310008_005_left_30000us",
+      "direction": "left",
+      "requested_us": 30000,
+      "before_deg": 1.103,
+      "after_deg": 4.934,
+      "delta_deg": 3.8310000000000004
+    },
+    {
+      "id": "A202610310008_006_left_19000us",
+      "direction": "left",
+      "requested_us": 19000,
+      "before_deg": 4.933,
+      "after_deg": 9.876,
+      "delta_deg": 4.943
+    },
+    {
+      "id": "A202610310008_007_right_25000us",
+      "direction": "right",
+      "requested_us": 25000,
+      "before_deg": 9.880999999999998,
+      "after_deg": 9.880999999999998,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310008_008_right_25000us",
+      "direction": "right",
+      "requested_us": 25000,
+      "before_deg": 9.880999999999998,
+      "after_deg": 5.180000000000001,
+      "delta_deg": -4.700999999999998
+    },
+    {
+      "id": "A202610310008_009_right_25000us",
+      "direction": "right",
+      "requested_us": 25000,
+      "before_deg": 5.181,
+      "after_deg": 0.699,
+      "delta_deg": -4.482
+    },
+    {
+      "id": "A202610310008_010_right_25000us",
+      "direction": "right",
+      "requested_us": 25000,
+      "before_deg": 0.702,
+      "after_deg": -6.532,
+      "delta_deg": -7.234
+    },
+    {
+      "id": "A202610310008_011_left_40000us",
+      "direction": "left",
+      "requested_us": 40000,
+      "before_deg": -6.532,
+      "after_deg": -2.11,
+      "delta_deg": 4.422000000000001
+    },
+    {
+      "id": "A202610310008_012_right_30000us",
+      "direction": "right",
+      "requested_us": 30000,
+      "before_deg": -2.113,
+      "after_deg": -9.313,
+      "delta_deg": -7.200000000000001
+    },
+    {
+      "id": "A202610310008_013_left_40000us",
+      "direction": "left",
+      "requested_us": 40000,
+      "before_deg": -9.312000000000001,
+      "after_deg": -1.36,
+      "delta_deg": 7.952000000000001
+    },
+    {
+      "id": "A202610310008_014_left_30000us",
+      "direction": "left",
+      "requested_us": 30000,
+      "before_deg": -1.363,
+      "after_deg": 3.0050000000000003,
+      "delta_deg": 4.368
+    },
+    {
+      "id": "A202610310008_015_left_25000us",
+      "direction": "left",
+      "requested_us": 25000,
+      "before_deg": 3.0060000000000002,
+      "after_deg": 3.0060000000000002,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310008_016_left_25000us",
+      "direction": "left",
+      "requested_us": 25000,
+      "before_deg": 3.0060000000000002,
+      "after_deg": 3.0060000000000002,
+      "delta_deg": 0.0
+    }
+  ],
+  "coverage_skips": [
+    {
+      "direction": "right",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 9.880999999999998
+    },
+    {
+      "direction": "right",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 3.0060000000000002
+    }
+  ],
+  "state": "PARTIAL_COVERAGE",
+  "requested_durations_us": [
+    30000,
+    40000
+  ],
+  "requested_repeats": 2,
+  "guard_policy": "Unmeasured durations: max observed response-rate x requested duration, margin1.5. Exact duration: n>=3, all moved, spread<=max(1.5deg,30%mean), margin1.5+0.75deg. Always at least seed guard.",
+  "continued_from": "/home/linaro/S/steering/logs/batch_202610310007/response_model.json",
+  "inherited_measured_trials": 84,
+  "initial_angle_deg": 11.103,
+  "reposition": [
+    {
+      "trial": "T202610310008_017",
+      "target_deg": 0.0,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "40073930593086f76df65bc9f369ce8969ce1a06c15358c715f79b6532026a93",
+      "pulses": [],
+      "status": "RESOLUTION_LIMIT",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": 3.0060000000000002,
+      "final_deg": 3.0060000000000002,
+      "error_deg": -3.0060000000000002
+    }
+  ],
+  "returned_within_tolerance": false,
+  "final_angle_deg": 3.0060000000000002,
+  "both_directions_measured": true,
+  "release_verified_by_command": true
+}

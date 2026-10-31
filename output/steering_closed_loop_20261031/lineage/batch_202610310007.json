@@ -1,0 +1,543 @@
+{
+  "schema": "STEER_AUTO_CALIBRATION_V1",
+  "run": "202610310007",
+  "reference_session": 290675830,
+  "zero_raw_deg": 0.018,
+  "user_fixed_chassis_confirmed": true,
+  "user_physical_zero_confirmed": true,
+  "simulation_only": false,
+  "angle_limit_deg": 18,
+  "request_limit_us": 60000,
+  "trials": [
+    {
+      "id": "A202610310007_001_right_19000us",
+      "direction": "right",
+      "requested_us": 19000,
+      "before_deg": 2.4800000000000004,
+      "after_deg": -2.771,
+      "delta_deg": -5.251
+    },
+    {
+      "id": "A202610310007_002_left_19000us",
+      "direction": "left",
+      "requested_us": 19000,
+      "before_deg": -2.7699999999999996,
+      "after_deg": -2.7699999999999996,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_003_left_19000us",
+      "direction": "left",
+      "requested_us": 19000,
+      "before_deg": -2.7699999999999996,
+      "after_deg": -2.7699999999999996,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_004_right_19000us",
+      "direction": "right",
+      "requested_us": 19000,
+      "before_deg": -2.7699999999999996,
+      "after_deg": -2.7699999999999996,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_005_left_20000us",
+      "direction": "left",
+      "requested_us": 20000,
+      "before_deg": -2.7699999999999996,
+      "after_deg": -2.7699999999999996,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_006_right_20000us",
+      "direction": "right",
+      "requested_us": 20000,
+      "before_deg": -2.7699999999999996,
+      "after_deg": -2.7699999999999996,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_007_left_20000us",
+      "direction": "left",
+      "requested_us": 20000,
+      "before_deg": -2.7699999999999996,
+      "after_deg": -2.7699999999999996,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_008_right_20000us",
+      "direction": "right",
+      "requested_us": 20000,
+      "before_deg": -2.7699999999999996,
+      "after_deg": -9.83,
+      "delta_deg": -7.0600000000000005
+    },
+    {
+      "id": "A202610310007_009_left_25000us",
+      "direction": "left",
+      "requested_us": 25000,
+      "before_deg": -9.84,
+      "after_deg": -2.578,
+      "delta_deg": 7.2620000000000005
+    },
+    {
+      "id": "A202610310007_010_left_25000us",
+      "direction": "left",
+      "requested_us": 25000,
+      "before_deg": -2.578,
+      "after_deg": 1.328,
+      "delta_deg": 3.9059999999999997
+    },
+    {
+      "id": "A202610310007_011_right_25000us",
+      "direction": "right",
+      "requested_us": 25000,
+      "before_deg": 1.324,
+      "after_deg": -4.162,
+      "delta_deg": -5.486
+    },
+    {
+      "id": "A202610310007_012_left_25000us",
+      "direction": "left",
+      "requested_us": 25000,
+      "before_deg": -4.167,
+      "after_deg": 1.025,
+      "delta_deg": 5.192
+    },
+    {
+      "id": "A202610310007_013_right_25000us",
+      "direction": "right",
+      "requested_us": 25000,
+      "before_deg": 1.028,
+      "after_deg": -5.7299999999999995,
+      "delta_deg": -6.757999999999999
+    },
+    {
+      "id": "A202610310007_014_left_30000us",
+      "direction": "left",
+      "requested_us": 30000,
+      "before_deg": -5.734,
+      "after_deg": 0.344,
+      "delta_deg": 6.078
+    },
+    {
+      "id": "A202610310007_015_left_30000us",
+      "direction": "left",
+      "requested_us": 30000,
+      "before_deg": 0.348,
+      "after_deg": 4.907,
+      "delta_deg": 4.559
+    },
+    {
+      "id": "A202610310007_016_right_30000us",
+      "direction": "right",
+      "requested_us": 30000,
+      "before_deg": 4.902,
+      "after_deg": 0.155,
+      "delta_deg": -4.747
+    },
+    {
+      "id": "A202610310007_017_left_30000us",
+      "direction": "left",
+      "requested_us": 30000,
+      "before_deg": 0.15300000000000002,
+      "after_deg": 4.721,
+      "delta_deg": 4.568
+    },
+    {
+      "id": "A202610310007_018_right_30000us",
+      "direction": "right",
+      "requested_us": 30000,
+      "before_deg": 4.718,
+      "after_deg": -0.35800000000000004,
+      "delta_deg": -5.076
+    },
+    {
+      "id": "A202610310007_019_left_30000us",
+      "direction": "left",
+      "requested_us": 30000,
+      "before_deg": -0.363,
+      "after_deg": 4.275,
+      "delta_deg": 4.638
+    },
+    {
+      "id": "A202610310007_020_left_25000us",
+      "direction": "left",
+      "requested_us": 25000,
+      "before_deg": 4.268,
+      "after_deg": 10.94,
+      "delta_deg": 6.672
+    },
+    {
+      "id": "A202610310007_021_right_40000us",
+      "direction": "right",
+      "requested_us": 40000,
+      "before_deg": 10.937,
+      "after_deg": 5.896,
+      "delta_deg": -5.0409999999999995
+    },
+    {
+      "id": "A202610310007_022_right_18500us",
+      "direction": "right",
+      "requested_us": 18500,
+      "before_deg": 5.904,
+      "after_deg": 5.904,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_023_right_25000us",
+      "direction": "right",
+      "requested_us": 25000,
+      "before_deg": 5.904,
+      "after_deg": -2.2169999999999996,
+      "delta_deg": -8.120999999999999
+    },
+    {
+      "id": "A202610310007_024_right_19000us",
+      "direction": "right",
+      "requested_us": 19000,
+      "before_deg": -2.2079999999999997,
+      "after_deg": -2.2079999999999997,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_025_right_20000us",
+      "direction": "right",
+      "requested_us": 20000,
+      "before_deg": -2.2079999999999997,
+      "after_deg": -2.2079999999999997,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_026_right_18500us",
+      "direction": "right",
+      "requested_us": 18500,
+      "before_deg": -2.2079999999999997,
+      "after_deg": -2.2079999999999997,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_027_right_19000us",
+      "direction": "right",
+      "requested_us": 19000,
+      "before_deg": -2.2079999999999997,
+      "after_deg": -2.2079999999999997,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_028_left_25000us",
+      "direction": "left",
+      "requested_us": 25000,
+      "before_deg": -2.2079999999999997,
+      "after_deg": 1.6119999999999999,
+      "delta_deg": 3.8199999999999994
+    },
+    {
+      "id": "A202610310007_029_left_30000us",
+      "direction": "left",
+      "requested_us": 30000,
+      "before_deg": 1.6099999999999999,
+      "after_deg": 7.09,
+      "delta_deg": 5.48
+    },
+    {
+      "id": "A202610310007_030_left_17000us",
+      "direction": "left",
+      "requested_us": 17000,
+      "before_deg": 7.088,
+      "after_deg": 7.088,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_031_left_17000us",
+      "direction": "left",
+      "requested_us": 17000,
+      "before_deg": 7.088,
+      "after_deg": 7.088,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_032_left_19000us",
+      "direction": "left",
+      "requested_us": 19000,
+      "before_deg": 7.088,
+      "after_deg": 7.088,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_033_left_19000us",
+      "direction": "left",
+      "requested_us": 19000,
+      "before_deg": 7.088,
+      "after_deg": 10.34,
+      "delta_deg": 3.252
+    },
+    {
+      "id": "A202610310007_034_right_25000us",
+      "direction": "right",
+      "requested_us": 25000,
+      "before_deg": 10.347999999999999,
+      "after_deg": 5.8685,
+      "delta_deg": -4.479499999999999
+    },
+    {
+      "id": "A202610310007_035_right_25000us",
+      "direction": "right",
+      "requested_us": 25000,
+      "before_deg": 5.871,
+      "after_deg": 5.871,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_036_right_25000us",
+      "direction": "right",
+      "requested_us": 25000,
+      "before_deg": 5.871,
+      "after_deg": -0.914,
+      "delta_deg": -6.785
+    },
+    {
+      "id": "A202610310007_037_right_20000us",
+      "direction": "right",
+      "requested_us": 20000,
+      "before_deg": -0.915,
+      "after_deg": -0.915,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_038_right_19000us",
+      "direction": "right",
+      "requested_us": 19000,
+      "before_deg": -0.915,
+      "after_deg": -0.915,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_039_right_20000us",
+      "direction": "right",
+      "requested_us": 20000,
+      "before_deg": -0.915,
+      "after_deg": -0.915,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_040_left_30000us",
+      "direction": "left",
+      "requested_us": 30000,
+      "before_deg": -0.915,
+      "after_deg": 3.609,
+      "delta_deg": 4.524
+    },
+    {
+      "id": "A202610310007_041_left_25000us",
+      "direction": "left",
+      "requested_us": 25000,
+      "before_deg": 3.6140000000000003,
+      "after_deg": 8.173,
+      "delta_deg": 4.558999999999999
+    },
+    {
+      "id": "A202610310007_042_left_17000us",
+      "direction": "left",
+      "requested_us": 17000,
+      "before_deg": 8.177,
+      "after_deg": 8.177,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_043_left_17000us",
+      "direction": "left",
+      "requested_us": 17000,
+      "before_deg": 8.177,
+      "after_deg": 8.177,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_044_right_25000us",
+      "direction": "right",
+      "requested_us": 25000,
+      "before_deg": 8.177,
+      "after_deg": 1.982,
+      "delta_deg": -6.194999999999999
+    },
+    {
+      "id": "A202610310007_045_right_25000us",
+      "direction": "right",
+      "requested_us": 25000,
+      "before_deg": 1.9839999999999998,
+      "after_deg": 1.9839999999999998,
+      "delta_deg": 0.0
+    },
+    {
+      "id": "A202610310007_046_right_25000us",
+      "direction": "right",
+      "requested_us": 25000,
+      "before_deg": 1.9839999999999998,
+      "after_deg": -5.726,
+      "delta_deg": -7.71
+    }
+  ],
+  "coverage_skips": [
+    {
+      "direction": "left",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -2.2079999999999997
+    },
+    {
+      "direction": "left",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -2.2079999999999997
+    },
+    {
+      "direction": "right",
+      "us": 40000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 7.088
+    },
+    {
+      "direction": "right",
+      "us": 50000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 10.347999999999999
+    },
+    {
+      "direction": "left",
+      "us": 50000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -0.915
+    },
+    {
+      "direction": "left",
+      "us": 50000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -0.915
+    },
+    {
+      "direction": "right",
+      "us": 50000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": 8.177
+    },
+    {
+      "direction": "right",
+      "us": 60000,
+      "reason": "UNMEASURED_EXPLORATION_BOUND_TOO_LARGE"
+    },
+    {
+      "direction": "left",
+      "us": 60000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -5.732
+    },
+    {
+      "direction": "left",
+      "us": 60000,
+      "reason": "NO_SAFE_START_POSITION",
+      "current": -5.732
+    },
+    {
+      "direction": "right",
+      "us": 60000,
+      "reason": "UNMEASURED_EXPLORATION_BOUND_TOO_LARGE"
+    }
+  ],
+  "state": "PARTIAL_COVERAGE",
+  "requested_durations_us": [
+    19000,
+    20000,
+    25000,
+    30000,
+    40000,
+    50000,
+    60000
+  ],
+  "requested_repeats": 2,
+  "continued_from": "/home/linaro/S/steering/logs/batch_202610310006/response_model.json",
+  "inherited_measured_trials": 38,
+  "initial_angle_deg": 2.4800000000000004,
+  "reposition": [
+    {
+      "trial": "T202610310007_047",
+      "target_deg": 0.0,
+      "tolerance_deg": 1,
+      "reference_session": 290675830,
+      "zero_raw_deg": 0.018,
+      "model_sha256": "0fd95bae7cebe19c607a461f68c0d7d02f711d7a5398dd6d8e1dea7548d6cbec",
+      "pulses": [
+        {
+          "id": "T202610310007_047_p01",
+          "decision": {
+            "status": "PULSE",
+            "direction": "left",
+            "duration_us": 30000,
+            "guard_step_deg": 7.5935999999999995,
+            "error_deg": 5.732,
+            "predicted_mean_deg": 4.8541428571428575,
+            "observed_range_deg": [
+              4.132,
+              6.078
+            ],
+            "samples": 7
+          },
+          "result": {
+            "trial": "T202610310007_047_p01",
+            "reference_session": 290675830,
+            "zero_raw_deg": 0.018,
+            "direction": "left",
+            "requested_us": 30000,
+            "max_request_us": 60000,
+            "planned_angle_limit_deg": 18.0,
+            "guard_step_deg": 7.5935999999999995,
+            "actuator_realtime_priority": 0,
+            "mechanical_zero_valid_granted": false,
+            "absolute_network_delay_measured": false,
+            "pulse_launch_attempted": true,
+            "result": "RECORDED",
+            "preflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "pre_pulse_status": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "before_deg": -5.732,
+            "launch_local_ns": 13739620564926,
+            "actuator_finished_local_ns": 13739662975009,
+            "after_deg": 0.261,
+            "settle_wait_ms": 2302.6526260000537,
+            "delta_deg": 5.993,
+            "postflight": "FSPI Configuration:\n  Device: /dev/spidev4.0\n  Speed: 24000000 Hz (24000 KHz)\nFSPI initialized successfully\n  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes\nLOGICAL_SNAPSHOT hmi=0x00 contacts=0x5F gates=0xE0 go_n=1 back_n=1 left_n=1 right_n=1 stop_n=1 auto=0 stop=0 fs_armed=1 reset_released=1 left_denied=0 right_denied=0 red=0 gear=1 gear_known=1\nLogical FPGA state only; no voltage or mechanical angle measurement.\nFSPI resources cleaned up\n",
+            "pulse_records": [
+              {
+                "backend": "fspi",
+                "pulse": "1",
+                "direction": "left",
+                "requested_ms": "30.000",
+                "enable_begin_ns": "13739626883884",
+                "enable_end_ns": "13739626915676",
+                "release_begin_ns": "13739657179592",
+                "release_end_ns": "13739657420509",
+                "software_elapsed_ms": "30.505",
+                "result": "COMMAND_COMPLETED"
+              }
+            ],
+            "samples": 377,
+            "observed_min_deg": -5.732,
+            "observed_max_deg": 0.499,
+            "last_observed_deg": 0.256
+          }
+        }
+      ],
+      "status": "REACHED",
+      "angle_limit_deg": 18.0,
+      "target_limit_deg": 16.0,
+      "request_limit_us": 60000,
+      "scope": "stage3 fixed-chassis bench only; formal vehicle API not enabled",
+      "initial_deg": -5.732,
+      "final_deg": 0.261,
+      "error_deg": -0.261
+    }
+  ],
+  "returned_within_tolerance": true,
+  "final_angle_deg": 0.258,
+  "both_directions_measured": true,
+  "release_verified_by_command": true
+}

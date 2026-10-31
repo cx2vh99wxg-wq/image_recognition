@@ -1,0 +1,7 @@
+FSPI Configuration:
+  Device: /dev/spidev4.0
+  Speed: 24000000 Hz (24000 KHz)
+FSPI initialized successfully
+  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes
+FSPI resources cleaned up
+ACTION_RESULT result=OK before=11.213 after=8.005 delta=-3.208 phases=1 priority=10 mlock=1

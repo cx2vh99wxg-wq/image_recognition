@@ -1,0 +1,391 @@
+{
+  "schema": "STEER_FAST_ACCEPTANCE_SUMMARY_V1",
+  "reference": [
+    290675832,
+    0
+  ],
+  "turn_tolerance_deg": 3,
+  "center_tolerance_deg": 3,
+  "native_and_lane_adapter": {
+    "native_fast_validation": {
+      "total": 24,
+      "passed": 24,
+      "max_abs_error_deg": 2.59,
+      "max_center_error_deg": 2.59,
+      "one_action_goals": 24,
+      "maximum_actions": 1,
+      "records": [
+        {
+          "target_deg": 12,
+          "after_deg": 11.007,
+          "error_deg": 0.9930000000000003,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            166589.209
+          ],
+          "elapsed_s_including_independent_after_check": 2.0393995429985807
+        },
+        {
+          "target_deg": 0,
+          "after_deg": 0.1,
+          "error_deg": -0.1,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            149632.0
+          ],
+          "elapsed_s_including_independent_after_check": 2.0469977510001627
+        },
+        {
+          "target_deg": -12,
+          "after_deg": -12.29,
+          "error_deg": 0.28999999999999915,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            120064.291
+          ],
+          "elapsed_s_including_independent_after_check": 2.0407864180015167
+        },
+        {
+          "target_deg": 0,
+          "after_deg": 2.493,
+          "error_deg": -2.493,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            168611.625
+          ],
+          "elapsed_s_including_independent_after_check": 1.9893113340003765
+        },
+        {
+          "target_deg": 15,
+          "after_deg": 12.914,
+          "error_deg": 2.0860000000000003,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            159943.291
+          ],
+          "elapsed_s_including_independent_after_check": 1.9822150839972892
+        },
+        {
+          "target_deg": 0,
+          "after_deg": 0.948,
+          "error_deg": -0.948,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            166243.292
+          ],
+          "elapsed_s_including_independent_after_check": 2.0417112920004
+        },
+        {
+          "target_deg": -15,
+          "after_deg": -14.308,
+          "error_deg": -0.6920000000000002,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            150319.167
+          ],
+          "elapsed_s_including_independent_after_check": 2.0982952100021066
+        },
+        {
+          "target_deg": 0,
+          "after_deg": 2.448,
+          "error_deg": -2.448,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            188873.417
+          ],
+          "elapsed_s_including_independent_after_check": 2.0474171679998108
+        },
+        {
+          "target_deg": 12,
+          "after_deg": 11.65,
+          "error_deg": 0.34999999999999964,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            128891.0
+          ],
+          "elapsed_s_including_independent_after_check": 1.9467457930004457
+        },
+        {
+          "target_deg": 0,
+          "after_deg": -0.1335,
+          "error_deg": 0.1335,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            160443.5
+          ],
+          "elapsed_s_including_independent_after_check": 2.043381375999161
+        },
+        {
+          "target_deg": -12,
+          "after_deg": -13.135,
+          "error_deg": 1.1349999999999998,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            120617.583
+          ],
+          "elapsed_s_including_independent_after_check": 2.0499036260007415
+        },
+        {
+          "target_deg": 0,
+          "after_deg": 2.59,
+          "error_deg": -2.59,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            177877.292
+          ],
+          "elapsed_s_including_independent_after_check": 1.9915749600004347
+        },
+        {
+          "target_deg": 15,
+          "after_deg": 13.013,
+          "error_deg": 1.987,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            159913.542
+          ],
+          "elapsed_s_including_independent_after_check": 1.9892273339974054
+        },
+        {
+          "target_deg": 0,
+          "after_deg": 1.049,
+          "error_deg": -1.049,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            168010.5
+          ],
+          "elapsed_s_including_independent_after_check": 2.0426317929996003
+        },
+        {
+          "target_deg": -15,
+          "after_deg": -14.943,
+          "error_deg": -0.057000000000000384,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            147518.584
+          ],
+          "elapsed_s_including_independent_after_check": 2.0438270430022385
+        },
+        {
+          "target_deg": 0,
+          "after_deg": 1.8385,
+          "error_deg": -1.8385,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            186601.334
+          ],
+          "elapsed_s_including_independent_after_check": 2.034129709998524
+        },
+        {
+          "target_deg": 12,
+          "after_deg": 12.432,
+          "error_deg": -0.4320000000000004,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            138551.583
+          ],
+          "elapsed_s_including_independent_after_check": 1.957241125001019
+        },
+        {
+          "target_deg": 0,
+          "after_deg": -0.888,
+          "error_deg": 0.888,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            177227.459
+          ],
+          "elapsed_s_including_independent_after_check": 2.089121126002283
+        },
+        {
+          "target_deg": -12,
+          "after_deg": -13.733,
+          "error_deg": 1.7330000000000005,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            119464.333
+          ],
+          "elapsed_s_including_independent_after_check": 2.085971126001823
+        },
+        {
+          "target_deg": 0,
+          "after_deg": 1.987,
+          "error_deg": -1.987,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            188790.875
+          ],
+          "elapsed_s_including_independent_after_check": 2.0397603340024943
+        },
+        {
+          "target_deg": 15,
+          "after_deg": 13.1875,
+          "error_deg": 1.8125,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            167179.541
+          ],
+          "elapsed_s_including_independent_after_check": 2.0502609169998323
+        },
+        {
+          "target_deg": 0,
+          "after_deg": -0.17149999999999999,
+          "error_deg": 0.17149999999999999,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            179015.084
+          ],
+          "elapsed_s_including_independent_after_check": 2.093623585002206
+        },
+        {
+          "target_deg": -15,
+          "after_deg": -14.386,
+          "error_deg": -0.6140000000000008,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            138416.542
+          ],
+          "elapsed_s_including_independent_after_check": 2.0418008339984226
+        },
+        {
+          "target_deg": 0,
+          "after_deg": 2.129,
+          "error_deg": -2.129,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            178515.458
+          ],
+          "elapsed_s_including_independent_after_check": 2.0485672099966905
+        }
+      ]
+    },
+    "native_fast_lane_validation": {
+      "total": 8,
+      "passed": 8,
+      "max_abs_error_deg": 2.5549999999999997,
+      "max_center_error_deg": 2.442,
+      "one_action_goals": 8,
+      "maximum_actions": 1,
+      "records": [
+        {
+          "target_deg": 12,
+          "after_deg": 11.885,
+          "error_deg": 0.11500000000000021,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            146537.125
+          ],
+          "elapsed_s_including_independent_after_check": 1.9900262089977332
+        },
+        {
+          "target_deg": 0,
+          "after_deg": 0.741,
+          "error_deg": -0.741,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            194524.167
+          ],
+          "elapsed_s_including_independent_after_check": 2.086346501000662
+        },
+        {
+          "target_deg": -12,
+          "after_deg": -11.534,
+          "error_deg": -0.4659999999999993,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            139260.625
+          ],
+          "elapsed_s_including_independent_after_check": 2.0458057089999784
+        },
+        {
+          "target_deg": 0,
+          "after_deg": 2.442,
+          "error_deg": -2.442,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            168654.792
+          ],
+          "elapsed_s_including_independent_after_check": 2.041047459002584
+        },
+        {
+          "target_deg": 15,
+          "after_deg": 12.445,
+          "error_deg": 2.5549999999999997,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            160819.75
+          ],
+          "elapsed_s_including_independent_after_check": 2.0341440010015504
+        },
+        {
+          "target_deg": 0,
+          "after_deg": 1.475,
+          "error_deg": -1.475,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            186480.875
+          ],
+          "elapsed_s_including_independent_after_check": 2.1035574600027758
+        },
+        {
+          "target_deg": -15,
+          "after_deg": -12.561,
+          "error_deg": -2.439,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            156730.291
+          ],
+          "elapsed_s_including_independent_after_check": 2.0321495839998533
+        },
+        {
+          "target_deg": 0,
+          "after_deg": 1.6844999999999999,
+          "error_deg": -1.6844999999999999,
+          "pass_": true,
+          "pulses": 1,
+          "actual_pulse_us": [
+            187118.166
+          ],
+          "elapsed_s_including_independent_after_check": 2.0405026260013983
+        }
+      ]
+    }
+  },
+  "total_goals": 32,
+  "passed": 32,
+  "fixed_chassis_only": true,
+  "independent_protractor_used": false,
+  "real_road_video_tested": false,
+  "hmi_fpga_perception_unchanged": true,
+  "training_observations": 419,
+  "burst_observations": 24
+}

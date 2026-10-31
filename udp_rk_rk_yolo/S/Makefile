@@ -111,7 +111,7 @@ run-fspi: all
 	@echo "控制说明: w=前进, s=后退, a=左转, d=右转, x=停止, q=退出"
 	@echo "注意: 需要管理员权限访问SPI设备"
 	@echo ""
-	@cd fspi && sudo ./build/vehicle_control
+	@cd fspi && sudo python3 ../steering/tools/launch_vehicle_control.py
 
 # 启动显示程序
 run-display: all
@@ -187,7 +187,7 @@ run: all tune-network
 	@echo ""
 	@# 启动FSPI控制程序
 	@echo "3. 启动FSPI按钮控制程序..."
-	@cd fspi && sudo bash -c './build/vehicle_control & echo $$! > fspi.pid'
+	@cd fspi && sudo bash -c 'python3 ../steering/tools/launch_vehicle_control.py & echo $$! > fspi.pid'
 	@sleep 3
 	@fspi_pid=$$(cat fspi/fspi.pid 2>/dev/null); \
 		case "$$fspi_pid" in ''|*[!0-9]*) echo "错误: FSPI PID 无效，自动刹停不可用"; exit 1;; esac; \

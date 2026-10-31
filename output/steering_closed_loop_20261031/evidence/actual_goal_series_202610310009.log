@@ -1,0 +1,6 @@
+{"index": 1, "target_deg": 5, "returncode": 1, "goal": ["6", "5.000", "3.601", "1.399", "NOT_IMPLEMENTED_OR_NOT_READY"], "log": "C_goal_202610310009_01.log"}
+{"index": 2, "target_deg": -5, "returncode": 1, "goal": ["6", "-5.000", "-2.255", "-2.745", "NOT_IMPLEMENTED_OR_NOT_READY"], "log": "C_goal_202610310009_02.log"}
+{"index": 3, "target_deg": 0, "returncode": 1, "goal": ["6", "0.000", "-2.267", "2.267", "NOT_IMPLEMENTED_OR_NOT_READY"], "log": "C_goal_202610310009_03.log"}
+{"index": 4, "target_deg": 10, "returncode": 1, "goal": ["6", "10.000", "7.543", "2.457", "NOT_IMPLEMENTED_OR_NOT_READY"], "log": "C_goal_202610310009_04.log"}
+{"index": 5, "target_deg": -10, "returncode": 0, "goal": ["2", "-10.000", "-9.233", "-0.767", "OK"], "log": "C_goal_202610310009_05.log"}
+{"index": 6, "target_deg": 15, "returncode": 1, "goal": ["4", "15.000", "-1.628", "16.628", "IO_ERROR"], "log": "C_goal_202610310009_06.log"}

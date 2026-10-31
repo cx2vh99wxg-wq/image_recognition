@@ -1,0 +1,761 @@
+{
+  "schema": "STEER_RIG_PARTITION_RUN_V1",
+  "state": "COMPLETE",
+  "session": 290675832,
+  "zero_raw_deg": 0.0,
+  "stage": "sweep",
+  "current_deg": -2.9232142,
+  "physical_limit_deg": 18,
+  "center_tolerance_deg": 3,
+  "target_tolerance_deg": 2,
+  "fixed_chassis": true,
+  "goals": [
+    {
+      "target_deg": 6,
+      "tolerance_deg": 2,
+      "repeat": 0,
+      "before_deg": 2.368,
+      "actions": [
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": 2.368,
+          "after_deg": 3.65842867
+        },
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": 3.65842867,
+          "after_deg": 5.88930368
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": 5.88930368,
+      "error_deg": 0.11069631999999974
+    },
+    {
+      "target_deg": 12,
+      "tolerance_deg": 2,
+      "repeat": 0,
+      "before_deg": 5.897,
+      "actions": [
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": 5.897,
+          "after_deg": 7.92683935
+        },
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": 7.92683935,
+          "after_deg": 9.59200001
+        },
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": 9.59200001,
+          "after_deg": 11.0484543
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": 11.0484543,
+      "error_deg": 0.9515457000000005
+    },
+    {
+      "target_deg": 15,
+      "tolerance_deg": 2,
+      "repeat": 0,
+      "before_deg": 11.06,
+      "actions": [
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": 11.06,
+          "after_deg": 11.6417999
+        },
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": 11.6417999,
+          "after_deg": 13.0645638
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": 13.0645638,
+      "error_deg": 1.9354361999999998
+    },
+    {
+      "target_deg": 12,
+      "tolerance_deg": 2,
+      "repeat": 0,
+      "before_deg": 13.079,
+      "actions": [],
+      "status": "REACHED",
+      "after_deg": 13.079,
+      "error_deg": -1.0790000000000006
+    },
+    {
+      "target_deg": 6,
+      "tolerance_deg": 2,
+      "repeat": 0,
+      "before_deg": 13.09,
+      "actions": [
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": 13.09,
+          "after_deg": 10.6114817
+        },
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": 10.6114817,
+          "after_deg": 6.02372742
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": 6.02372742,
+      "error_deg": -0.023727420000000166
+    },
+    {
+      "target_deg": 0,
+      "tolerance_deg": 3,
+      "repeat": 0,
+      "before_deg": 6.024,
+      "actions": [
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": 6.024,
+          "after_deg": 2.54451776
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": 2.54451776,
+      "error_deg": -2.54451776
+    },
+    {
+      "target_deg": -6,
+      "tolerance_deg": 2,
+      "repeat": 0,
+      "before_deg": 2.554,
+      "actions": [
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": 2.554,
+          "after_deg": -1.5042727
+        },
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": -1.5042727,
+          "after_deg": -5.46225452
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": -5.46225452,
+      "error_deg": -0.5377454799999999
+    },
+    {
+      "target_deg": -12,
+      "tolerance_deg": 2,
+      "repeat": 0,
+      "before_deg": -5.471,
+      "actions": [
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": -5.471,
+          "after_deg": -9.21476364
+        },
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": -9.21476364,
+          "after_deg": -13.565464
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": -13.565464,
+      "error_deg": 1.5654640000000004
+    },
+    {
+      "target_deg": -15,
+      "tolerance_deg": 2,
+      "repeat": 0,
+      "before_deg": -13.573,
+      "actions": [],
+      "status": "REACHED",
+      "after_deg": -13.573,
+      "error_deg": -1.4269999999999996
+    },
+    {
+      "target_deg": -12,
+      "tolerance_deg": 2,
+      "repeat": 0,
+      "before_deg": -13.582,
+      "actions": [],
+      "status": "REACHED",
+      "after_deg": -13.582,
+      "error_deg": 1.5820000000000007
+    },
+    {
+      "target_deg": -6,
+      "tolerance_deg": 2,
+      "repeat": 0,
+      "before_deg": -13.582,
+      "actions": [
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": -13.582,
+          "after_deg": -9.4879818
+        },
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": -9.4879818,
+          "after_deg": -5.92128563
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": -5.92128563,
+      "error_deg": -0.07871437000000014
+    },
+    {
+      "target_deg": 0,
+      "tolerance_deg": 3,
+      "repeat": 0,
+      "before_deg": -5.917,
+      "actions": [
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": -5.917,
+          "after_deg": -2.54761815
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": -2.54761815,
+      "error_deg": 2.54761815
+    },
+    {
+      "target_deg": 6,
+      "tolerance_deg": 2,
+      "repeat": 1,
+      "before_deg": -2.5505,
+      "actions": [
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": -2.5505,
+          "after_deg": -0.318181813
+        },
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": -0.318181813,
+          "after_deg": 3.66344643
+        },
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": 3.66344643,
+          "after_deg": 6.29683638
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": 6.29683638,
+      "error_deg": -0.29683638000000023
+    },
+    {
+      "target_deg": 12,
+      "tolerance_deg": 2,
+      "repeat": 1,
+      "before_deg": 6.297,
+      "actions": [
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": 6.297,
+          "after_deg": 8.4047451
+        },
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": 8.4047451,
+          "after_deg": 10.2067451
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": 10.2067451,
+      "error_deg": 1.7932549000000009
+    },
+    {
+      "target_deg": 15,
+      "tolerance_deg": 2,
+      "repeat": 1,
+      "before_deg": 10.225,
+      "actions": [
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": 10.225,
+          "after_deg": 11.6582003
+        },
+        {
+          "direction": 1,
+          "duration_us": 25000,
+          "before_deg": 11.6582003,
+          "after_deg": 12.6264
+        },
+        {
+          "direction": 1,
+          "duration_us": 25000,
+          "before_deg": 12.6264,
+          "after_deg": 13.0701609
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": 13.0701609,
+      "error_deg": 1.9298391000000006
+    },
+    {
+      "target_deg": 12,
+      "tolerance_deg": 2,
+      "repeat": 1,
+      "before_deg": 13.082,
+      "actions": [],
+      "status": "REACHED",
+      "after_deg": 13.082,
+      "error_deg": -1.0820000000000007
+    },
+    {
+      "target_deg": 6,
+      "tolerance_deg": 2,
+      "repeat": 1,
+      "before_deg": 13.084,
+      "actions": [
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": 13.084,
+          "after_deg": 10.697854
+        },
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": 10.697854,
+          "after_deg": 7.95403624
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": 7.95403624,
+      "error_deg": -1.9540362399999998
+    },
+    {
+      "target_deg": 0,
+      "tolerance_deg": 3,
+      "repeat": 1,
+      "before_deg": 7.928,
+      "actions": [
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": 7.928,
+          "after_deg": 3.90832734
+        },
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": 3.90832734,
+          "after_deg": 0.159160718
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": 0.159160718,
+      "error_deg": -0.159160718
+    },
+    {
+      "target_deg": -6,
+      "tolerance_deg": 2,
+      "repeat": 1,
+      "before_deg": 0.159,
+      "actions": [
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": 0.159,
+          "after_deg": -4.082582
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": -4.082582,
+      "error_deg": -1.9174179999999996
+    },
+    {
+      "target_deg": -12,
+      "tolerance_deg": 2,
+      "repeat": 1,
+      "before_deg": -4.081,
+      "actions": [
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": -4.081,
+          "after_deg": -8.50821781
+        },
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": -8.50821781,
+          "after_deg": -12.7667637
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": -12.7667637,
+      "error_deg": 0.7667637000000003
+    },
+    {
+      "target_deg": -15,
+      "tolerance_deg": 2,
+      "repeat": 1,
+      "before_deg": -12.781,
+      "actions": [
+        {
+          "direction": 2,
+          "duration_us": 25000,
+          "before_deg": -12.781,
+          "after_deg": -16.0352726
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": -16.0352726,
+      "error_deg": 1.035272599999999
+    },
+    {
+      "target_deg": -12,
+      "tolerance_deg": 2,
+      "repeat": 1,
+      "before_deg": -16.037,
+      "actions": [
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": -16.037,
+          "after_deg": -11.7718754
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": -11.7718754,
+      "error_deg": -0.22812459999999923
+    },
+    {
+      "target_deg": -6,
+      "tolerance_deg": 2,
+      "repeat": 1,
+      "before_deg": -11.778,
+      "actions": [
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": -11.778,
+          "after_deg": -8.5205822
+        },
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": -8.5205822,
+          "after_deg": -5.96156359
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": -5.96156359,
+      "error_deg": -0.03843641000000009
+    },
+    {
+      "target_deg": 0,
+      "tolerance_deg": 3,
+      "repeat": 1,
+      "before_deg": -5.961,
+      "actions": [
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": -5.961,
+          "after_deg": -2.44876361
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": -2.44876361,
+      "error_deg": 2.44876361
+    },
+    {
+      "target_deg": 6,
+      "tolerance_deg": 2,
+      "repeat": 2,
+      "before_deg": -2.438,
+      "actions": [
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": -2.438,
+          "after_deg": 0.860599995
+        },
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": 0.860599995,
+          "after_deg": 3.89791083
+        },
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": 3.89791083,
+          "after_deg": 6.44823217
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": 6.44823217,
+      "error_deg": -0.4482321699999998
+    },
+    {
+      "target_deg": 12,
+      "tolerance_deg": 2,
+      "repeat": 2,
+      "before_deg": 6.456,
+      "actions": [
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": 6.456,
+          "after_deg": 8.71221447
+        },
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": 8.71221447,
+          "after_deg": 10.4303389
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": 10.4303389,
+      "error_deg": 1.5696610999999994
+    },
+    {
+      "target_deg": 15,
+      "tolerance_deg": 2,
+      "repeat": 2,
+      "before_deg": 10.44,
+      "actions": [
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": 10.44,
+          "after_deg": 12.2125998
+        },
+        {
+          "direction": 1,
+          "duration_us": 25000,
+          "before_deg": 12.2125998,
+          "after_deg": 13.0653086
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": 13.0653086,
+      "error_deg": 1.9346914000000002
+    },
+    {
+      "target_deg": 12,
+      "tolerance_deg": 2,
+      "repeat": 2,
+      "before_deg": 13.063,
+      "actions": [],
+      "status": "REACHED",
+      "after_deg": 13.063,
+      "error_deg": -1.0630000000000006
+    },
+    {
+      "target_deg": 6,
+      "tolerance_deg": 2,
+      "repeat": 2,
+      "before_deg": 13.068,
+      "actions": [
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": 13.068,
+          "after_deg": 10.818161
+        },
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": 10.818161,
+          "after_deg": 8.41692734
+        },
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": 8.41692734,
+          "after_deg": 4.58414268
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": 4.58414268,
+      "error_deg": 1.4158573199999998
+    },
+    {
+      "target_deg": 0,
+      "tolerance_deg": 3,
+      "repeat": 2,
+      "before_deg": 4.586,
+      "actions": [
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": 4.586,
+          "after_deg": 0.524321437
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": 0.524321437,
+      "error_deg": -0.524321437
+    },
+    {
+      "target_deg": -6,
+      "tolerance_deg": 2,
+      "repeat": 2,
+      "before_deg": 0.52,
+      "actions": [
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": 0.52,
+          "after_deg": -3.95354557
+        },
+        {
+          "direction": 2,
+          "duration_us": 25000,
+          "before_deg": -3.95354557,
+          "after_deg": -3.95363641
+        },
+        {
+          "direction": 2,
+          "duration_us": 25000,
+          "before_deg": -3.95363641,
+          "after_deg": -8.11812687
+        }
+      ],
+      "status": "NO_PROGRESS",
+      "after_deg": -8.11812687,
+      "error_deg": 2.1181268699999993
+    },
+    {
+      "target_deg": -12,
+      "tolerance_deg": 2,
+      "repeat": 2,
+      "before_deg": -8.124,
+      "actions": [
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": -8.124,
+          "after_deg": -11.1238928
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": -11.1238928,
+      "error_deg": -0.8761071999999999
+    },
+    {
+      "target_deg": -15,
+      "tolerance_deg": 2,
+      "repeat": 2,
+      "before_deg": -11.126,
+      "actions": [
+        {
+          "direction": 2,
+          "duration_us": 25000,
+          "before_deg": -11.126,
+          "after_deg": -11.125
+        },
+        {
+          "direction": 2,
+          "duration_us": 25000,
+          "before_deg": -11.125,
+          "after_deg": -15.1217089
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": -15.1217089,
+      "error_deg": 0.12170889999999979
+    },
+    {
+      "target_deg": -12,
+      "tolerance_deg": 2,
+      "repeat": 2,
+      "before_deg": -15.128,
+      "actions": [
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": -15.128,
+          "after_deg": -9.49214554
+        },
+        {
+          "direction": 2,
+          "duration_us": 30000,
+          "before_deg": -9.49214554,
+          "after_deg": -14.4211073
+        },
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": -14.4211073,
+          "after_deg": -10.1524286
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": -10.1524286,
+      "error_deg": -1.8475713999999996
+    },
+    {
+      "target_deg": -6,
+      "tolerance_deg": 2,
+      "repeat": 2,
+      "before_deg": -10.161,
+      "actions": [
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": -10.161,
+          "after_deg": -6.64783907
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": -6.64783907,
+      "error_deg": 0.6478390699999999
+    },
+    {
+      "target_deg": 0,
+      "tolerance_deg": 3,
+      "repeat": 2,
+      "before_deg": -6.6585,
+      "actions": [
+        {
+          "direction": 1,
+          "duration_us": 30000,
+          "before_deg": -6.6585,
+          "after_deg": -2.9232142
+        }
+      ],
+      "status": "REACHED",
+      "after_deg": -2.9232142,
+      "error_deg": 2.9232142
+    }
+  ],
+  "new_action_count": 59,
+  "model_qualified_for_road_control": false
+}

@@ -1,0 +1,26 @@
+FSPI Configuration:
+  Device: /dev/spidev4.0
+  Speed: 24000000 Hz (24000 KHz)
+FSPI initialized successfully
+  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes
+[STEER_INIT] table=/home/linaro/S/steering/logs/batch_202610310009/response_model.table reference_session=290675830 zero_raw=0.018 max_pulse_us=60000 priority=0; awaiting fresh matching session
+[STEER_REFERENCE] explicitly confirmed current session; physical zero offset bound
+[STEER_STATE] state=5 name=SETTLING angle=7.535 target=-10.000 error=-17.535 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=7.530 target_deg=-10.000 guard_deg=8.940 expected_error_deg=12.123
+[STEER_STATE] state=1 name=MOVING angle=7.530 target=-10.000 error=-17.530 result=OK
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30198.584
+[STEER_STATE] state=5 name=SETTLING angle=7.531 target=-10.000 error=-17.531 result=OK
+[STEER_RESPONSE] pulse=1 before_deg=7.530 after_deg=4.235 delta_deg=-3.295 error_deg=-14.235
+[STEER_PULSE_BEGIN] pulse=2 direction=2 duration_us=30000 current_deg=4.235 target_deg=-10.000 guard_deg=8.940 expected_error_deg=8.828
+[STEER_STATE] state=1 name=MOVING angle=4.235 target=-10.000 error=-14.235 result=OK
+[STEER_PULSE_END] pulse=2 direction=2 requested_us=30000 actual_us=30562.291
+[STEER_STATE] state=5 name=SETTLING angle=4.248 target=-10.000 error=-14.248 result=OK
+[STEER_RESPONSE] pulse=2 before_deg=4.235 after_deg=-3.468 delta_deg=-7.703 error_deg=-6.532
+[STEER_PULSE_BEGIN] pulse=3 direction=2 duration_us=30000 current_deg=-3.468 target_deg=-10.000 guard_deg=8.940 expected_error_deg=1.317
+[STEER_STATE] state=1 name=MOVING angle=-3.468 target=-10.000 error=-6.532 result=OK
+[STEER_PULSE_END] pulse=3 direction=2 requested_us=30000 actual_us=31072.125
+[STEER_STATE] state=5 name=SETTLING angle=-3.473 target=-10.000 error=-6.527 result=OK
+[STEER_RESPONSE] pulse=3 before_deg=-3.468 after_deg=-9.233 delta_deg=-5.765 error_deg=-0.767
+[STEER_STATE] state=2 name=SETTLED angle=-9.233 target=-10.000 error=-0.767 result=OK
+GOAL_RESULT status=2 target_deg=-10.000 measured_deg=-9.233 error_deg=-0.767 result=OK state_name=SETTLED
+FSPI resources cleaned up

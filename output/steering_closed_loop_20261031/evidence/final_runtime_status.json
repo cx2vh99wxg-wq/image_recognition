@@ -1,0 +1,12 @@
+{
+  "mode": "ORIGINAL_LEGACY",
+  "new_closed_loop_enabled": false,
+  "vehicle_control_pid": 9188,
+  "passive_receiver_pid": 9187,
+  "physical_reference_session": 290675830,
+  "raw_zero_deg": 0.018,
+  "latest_model": "/home/linaro/S/steering/logs/final_exact_20261031/response_model.json",
+  "model_not_approved_for_road_control": true,
+  "accepted_records": 107,
+  "independently_tested_table_records": 108
+}

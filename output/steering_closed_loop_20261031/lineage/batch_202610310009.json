@@ -1,0 +1,92 @@
+{
+  "schema": "STEER_AUTO_CALIBRATION_V1",
+  "run": "202610310009",
+  "reference_session": 290675830,
+  "zero_raw_deg": 0.018,
+  "user_fixed_chassis_confirmed": true,
+  "user_physical_zero_confirmed": true,
+  "simulation_only": false,
+  "angle_limit_deg": 18,
+  "request_limit_us": 60000,
+  "trials": [
+    {
+      "id": "A202610310009_001_right_30000us",
+      "direction": "right",
+      "requested_us": 30000,
+      "before_deg": 0.056999999999999995,
+      "after_deg": -5.858,
+      "delta_deg": -5.915
+    },
+    {
+      "id": "A202610310009_002_right_30000us",
+      "direction": "right",
+      "requested_us": 30000,
+      "before_deg": -5.8629999999999995,
+      "after_deg": -12.589500000000001,
+      "delta_deg": -6.7265000000000015
+    },
+    {
+      "id": "A202610310009_003_left_30000us",
+      "direction": "left",
+      "requested_us": 30000,
+      "before_deg": -12.598,
+      "after_deg": -5.521999999999999,
+      "delta_deg": 7.076000000000001
+    },
+    {
+      "id": "A202610310009_004_left_30000us",
+      "direction": "left",
+      "requested_us": 30000,
+      "before_deg": -5.529,
+      "after_deg": -0.141,
+      "delta_deg": 5.388
+    },
+    {
+      "id": "A202610310009_005_left_30000us",
+      "direction": "left",
+      "requested_us": 30000,
+      "before_deg": -0.141,
+      "after_deg": 4.636,
+      "delta_deg": 4.777
+    },
+    {
+      "id": "A202610310009_006_left_30000us",
+      "direction": "left",
+      "requested_us": 30000,
+      "before_deg": 4.638,
+      "after_deg": 11.005999999999998,
+      "delta_deg": 6.3679999999999986
+    },
+    {
+      "id": "A202610310009_007_right_30000us",
+      "direction": "right",
+      "requested_us": 30000,
+      "before_deg": 11.011,
+      "after_deg": 6.412,
+      "delta_deg": -4.598999999999999
+    },
+    {
+      "id": "A202610310009_008_right_30000us",
+      "direction": "right",
+      "requested_us": 30000,
+      "before_deg": 6.417,
+      "after_deg": 0.24900000000000003,
+      "delta_deg": -6.168
+    }
+  ],
+  "coverage_skips": [],
+  "state": "PARTIAL_COVERAGE",
+  "requested_durations_us": [
+    30000
+  ],
+  "requested_repeats": 2,
+  "guard_policy": "Unmeasured durations: max observed response-rate x requested duration, margin1.5. Exact duration: at least3 observed nonzero responses, maximum observed motion x1.5+0.75deg. Zero responses stay in model/planner; always at least seed guard.",
+  "continued_from": "/home/linaro/S/steering/logs/batch_202610310008/response_model.json",
+  "inherited_measured_trials": 100,
+  "initial_angle_deg": 0.056999999999999995,
+  "purpose": "Known-duration start-range coverage; all A, not validation",
+  "both_directions_measured": true,
+  "final_angle_deg": 0.24900000000000003,
+  "returned_within_tolerance": true,
+  "release_verified_by_command": true
+}

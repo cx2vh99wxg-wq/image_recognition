@@ -9,11 +9,7 @@
 
 int main(void)
 {
-    int lock = open("/tmp/steering-actuator.lock", O_CREAT | O_RDWR | O_NOFOLLOW, 0600);
-    if (lock < 0 || flock(lock, LOCK_EX | LOCK_NB)) {
-        perror("Bench tool lock"); if (lock >= 0) close(lock); return 1;
-    }
-    if (fspi_init()) { close(lock); return 1; }
+    if (fspi_init()) { perror("FSPI owner lock/device"); return 1; }
     ControlSnapshot s = {0};
     int result = fspi_read_control_snapshot(&s);
     if (result) {
@@ -33,6 +29,6 @@ int main(void)
                s.speed.gear, s.speed.known);
         puts("Logical FPGA state only; no voltage or mechanical angle measurement.");
     }
-    fspi_cleanup(); close(lock);
+    fspi_cleanup();
     return result ? 1 : 0;
 }

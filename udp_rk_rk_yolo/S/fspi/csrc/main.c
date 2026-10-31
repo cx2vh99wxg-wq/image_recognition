@@ -24,6 +24,7 @@
 #include "../include/shared_memory.h"
 #include "lane_rule.h"
 #include "traffic_go_rule.h"
+#include "steering_runtime.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -439,6 +440,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
     printf("FSPI初始化成功！\n");
+    int closed_loop=steering_runtime_requested();
 
     // 先初始化原始请求与方向为释放；写1不解除已有的FPGA锁存。
     printf("初始化控制寄存器: 制动4写1，方向0-3写1\n");
@@ -490,6 +492,10 @@ int main(int argc, char *argv[]) {
     printf("\n");
     
     printf("=== 开始实际模式读取 ===\n");
+    if(closed_loop){
+        steer_result_t result=steering_runtime_init(0);
+        printf("[STEER_MODE] closed-loop requested result=%s; legacy turn pulses disabled\n",steer_result_name(result));
+    }
     printf("将持续监控FSPI寄存器0的模式值变化...\n");
     printf("按 Ctrl+C 退出程序\n\n");
     
@@ -522,7 +528,14 @@ int main(int argc, char *argv[]) {
     uint32_t current_curve_angle = 0;
     int curve_data_valid = 0;  // 标记当前周期的弯道数据是否有效
 
+    uint64_t next_policy_ns=0;
     while (g_running) {
+        if(closed_loop){
+            steering_runtime_tick();
+            uint64_t tick_now=line_clock_ns();
+            if(steering_pulse_active()||tick_now<next_policy_ns){steering_runtime_wait();continue;}
+            next_policy_ns=tick_now+100000000ULL;
+        }
         // 重置弯道数据有效标志
         curve_data_valid = 0;
 
@@ -582,10 +595,18 @@ int main(int argc, char *argv[]) {
                         curve_name = "S-CURVE";
                         break;
                 }
-                const char* pos_name = wheel_position == WHEEL_LEFT ? "LEFT" :
-                                       wheel_position == WHEEL_RIGHT ? "RIGHT" : "NEUTRAL";
-                printf("[SHM Read] Frame%u: %s | Conf:%u%% | Angle:%u | Wheel:%s\n",
-                       current_curve_frame_id, curve_name, current_curve_confidence, current_curve_angle, pos_name);
+                if(closed_loop){
+                    steering_state_t measured;
+                    steering_get_state(&measured);
+                    printf("[SHM Read] Frame%u: %s | Conf:%u%% | RoadAngle:%u | WheelDeg:%.3f | Feedback:%d\n",
+                           current_curve_frame_id, curve_name, current_curve_confidence, current_curve_angle,
+                           measured.angle_deg, measured.feedback_valid);
+                } else {
+                    const char* pos_name = wheel_position == WHEEL_LEFT ? "LEFT" :
+                                           wheel_position == WHEEL_RIGHT ? "RIGHT" : "NEUTRAL";
+                    printf("[SHM Read] Frame%u: %s | Conf:%u%% | Angle:%u | Wheel:%s\n",
+                           current_curve_frame_id, curve_name, current_curve_confidence, current_curve_angle, pos_name);
+                }
             }
         }
 
@@ -593,7 +614,10 @@ int main(int argc, char *argv[]) {
         int control_io_failed = monitor_emergency_brake();
 
         // 3. 根据弯道检测结果执行自动转向控制（在读取FSPI指令之前）
-        if (!control_io_failed && curve_data_valid) {
+        if(closed_loop){
+            steering_runtime_lane(!control_io_failed&&curve_data_valid,current_curve_frame_id,
+                current_curve_type,current_curve_confidence,current_curve_angle);
+        } else if (!control_io_failed && curve_data_valid) {
             // 静态变量跟踪上次的弯道类型，用于避免重复执行
             static CurveType last_applied_curve_type = CURVE_NONE;
             static uint32_t last_applied_confidence = 0;
@@ -705,10 +729,11 @@ int main(int argc, char *argv[]) {
         }
         
         // 每100ms检测一次，响应更快
-        usleep(100000);
+        if(closed_loop)steering_runtime_wait();else usleep(100000);
     }
     
     publish_motion_hint(0);
+    if(closed_loop)steering_runtime_close();
     // 程序退出前的清理工作
     printf("\n=== 程序退出清理 ===\n");
 

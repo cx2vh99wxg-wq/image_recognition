@@ -1,0 +1,883 @@
+{
+  "schema": "STEER_PARTITION_RESPONSE_V2",
+  "reference": [
+    290675832,
+    0
+  ],
+  "partition_width_deg": 6,
+  "cells": [
+    {
+      "zone": -3,
+      "zone_low_deg": -21.0,
+      "zone_high_deg": -15.0,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 2,
+      "start_min_deg": -16.0407829,
+      "start_max_deg": -15.1250353,
+      "mean_deg": 4.95089865,
+      "stddev_deg": 0.9644810630377462,
+      "responses_deg": [
+        4.26890755,
+        5.63288975
+      ],
+      "peak_low_deg": -0.0282173157,
+      "peak_high_deg": 5.82403564
+    },
+    {
+      "zone": -2,
+      "zone_low_deg": -15.0,
+      "zone_high_deg": -9.0,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 5,
+      "start_min_deg": -14.4293575,
+      "start_max_deg": -9.49496365,
+      "mean_deg": 3.742651462,
+      "stddev_deg": 0.4269239081486532,
+      "responses_deg": [
+        4.09401798,
+        3.57367802,
+        3.25243568,
+        4.2769289,
+        3.51619673
+      ],
+      "peak_low_deg": -0.00398254395,
+      "peak_high_deg": 4.42635727
+    },
+    {
+      "zone": -2,
+      "zone_low_deg": -15.0,
+      "zone_high_deg": -9.0,
+      "direction": 2,
+      "first_us": 25000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 3,
+      "start_min_deg": -12.784893,
+      "start_max_deg": -11.125,
+      "mean_deg": -2.4156961433333333,
+      "stddev_deg": 2.1250747639619467,
+      "responses_deg": [
+        -3.25037956,
+        0,
+        -3.99670887
+      ],
+      "peak_low_deg": -5.26799965,
+      "peak_high_deg": 0.00189304352
+    },
+    {
+      "zone": -2,
+      "zone_low_deg": -15.0,
+      "zone_high_deg": -9.0,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 2,
+      "start_min_deg": -9.49318218,
+      "start_max_deg": -9.22662449,
+      "mean_deg": -4.633382320000001,
+      "stddev_deg": 0.41654640831721035,
+      "responses_deg": [
+        -4.33883953,
+        -4.92792511
+      ],
+      "peak_low_deg": -5.74381828,
+      "peak_high_deg": 0.0116243362
+    },
+    {
+      "zone": -1,
+      "zone_low_deg": -9.0,
+      "zone_high_deg": -3.0,
+      "direction": 1,
+      "first_us": 25000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 1,
+      "start_min_deg": -4.21109104,
+      "start_max_deg": -4.21109104,
+      "mean_deg": 0.00509119034,
+      "stddev_deg": null,
+      "responses_deg": [
+        0.00509119034
+      ],
+      "peak_low_deg": -0.00190877914,
+      "peak_high_deg": 0.00609111786
+    },
+    {
+      "zone": -1,
+      "zone_low_deg": -9.0,
+      "zone_high_deg": -3.0,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 6,
+      "start_min_deg": -8.5315094,
+      "start_max_deg": -4.20599985,
+      "mean_deg": 3.0454337183333333,
+      "stddev_deg": 0.7105089349315666,
+      "responses_deg": [
+        1.84310722,
+        3.22616339,
+        3.37136388,
+        2.56994581,
+        3.51323628,
+        3.74878573
+      ],
+      "peak_low_deg": -0.00549030304,
+      "peak_high_deg": 3.85500002
+    },
+    {
+      "zone": -1,
+      "zone_low_deg": -9.0,
+      "zone_high_deg": -3.0,
+      "direction": 2,
+      "first_us": 25000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 2,
+      "start_min_deg": -3.95499992,
+      "start_max_deg": -3.95221806,
+      "mean_deg": -2.082272651065,
+      "stddev_deg": 2.942772370876235,
+      "responses_deg": [
+        -0.00141835213,
+        -4.16312695
+      ],
+      "peak_low_deg": -4.23900032,
+      "peak_high_deg": 0.00321817398
+    },
+    {
+      "zone": -1,
+      "zone_low_deg": -9.0,
+      "zone_high_deg": -3.0,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 4,
+      "start_min_deg": -8.51389313,
+      "start_max_deg": -4.08178568,
+      "mean_deg": -3.855680705,
+      "stddev_deg": 0.6396321773179574,
+      "responses_deg": [
+        -3.74280024,
+        -4.42643213,
+        -4.25287056,
+        -3.00061989
+      ],
+      "peak_low_deg": -4.58221388,
+      "peak_high_deg": 0.0059633255
+    },
+    {
+      "zone": 0,
+      "zone_low_deg": -3.0,
+      "zone_high_deg": 3.0,
+      "direction": 1,
+      "first_us": 19000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 4,
+      "start_min_deg": -2.75138187,
+      "start_max_deg": 2.36800003,
+      "mean_deg": 0.8830195734099999,
+      "stddev_deg": 1.0282193669054445,
+      "responses_deg": [
+        0.00455096364,
+        1.57821822,
+        1.94930911,
+        0
+      ],
+      "peak_low_deg": -0.0080909133,
+      "peak_high_deg": 2.08038187
+    },
+    {
+      "zone": 0,
+      "zone_low_deg": -3.0,
+      "zone_high_deg": 3.0,
+      "direction": 1,
+      "first_us": 20000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 4,
+      "start_min_deg": -0.957482159,
+      "start_max_deg": 0.298000008,
+      "mean_deg": 0.36092186055,
+      "stddev_deg": 0.7291400615720166,
+      "responses_deg": [
+        0.003672719,
+        -0.0130311251,
+        -0.0015360117,
+        1.45458186
+      ],
+      "peak_low_deg": -0.0147454143,
+      "peak_high_deg": 1.64400005
+    },
+    {
+      "zone": 0,
+      "zone_low_deg": -3.0,
+      "zone_high_deg": 3.0,
+      "direction": 1,
+      "first_us": 25000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 3,
+      "start_min_deg": -0.782999992,
+      "start_max_deg": 1.75999999,
+      "mean_deg": 1.8151450533333333,
+      "stddev_deg": 0.6695746029166616,
+      "responses_deg": [
+        1.34672725,
+        1.51665449,
+        2.58205342
+      ],
+      "peak_low_deg": 0,
+      "peak_high_deg": 2.8349998
+    },
+    {
+      "zone": 0,
+      "zone_low_deg": -3.0,
+      "zone_high_deg": 3.0,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 9,
+      "start_min_deg": -2.54900002,
+      "start_max_deg": 2.36800003,
+      "mean_deg": 2.333095683333333,
+      "stddev_deg": 0.9798850693458824,
+      "responses_deg": [
+        1.28062499,
+        1.36519992,
+        1.79730034,
+        2.73003626,
+        1.29042864,
+        2.23081827,
+        3.96524644,
+        3.29734993,
+        3.04085636
+      ],
+      "peak_low_deg": -0.00951784849,
+      "peak_high_deg": 4.17080021
+    },
+    {
+      "zone": 0,
+      "zone_low_deg": -3.0,
+      "zone_high_deg": 3.0,
+      "direction": 2,
+      "first_us": 19000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 4,
+      "start_min_deg": -0.801089287,
+      "start_max_deg": 2.37348223,
+      "mean_deg": -0.405641154215,
+      "stddev_deg": 0.8112818465115186,
+      "responses_deg": [
+        0,
+        -1.62255359,
+        0.00408929586,
+        -0.00410032272
+      ],
+      "peak_low_deg": -1.67539287,
+      "peak_high_deg": 0.00851774216
+    },
+    {
+      "zone": 0,
+      "zone_low_deg": -3.0,
+      "zone_high_deg": 3.0,
+      "direction": 2,
+      "first_us": 20000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 4,
+      "start_min_deg": -0.958999991,
+      "start_max_deg": 0.305163622,
+      "mean_deg": -1.2708802747524999,
+      "stddev_deg": 2.536107004435232,
+      "responses_deg": [
+        0,
+        0,
+        -5.07503605,
+        -0.00848504901
+      ],
+      "peak_low_deg": -5.36499977,
+      "peak_high_deg": 0.0158363879
+    },
+    {
+      "zone": 0,
+      "zone_low_deg": -3.0,
+      "zone_high_deg": 3.0,
+      "direction": 2,
+      "first_us": 25000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 4,
+      "start_min_deg": -0.980982125,
+      "start_max_deg": 1.75271428,
+      "mean_deg": -1.1249932039625,
+      "stddev_deg": 0.8164639604866432,
+      "responses_deg": [
+        -1.06526792,
+        -1.67751813,
+        -1.76447248,
+        0.00728571415
+      ],
+      "peak_low_deg": -1.80501795,
+      "peak_high_deg": 0.00828576088
+    },
+    {
+      "zone": 0,
+      "zone_low_deg": -3.0,
+      "zone_high_deg": 3.0,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 8,
+      "start_min_deg": -1.51496363,
+      "start_max_deg": 2.56517863,
+      "mean_deg": -2.97180969875,
+      "stddev_deg": 1.3050838027185458,
+      "responses_deg": [
+        -1.87797141,
+        -1.79849243,
+        -1.76262498,
+        -1.60482275,
+        -4.06945133,
+        -3.9472909,
+        -4.24427843,
+        -4.46954536
+      ],
+      "peak_low_deg": -4.56899977,
+      "peak_high_deg": 0.00996363163
+    },
+    {
+      "zone": 1,
+      "zone_low_deg": 3.0,
+      "zone_high_deg": 9.0,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 9,
+      "start_min_deg": 3.65899992,
+      "start_max_deg": 8.71450901,
+      "mean_deg": 2.105018588888889,
+      "stddev_deg": 0.3409579322044418,
+      "responses_deg": [
+        2.23030376,
+        2.02698231,
+        1.66987514,
+        2.61499715,
+        2.10274506,
+        1.79370975,
+        2.5399642,
+        2.25076008,
+        1.71582985
+      ],
+      "peak_low_deg": -0.0158393383,
+      "peak_high_deg": 2.88116097
+    },
+    {
+      "zone": 1,
+      "zone_low_deg": 3.0,
+      "zone_high_deg": 9.0,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 6,
+      "start_min_deg": 3.92000008,
+      "start_max_deg": 8.38761806,
+      "mean_deg": -3.5141099283333332,
+      "stddev_deg": 0.7956047140411828,
+      "responses_deg": [
+        -1.94600081,
+        -3.48837495,
+        -4.01767254,
+        -3.76083946,
+        -3.80347538,
+        -4.06829643
+      ],
+      "peak_low_deg": -4.1766181,
+      "peak_high_deg": 0.00538158417
+    },
+    {
+      "zone": 2,
+      "zone_low_deg": 9.0,
+      "zone_high_deg": 15.0,
+      "direction": 1,
+      "first_us": 25000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 3,
+      "start_min_deg": 11.6610365,
+      "start_max_deg": 12.6330538,
+      "mean_deg": 0.7484858833333333,
+      "stddev_deg": 0.2765168439005292,
+      "responses_deg": [
+        0.965363503,
+        0.437107086,
+        0.842987061
+      ],
+      "peak_low_deg": -0.00832176208,
+      "peak_high_deg": 1.5669632
+    },
+    {
+      "zone": 2,
+      "zone_low_deg": 9.0,
+      "zone_high_deg": 15.0,
+      "direction": 1,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 5,
+      "start_min_deg": 9.59212494,
+      "start_max_deg": 11.6434002,
+      "mean_deg": 1.3295930878000002,
+      "stddev_deg": 0.4479439311620898,
+      "responses_deg": [
+        1.45632935,
+        0.571363449,
+        1.42116356,
+        1.43000031,
+        1.76910877
+      ],
+      "peak_low_deg": -0.00640010834,
+      "peak_high_deg": 2.30550861
+    },
+    {
+      "zone": 2,
+      "zone_low_deg": 9.0,
+      "zone_high_deg": 15.0,
+      "direction": 2,
+      "first_us": 30000,
+      "brake_us": 0,
+      "gap_us": 2000,
+      "priority": 10,
+      "n": 6,
+      "start_min_deg": 10.5924187,
+      "start_max_deg": 13.0979996,
+      "mean_deg": -2.8002698416666667,
+      "stddev_deg": 0.8803910903077939,
+      "responses_deg": [
+        -2.48651791,
+        -4.56869125,
+        -2.387146,
+        -2.72162485,
+        -2.25083923,
+        -2.38679981
+      ],
+      "peak_low_deg": -4.63041878,
+      "peak_high_deg": 0.00433921814
+    }
+  ],
+  "sources": [
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/001_CALIBRATION_left_30000.json",
+      "sha256": "385f2d709c5cfe82d13d985b1292d583cfa7b7200a6f733d98691f7568f58678"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/002_CALIBRATION_right_30000.json",
+      "sha256": "c1252bfe3137f541cf42e8c8cdf8f288308afdc17cf94fc5af4080ad6fe411e9"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/003_CALIBRATION_left_20000.json",
+      "sha256": "ce15ec23e5bef7a831de238ce8c57b95c78d1cc73eec15bf4f022dcd0a129b8e"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/004_CALIBRATION_right_20000.json",
+      "sha256": "97e9f2bef67d49162e5a041e50974ee162a5d949433071bd1ab16c50f488a96c"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/005_CALIBRATION_left_25000.json",
+      "sha256": "a00062aabdae32bd279f732f04fcbd7d0e415e0cb65e84928858c0150d24b848"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/006_CALIBRATION_right_25000.json",
+      "sha256": "c6c10e0b09dae20eaf03257584f2f14cd2675faa4b4275884bcb14a5bb20662e"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/007_CALIBRATION_left_19000.json",
+      "sha256": "74f8907e470b4eb8cf9cce421563a02ef2ed50a5eab0edfd5725d62d0e2d44c8"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/008_CALIBRATION_right_19000.json",
+      "sha256": "00ad742d4eef705bd231b54edd865f8189832c46f2cdd7cfe7c06542fdb2adb2"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/009_CALIBRATION_left_30000.json",
+      "sha256": "5a7c2967e14cdce79b4c224be88075b937b447e2bab61f605648a553268044ad"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/010_CALIBRATION_right_30000.json",
+      "sha256": "ea13311b0bbb17d6bf5cf7f9fa4a501896ab84505e73a889b5731f3575a62fe8"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/011_CALIBRATION_left_20000.json",
+      "sha256": "8d15f9c819ee2ef4cfc8080bbb888d034547ae6612edd0ea9b8479e0dc361522"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/012_CALIBRATION_right_20000.json",
+      "sha256": "ed65e5a15a71663900afd151a41bb784937fee8d7945db8b27bfe6efe90af69c"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/013_CALIBRATION_left_25000.json",
+      "sha256": "2d2ee248d3dc7e557bc7cf0647414a000d4cb7bd95a8bd44ee98b17a77e3665a"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/014_CALIBRATION_right_25000.json",
+      "sha256": "e59fe188aedf79011ce2b4363f6aeb3c967ea93fdbf739003376a41774cd3f79"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/015_CALIBRATION_left_19000.json",
+      "sha256": "95b2929eee2f38cb2131f56fa78d4a56554d9f4069ea175702502d6370513266"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/016_CALIBRATION_right_19000.json",
+      "sha256": "c7e1a3b441c361afe810279278637a44a45f01b7c072d69dae49a88803a84586"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/017_CALIBRATION_left_30000.json",
+      "sha256": "9ddf122da8d9028b3be455270252567d506784a6e7bd41d2f4bd0dcf88defd0a"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/018_CALIBRATION_right_30000.json",
+      "sha256": "be14db61c2d004f0aaf428588049d6ffd3f15f264d7619cfd62888d91665f464"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/019_CALIBRATION_left_20000.json",
+      "sha256": "bc2dccb4a161860ec5d06e7cbab6b9ef549079756a0b6ae2ef7eac536216cde8"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/020_CALIBRATION_right_20000.json",
+      "sha256": "23e3eaaa4d4b101054a65dbe83b887713188442b6207f48c8f89e5d39dfba3f4"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/021_CENTER_POSITION_left_30000.json",
+      "sha256": "504f96ae813ae4f674b16a4695ffe132fcd7fb0af45b7082e2cc2da9c8bcbd2a"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/022_CALIBRATION_left_25000.json",
+      "sha256": "23ec6bdb62991182b57ac47eb720a8672d9eedafa6e5a44d821ff1e98a7e3fde"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/023_CENTER_POSITION_left_30000.json",
+      "sha256": "9e51b8bd6c4ef8ffef8484e21c472c1072afc7394c9ceeed13e2f745f38294cc"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/024_CALIBRATION_right_25000.json",
+      "sha256": "5006a5c38188c85b32eafde19db1e09acef3f0f8495960fc89b8dbb4be07b6e5"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/025_CALIBRATION_left_19000.json",
+      "sha256": "0a518adeafd954b222045aaf4aa48a79ebc997f5ccf268b7157eb55ea10354bc"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/026_CALIBRATION_right_19000.json",
+      "sha256": "4f84f85efe51064bb5852f76f3a508f9d3bd916fce702c7ae7e6862d5a83fb27"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/027_CALIBRATION_left_30000.json",
+      "sha256": "9f0ccb94141186ba5edc59587a1bbab166e28c5ddf985d07829ae0310d62a653"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/028_CALIBRATION_right_30000.json",
+      "sha256": "d0258f603f4e2522383a90c976ac24e9b3d953d65e13e9d4ecff3f9977572e70"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/029_CALIBRATION_right_20000.json",
+      "sha256": "457ce2c19bc9e3e44028171080ea68e4ed360e7a63d830ce96cb2d148921ee67"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/030_CALIBRATION_left_20000.json",
+      "sha256": "2ef3b31ba9271b1724bed157d59d21a4aaae63d38c38becb7afcea2bb7768f5e"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/031_CALIBRATION_right_25000.json",
+      "sha256": "565007fff2778a5d1e22bad5d017c23bd2314d5767a62c334f73d1fee6d1e891"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/032_CALIBRATION_left_25000.json",
+      "sha256": "2f097bc40ff86eff7b1ffcf98e224f186cc298e5d09a94dcfa8a34b3b9f759b8"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/033_CENTER_POSITION_right_30000.json",
+      "sha256": "add0a282d449d16a584784064786ccf4833cdf34be0ebdab791f28fe8b3e5626"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/034_CALIBRATION_right_19000.json",
+      "sha256": "fe000f88a230be21bafff86783d3526ddfd2d1f938c5cfac48f27f8712906acf"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/center/035_CALIBRATION_left_19000.json",
+      "sha256": "677ddcab7207ad2c072a1c1d445e071658c8ee7bcd9c1b8d6bb3a3f4196670f5"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/001_PARTITION_PILOT_left_30000.json",
+      "sha256": "068925e384f7cc53cd4fb57b145232a0345dda36b570e299f9ba82836cd70584"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/002_PARTITION_PILOT_left_30000.json",
+      "sha256": "8afe40b8e282309057e52391018be6bffc250f9a8bba796fd27b0a208726f05b"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/003_PARTITION_PILOT_left_30000.json",
+      "sha256": "2917fbda8f43a9f942cc6718752d0635c7af4b1df0fcac97622d1efa6e809d29"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/004_PARTITION_PILOT_left_30000.json",
+      "sha256": "3d573f011285cd2f939ff58723126a9a78ff7157e758022cc188ab08ccb0ae5f"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/005_PARTITION_PILOT_left_30000.json",
+      "sha256": "cdefcae2a0332adb6f4f3aaeec20456d4cfa2dfffaf85961223add954ff5800a"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/006_PARTITION_PILOT_left_30000.json",
+      "sha256": "894c77a18a32d9791eba55bd211e3c59b2976abc0f4470b0afc0c74dc53ca31e"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/007_PARTITION_PILOT_left_30000.json",
+      "sha256": "4bced510b1d28e585efccf0335e41503d551c3f2118a5e41fe525b574f895b9f"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/008_PARTITION_PILOT_right_30000.json",
+      "sha256": "cb6052f92fee065b53fbf23ef1af8518bf899d46e25f60d9f7deaa29b1dfc373"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/009_PARTITION_PILOT_right_30000.json",
+      "sha256": "d4a6a8d003f453e2f949898ec7c935603dde59c64078f68c1ffb2fd8f9ffdce3"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/010_PARTITION_PILOT_right_30000.json",
+      "sha256": "ecaf4d0bf8e25909818e7467b7062b48571731e4035929ec0ae72a24a6bff4de"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/011_PARTITION_PILOT_right_30000.json",
+      "sha256": "9945c4795c03125d4214999a75544c98af5b43bd73a4605dce86451d09dfbf2e"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/012_PARTITION_PILOT_right_30000.json",
+      "sha256": "b019a0a64474ea6314826d47d7e4eb9112190fb1aef0cb20e79d7835780c1df3"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/013_PARTITION_PILOT_right_30000.json",
+      "sha256": "1990af4c4f01268b1d5f6ed96ed619ba384532ff333977a1bb45f891da7dda16"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/014_PARTITION_PILOT_right_30000.json",
+      "sha256": "2bf248b0993c11cfdf41e79819ac34be77c049aa388b5440f53663bacad98750"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/015_PARTITION_PILOT_left_30000.json",
+      "sha256": "120bfe159785841efb57d4ee3e93d5865e4c4d18fe81fca9aded362d1f123c41"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/016_PARTITION_PILOT_left_30000.json",
+      "sha256": "ecec209ff99cd47ebea13597091131738ab56c27d0ba46ec508171b7d521ab40"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/017_PARTITION_PILOT_left_30000.json",
+      "sha256": "37dadebdc3098e20fa8022ee239ba5b152303e5261637c1a35aba0e001b4601a"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/018_PARTITION_PILOT_left_30000.json",
+      "sha256": "4392db117017d945ba18ca2c6f796af08006903cb9b050eed79672a087a76cec"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/019_PARTITION_PILOT_left_30000.json",
+      "sha256": "8b54f624d95bdf5388f439a6b6f50c8dde742308ea01bc1a5a4cc2c6e1abc190"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/020_PARTITION_PILOT_left_30000.json",
+      "sha256": "cbbb5bed19cecf3491ac64669349319cd0fb3fe7d457e1b8179a53f2f53a37a0"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/021_PARTITION_PILOT_left_30000.json",
+      "sha256": "406d544fa662c6255af9f4c6f53d087e289fbd6799ac931f08751ab8ce9d6f5f"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/022_PARTITION_PILOT_left_30000.json",
+      "sha256": "3b28cfe88d51e183855d51412e6d0c6c2d3658f2e63bbdc34e80481feb77dca5"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/023_PARTITION_PILOT_left_30000.json",
+      "sha256": "e8d2f6342972814cb9c996a1e3a9d62c3f784c16108a5de7ceccce0246e50448"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/024_PARTITION_PILOT_left_25000.json",
+      "sha256": "60fe538a2d6382b7035e68e373598e0c66d86b43219aa19789704af33694ca72"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/025_PARTITION_PILOT_left_25000.json",
+      "sha256": "9e217f55eca7ad84cc977c86f93d9b41c05cfa041f86b008d782b3ce45bb5299"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/026_PARTITION_PILOT_right_30000.json",
+      "sha256": "1b0bf12a152d03c712555c92d12e07b4e932d9dd6321beb67484a1c28d928881"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/027_PARTITION_PILOT_right_30000.json",
+      "sha256": "009823fb4b2f42e53ceee0caf14e13749d93459be076384368e7695cbbdfa24b"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/028_PARTITION_PILOT_right_30000.json",
+      "sha256": "f4dd77b8c657e5f818142e932bd8798214a0297aa60f3e5524f0148a5e953fe3"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/029_PARTITION_PILOT_right_30000.json",
+      "sha256": "603f7e5123d3a1d2eb38f02da4218b8e9f0431719baedf5c64fa55adf162de9d"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/030_PARTITION_PILOT_right_30000.json",
+      "sha256": "7af6012b227f8ca49b3d69c3425adee41d3003204d292ff3d891a5011de0f2b8"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/031_PARTITION_PILOT_right_30000.json",
+      "sha256": "f1a6cdbe8b70cd8117a8bb99f522caa4c79d7ad89f6294165349587f3f7ea88e"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/032_PARTITION_PILOT_right_30000.json",
+      "sha256": "bad7a170d10ad8970b85a4d07aa7c79d3e6ab08d959e42678840cb9ff19ee3fa"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/033_PARTITION_PILOT_right_25000.json",
+      "sha256": "b47d65a9a51f70e6f0d120892600d89eb2f177e6eaa87699d264bababc9efaf2"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/034_PARTITION_PILOT_left_30000.json",
+      "sha256": "bc1a2b3184ab67922a77f2792f79270115a26bf1d5c36b37df180d31a2d8cbde"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/035_PARTITION_PILOT_left_30000.json",
+      "sha256": "eb7daf778847229b8e839e6cd740b977d3d955fe3c8bc6d3fc84b7b5aff3d15d"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/036_PARTITION_PILOT_left_30000.json",
+      "sha256": "16875f712b763e26e138eaa4dd86fab80e9f36e234964948b81b52600b7e62f5"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/037_PARTITION_PILOT_left_30000.json",
+      "sha256": "a4862e611046cb0b7be7664d220bdcd401778afffd07d7140fd78e90df7801b0"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/038_PARTITION_PILOT_left_30000.json",
+      "sha256": "afef9657e7b641a49b708ab6bcdd411d8c6218da0348bb3956efbfcc4d12c4b6"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/039_PARTITION_PILOT_left_30000.json",
+      "sha256": "29cd2f5288bbd1d6a8c1a4109a1a14dc47ba6f24d0265510f22215b0e8107c59"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/040_PARTITION_PILOT_left_30000.json",
+      "sha256": "02f2e5122b7bf3fc2e54a2480e244d9f7bc9b41aca6be9d7e8dfd811086d7a1a"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/041_PARTITION_PILOT_left_30000.json",
+      "sha256": "26e2c36dcbbd1ac26c42d43a219f754949f53a2eefe258dfdc8a585f0d7088b3"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/042_PARTITION_PILOT_left_30000.json",
+      "sha256": "bd4a9221699c452749332cbf27f4bca84a34173d09bcea0c706074cb9b2bed5a"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/043_PARTITION_PILOT_left_30000.json",
+      "sha256": "d9020be62c2a309df2eb9f6aa9f4a7c486ded4e49e42afbe33b96e783aef024a"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/044_PARTITION_PILOT_left_25000.json",
+      "sha256": "cf69150bf6a2c5617440fae7f12486132518fbfef21648a1862bc88a2a66451d"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/045_PARTITION_PILOT_right_30000.json",
+      "sha256": "967c9aa2d37f30f4e887251a3462d50aa8d7d2a6bc591bef537181c7dca3edd8"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/046_PARTITION_PILOT_right_30000.json",
+      "sha256": "af94c92dd20b6ffb11067c35a598b8019044f918b632164a4e0939ea0b6ba43d"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/047_PARTITION_PILOT_right_30000.json",
+      "sha256": "5353f815d86c875249eaee41336b5b344a806321bdfbd95e425218d998fd8a79"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/048_PARTITION_PILOT_right_30000.json",
+      "sha256": "c5491aee04c32ee7de539f9c033d1e78e0e9c016a1d4459a3d3abd44a97e8347"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/049_PARTITION_PILOT_right_30000.json",
+      "sha256": "82fccdb7aadd7444967727510ca869d0ffe4e4e8a6afd9f7b25d378015d07440"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/050_PARTITION_PILOT_right_25000.json",
+      "sha256": "ac85c9aac3ad8fb558d1354d3af7b5162f55dbea4621150e81ca9a11f007a12f"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/051_PARTITION_PILOT_right_25000.json",
+      "sha256": "8a986e64812d2069766c5c8723a65d6a547e19853c61df6c17224da048975e01"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/052_PARTITION_PILOT_right_30000.json",
+      "sha256": "9f323930dbb0fabba5fdd7021bb2df810c0013a59564eb88b2ccbb3247627200"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/053_PARTITION_PILOT_right_25000.json",
+      "sha256": "6a24c7773a90d0c9a86970a33ff2d0a30f8810619ef205d9f0bd7d64c962daec"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/054_PARTITION_PILOT_right_25000.json",
+      "sha256": "004d0241213c1134ca2c2effe305922ccbd75ab5a909f92bc941fd4c773c837a"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/055_PARTITION_PILOT_left_30000.json",
+      "sha256": "acafd0e3feef7dae467f03e4b11770662233aabd34381b55fe6daabac1fd62f2"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/056_PARTITION_PILOT_right_30000.json",
+      "sha256": "1568825f28f210f8c3dda3bf260ad1267fed00a1783ae97f38e10ca7ba92ac50"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/057_PARTITION_PILOT_left_30000.json",
+      "sha256": "5ce0e3cdfb7e44a3304e154008233841cbcc9407fa1e893bf1dfaba39d326886"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/058_PARTITION_PILOT_left_30000.json",
+      "sha256": "aef242f76a2255ecff1db59c34dec639ace79179b0bab7a2551afc6c137a0b8c"
+    },
+    {
+      "file": "/home/linaro/steering_mount_20261031/sweep/059_PARTITION_PILOT_left_30000.json",
+      "sha256": "1e9c681a712d291fdfa0006779dbf447355d21ec2c314efcc0dd6abeba09285d"
+    }
+  ],
+  "rejected": [],
+  "qualified_for_road_control": false
+}

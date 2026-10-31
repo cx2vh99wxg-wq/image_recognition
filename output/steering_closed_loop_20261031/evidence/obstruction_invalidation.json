@@ -1,0 +1,13 @@
+{
+  "reason": "Operator reported possible wheel obstruction; now removed",
+  "invalidated_runs": [
+    "202610310002",
+    "202610310003"
+  ],
+  "invalidated_supplement": true,
+  "invalidated_goal_series": true,
+  "release_command_ok": true,
+  "stopped": [
+    6135
+  ]
+}

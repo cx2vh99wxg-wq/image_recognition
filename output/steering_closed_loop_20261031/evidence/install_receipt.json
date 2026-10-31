@@ -1,0 +1,257 @@
+{
+  "state": "UPDATED_NOT_STARTED",
+  "mode_changed": false,
+  "entries": [
+    {
+      "path": "S/fspi/Makefile",
+      "old_sha256": "86d516f9d0906ee7f61f8b868926d7e50c7f5573fe51e335b24930bf62c41c6f",
+      "new_sha256": "33b136c960b85e6b60e7b76c02af297ebc10c6f84063d9f9684740e50331da72",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    {
+      "path": "S/fspi/csrc/fspi_module.c",
+      "old_sha256": "21643a42b5dc5ee0545393c90483730a853bb5c647e0ea4b87d104763c4acd27",
+      "new_sha256": "7e31b9c93ba6245039e261649a0ed349ecd229a7accab986e7226e815807775f",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    {
+      "path": "S/fspi/csrc/main.c",
+      "old_sha256": "75de9bf1172f9d0db1de58091bec4c004c7afd2869485bbbc95e1fee084a07b6",
+      "new_sha256": "f9198501610aeeec1910c960d24c6bd6b999e14f50cf3c6df37b204976c60013",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    {
+      "path": "S/fspi/include/fspi_module.h",
+      "old_sha256": "a4127c96dc316b4f08eed36fe87a77cbb980088b5375d38714924333ab67497d",
+      "new_sha256": "d688b8c0e7462764224f8fb36afb0f7374f1f0283c97986b34f4d6a8780e807d",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    {
+      "path": "S/fspi/test_spi_owner.c",
+      "old_sha256": null,
+      "new_sha256": "b66e4e97c342f8406be8240fe06f487ad9037188c10b2f2d583a946c45b1353a"
+    },
+    {
+      "path": "S/steering/actuator/backend_fspi.c",
+      "old_sha256": "3d41b20a0a8a8b66a613d04b6f0f36524fc5a6738568c8d3d00a0baad5abc094",
+      "new_sha256": "12346e4164b1b345e31fb43ab581592f0a8250099316bb18521e68131d8d70c9",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    {
+      "path": "S/steering/controller/README.md",
+      "old_sha256": "4b2b20dc30767e6c22f3cf9f44a955d9bf803cde4b5cc50044415777f0c077c1",
+      "new_sha256": "985c75b6ae6068bc4bfc5403a36877143eaf64286f2fe6c64cb659dfd0a4bfb6",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    {
+      "path": "S/steering/controller/steering_api.h",
+      "old_sha256": "37cec1f79b5481d04c7f17c1cf4dac84c8f22fb65c5fdab644c644a992c95ff9",
+      "new_sha256": "da8eb8da43379529beca7c0ecaeceb2a1e25294421fe1f42fd198fac8cfae14b",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    {
+      "path": "S/steering/controller/steering_controller.c",
+      "old_sha256": "a3d4eba8726d5c5fc95990227b1d80d1e88b42114ff0a09c3f2f4225771337a3",
+      "new_sha256": "a73eaf06179e375f634856aecd89c13331319a80203dab124c1620551f222d24",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    {
+      "path": "S/steering/controller/steering_keepalive.c",
+      "old_sha256": null,
+      "new_sha256": "9e1d3cf6b73bfda828e900aced062c1309c87d910ae4839be2504c1ba42052a3"
+    },
+    {
+      "path": "S/steering/controller/steering_keepalive.h",
+      "old_sha256": null,
+      "new_sha256": "7e90f08d8e943855785a3d8123dc9ae0ad310a7df48d167a21194a26bf45caed"
+    },
+    {
+      "path": "S/steering/controller/steering_response.c",
+      "old_sha256": null,
+      "new_sha256": "20eab53610b56e4bdb2dc8583402698f5102b3a37bd90c5ae2c90040106616b3"
+    },
+    {
+      "path": "S/steering/controller/steering_response.h",
+      "old_sha256": null,
+      "new_sha256": "c71f2284b5c1f7b30feae7cb5aa64dbf04b1a385a132fd71f2487e9debc385aa"
+    },
+    {
+      "path": "S/steering/controller/steering_runtime.c",
+      "old_sha256": null,
+      "new_sha256": "c1a358ffd6eb280899dc0cd53e07660f5b8cf73f3413bbae2fe1cf3ff1ef04be"
+    },
+    {
+      "path": "S/steering/controller/steering_runtime.h",
+      "old_sha256": null,
+      "new_sha256": "1cc513725de27b24484f153a356527bd29ac9eb5f30ffbb50465cd778d04f735"
+    },
+    {
+      "path": "S/steering/feedback/steering_feedback.c",
+      "old_sha256": "ac9d0659717f46138370fcd2be7a7135ed0d74287b3dedeb81154c83e3069431",
+      "new_sha256": "659e5292a9d6bc85fe1113a3a1055f9c3436c24c2671bbbb641e1882d7a17841",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    {
+      "path": "S/steering/feedback/steering_feedback.h",
+      "old_sha256": "21d7a2a6e5f937dead8d15591ce20755b08ba74746a1a86f888a4f2a95c3de45",
+      "new_sha256": "b746892a8bc9350be7849a621cea75a9c81e52d6145d724ecd1348fdc0af00b0",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    {
+      "path": "S/steering/tests/controller/test_controller.c",
+      "old_sha256": "6a489f81a57f0a060790ba5fccfcc06b74cc55994b1cf5dc298ddc30c3118c35",
+      "new_sha256": "df73faeb60e52f0f42dd5b61ba2c093ee780de83189425589540628b6022f684",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    {
+      "path": "S/steering/tests/controller/test_runtime_integration.c",
+      "old_sha256": null,
+      "new_sha256": "05a352f3251fe04bf2d6ff96cd4b578cc9e9948e76e70f281ae6cc99f45c39ab"
+    },
+    {
+      "path": "S/steering/tests/feedback/test_auto_calibration.py",
+      "old_sha256": null,
+      "new_sha256": "353fbaf77a1c2f465a6b4957bbe4d44725f54d302e725fe0bcf46ea5a3829967"
+    },
+    {
+      "path": "S/steering/tests/feedback/test_live_receiver.c",
+      "old_sha256": null,
+      "new_sha256": "06727c351333fe6373bd5d531483467b3f18ab5e7344b6d4f856b81facc55ec7"
+    },
+    {
+      "path": "S/steering/tools/actuator/steering_goal.c",
+      "old_sha256": null,
+      "new_sha256": "4981e8ee1c1cc0d24f47ec9ecee8d996db692c0e05bec46221155200c1b3a404"
+    },
+    {
+      "path": "S/steering/tools/actuator/steering_status.c",
+      "old_sha256": "85f789d0857ef032fb6bfba9c5f3aa8dad534ff3518c6ff15ac60469dd8d1169",
+      "new_sha256": "fef78c1a08638cbacf0ed6900de412861b2841a83ce304da087ebf924914b001",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    {
+      "path": "S/steering/tools/build.py",
+      "old_sha256": "424693fcc8369d82c5cb4e865c33a73a1af2fbecdcd4e6e4d636fa3f2eff86a8",
+      "new_sha256": "09e205dc167f7542a8d4471069baab40413d5e9dae2e68d5c43c2473ec27000f",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    {
+      "path": "S/steering/tools/calibration/export_runtime.py",
+      "old_sha256": null,
+      "new_sha256": "41da7966e3d56108a54550aa80bb82c4b8e4fd255cda5e8b48d42bcd16f39a50"
+    },
+    {
+      "path": "S/steering/tools/calibration/response_model.py",
+      "old_sha256": "b8417f9b572d561094ed4cf0d99e694258fd3a237211eeeb1ec34c3a7fa55161",
+      "new_sha256": "1e4616eea93aa55345d05e9a2948d546aac317402b1f4911676df0675e2d9376",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    {
+      "path": "S/steering/tools/calibration/steering_auto_calibrate.py",
+      "old_sha256": null,
+      "new_sha256": "7c69ad6f9f050c5329217ba373bd0dcb48baad6eb4bfcdbe9e943cbf9fb0f6e8"
+    },
+    {
+      "path": "S/steering/tools/calibration/steering_reference.py",
+      "old_sha256": null,
+      "new_sha256": "efed9c1d10335717540b35fd4744f11651cb9c808be1b5c59813d7e8f5246ec6"
+    },
+    {
+      "path": "S/steering/tools/calibration/steering_target.py",
+      "old_sha256": "e9678cce74aee09e8f1a382c333f8c722f29eac4dee436e8128bc22bd4a18797",
+      "new_sha256": "3095d5761f77171a60915838e09552520ebb04dbef4b036a88472aea56ac1d7b",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420
+    },
+    {
+      "path": "S/fspi/build/vehicle_control",
+      "old_sha256": "2ed37fbc3316c29a588cdc6320e861f8b2e63e77da51b86b6d58aa3a8da8dcea",
+      "new_sha256": "688f322cb8585292711dac3b0d8310f67d5e5e0ca47dfc1f6bb7dcdece9e976f",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 493
+    },
+    {
+      "path": "S/fspi/build/speed_gear_status",
+      "old_sha256": "3a96ea557a73856c4a763bd2750706a1ca29fe66f664e9ff64c4ad767869fbb5",
+      "new_sha256": "e0d6d05c7da1272c258c2ceee56542742141a2ae6edb379160a854b8c97414a8",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 493
+    },
+    {
+      "path": "S/fspi/build/control_link_status",
+      "old_sha256": "9015c0f670f12009c043dfc804ff66db4bee48e9f8fbc533dd36dcc65648b378",
+      "new_sha256": "f2cf147cca3370f8dc36135f62e6d7ffeb70e29f548eade663814ed1623e8005",
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 493
+    },
+    {
+      "path": "S/steering/actuator/build/steering_step_fspi",
+      "old_sha256": "a86d2025179e6bf3568a3fa2b1d094f073e41ca4054551270bb0e805a611b2c1",
+      "new_sha256": "e22922f6805ae88f4f7c2cdf67e9520d28337d88e20f904c14fed64d33bf1a5f",
+      "uid": 0,
+      "gid": 0,
+      "mode": 493
+    },
+    {
+      "path": "S/steering/actuator/build/steering_status",
+      "old_sha256": "9e90f3bdd628981639e9125d5940c3db85de082766b819c2ff7585d2e2238a19",
+      "new_sha256": "671a3fda9fc6071bec50a99dc5f76daa5b6ac97981d069c0e508b9072e921fe7",
+      "uid": 0,
+      "gid": 0,
+      "mode": 493
+    },
+    {
+      "path": "S/steering/actuator/build/steering_goal_fspi",
+      "old_sha256": null,
+      "new_sha256": "aa92a8c0980a6345cf26bec3cbe429e2a7f418e9e6e7b7fa6da0f2f8cf720713"
+    },
+    {
+      "path": "S/steering/feedback/build/steering_feedback_monitor",
+      "old_sha256": "d3e4e7036757bb8aa3bbca595a1a9e01385aa6b7ea21091b14bd6ab6d61401bf",
+      "new_sha256": "d3e4e7036757bb8aa3bbca595a1a9e01385aa6b7ea21091b14bd6ab6d61401bf",
+      "uid": 0,
+      "gid": 0,
+      "mode": 493
+    },
+    {
+      "path": "S/steering/tools/calibration/steering_bench.py",
+      "old_sha256": "af5ad583c5b6646504b9aa9f1f6d152ba4093f2a1ebc9a3f08558fc03a961b89",
+      "uid": 0,
+      "gid": 0,
+      "mode": 420,
+      "new_sha256": "4de32e94173a2e498e66aa622cd0cda5cc9726635f8524e0b34a6ef039adfe0b"
+    }
+  ]
+}
