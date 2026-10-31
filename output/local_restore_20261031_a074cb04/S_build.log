@@ -1,0 +1,632 @@
+编译共享库: csrc/shared_memory.c
+gcc -Iinclude -std=c99 -O3 -march=native -funroll-loops -pthread -fPIC -c csrc/shared_memory.c -o build/shared_memory.o
+创建共享库: build/libshared.a
+ar rcs build/libshared.a build/shared_memory.o
+=== 编译PCIe图像采集程序 ===
+make[1]: Entering directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/pcie'
+创建build目录
+mkdir -p build
+编译C文件: csrc/yolo_integration.c
+gcc -Wall -O3 -march=native -std=c11 -DYOLO_MODEL_PATH=\""model/RK3566_RK3568/yolov5s-640-640.rknn"\" -DYOLO_LABELS_PATH=\""model/coco_80_labels_list.txt"\" -Iinclude -I../include -I../rknn_yolov5_demo/include -c csrc/yolo_integration.c -o build/yolo_integration.o
+编译C文件: csrc/preprocess.c
+gcc -Wall -O3 -march=native -std=c11 -DYOLO_MODEL_PATH=\""model/RK3566_RK3568/yolov5s-640-640.rknn"\" -DYOLO_LABELS_PATH=\""model/coco_80_labels_list.txt"\" -Iinclude -I../include -I../rknn_yolov5_demo/include -c csrc/preprocess.c -o build/preprocess.o
+编译C文件: csrc/person_alert_effects.c
+gcc -Wall -O3 -march=native -std=c11 -DYOLO_MODEL_PATH=\""model/RK3566_RK3568/yolov5s-640-640.rknn"\" -DYOLO_LABELS_PATH=\""model/coco_80_labels_list.txt"\" -Iinclude -I../include -I../rknn_yolov5_demo/include -c csrc/person_alert_effects.c -o build/person_alert_effects.o
+编译C++文件: csrc/main.cpp
+g++ -Wall -O3 -march=native -std=c++11 -DYOLO_MODEL_PATH=\""model/RK3566_RK3568/yolov5s-640-640.rknn"\" -DYOLO_LABELS_PATH=\""model/coco_80_labels_list.txt"\" -Iinclude -I../include -I../rknn_yolov5_demo/include -c csrc/main.cpp -o build/main.o
+编译C++文件: csrc/postprocess.cpp
+g++ -Wall -O3 -march=native -std=c++11 -DYOLO_MODEL_PATH=\""model/RK3566_RK3568/yolov5s-640-640.rknn"\" -DYOLO_LABELS_PATH=\""model/coco_80_labels_list.txt"\" -Iinclude -I../include -I../rknn_yolov5_demo/include -c csrc/postprocess.cpp -o build/postprocess.o
+链接目标程序: build/app
+g++ build/yolo_integration.o build/preprocess.o build/person_alert_effects.o build/main.o build/postprocess.o -L./lib -L../build -lrknnrt -lshared -lpthread -lm -lrt -o build/app
+编译完成!
+make[1]: Leaving directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/pcie'
+PCIe程序编译完成: pcie/build/app
+=== 编译UDP网络接收后台程序 ===
+make[1]: Entering directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/udp'
+g++ -c -Iinclude -I../include -std=c++14 -O3 -march=native -funroll-loops -pthread -MMD -MP csrc/main.cpp -o build/main.o
+g++ build/main.o  -o build/video_receiver ../build/libshared.a -lrt -lpthread
+make[1]: Leaving directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/udp'
+UDP程序编译完成: udp/build/video_receiver
+=== 编译X11六摄像头渲染程序 ===
+make[1]: Entering directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/x11/csrc'
+创建构建目录: build
+mkdir -p build
+编译C++: main.cpp
+g++ -I../../include -Iinclude -std=c++14 -O3 -march=native -funroll-loops -pthread -DPERCEPTION_HAVE_XRENDER=1  -DPERCEPTION_HAVE_GLES=1  -c main.cpp -o build/main.o
+编译共享内存C文件: ../../csrc/shared_memory.c
+gcc -I../../include -Iinclude -std=c99 -O3 -march=native -funroll-loops -pthread -c ../../csrc/shared_memory.c -o build/shared_memory.o
+链接可执行文件: build/eight_camera_renderer
+g++ build/main.o build/shared_memory.o -o build/eight_camera_renderer -lX11 -lXext -lrt -lpthread -lXrender -lX11  -lEGL -lGLESv2 
+编译完成: eight_camera_renderer - Perception Engine 全景界面
+make[1]: Leaving directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/x11/csrc'
+X11程序编译完成: x11/csrc/build/eight_camera_renderer
+=== 编译FSPI车辆控制程序 ===
+make[1]: Entering directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/fspi'
+创建build目录
+mkdir -p build
+编译C文件: csrc/fspi_module.c
+gcc -Wall -O2 -std=c11 -Iinclude -I../include -c csrc/fspi_module.c -o build/fspi_module.o
+编译C文件: csrc/main.c
+gcc -Wall -O2 -std=c11 -Iinclude -I../include -c csrc/main.c -o build/main.o
+编译共享内存文件: ../csrc/shared_memory.c
+gcc -Wall -O2 -std=c11 -Iinclude -I../include -c ../csrc/shared_memory.c -o build/shared_memory.o
+链接应用程序: build/vehicle_control
+gcc build/fspi_module.o build/main.o build/shared_memory.o -lm -lpthread -lrt -o build/vehicle_control
+应用程序编译完成: build/vehicle_control
+gcc -Wall -O2 -std=c11 -Iinclude -I../include csrc/speed_gear_status.c build/fspi_module.o -lm -lpthread -lrt -o build/speed_gear_status
+gcc -Wall -O2 -std=c11 -Iinclude -I../include csrc/control_link_status.c build/fspi_module.o -lm -lpthread -lrt -o build/control_link_status
+make[1]: Leaving directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/fspi'
+FSPI程序编译完成: fspi/build/vehicle_control
+=== 编译完成 ===
+PCIe程序:  pcie/build/app
+UDP程序:   udp/build/video_receiver
+X11程序:   x11/csrc/build/eight_camera_renderer
+FSPI程序:  fspi/build/vehicle_control
+共享库:    build/libshared.a
+
+使用 'make run-background' 启动后台程序 (PCIe + UDP)
+使用 'make run-display' 启动显示程序 (X11)
+使用 'make run-fspi' 启动车辆控制程序 (FSPI)
+使用 'make run' 启动完整系统
+使用 'make stop' 停止系统
+gcc -std=c99 -Wall -Wextra -Werror -Iinclude test_brake_release_policy.c -o build/test_brake_release_policy
+./build/test_brake_release_policy
+brake release policy tests passed
+gcc -Wall -O2 -std=c11 -Iinclude test_brake_control.c -o build/test_brake_control
+gcc -Wall -O2 -std=c11 -Wextra -ffunction-sections -fdata-sections -Iinclude -I../include test_auto_brake_switch.c -Wl,--gc-sections -o build/test_auto_brake_switch
+gcc -Wall -O2 -std=c11 -Wextra -ffunction-sections -fdata-sections -Iinclude -I../include test_lane_steering.c -Wl,--gc-sections -o build/test_lane_steering
+gcc -Wall -O2 -std=c11 -Wextra -Iinclude -I../include test_smdt_transport.c -o build/test_smdt_transport
+=== 编译测试完成 ===
+可执行文件: build/vehicle_control
+编译成功!
+-rwxr-xr-x 1 root root 76K Oct 31 03:16 build/vehicle_control
+"/home/linaro/local_restore_20261031_a074cb04/candidate/S/fspi/build/test_brake_control"
+brake policy tests passed
+"/home/linaro/local_restore_20261031_a074cb04/candidate/S/fspi/build/test_auto_brake_switch"
+[自动刹停] 写制动寄存器失败，下一次轮询将重试
+[自动刹停] 方向键释放失败，暂停自动转向并重试；发布原始故障请求，最终由FPGA AUTO门控
+[TRAFFIC_GO] signal=UNKNOWN confirmed=UNKNOWN go_hold=0 reg5_write=OK (not pin readback); green restores stored GO, STOP/BACK remain independent
+[SPEED_GEAR] estimated_gear=0 link=OFFLINE errno=71 warning=NONE (no speed sensor; no motion writes)
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 已连接行人检测共享内存
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 检测段/首帧/时钟不可用: valid=0 person=0 brake_enable=1 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 检测数据超时: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 方向寄存器写入故障: valid=1 person=0 brake_enable=1 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+optional SPI diagnostic and FPGA-gated raw brake monitor tests passed
+"/home/linaro/local_restore_20261031_a074cb04/candidate/S/fspi/build/test_lane_steering"
+[TRAFFIC_GO] signal=UNKNOWN confirmed=UNKNOWN go_hold=0 reg5_write=OK (not pin readback); green restores stored GO, STOP/BACK remain independent
+[SPEED_GEAR] estimated_gear=0 link=OFFLINE errno=71 warning=NONE (no speed sensor; no motion writes)
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2低脉冲500ms完成并释放；估计位置=LEFT（非硬件反馈）
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 右转...
+调试信息: 命令=3, enable=1, 地址=0x0003, 发送值=0
+车辆控制成功: 右转 运动 (地址=0x0003, 值=0)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+[转向链路] reg3低脉冲1500ms完成并释放；估计位置=RIGHT（非硬件反馈）
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2低脉冲400ms完成并释放；估计位置=NEUTRAL（非硬件反馈）
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制失败: 左转 运动 (写入失败)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2低脉冲500ms完成并释放；估计位置=LEFT（非硬件反馈）
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制失败: 左转 运动 (写入失败)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2低脉冲500ms完成并释放；估计位置=LEFT（非硬件反馈）
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 右转...
+调试信息: 命令=3, enable=1, 地址=0x0003, 发送值=0
+车辆控制成功: 右转 运动 (地址=0x0003, 值=0)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制失败: 右转 停止 (写入失败)
+[转向链路] reg3脉冲中断或写入失败，未更新估计位置，下轮重试
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 右转...
+调试信息: 命令=3, enable=1, 地址=0x0003, 发送值=0
+车辆控制成功: 右转 运动 (地址=0x0003, 值=0)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+[转向链路] reg3低脉冲600ms完成并释放；估计位置=RIGHT（非硬件反馈）
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2脉冲中断或写入失败，未更新估计位置，下轮重试
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2低脉冲500ms完成并释放；估计位置=LEFT（非硬件反馈）
+PASS lane steering: unchanged calibration, independent traction, heartbeat isolation, write failures and interrupted-pulse retry
+"/home/linaro/local_restore_20261031_a074cb04/candidate/S/fspi/build/test_smdt_transport"
+PASS SMDT transport: controller-generated opcodes, isolated registers, RX-only HMI and short-transfer rejection
+gcc -std=c11 -Wall -Wextra -Werror -I../include test_lane_rule.c -o build/test_lane_rule
+./build/test_lane_rule
+lane policy: 9 side combinations, CC/DD input, traction independence, expiry and quality PASS
+gcc -std=c11 -Wall -Wextra -Werror -I../include test_traffic_go.c -o build/test_traffic_go
+./build/test_traffic_go
+traffic GO: confirmed colors, stale/missing data, green-only release, failed SPI, restart telemetry PASS
+gcc -Wall -O2 -std=c11 -Wextra -ffunction-sections -fdata-sections -Iinclude -I../include test_traffic_go_monitor.c -Wl,--gc-sections -o build/test_traffic_go_monitor
+./build/test_traffic_go_monitor
+[TRAFFIC_GO] signal=RED confirmed=UNKNOWN go_hold=0 reg5_write=OK (not pin readback); green restores stored GO, STOP/BACK remain independent
+[LANE_RULE] left=DASHED right=SOLID hmi=0D deny=2 warning=2 reg5_write=OK (not pin readback)
+[SPEED_GEAR] estimated_gear=1 link=OK errno=0 warning=NONE (no speed sensor; no motion writes)
+[TRAFFIC_GO] signal=RED confirmed=RED go_hold=1 reg5_write=OK (not pin readback); green restores stored GO, STOP/BACK remain independent
+[TRAFFIC_GO] signal=GREEN confirmed=GREEN go_hold=1 reg5_write=FAIL (not pin readback); green restores stored GO, STOP/BACK remain independent
+[TRAFFIC_GO] signal=GREEN confirmed=GREEN go_hold=0 reg5_write=OK (not pin readback); green restores stored GO, STOP/BACK remain independent
+[TRAFFIC_GO] signal=RED confirmed=RED go_hold=1 reg5_write=OK (not pin readback); green restores stored GO, STOP/BACK remain independent
+[SPEED_GEAR] estimated_gear=2 link=OK errno=0 warning=HIGH GEAR (no speed sensor; no motion writes)
+[SPEED_GEAR] estimated_gear=3 link=OK errno=0 warning=HIGH GEAR (no speed sensor; no motion writes)
+[SPEED_GEAR] estimated_gear=3 link=OFFLINE errno=110 warning=HIGH GEAR (no speed sensor; no motion writes)
+[SPEED_GEAR] estimated_gear=1 link=OK errno=0 warning=NONE (no speed sensor; no motion writes)
+production monitor: atomic lane+traffic permissions, red/unknown/yellow/green, SPI retry, UI telemetry, restart PASS
+gcc -Wall -O2 -std=c11 -Wextra -ffunction-sections -fdata-sections -Iinclude -I../include test_speed_transport.c -Wl,--gc-sections -o build/test_speed_transport
+./build/test_speed_transport
+SPEED transport: native RX-only, all gear/flags, CRC, old FPGA, short/I/O errors, no writes, IPC expiry PASS
+gcc -Wall -O2 -std=c11 -Wextra -ffunction-sections -fdata-sections -Iinclude -I../include test_control_status.c -Wl,--gc-sections -o build/test_control_status
+./build/test_control_status
+CONTROL diagnostic: native RX-only, contact/gate masks, two CRCs, old FPGA rejection, short/error transfers and no writes PASS
+g++ -std=c++14 -Wall -Wextra -Werror -Iinclude tests/test_video_input_fps.cpp -o build/test_video_input_fps
+"/home/linaro/local_restore_20261031_a074cb04/candidate/S/x11/csrc/build/test_video_input_fps"
+PASS input FPS: renderer-independent deltas, skipped IDs, idle, reconnect, reset, wrap, monotonic duration
+g++ -std=c++14 -O2 -Wall -Wextra -Iinclude tests/test_speed_warning.cpp -o build/test_speed_warning
+In file included from tests/test_speed_warning.cpp:1:
+include/dashboard_ui.h: In member function ‘void perception_ui::Dashboard::drawMotionCue(perception_ui::MotionDirection)’:
+include/dashboard_ui.h:487:39: warning: ‘size’ may be used uninitialized [-Wmaybe-uninitialized]
+  487 |             aura[i] = rotateArrowPoint(shape[i], center, cosine, sine, 1.23f * size);
+      |                       ~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+include/dashboard_ui.h:468:15: note: ‘size’ was declared here
+  468 |         float size;
+      |               ^~~~
+include/dashboard_ui.h:467:15: warning: ‘angle’ may be used uninitialized [-Wmaybe-uninitialized]
+  467 |         float angle;
+      |               ^~~~~
+In static member function ‘static perception_ui::Dashboard::Point perception_ui::Dashboard::rotateArrowPoint(Point, Point, float, float, float)’,
+    inlined from ‘void perception_ui::Dashboard::drawMotionCue(perception_ui::MotionDirection)’ at include/dashboard_ui.h:509:45:
+include/dashboard_ui.h:462:26: warning: ‘center.perception_ui::Dashboard::Point::y’ may be used uninitialized [-Wmaybe-uninitialized]
+  462 |                 center.y + static_cast<int>(std::lround(x * sine + y * cosine))};
+      |                 ~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+include/dashboard_ui.h: In member function ‘void perception_ui::Dashboard::drawMotionCue(perception_ui::MotionDirection)’:
+include/dashboard_ui.h:466:15: note: ‘center.perception_ui::Dashboard::Point::y’ was declared here
+  466 |         Point center;
+      |               ^~~~~~
+In static member function ‘static perception_ui::Dashboard::Point perception_ui::Dashboard::rotateArrowPoint(Point, Point, float, float, float)’,
+    inlined from ‘void perception_ui::Dashboard::drawMotionCue(perception_ui::MotionDirection)’ at include/dashboard_ui.h:487:39:
+include/dashboard_ui.h:461:26: warning: ‘center.perception_ui::Dashboard::Point::x’ may be used uninitialized [-Wmaybe-uninitialized]
+  461 |         return {center.x + static_cast<int>(std::lround(x * cosine - y * sine)),
+      |                 ~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+include/dashboard_ui.h: In member function ‘void perception_ui::Dashboard::drawMotionCue(perception_ui::MotionDirection)’:
+include/dashboard_ui.h:466:15: note: ‘center.perception_ui::Dashboard::Point::x’ was declared here
+  466 |         Point center;
+      |               ^~~~~~
+"/home/linaro/local_restore_20261031_a074cb04/candidate/S/x11/csrc/build/test_speed_warning"
+SPEED WARNING: gear 1/2/3, stale high, unknown and warning removal PASS
+VISION_DASHBOARD_FAST=1 "/home/linaro/local_restore_20261031_a074cb04/candidate/S/x11/csrc/build/test_speed_warning"
+SPEED WARNING: gear 1/2/3, stale high, unknown and warning removal PASS
+g++ -std=c++14 -O2 -Wall -Wextra -Werror -I../../include -Iinclude tests/test_six_camera.cpp -o build/test_six_camera
+"/home/linaro/local_restore_20261031_a074cb04/candidate/S/x11/csrc/build/test_six_camera"
+SIX CAMERA PASS: six unique sources, HMI positions, focus/overview/zoom background, spare exclusion, center aliases, control-code rejection and S orientation
+BUILT candidate/S/steering/actuator/build/steering_step
+BUILT candidate/S/steering/build/tests/test_actuator
+BUILT candidate/S/steering/build/tests/test_controller
+PASS actuator: ms/us bounds, fractional deadline, mutual exclusion, cancellation, uncertain writes, release faults
+PASS S-side boundaries: unavailable UDP feedback/controller never claims a measured angle
+BUILT candidate/S/steering/build/tests/test_feedback_tracker
+FAILED: test_bench.py failed:
+
+Traceback (most recent call last):
+  File "/home/linaro/local_restore_20261031_a074cb04/candidate/S/steering/tests/feedback/test_bench.py", line 11, in <module>
+    spec.loader.exec_module(b)
+  File "<frozen importlib._bootstrap_external>", line 936, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1073, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1130, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/home/linaro/local_restore_20261031_a074cb04/candidate/S/steering/tools/calibration/steering_bench.py'
+
+PASS telemetry tracker: CRC/length, signed angles, wrap, duplicate expiry, ordering, clock faults, sessions, simulation, invalidation and age overflow
+PASS CLI: microsecond input, fractional output, exclusive units and pre-open bound
+=== 编译PCIe图像采集程序 ===
+make[1]: Entering directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/pcie'
+make[1]: Nothing to be done for 'all'.
+make[1]: Leaving directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/pcie'
+PCIe程序编译完成: pcie/build/app
+=== 编译UDP网络接收后台程序 ===
+make[1]: Entering directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/udp'
+make[1]: Nothing to be done for 'all'.
+make[1]: Leaving directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/udp'
+UDP程序编译完成: udp/build/video_receiver
+=== 编译X11六摄像头渲染程序 ===
+make[1]: Entering directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/x11/csrc'
+make[1]: Nothing to be done for 'all'.
+make[1]: Leaving directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/x11/csrc'
+X11程序编译完成: x11/csrc/build/eight_camera_renderer
+=== 编译FSPI车辆控制程序 ===
+make[1]: Entering directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/fspi'
+make[1]: Nothing to be done for 'all'.
+make[1]: Leaving directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/fspi'
+FSPI程序编译完成: fspi/build/vehicle_control
+=== 编译完成 ===
+PCIe程序:  pcie/build/app
+UDP程序:   udp/build/video_receiver
+X11程序:   x11/csrc/build/eight_camera_renderer
+FSPI程序:  fspi/build/vehicle_control
+共享库:    build/libshared.a
+
+使用 'make run-background' 启动后台程序 (PCIe + UDP)
+使用 'make run-display' 启动显示程序 (X11)
+使用 'make run-fspi' 启动车辆控制程序 (FSPI)
+使用 'make run' 启动完整系统
+使用 'make stop' 停止系统
+./build/test_brake_release_policy
+brake release policy tests passed
+=== 编译测试完成 ===
+可执行文件: build/vehicle_control
+编译成功!
+-rwxr-xr-x 1 root root 76K Oct 31 03:16 build/vehicle_control
+"/home/linaro/local_restore_20261031_a074cb04/candidate/S/fspi/build/test_brake_control"
+brake policy tests passed
+"/home/linaro/local_restore_20261031_a074cb04/candidate/S/fspi/build/test_auto_brake_switch"
+[自动刹停] 写制动寄存器失败，下一次轮询将重试
+[自动刹停] 方向键释放失败，暂停自动转向并重试；发布原始故障请求，最终由FPGA AUTO门控
+[TRAFFIC_GO] signal=UNKNOWN confirmed=UNKNOWN go_hold=0 reg5_write=OK (not pin readback); green restores stored GO, STOP/BACK remain independent
+[SPEED_GEAR] estimated_gear=0 link=OFFLINE errno=71 warning=NONE (no speed sensor; no motion writes)
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 已连接行人检测共享内存
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 检测段/首帧/时钟不可用: valid=0 person=0 brake_enable=1 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 检测数据超时: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 方向寄存器写入故障: valid=1 person=0 brake_enable=1 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+optional SPI diagnostic and FPGA-gated raw brake monitor tests passed
+"/home/linaro/local_restore_20261031_a074cb04/candidate/S/fspi/build/test_lane_steering"
+[TRAFFIC_GO] signal=UNKNOWN confirmed=UNKNOWN go_hold=0 reg5_write=OK (not pin readback); green restores stored GO, STOP/BACK remain independent
+[SPEED_GEAR] estimated_gear=0 link=OFFLINE errno=71 warning=NONE (no speed sensor; no motion writes)
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2低脉冲500ms完成并释放；估计位置=LEFT（非硬件反馈）
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 右转...
+调试信息: 命令=3, enable=1, 地址=0x0003, 发送值=0
+车辆控制成功: 右转 运动 (地址=0x0003, 值=0)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+[转向链路] reg3低脉冲1500ms完成并释放；估计位置=RIGHT（非硬件反馈）
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2低脉冲400ms完成并释放；估计位置=NEUTRAL（非硬件反馈）
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制失败: 左转 运动 (写入失败)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2低脉冲500ms完成并释放；估计位置=LEFT（非硬件反馈）
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制失败: 左转 运动 (写入失败)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2低脉冲500ms完成并释放；估计位置=LEFT（非硬件反馈）
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 右转...
+调试信息: 命令=3, enable=1, 地址=0x0003, 发送值=0
+车辆控制成功: 右转 运动 (地址=0x0003, 值=0)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制失败: 右转 停止 (写入失败)
+[转向链路] reg3脉冲中断或写入失败，未更新估计位置，下轮重试
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 右转...
+调试信息: 命令=3, enable=1, 地址=0x0003, 发送值=0
+车辆控制成功: 右转 运动 (地址=0x0003, 值=0)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+[转向链路] reg3低脉冲600ms完成并释放；估计位置=RIGHT（非硬件反馈）
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2脉冲中断或写入失败，未更新估计位置，下轮重试
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+正在运动 左转...
+调试信息: 命令=2, enable=1, 地址=0x0002, 发送值=0
+车辆控制成功: 左转 运动 (地址=0x0002, 值=0)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+[转向链路] reg2低脉冲500ms完成并释放；估计位置=LEFT（非硬件反馈）
+PASS lane steering: unchanged calibration, independent traction, heartbeat isolation, write failures and interrupted-pulse retry
+"/home/linaro/local_restore_20261031_a074cb04/candidate/S/fspi/build/test_smdt_transport"
+PASS SMDT transport: controller-generated opcodes, isolated registers, RX-only HMI and short-transfer rejection
+./build/test_lane_rule
+lane policy: 9 side combinations, CC/DD input, traction independence, expiry and quality PASS
+./build/test_traffic_go
+traffic GO: confirmed colors, stale/missing data, green-only release, failed SPI, restart telemetry PASS
+./build/test_traffic_go_monitor
+[TRAFFIC_GO] signal=RED confirmed=UNKNOWN go_hold=0 reg5_write=OK (not pin readback); green restores stored GO, STOP/BACK remain independent
+[LANE_RULE] left=DASHED right=SOLID hmi=0D deny=2 warning=2 reg5_write=OK (not pin readback)
+[SPEED_GEAR] estimated_gear=1 link=OK errno=0 warning=NONE (no speed sensor; no motion writes)
+[TRAFFIC_GO] signal=RED confirmed=RED go_hold=1 reg5_write=OK (not pin readback); green restores stored GO, STOP/BACK remain independent
+[TRAFFIC_GO] signal=GREEN confirmed=GREEN go_hold=1 reg5_write=FAIL (not pin readback); green restores stored GO, STOP/BACK remain independent
+[TRAFFIC_GO] signal=GREEN confirmed=GREEN go_hold=0 reg5_write=OK (not pin readback); green restores stored GO, STOP/BACK remain independent
+[TRAFFIC_GO] signal=RED confirmed=RED go_hold=1 reg5_write=OK (not pin readback); green restores stored GO, STOP/BACK remain independent
+[SPEED_GEAR] estimated_gear=2 link=OK errno=0 warning=HIGH GEAR (no speed sensor; no motion writes)
+[SPEED_GEAR] estimated_gear=3 link=OK errno=0 warning=HIGH GEAR (no speed sensor; no motion writes)
+[SPEED_GEAR] estimated_gear=3 link=OFFLINE errno=110 warning=HIGH GEAR (no speed sensor; no motion writes)
+[SPEED_GEAR] estimated_gear=1 link=OK errno=0 warning=NONE (no speed sensor; no motion writes)
+production monitor: atomic lane+traffic permissions, red/unknown/yellow/green, SPI retry, UI telemetry, restart PASS
+./build/test_speed_transport
+SPEED transport: native RX-only, all gear/flags, CRC, old FPGA, short/I/O errors, no writes, IPC expiry PASS
+./build/test_control_status
+CONTROL diagnostic: native RX-only, contact/gate masks, two CRCs, old FPGA rejection, short/error transfers and no writes PASS
+"/home/linaro/local_restore_20261031_a074cb04/candidate/S/x11/csrc/build/test_video_input_fps"
+PASS input FPS: renderer-independent deltas, skipped IDs, idle, reconnect, reset, wrap, monotonic duration
+"/home/linaro/local_restore_20261031_a074cb04/candidate/S/x11/csrc/build/test_speed_warning"
+SPEED WARNING: gear 1/2/3, stale high, unknown and warning removal PASS
+VISION_DASHBOARD_FAST=1 "/home/linaro/local_restore_20261031_a074cb04/candidate/S/x11/csrc/build/test_speed_warning"
+SPEED WARNING: gear 1/2/3, stale high, unknown and warning removal PASS
+"/home/linaro/local_restore_20261031_a074cb04/candidate/S/x11/csrc/build/test_six_camera"
+SIX CAMERA PASS: six unique sources, HMI positions, focus/overview/zoom background, spare exclusion, center aliases, control-code rejection and S orientation
+BUILT candidate/S/steering/actuator/build/steering_step
+BUILT candidate/S/steering/build/tests/test_actuator
+BUILT candidate/S/steering/build/tests/test_controller
+PASS actuator: ms/us bounds, fractional deadline, mutual exclusion, cancellation, uncertain writes, release faults
+PASS S-side boundaries: unavailable UDP feedback/controller never claims a measured angle
+BUILT candidate/S/steering/build/tests/test_feedback_tracker
+PASS telemetry tracker: CRC/length, signed angles, wrap, duplicate expiry, ordering, clock faults, sessions, simulation, invalidation and age overflow
+PASS CLI: microsecond input, fractional output, exclusive units and pre-open bound
+PASS bench feedback/reference guards, empirical response limits and target orchestration
+BUILT candidate/S/steering/build/tests/test_trace_cli
+PASS native CLI: active contact, STOP block, contact mismatch, read fault; both releases verified
+PASS native CLI: SIGTERM interrupts deadline sleep and releases both contacts
+BUILT candidate/S/steering/feedback/build/steering_feedback_monitor
+BUILT candidate/S/steering/actuator/build/steering_step_fspi
+BUILT candidate/S/steering/actuator/build/steering_status

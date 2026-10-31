@@ -77946,3 +77946,9 @@ Cable index 0:USB Cable II/fffffffffffffffe
 [Debug] [2026-10-30 10:16:42] end to send jtag flash verify cmd
 [Debug] [2026-10-30 10:16:42] end to send jtag flash program cmd.
 [Debug] [2026-10-30 10:16:42] Log::Print : COMMAND[Verify Outer Flash] execute successfully, takes 3.9 secs.
+[Info] [2026-10-31 11:03:30] /***************************Start Configuration***************************/
+[Info] [2026-10-31 11:03:30] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-10-31 11:03:30] Version: 146967
+[Info] [2026-10-31 11:03:31] Current Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-31 11:03:31] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project
+[Info] [2026-10-31 11:03:33] /***************************End Configration***************************/

@@ -1,6 +1,7 @@
 [Unit]
 Description=M FPGA MPU-9250 steering telemetry (no actuator control)
-After=network.target
+Wants=network-online.target
+After=network-online.target
 
 [Service]
 Type=simple

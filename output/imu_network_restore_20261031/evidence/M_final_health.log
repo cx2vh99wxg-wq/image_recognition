@@ -1,0 +1,17 @@
+systemctl show m-steering-imu -p ActiveState -p MainPID -p NRestarts; journalctl -u m-steering-imu -n 3 --no-pager; cat /etc/default/m-steering-imu; sha256sum /home/linaro/M/imu/build/angle_monitor /home/linaro/M/imu/calibration/stationary_bias_20261031.cal; ip route get 192.168.100.20; printf '\nSIX_CMD_DONE\n'
+[?2004lMainPID=2890[m
+NRestarts=0[m
+ActiveState=active[m
+[KOct 31 03:46:56 linaro-alip angle_monitor[2890]: REAL seq=15302 t_ns=846129452961 dt_ms=10.565 gap=0 age_ms=4 accel=[7.2455 0.5734 6.6224] gyro=[-0.8931 -2.4733 0.6947] temp_c=28.988 relative_deg=-0.01948 rate_dps=0.00000 ZERO_VALID=0 static_hold=1 hold_changes=1 residual_bias=[0.00964 -0.00041 -0.01480]
+Oct 31 03:46:57 linaro-alip angle_monitor[2890]: REAL seq=15402 t_ns=847129586961 dt_ms=8.804 gap=0 age_ms=3 accel=[7.2167 0.5459 6.6313] gyro=[-0.8626 -2.5038 0.7099] temp_c=29.009 relative_deg=-0.01948 rate_dps=0.00000 ZERO_VALID=0 static_hold=1 hold_changes=1 residual_bias=[0.01084 0.00073 -0.01444]
+Oct 31 03:46:58 linaro-alip angle_monitor[2890]: REAL seq=15502 t_ns=848131482961 dt_ms=10.565 gap=0 age_ms=4 accel=[7.2012 0.5794 6.6690] gyro=[-0.8779 -2.5344 0.7405] temp_c=28.997 relative_deg=-0.01948 rate_dps=0.00000 ZERO_VALID=0 static_hold=1 hold_changes=1 residual_bias=[0.01233 0.00169 -0.01421]
+# Bench/relative display only: Z mounting and mechanical center are unverified.
+# Optional stationary hold cannot distinguish near-zero constant rotation from bias.
+IMU_CALIBRATION_ARGS="--calibration /home/linaro/M/imu/calibration/stationary_bias_20261031.cal --stationary-hold"
+bab63408d01ec4ada5701ee2ceae8620cc3685d49a89ddac7876362ffed829d4  /home/linaro/M/imu/build/angle_monitor
+0da37405e5ea6b44ed20595de2f5bc0ebbe1e276cd9093045a6dd4c89ece8fe9  /home/linaro/M/imu/calibration/stationary_bias_20261031.cal
+192.168.100.20 dev end1 src 192.168.100.10 uid 0 
+    cache 
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

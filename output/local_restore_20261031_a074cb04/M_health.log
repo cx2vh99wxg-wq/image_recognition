@@ -1,0 +1,3 @@
+[?2004l
+HEALTH_JSON {"board": "M", "status": "HEALTHY", "frames": {"pcie": {"fps": 29.99, "advanced": 90, "writer_active": 1, "width": 640, "height": 480}}, "imu_service": "MainPID=3229\nNRestarts=1\nActiveState=active\nSubState=running"}
+STEER_CMD_76baae2de7144ec3a614a28ff524e7db:0

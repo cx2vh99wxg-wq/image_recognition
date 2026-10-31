@@ -1,0 +1,16 @@
+[?2004l
+MainPID=3324[m
+Result=success[m
+NRestarts=2[m
+ExecMainStatus=0[m
+ActiveState=active[m
+SubState=running[m
+[KLINK accepted=161835 duplicate_reads=577544 transfers=1478868 io_errors=0 crc_errors=0 stale_captures=0 i2c_errors=0
+IMU UDP summary sent=161180 errors=655
+IMU discontinuity: STALE_OR_DISCONTINUOUS; no valid UDP, re-zero required.
+LINK accepted=2502 duplicate_reads=8820 transfers=22840 io_errors=0 crc_errors=0 stale_captures=1 i2c_errors=0
+m-steering-imu.service: Failed with result 'exit-code'.
+IMU discontinuity: STALE_OR_DISCONTINUOUS; no valid UDP, re-zero required.
+LINK accepted=12578 duplicate_reads=44689 transfers=114720 io_errors=0 crc_errors=0 stale_captures=1 i2c_errors=0
+m-steering-imu.service: Failed with result 'exit-code'.
+STEER_CMD_129501bca76645f0a93d22926885c814:0

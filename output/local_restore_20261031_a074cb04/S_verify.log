@@ -1,0 +1,25 @@
+[?2004l
+{"status": "VERIFIED", "board": "S", "commit": "a074cb04e5c262009278be24fe3d3dbfebda01c2", "sources_match_local": true, "binaries_match_build": true, "runtime_matches_build": true, "protected_unchanged": true, "service_state_ok": true, "processes": [{"pid": 2981, "exe": "/home/linaro/S/pcie/build/app", "sha256": "05767650873be124f52ba190702a3a706c1ba37139cae114ef4bbf55f5028e60"}, {"pid": 2982, "exe": "/home/linaro/S/udp/build/video_receiver", "sha256": "c30143a5ac9627d34ac5ab2baa7b81c0eb18ecd1a92fb9e730a7041a70ff2879"}, {"pid": 2983, "exe": "/home/linaro/S/fspi/build/vehicle_control", "sha256": "2ed37fbc3316c29a588cdc6320e861f8b2e63e77da51b86b6d58aa3a8da8dcea"}, {"pid": 2984, "exe": "/home/linaro/S/x11/csrc/build/eight_camera_renderer", "sha256": "0da0dd33815bc0991be2a82e6d496d4b8fd27cc8c2e33dfeb1df26a811efa218"}], "unit": {"active": false}, "backup": "/home/linaro/local_restore_20261031_a074cb04/backup"}
+LOG /home/linaro/local_restore_20261031_a074cb04/restored_app.log
+[S-PERSON] frame=4047 person=1 candidates=5 detection_valid=1
+[S-PERSON] frame=4050 person=0 candidates=0 detection_valid=1
+[PERF S-YOLO] jobs=33 preprocess_ms=1.54 input_ms=2.09 npu_ms=75.41 post_ms=0.84
+[PERF S-PCIE] capture_loop_fps=19.40 raw_changed_fps=19.40 infer_fps=6.47 dma_ms=19.81 orient_ms=1.29 color_ms=0.87 infer_job_ms=80.97 draw_ms=0.23 publish_ms=2.35 rows=1 ioctls_per_frame=960
+[PERF S-YOLO] jobs=33 preprocess_ms=1.53 input_ms=1.75 npu_ms=76.29 post_ms=0.67
+[4200帧] FPS: 19.0 | 检测数: 32 | 人员检测: 否
+[PERF S-PCIE] capture_loop_fps=18.91 raw_changed_fps=18.91 infer_fps=6.30 dma_ms=21.18 orient_ms=1.29 color_ms=0.89 infer_job_ms=80.98 draw_ms=0.22 publish_ms=2.30 rows=1 ioctls_per_frame=960
+[PERF S-YOLO] jobs=32 preprocess_ms=1.67 input_ms=2.00 npu_ms=76.13 post_ms=0.69
+LOG /home/linaro/local_restore_20261031_a074cb04/restored_video_receiver.log
+
+LOG /home/linaro/local_restore_20261031_a074cb04/restored_vehicle_control.log
+
+LOG /home/linaro/local_restore_20261031_a074cb04/restored_eight_camera_renderer.log
+[PERF DASHBOARD] copy_ms=6.65 clear_ms=2.98 video_fit_ms=9.14 car_fit_ms=2.91 ui_ms=2.29 fast=0
+[PERF DISPLAY] render_fps=12.69 S_input_fps=20.21 M_input_fps=29.83 S_shown_fps=11.90 M_shown_fps=12.50 compose_ms=27.49 legacy_ms=4.77 car_ms=3.44 dashboard_ms=24.05 car_redraw_pct=54.7 scale_ms=8.76 present_ms=33.61 reuse_wait_ms=0.00 upload_done_fps=12.69 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.62 clear_ms=2.93 video_fit_ms=9.56 car_fit_ms=2.80 ui_ms=2.25 fast=0
+[PERF DISPLAY] render_fps=12.27 S_input_fps=18.92 M_input_fps=29.33 S_shown_fps=10.69 M_shown_fps=12.27 compose_ms=28.51 legacy_ms=4.69 car_ms=4.00 dashboard_ms=24.51 car_redraw_pct=59.7 scale_ms=8.74 present_ms=35.57 reuse_wait_ms=0.00 upload_done_fps=12.27 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=7.28 clear_ms=3.57 video_fit_ms=10.59 car_fit_ms=3.02 ui_ms=2.54 fast=0
+[PERF DISPLAY] render_fps=12.94 S_input_fps=18.63 M_input_fps=29.42 S_shown_fps=10.35 M_shown_fps=12.94 compose_ms=30.23 legacy_ms=5.13 car_ms=3.17 dashboard_ms=27.06 car_redraw_pct=46.2 scale_ms=8.98 present_ms=28.87 reuse_wait_ms=0.00 upload_done_fps=12.94 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+[PERF DASHBOARD] copy_ms=6.79 clear_ms=3.33 video_fit_ms=9.67 car_fit_ms=3.00 ui_ms=2.37 fast=0
+[PERF DISPLAY] render_fps=12.82 S_input_fps=19.65 M_input_fps=30.46 S_shown_fps=11.05 M_shown_fps=12.23 compose_ms=28.86 legacy_ms=4.86 car_ms=3.81 dashboard_ms=25.05 car_redraw_pct=55.4 scale_ms=9.08 present_ms=31.21 reuse_wait_ms=0.00 upload_done_fps=12.82 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync
+STEER_CMD_1df45e2ae3744a3fb2999c8599e17dbd:0

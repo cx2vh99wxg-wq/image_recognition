@@ -8,6 +8,12 @@
 #include <linux/spi/spidev.h>
 #endif
 
+steer_result_t mpu9250_capture_timing(uint64_t begin,uint64_t end)
+{
+    if(!begin||end<begin)return STEER_ERR_STALE;
+    return end-begin>20000000?STEER_ERR_NOT_READY:STEER_OK;
+}
+
 steer_result_t mpu9250_read_identity(const mpu9250_bus_t *bus, uint8_t *identity)
 {
     if (!bus || !bus->read_registers || !identity) return STEER_ERR_ARGUMENT;
@@ -49,8 +55,9 @@ static steer_result_t snapshot(fpga_bus_t *b,fpga_imu_snapshot_t *out,uint64_t *
     steering_sleep_ms(1); /* CRC publication finishes in <10us; allow CDC slack. */
     if(transfer(b,NULL,packet,sizeof(packet))!=STEER_OK)return STEER_ERR_IO;
     uint64_t end=steering_now_ns();
-    if(!begin||end<begin||end-begin>20000000){++b->stats.stale_captures;return STEER_ERR_STALE;}
-    steer_result_t rc=fpga_imu_decode(out,packet+FPGA_IMU_SPI_PREFIX,FPGA_IMU_PACKET_SIZE);
+    steer_result_t rc=mpu9250_capture_timing(begin,end);
+    if(rc!=STEER_OK){++b->stats.stale_captures;return rc;}
+    rc=fpga_imu_decode(out,packet+FPGA_IMU_SPI_PREFIX,FPGA_IMU_PACKET_SIZE);
     if(rc==STEER_ERR_IO)++b->stats.crc_errors;
     if(rc==STEER_OK)b->stats.i2c_errors=out->errors;
     if(rc==STEER_OK&&mid)*mid=begin+(end-begin)/2;

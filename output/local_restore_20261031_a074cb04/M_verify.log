@@ -1,0 +1,21 @@
+[?2004l
+{"status": "VERIFIED", "board": "M", "commit": "a074cb04e5c262009278be24fe3d3dbfebda01c2", "sources_match_local": true, "binaries_match_build": true, "runtime_matches_build": true, "protected_unchanged": true, "service_state_ok": true, "processes": [{"pid": 3176, "exe": "/home/linaro/M/pcie/build/pcie_capture", "sha256": "3511ec6878f141ab6209d77460de98b4f8eb357db9aebb3b25d33dbbb5a2532d"}, {"pid": 3179, "exe": "/home/linaro/M/udp/build/udp_sender", "sha256": "fbd289c8191d1524f584c973b8d8dd20daec2032192d85b31498975e61b16a1c"}, {"pid": 3324, "exe": "/home/linaro/M/imu/build/angle_monitor", "sha256": "9ee850bbc5d793cca5c42d7181f1ecac66787326626c1a7d9cff745aaded6cd2"}], "unit": {"active": true, "path": "/etc/systemd/system/m-steering-imu.service", "sha256": "a82b0f312e3fc53c63723375416a8378e1c33b63b15dcc12aa9307b8bbed594c"}, "backup": "/home/linaro/local_restore_20261031_a074cb04/backup"}
+LOG /home/linaro/local_restore_20261031_a074cb04/restored_pcie_capture.log
+[TRAFFIC] source=6717 detector=6673 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1467 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.48 npu_hz=1.43 calls=3 mean_ms=40.37 max_ms=40.68 skip_curve=0 skip_budget=19 boxes=0 budget_backoff=0
+[PERF M] capture_loop_fps=29.99 raw_changed_fps=29.99 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=29.99 dma_ms=13.92 color_ms=1.31 infer_ms=268.70 overlay_ms=7.76 analysis_ms=11.22 shm_ms=0.75 render_ms=12.02 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[TRAFFIC] source=6778 detector=6733 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1501 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC] source=6841 detector=6793 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1600 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC] source=6901 detector=6793 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=3616 reason=1 flags=40 box=0,0,0,0
+[PERF M] capture_loop_fps=29.90 raw_changed_fps=29.90 inference_fps=3.39 fresh_result_fps=3.39 publish_fps=29.90 dma_ms=13.87 color_ms=1.32 infer_ms=270.13 overlay_ms=7.73 analysis_ms=11.15 shm_ms=0.76 render_ms=12.41 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[TRAFFIC PERF] locator_hz=0.35 npu_hz=1.05 calls=2 mean_ms=40.12 max_ms=40.42 skip_curve=0 skip_budget=18 boxes=0 budget_backoff=0
+LOG /home/linaro/local_restore_20261031_a074cb04/restored_udp_sender.log
+[UDP_TX] fps=29.99 payload_mbps=147.41 send_ms=27.20 failed=0 pacing_mbps=200
+[UDP_TX] fps=29.99 payload_mbps=147.43 send_ms=27.23 failed=0 pacing_mbps=200
+[UDP_TX] fps=29.87 payload_mbps=146.83 send_ms=27.21 failed=0 pacing_mbps=200
+[UDP_TX] fps=30.05 payload_mbps=147.72 send_ms=27.22 failed=0 pacing_mbps=200
+[UDP_TX] fps=29.97 payload_mbps=147.32 send_ms=27.24 failed=0 pacing_mbps=200
+[UDP_TX] fps=30.03 payload_mbps=147.60 send_ms=27.23 failed=0 pacing_mbps=200
+[UDP_TX] fps=29.96 payload_mbps=147.27 send_ms=27.21 failed=0 pacing_mbps=200
+[UDP_TX] fps=29.99 payload_mbps=147.42 send_ms=27.25 failed=0 pacing_mbps=200
+STEER_CMD_b5a19be586f04389bbedc8d8bb3a43c1:0

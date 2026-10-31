@@ -1,0 +1,45 @@
+{
+  "status": "INSTALLED_TELEMETRY_ONLY",
+  "side": "M",
+  "before": {
+    "M/imu/csrc/imu_stationary.c": "f9bd2c0212f761aa420fdbda4a626e692bc4b0ec94d0dedf494e024e6a311a19",
+    "M/imu/include/imu_stationary.h": "db4d7786360fbf552094343d7e126d6617a715e6c13d32e08b84e83c8e9c212e",
+    "M/imu/csrc/mpu9250_transport.c": "5c3a7c5ccbbe714b017b40ddb2736369c698611c2d48a9c6628e3b7a90e9297a",
+    "M/imu/include/mpu9250_transport.h": "8fc770ed5528255b7f38a2123d8e4e82016188c96fe94bd5c0d2bec68827801c",
+    "M/imu/tools/imu_tool.c": "ec6188d363fb46856b29f39862e675460cdbc01cb56575e929fd5e671057f1c3",
+    "M/imu/tests/test_stationary.c": "b0e07fc6cdffbfa16c3dca4318513f226f27457884bd72529e93d2636f420df5",
+    "M/imu/tests/test_imu.c": "1e92cf8456894f3fbcfa2113dcb9bb5665126875beeaca1511578cfb067fb6e1",
+    "M/imu/tools/build.py": "69fb896b4d3ab1189c5b252717c04b6278119f6150f1e6c83cccd84e7388c30c",
+    "M/imu/feedback/m-steering-imu.service": "a82b0f312e3fc53c63723375416a8378e1c33b63b15dcc12aa9307b8bbed594c",
+    "M/imu/README.md": "fb6199a815eb2e4cf7ce2a602351320ce38a7e4ab7a884e2cb6ac7760e252a72",
+    "M/imu/build/angle_monitor": "9ee850bbc5d793cca5c42d7181f1ecac66787326626c1a7d9cff745aaded6cd2",
+    "M/imu/build/imu_dump": "7c846d4866c86d3e789085b3ec73e0e428353a2300ced5b926808321259012df",
+    "M/imu/build/imu_probe": "a8cce0404999f20a09d08016ce92908c29b16f05b0ece08b7c6b2b4f70d460b4",
+    "M/imu/build/replay_stationary": "4dd0e13e17ab8e0d6e667468b2f1bc4e44162e6c74d0f55d0eb7f4b745bc8264"
+  },
+  "protected_unchanged": {
+    "/home/linaro/M/pcie/build/pcie_capture": "1b9a3ba5d72be191aba37f4b448447c9c680a85a99f9536351cafc51f2149dcb",
+    "/home/linaro/M/udp/build/udp_sender": "fbd289c8191d1524f584c973b8d8dd20daec2032192d85b31498975e61b16a1c",
+    "/home/linaro/M/pcie/model/yolopv2_Nx3x480x640_rk3568.rknn": "57a9d1e39c44c9b1f3dfa0ca7583897aa3c05dfda7889e269bec64827ab9a26a",
+    "/home/linaro/M/pcie/csrc/main.cpp": "53dee4afacd4b195f2efe0ef99d3cc9f2053eeb2f2f2d86b6259b5e26d8f8bfd",
+    "/home/linaro/M/pcie/csrc/yolo_integration.c": "7db3f86ca6075c6aeb4818f1ab0715b40bc57bf8c097c5d996f2e3fcc2b8d35c"
+  },
+  "after": {
+    "M/imu/csrc/imu_stationary.c": "4e4c6447da2ed8f91cb588502809bdb048c0459edd3f6f3aa50d51b731d844f9",
+    "M/imu/include/imu_stationary.h": "9d1aa9ab6676b38b817663c47ef7daa103df2b8a9c5ac554ddd2b3a9c3c42111",
+    "M/imu/csrc/mpu9250_transport.c": "f946534e174cbe28516cf5ce353361da31c246767430f241bc5c669514af0839",
+    "M/imu/include/mpu9250_transport.h": "23808e46927a467a59f18bdcc4beeaaabb384f78363c86536a57911c063e36f3",
+    "M/imu/tools/imu_tool.c": "ac17112ca5ca8872f20301ad1da34fdd520c136f8a63df3c9ee85a992595611b",
+    "M/imu/tests/test_stationary.c": "45dc5c997241f2c8abcdd1e7b41b71f96e9624d706e0b6784225c815c829a4ce",
+    "M/imu/tests/test_imu.c": "330e1dcdc0367d5c55c0ecc86e40601f52aac1c6128230a00c5101c99386169a",
+    "M/imu/tools/build.py": "887e7b0eb60a541158dad56c8971b3921e9f6d1d1e3c396f8b1c2c032c1a3fb0",
+    "M/imu/feedback/m-steering-imu.service": "3ab81c43b1638e1b4ecff83415b402e8c37a61818f08d4b93f89439b18af4042",
+    "M/imu/README.md": "086ab55dfb2bf79fe87a70ff7de4a440ae1d467a8daf33013f992682f34f55cd",
+    "M/imu/tools/replay_stationary.c": "7c11500951ac1c08ac7a319ad883e73793ced0ada9feb84abceda294ce6edabf",
+    "M/imu/tests/test_udp_source.py": "267f1d71fc66b338fa08df5233b66ea4e5203c60e04be4cc9b4b66212dc68911",
+    "M/imu/build/angle_monitor": "bab63408d01ec4ada5701ee2ceae8620cc3685d49a89ddac7876362ffed829d4",
+    "M/imu/build/imu_dump": "f433191668fa54f667cda5b753290c96a10d88a0ac7ed090cc994cee3c234472",
+    "M/imu/build/imu_probe": "21a6037f17ae11add39eb15857b195708f05923141c3e2d8af173f4b07f7d2cd",
+    "M/imu/build/replay_stationary": "4dd0e13e17ab8e0d6e667468b2f1bc4e44162e6c74d0f55d0eb7f4b745bc8264"
+  }
+}

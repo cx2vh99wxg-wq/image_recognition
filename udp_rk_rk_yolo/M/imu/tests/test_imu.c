@@ -18,6 +18,10 @@ static steering_imu_sample_t sample(uint32_t seq, uint64_t time, float rate)
 }
 int main(void)
 {
+    assert(mpu9250_capture_timing(1000000000,1020000000)==STEER_OK);
+    assert(mpu9250_capture_timing(1000000000,1020000001)==STEER_ERR_NOT_READY);
+    assert(mpu9250_capture_timing(1000000000,999999999)==STEER_ERR_STALE);
+    assert(mpu9250_capture_timing(0,1000000000)==STEER_ERR_STALE);
     const float axis[3] = {0, 0, -2}, bias[3] = {0, 0, 1};
     steering_angle_t a; double angle; float rate;
     assert(steering_angle_init(&a, axis, bias, 100) == STEER_OK);

@@ -1,0 +1,9 @@
+tail -3 /home/linaro/imu_network_restore_20261031/S_receiver.log; ss -ulnp | grep 54321; pgrep -af video_receiver; printf '\nSIX_CMD_DONE\n' [A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[K'
+[?2004lRX session=1337380083 seq=15301 flags=1 raw_relative_deg=-0.019 rate_dps=0.000 source_age_ms=3 status=REAL_RELATIVE rx_local_ns=3307750665410 actuator_enabled=0
+RX session=1337380083 seq=15401 flags=1 raw_relative_deg=-0.019 rate_dps=0.000 source_age_ms=3 status=REAL_RELATIVE rx_local_ns=3308752151035 actuator_enabled=0
+RX session=1337380083 seq=15501 flags=1 raw_relative_deg=-0.019 rate_dps=0.000 source_age_ms=4 status=REAL_RELATIVE rx_local_ns=3309752496536 actuator_enabled=0
+UNCONN 0      0                          0.0.0.0:54321      0.0.0.0:*    users:(("steering_feedba",pid=3268,fd=3))
+2982 ./build/video_receiver
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

@@ -1,0 +1,33 @@
+{
+  "status": "VERIFIED",
+  "board": "M",
+  "commit": "a074cb04e5c262009278be24fe3d3dbfebda01c2",
+  "sources_match_local": true,
+  "binaries_match_build": true,
+  "runtime_matches_build": true,
+  "protected_unchanged": true,
+  "service_state_ok": true,
+  "processes": [
+    {
+      "pid": 3176,
+      "exe": "/home/linaro/M/pcie/build/pcie_capture",
+      "sha256": "3511ec6878f141ab6209d77460de98b4f8eb357db9aebb3b25d33dbbb5a2532d"
+    },
+    {
+      "pid": 3179,
+      "exe": "/home/linaro/M/udp/build/udp_sender",
+      "sha256": "fbd289c8191d1524f584c973b8d8dd20daec2032192d85b31498975e61b16a1c"
+    },
+    {
+      "pid": 3324,
+      "exe": "/home/linaro/M/imu/build/angle_monitor",
+      "sha256": "9ee850bbc5d793cca5c42d7181f1ecac66787326626c1a7d9cff745aaded6cd2"
+    }
+  ],
+  "unit": {
+    "active": true,
+    "path": "/etc/systemd/system/m-steering-imu.service",
+    "sha256": "a82b0f312e3fc53c63723375416a8378e1c33b63b15dcc12aa9307b8bbed594c"
+  },
+  "backup": "/home/linaro/local_restore_20261031_a074cb04/backup"
+}

@@ -1,0 +1,27 @@
+[?2004l
+   2161    1993 S+         17:40  0.0  0.0 /bin/sh -c trap 'make -C "/home/linaro/S" stop' EXIT; cd x11/csrc && ./build/eight_camera_renderer
+   2317       1 S          01:44  0.5  0.8 python3 -u board_restore.py --board S build
+   2319    2317 SN         01:44  0.0  0.1 make -j1 all
+   2394    2319 SN         00:50  0.0  0.1 make -C x11/csrc SHARED_LIB=../../build/libshared.a
+   2408    2394 SN         00:50  0.0  0.0 g++ -I../../include -Iinclude -std=c++14 -O3 -march=native -funroll-loops -pthread -DPERCEPTION_HAVE_XRENDER=1 -DPERCEPTION_HAVE_GLES=1 -c main.cpp -o build/main.o
+   2409    2408 RN         00:50 98.7  7.6 /usr/lib/gcc/aarch64-linux-gnu/12/cc1plus -quiet -I ../../include -I include -imultiarch aarch64-linux-gnu -D_GNU_SOURCE -D_REENTRANT -D PERCEPTION_HAVE_XRENDER=1 -D PERCEPTION_HAVE_GLES=1 main.cpp -quiet -dumpdir build/ -dumpbase main.cpp -dumpbase-ext .cpp -mlittle-endian -mabi=lp64 -march=armv8.2-a+crypto+fp16+rcpc+dotprod -O3 -std=c++14 -funroll-loops -fasynchronous-unwind-tables -o /tmp/cc5dmDvP.s
+
+LOG build_S.log
+make[1]: Leaving directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/pcie'
+PCIe程序编译完成: pcie/build/app
+=== 编译UDP网络接收后台程序 ===
+make[1]: Entering directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/udp'
+g++ -c -Iinclude -I../include -std=c++14 -O3 -march=native -funroll-loops -pthread -MMD -MP csrc/main.cpp -o build/main.o
+g++ build/main.o  -o build/video_receiver ../build/libshared.a -lrt -lpthread
+make[1]: Leaving directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/udp'
+UDP程序编译完成: udp/build/video_receiver
+=== 编译X11六摄像头渲染程序 ===
+make[1]: Entering directory '/home/linaro/local_restore_20261031_a074cb04/candidate/S/x11/csrc'
+创建构建目录: build
+mkdir -p build
+编译C++: main.cpp
+g++ -I../../include -Iinclude -std=c++14 -O3 -march=native -funroll-loops -pthread -DPERCEPTION_HAVE_XRENDER=1  -DPERCEPTION_HAVE_GLES=1  -c main.cpp -o build/main.o
+               total        used        free      shared  buff/cache   available
+Mem:            1958         844         638          29         537        1114
+Swap:              0           0           0
+STEER_CMD_ecc709c9787b42198c85b7194c74bdcc:0

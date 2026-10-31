@@ -15,6 +15,9 @@ typedef struct {
     steer_result_t (*write_register)(void *context, uint8_t reg, uint8_t value);
 } mpu9250_bus_t;
 steer_result_t mpu9250_read_identity(const mpu9250_bus_t *bus, uint8_t *identity);
+/* A host scheduling delay discards this snapshot and permits bounded retry;
+ * invalid/reversed monotonic time remains a hard discontinuity. */
+steer_result_t mpu9250_capture_timing(uint64_t begin_ns, uint64_t end_ns);
 /* Autonomous M FPGA sampler. Callbacks expose identity only; sensor register
  * configuration belongs to the new FPGA state machine, not S motion regs. */
 steer_result_t mpu9250_fpga_open(mpu9250_bus_t *bus);

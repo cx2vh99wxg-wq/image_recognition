@@ -1,0 +1,6 @@
+[?2004l
+[ 1654.830920] addr_size = 32;     current_len = 380(dw)
+[ 1654.830974] dma_addr_r  = 0x417f6000; offset_addr = 0x0
+[ 1654.830984] dma_addr_w  = 0x4a736000; offset_addr = 0x0
+{"status": "INSTALLED_RUNNING", "board": "S", "processes": [{"pid": 2981, "exe": "/home/linaro/S/pcie/build/app"}, {"pid": 2982, "exe": "/home/linaro/S/udp/build/video_receiver"}, {"pid": 2983, "exe": "/home/linaro/S/fspi/build/vehicle_control"}, {"pid": 2984, "exe": "/home/linaro/S/x11/csrc/build/eight_camera_renderer"}], "unit": {"active": false}}
+STEER_CMD_7f21a62c6ced40e9bab7d179cfceded9:0

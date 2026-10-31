@@ -1,0 +1,18 @@
+{
+  "status": "INSTALLED_TELEMETRY_ONLY",
+  "side": "S",
+  "before": {
+    "S/steering/tools/feedback/steering_feedback_monitor.c": "7f5a6806a25ccba545a37e1dca8c5bb8aa244a91b91921705ee7734b4ab45d2a",
+    "S/steering/tests/feedback/test_udp_monitor.py": "75a174f72989f4b086920f674c386d2a383f52a0362b5f6a570ddd3990f331f9",
+    "S/steering/feedback/build/steering_feedback_monitor": "ab111f91898e4fe6826c187d8af090ec4422a9249d4d0a39032c0fd960c25cc7"
+  },
+  "protected_unchanged": {
+    "/home/linaro/S/udp/build/video_receiver": "c30143a5ac9627d34ac5ab2baa7b81c0eb18ecd1a92fb9e730a7041a70ff2879",
+    "/home/linaro/S/fspi/csrc/fspi_module.c": "21643a42b5dc5ee0545393c90483730a853bb5c647e0ea4b87d104763c4acd27"
+  },
+  "after": {
+    "S/steering/tools/feedback/steering_feedback_monitor.c": "8382b2e1d076d210ee315dd976019849ef7cbc4af17b168a6c27630494b5c2bc",
+    "S/steering/tests/feedback/test_udp_monitor.py": "bea74a5867cd53210758ab8d38c78d614606b6a08c2eb26d5debe83549034017",
+    "S/steering/feedback/build/steering_feedback_monitor": "d3e4e7036757bb8aa3bbca595a1a9e01385aa6b7ea21091b14bd6ab6d61401bf"
+  }
+}

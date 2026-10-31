@@ -101,12 +101,15 @@ int imu_tool_main(int argc,char **argv,int estimate){
  if(steering_angle_init(&integrator,axis,bias,100)!=STEER_OK)return 2;
  imu_stationary_t hold;imu_stationary_init(&hold);
 #ifndef _WIN32
- int sock=-1;
+ int sock=-1;struct sockaddr_in dst={0};
+ uint64_t udp_sent=0,udp_errors=0,last_udp_notice=0;int udp_failed=0;
  if(target){
-  struct sockaddr_in dst={0};dst.sin_family=AF_INET;dst.sin_port=htons((uint16_t)port);
+  dst.sin_family=AF_INET;dst.sin_port=htons((uint16_t)port);
   if(inet_pton(AF_INET,target,&dst.sin_addr)!=1)return 2;
   sock=socket(AF_INET,SOCK_DGRAM|SOCK_CLOEXEC,0);
-  if(sock<0||connect(sock,(struct sockaddr*)&dst,sizeof(dst))){if(sock>=0)close(sock);return 1;}
+  if(sock<0){perror("UDP socket");return 1;}
+  /* Do not connect/bind a source address before the application's static
+   * network setup. sendto selects the current route/source on every packet. */
  }
 #else
  if(target){fprintf(stderr,"UDP sender runs on M/Linux\n");return 2;}
@@ -212,9 +215,9 @@ int imu_tool_main(int argc,char **argv,int estimate){
   unsigned gap=have_sample?(sample.sequence-previous_seq-1u):0;
   double dt=previous_stamp?(sample.sample_time_ns-previous_stamp)/1e6:0;
   if(did_relative_zero||produced%print_every==0||(count&&produced+1==count))
-   printf("%s seq=%u t_ns=%" PRIu64 " dt_ms=%.3f gap=%u age_ms=%u accel=[%.4f %.4f %.4f] gyro=[%.4f %.4f %.4f] temp_c=%.3f relative_deg=%.5f rate_dps=%.5f ZERO_VALID=%d static_hold=%d\n",
+   printf("%s seq=%u t_ns=%" PRIu64 " dt_ms=%.3f gap=%u age_ms=%u accel=[%.4f %.4f %.4f] gyro=[%.4f %.4f %.4f] temp_c=%.3f relative_deg=%.5f rate_dps=%.5f ZERO_VALID=%d static_hold=%d hold_changes=%u residual_bias=[%.5f %.5f %.5f]\n",
     fpga?"REAL":"SIMULATED",sample.sequence,sample.sample_time_ns,dt,gap,age_ms,
-    sample.accel_mps2[0],sample.accel_mps2[1],sample.accel_mps2[2],sample.gyro_dps[0],sample.gyro_dps[1],sample.gyro_dps[2],sample.temperature_c,relative,projected,zero_valid,stationary_hold&&hold.holding);
+    sample.accel_mps2[0],sample.accel_mps2[1],sample.accel_mps2[2],sample.gyro_dps[0],sample.gyro_dps[1],sample.gyro_dps[2],sample.temperature_c,relative,projected,zero_valid,stationary_hold&&hold.holding,hold.transitions,hold.residual_bias[0],hold.residual_bias[1],hold.residual_bias[2]);
   if(csv){
    fprintf(csv,"%s,%u,%u,%" PRIu64 ",%u,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.4f,%.6f,%.6f,%d,%.6f,%u,%u,%d\n",
     backend,session,sample.sequence,sample.sample_time_ns,sample.flags,sample.accel_mps2[0],sample.accel_mps2[1],sample.accel_mps2[2],
@@ -230,7 +233,18 @@ int imu_tool_main(int argc,char **argv,int estimate){
    f.source_age_ms=age_ms;f.sample_time_ns=sample.sample_time_ns;
    uint8_t wire[STEERING_FEEDBACK_WIRE_SIZE];
    if(steering_feedback_encode(wire,sizeof(wire),&f)!=STEER_OK){exit_code=1;break;}
-   if(send(sock,wire,sizeof(wire),MSG_DONTWAIT)!=(ssize_t)sizeof(wire)&&produced%print_every==0)perror("UDP send");
+   if(sendto(sock,wire,sizeof(wire),MSG_DONTWAIT,(struct sockaddr*)&dst,sizeof(dst))!=(ssize_t)sizeof(wire)){
+    int error=errno;++udp_errors;
+    if(!udp_failed||now-last_udp_notice>=2000000000ULL){
+     fprintf(stderr,"IMU UDP send failed: %s; target=%s:%u sent=%" PRIu64 " errors=%" PRIu64 "; retry current route, sampling continues\n",
+       strerror(error),target,port,udp_sent,udp_errors);last_udp_notice=now;
+    }
+    udp_failed=1;
+   }else {
+    ++udp_sent;
+    if(udp_failed)printf("IMU UDP recovered: target=%s:%u sent=%" PRIu64 " errors=%" PRIu64 "\n",target,port,udp_sent,udp_errors);
+    udp_failed=0;
+   }
   }
 #endif
   previous_seq=sample.sequence;previous_stamp=sample.sample_time_ns;have_sample=1;last_good=now;++produced;
@@ -241,6 +255,9 @@ int imu_tool_main(int argc,char **argv,int estimate){
  mpu9250_link_stats_t stats;mpu9250_fpga_stats(&source.bus,&stats);
  printf("LINK accepted=%u duplicate_reads=%u transfers=%u io_errors=%u crc_errors=%u stale_captures=%u i2c_errors=%u\n",
   produced,duplicate_reads,stats.transfers,stats.io_errors,stats.crc_errors,stats.stale_captures,stats.i2c_errors);
+#ifndef _WIN32
+ if(target)printf("IMU UDP summary sent=%" PRIu64 " errors=%" PRIu64 "\n",udp_sent,udp_errors);
+#endif
  imu_source_close(&source);
 #ifndef _WIN32
  if(sock>=0)close(sock);

@@ -1,0 +1,46 @@
+{
+  "status": "REAL_M_TO_S_MATCHED_PASS",
+  "M_session": 1127682414,
+  "M_samples": 6000,
+  "S_matching_received": 6000,
+  "receive_fraction": 1.0,
+  "source_ip": "192.168.100.10",
+  "crc_sequence_timestamp_angle_flags_matched": true,
+  "M": {
+    "side": "M",
+    "protected_vision_and_control_unchanged": true,
+    "time_unix": 1793418321.067964,
+    "samples": 6000,
+    "duration_s": 60.011586,
+    "effective_hz": 99.96403027908644,
+    "session": 1127682414,
+    "post5_hold_fraction": 1.0,
+    "post5_angle_range_deg": 0.0,
+    "first_deg": 0.0,
+    "last_deg": 0.001219,
+    "sequence_gaps": 0,
+    "source_age_ms_max": 5,
+    "all_real_relative": true,
+    "udp_sent": 6000,
+    "udp_errors": 0,
+    "service_pid": 2890,
+    "service_udp_unconnected_wildcard_source": true,
+    "runtime_route": "192.168.100.20 dev end1 src 192.168.100.10 uid 0 \n    cache",
+    "status": "TELEMETRY_RESTORED_VERIFIED"
+  },
+  "S": {
+    "side": "S",
+    "protected_vision_and_control_unchanged": true,
+    "time_unix": 1793418514.062395,
+    "received": 12056,
+    "accepted": 12056,
+    "source_addresses": [
+      "192.168.100.10"
+    ],
+    "rejected": 0,
+    "source_age_ms_max": 12,
+    "actuator_enabled": false,
+    "passive_receiver_pid": 3268,
+    "status": "TELEMETRY_RESTORED_VERIFIED"
+  }
+}

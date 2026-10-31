@@ -1,0 +1,15 @@
+[?2004l
+LOG restored_vehicle_control.log
+[SHM Read] Frame4384: STRAIGHT | Conf:0% | Angle:0 | Wheel:NEUTRAL
+[SHM Read] Frame4393: STRAIGHT | Conf:40% | Angle:0 | Wheel:NEUTRAL
+[SHM Read] Frame4393: STRAIGHT | Conf:40% | Angle:0 | Wheel:NEUTRAL
+[SHM Read] Frame4393: STRAIGHT | Conf:0% | Angle:0 | Wheel:NEUTRAL
+[SHM Read] Frame4402: STRAIGHT | Conf:40% | Angle:0 | Wheel:NEUTRAL
+LOG restored_video_receiver.log
+[TRAFFIC_RX] source=4305 detector=4272 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1099 ttl_ms=717
+[LINE_RX] session=1543867371 source=4324 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=658
+[TRAFFIC_RX] source=4365 detector=4330 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1173 ttl_ms=649
+[UDP_RX] publish_fps=29.94 complete_fps=29.94 udp_mbps=154.54 assembly_ms=25.97 incomplete=0 corrupt=0 duplicate=0 skip_complete=0 kernel_drop_total=0
+[LINE_RX] session=1543867371 source=4384 left=UNKNOWN(Q0,NO MASK) right=UNKNOWN(Q0,NO MASK) ttl_ms=595
+HEALTH_JSON {"board": "S", "status": "HEALTHY", "frames": {"pcie": {"fps": 19.66, "advanced": 59, "writer_active": 1, "width": 640, "height": 480}, "udp": {"fps": 29.65, "advanced": 89, "writer_active": 1, "width": 640, "height": 480}}, "brake_telemetry": {"person": 0, "brake_enable": 1, "age_seconds": 0, "frames": 2579, "valid": 1}}
+STEER_CMD_1c94c8ca0e544d7baa701730f24d4592:0

@@ -1,0 +1,20 @@
+[?2004l
+BUILD_STEP make -j1 all
+BUILD_STEP make test-line-style test-ego-lane test-traffic test-npu-scheduling
+BUILD_STEP python3 tools/build.py --test
+{"status": "BUILD_TESTS_PASSED", "board": "M", "binaries": 6, "production_unchanged": true}
+{
+  "status": "BUILD_TESTS_PASSED",
+  "board": "M",
+  "binaries": {
+    "pcie/build/pcie_capture": "3511ec6878f141ab6209d77460de98b4f8eb357db9aebb3b25d33dbbb5a2532d",
+    "udp/build/udp_sender": "fbd289c8191d1524f584c973b8d8dd20daec2032192d85b31498975e61b16a1c",
+    "imu/build/imu_dump": "7c846d4866c86d3e789085b3ec73e0e428353a2300ced5b926808321259012df",
+    "imu/build/angle_monitor": "9ee850bbc5d793cca5c42d7181f1ecac66787326626c1a7d9cff745aaded6cd2",
+    "imu/build/feedback_inspect": "581110b50390fd95f8ce9a34fa1f214148c4f0adcf7263268a8c4e4b5d74c068",
+    "imu/build/imu_probe": "a8cce0404999f20a09d08016ce92908c29b16f05b0ece08b7c6b2b4f70d460b4"
+  },
+  "log": "/home/linaro/local_restore_20261031_a074cb04/build_M.log"
+}Filesystem      Size  Used Avail Use% Mounted on
+/dev/root       5.9G  5.5G  128M  98% /
+STEER_CMD_fb8f89932c6c47f29b8ee10239fbc964:0

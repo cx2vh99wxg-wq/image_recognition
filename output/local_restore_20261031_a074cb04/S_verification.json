@@ -1,0 +1,36 @@
+{
+  "status": "VERIFIED",
+  "board": "S",
+  "commit": "a074cb04e5c262009278be24fe3d3dbfebda01c2",
+  "sources_match_local": true,
+  "binaries_match_build": true,
+  "runtime_matches_build": true,
+  "protected_unchanged": true,
+  "service_state_ok": true,
+  "processes": [
+    {
+      "pid": 2981,
+      "exe": "/home/linaro/S/pcie/build/app",
+      "sha256": "05767650873be124f52ba190702a3a706c1ba37139cae114ef4bbf55f5028e60"
+    },
+    {
+      "pid": 2982,
+      "exe": "/home/linaro/S/udp/build/video_receiver",
+      "sha256": "c30143a5ac9627d34ac5ab2baa7b81c0eb18ecd1a92fb9e730a7041a70ff2879"
+    },
+    {
+      "pid": 2983,
+      "exe": "/home/linaro/S/fspi/build/vehicle_control",
+      "sha256": "2ed37fbc3316c29a588cdc6320e861f8b2e63e77da51b86b6d58aa3a8da8dcea"
+    },
+    {
+      "pid": 2984,
+      "exe": "/home/linaro/S/x11/csrc/build/eight_camera_renderer",
+      "sha256": "0da0dd33815bc0991be2a82e6d496d4b8fd27cc8c2e33dfeb1df26a811efa218"
+    }
+  ],
+  "unit": {
+    "active": false
+  },
+  "backup": "/home/linaro/local_restore_20261031_a074cb04/backup"
+}

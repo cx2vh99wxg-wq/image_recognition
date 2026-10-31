@@ -1,0 +1,21 @@
+{
+  "M/imu/csrc/imu_stationary.c": "4e4c6447da2ed8f91cb588502809bdb048c0459edd3f6f3aa50d51b731d844f9",
+  "M/imu/include/imu_stationary.h": "9d1aa9ab6676b38b817663c47ef7daa103df2b8a9c5ac554ddd2b3a9c3c42111",
+  "M/imu/csrc/mpu9250_transport.c": "f946534e174cbe28516cf5ce353361da31c246767430f241bc5c669514af0839",
+  "M/imu/include/mpu9250_transport.h": "23808e46927a467a59f18bdcc4beeaaabb384f78363c86536a57911c063e36f3",
+  "M/imu/tools/imu_tool.c": "ac17112ca5ca8872f20301ad1da34fdd520c136f8a63df3c9ee85a992595611b",
+  "M/imu/tests/test_stationary.c": "45dc5c997241f2c8abcdd1e7b41b71f96e9624d706e0b6784225c815c829a4ce",
+  "M/imu/tests/test_imu.c": "330e1dcdc0367d5c55c0ecc86e40601f52aac1c6128230a00c5101c99386169a",
+  "M/imu/tools/build.py": "887e7b0eb60a541158dad56c8971b3921e9f6d1d1e3c396f8b1c2c032c1a3fb0",
+  "M/imu/feedback/m-steering-imu.service": "3ab81c43b1638e1b4ecff83415b402e8c37a61818f08d4b93f89439b18af4042",
+  "M/imu/README.md": "086ab55dfb2bf79fe87a70ff7de4a440ae1d467a8daf33013f992682f34f55cd",
+  "S/steering/tools/feedback/steering_feedback_monitor.c": "8382b2e1d076d210ee315dd976019849ef7cbc4af17b168a6c27630494b5c2bc",
+  "S/steering/tests/feedback/test_udp_monitor.py": "bea74a5867cd53210758ab8d38c78d614606b6a08c2eb26d5debe83549034017",
+  "M/imu/tools/replay_stationary.c": "7c11500951ac1c08ac7a319ad883e73793ced0ada9feb84abceda294ce6edabf",
+  "M/imu/tests/test_udp_source.py": "267f1d71fc66b338fa08df5233b66ea4e5203c60e04be4cc9b4b66212dc68911",
+  "M/imu/feedback/m-steering-imu.env.example": "7010dc7e6b43cabce990ee31ebf764ccbaaf6172f1a7c29c4011ebff1675a8d9",
+  "M/imu/calibration/README.txt": "7b73710be1ac8e6a2e8413476d2bed4e2bd8f53f6d5adad30f222f1858d4cdce",
+  "M/imu/calibration/stationary_bias_20261031.cal": "0da37405e5ea6b44ed20595de2f5bc0ebbe1e276cd9093045a6dd4c89ece8fe9",
+  "M/imu/calibration/stationary_bias_20261031.cal.json": "d88d2ed4485ab61eb8aba968b52c10c50c4765d455cfef273cb95296436bd1cc",
+  "S/steering/feedback/README.md": "0d5c3d357853508a3c6d8ecd6d149e956d7930389f91b1e36b00d8603402e5bd"
+}

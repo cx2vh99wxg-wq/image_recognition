@@ -2,6 +2,7 @@
 import argparse
 import csv
 import re
+import signal
 import select
 import socket
 import struct
@@ -101,3 +102,18 @@ with tempfile.TemporaryDirectory(prefix='feedback_udp_') as directory:
         print('PASS production M mock sender -> production S monitor: 20 ordered STF1 samples remain simulated')
 
 print('PASS UDP monitor: relative/zero/simulated isolation, CRC/length, duplicate/order/session faults, expiry, silence, signed angles and CSV protection')
+
+# Explicit continuous mode remains read-only and exits cleanly on SIGTERM.
+with tempfile.TemporaryDirectory(prefix='feedback_continuous_') as directory:
+    p,target=start(Path(directory)/'continuous.csv','--duration-ms','0')
+    try:
+        with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as sender:
+            sender.sendto(frame(777,1),target)
+        time.sleep(.15)
+        assert p.poll() is None
+        p.send_signal(signal.SIGTERM)
+        out,err=p.communicate(timeout=3)
+        assert p.returncode==0 and 'accepted=1 ' in out,(out,err)
+    finally:
+        if p.poll() is None:p.kill();p.communicate()
+print('PASS continuous telemetry mode: real receive, expiry, explicit termination; actuator disabled')

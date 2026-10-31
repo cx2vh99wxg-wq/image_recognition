@@ -1,0 +1,15 @@
+{
+  "side": "S",
+  "protected_vision_and_control_unchanged": true,
+  "time_unix": 1793418514.062395,
+  "received": 12056,
+  "accepted": 12056,
+  "source_addresses": [
+    "192.168.100.10"
+  ],
+  "rejected": 0,
+  "source_age_ms_max": 12,
+  "actuator_enabled": false,
+  "passive_receiver_pid": 3268,
+  "status": "TELEMETRY_RESTORED_VERIFIED"
+}

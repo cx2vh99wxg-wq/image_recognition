@@ -1,0 +1,15 @@
+python3 /home/linaro/imu_network_restore_20261031/extend_observation.py; printf '\nSIX_CMD_DONE\n'
+[?2004l{
+  "service_pid": 2890,
+  "seconds_observed": 177.081895,
+  "logged_samples": 178,
+  "post5_hold_fraction": 1.0,
+  "post5_angle_range_deg": 0.0,
+  "last_hold_changes": 1,
+  "network_or_sensor_errors": false,
+  "nrestarts": 0,
+  "status": "SERVICE_STATIC_CONTINUITY_PASS"
+}
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

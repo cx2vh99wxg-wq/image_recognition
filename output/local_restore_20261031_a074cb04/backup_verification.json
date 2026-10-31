@@ -1,0 +1,16 @@
+[
+  {
+    "board": "M",
+    "status": "BACKUP_CONTENTS_VERIFIED",
+    "files_checked": 105,
+    "archive_sha256": "0565565728aadc8214cef5b924d484bbfa1aec573a3008692e45362d39436f46",
+    "archive": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\local_restore_20261031_a074cb04\\M_before_restore.tar.gz"
+  },
+  {
+    "board": "S",
+    "status": "BACKUP_CONTENTS_VERIFIED",
+    "files_checked": 134,
+    "archive_sha256": "c3e3d9629fc2e5db17bfd4238f9b45a54850cdb45d2c47286d5eec642716bbaa",
+    "archive": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\local_restore_20261031_a074cb04\\S_before_restore_v2.tar.gz"
+  }
+]

@@ -1,0 +1,32 @@
+M/S 恢复本地分支执行回执（2026-10-31）
+
+目标：codex/steering-integration，提交 a074cb04e5c262009278be24fe3d3dbfebda01c2。
+本地 M、S 和公共依赖业务源码未修改。板端源码、ARM 编译程序及实际运行映像均已按清单核对。
+
+M：COM8，/home/linaro/M，96 个源码/配套文件；采集、UDP、IMU 已恢复运行。
+S：COM7，/home/linaro/S，128 个源码/配套文件；采集、UDP 接收、车控、显示已恢复运行。
+公共依赖同步到各板 /home/linaro/common/steering。
+板上较新而本地没有的 9 个曲线/诊断源码文件已从生产目录移出，保存在备份中。
+模型、RKNN 运行库和运行时标定数据前后哈希一致；未操作 FPGA 配置或烧录。
+
+备份：
+本目录 M_before_restore.tar.gz：M 原源码、磁盘程序、实际运行程序、服务配置及启动信息。
+本目录 S_before_restore_v2.tar.gz：S 原源码、程序及补齐校准工具依赖后的完整备份。
+两块板各自还保留 /home/linaro/local_restore_20261031_a074cb04/backup。
+逐文件哈希与归档传输校验见 backup_verification.json。
+
+验证：
+M：线型、车道归属、红绿灯、NPU 调度、IMU 和静止保持软件测试通过。
+S：制动释放、AUTO_BREAK、转向、车道门控、交通灯 GO、调速、显示和遥测软件测试通过。
+S 首轮暂存打包遗漏 tools/calibration 源码依赖，已补齐并完成全部重测；生产目录在测试通过前未替换。
+恢复后 M 采集/发送约 30fps，新鲜识别约 3.4–3.6Hz。
+S 采集约 17–20fps，新鲜识别约 5.9–6.5Hz；M 视频接收约 30fps。
+显示日志可见新画面约 12–13fps。以上是软件链路统计，不是逐颗传感器 VSYNC 测量。
+只读共享内存检查确认两端图像持续更新，S 制动检测心跳有效；未执行实车转向脉冲或制动效果试验。
+
+需保留的运行观察：
+回退后的 M 旧版 IMU 两次报告 STALE_OR_DISCONTINUOUS 后退出，由 systemd 自动重启。
+最终检查服务 active、进程 PID 3324，视觉和视频链路持续运行。
+本次按用户选定分支原样恢复，没有对这个旧版现象额外改代码或改 FPGA。
+
+详细证据：deployment_receipt.json、M/S_verification.json、M/S_installation_receipt.json、M/S_build.log、M_service_errors.log、M/S_health.log。

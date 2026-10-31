@@ -1,0 +1,26 @@
+[?2004l
+   2494       1 S          01:18  0.4  0.8 python3 -u board_restore.py --board M build
+   2496    2494 SN         01:17  0.0  0.1 make -j1 all
+   2521    2496 SN         01:16  0.0  0.1 make -C pcie ENABLE_RENDERING=1 TOPDIR=/home/linaro/local_restore_20261031_a074cb04/candidate/M
+   2591    2521 SN         01:08  0.0  0.0 g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I/usr/include/X11 -c csrc/main.cpp -o build/main.o
+   2592    2591 RN         01:08 99.6 16.0 /usr/lib/gcc/aarch64-linux-gnu/12/cc1plus -quiet -I include -I ../include -I /home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I /usr/include/X11 -imultiarch aarch64-linux-gnu -MMD build/main.d -MP -MQ build/main.o -D_GNU_SOURCE -D ENABLE_RENDERING=1 csrc/main.cpp -quiet -dumpdir build/ -dumpbase main.cpp -dumpbase-ext .cpp -mlittle-endian -mabi=lp64 -g -O3 -Wall -std=c++11 -fasynchronous-unwind-tables -o /tmp/ccZt6YNT.s
+
+LOG build_M.log
+Target: pcie_capture
+Build Directory: build
+Rendering Support: 1
+YOLO Detection: Enabled
+Compiler: gcc / g++
+======================================
+Compiling C: csrc/fspi_module.c
+gcc -std=c99 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I/usr/include/X11 -c csrc/fspi_module.c -o build/fspi_module.o
+Compiling C: csrc/preprocess.c
+gcc -std=c99 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I/usr/include/X11 -c csrc/preprocess.c -o build/preprocess.o
+Compiling C: csrc/yolo_integration.c
+gcc -std=c99 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I/usr/include/X11 -c csrc/yolo_integration.c -o build/yolo_integration.o
+Compiling C++: csrc/main.cpp
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I/usr/include/X11 -c csrc/main.cpp -o build/main.o
+               total        used        free      shared  buff/cache   available
+Mem:            1958        1035         389          90         655         922
+Swap:              0           0           0
+STEER_CMD_a2d208d8048b4a0fb9924f9aed36fe3e:0

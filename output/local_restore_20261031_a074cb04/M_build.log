@@ -1,0 +1,129 @@
+======================================
+M-End_FPGA_System Build System
+======================================
+Author: 科研轮转
+Date: 2025年10月17日
+======================================
+Modules:
+  - Shared Memory Module (csrc/)
+  - PCIe Capture Module (pcie/)
+  - UDP Network Module (udp/)
+Rendering Support: 1
+YOLO Detection: Enabled
+======================================
+Creating build directory
+mkdir -p build
+Building Shared Memory Module...
+gcc -Wall -Wextra -std=c99 -O3 -march=native -pthread -fPIC -Iinclude -c csrc/shared_memory.c -o build/shared_memory.o
+Shared Memory module build complete
+Building PCIe Capture Module...
+make[1]: Entering directory '/home/linaro/local_restore_20261031_a074cb04/candidate/M/pcie'
+======================================
+PCIe Capture Module Build System
+======================================
+Target: pcie_capture
+Build Directory: build
+Rendering Support: 1
+YOLO Detection: Enabled
+Compiler: gcc / g++
+======================================
+Compiling C: csrc/fspi_module.c
+gcc -std=c99 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I/usr/include/X11 -c csrc/fspi_module.c -o build/fspi_module.o
+Compiling C: csrc/preprocess.c
+gcc -std=c99 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I/usr/include/X11 -c csrc/preprocess.c -o build/preprocess.o
+Compiling C: csrc/yolo_integration.c
+gcc -std=c99 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I/usr/include/X11 -c csrc/yolo_integration.c -o build/yolo_integration.o
+Compiling C++: csrc/main.cpp
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I/usr/include/X11 -c csrc/main.cpp -o build/main.o
+Compiling C++: csrc/postprocess.cpp
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I/usr/include/X11 -c csrc/postprocess.cpp -o build/postprocess.o
+Compiling C++: csrc/traffic_detector.cpp
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I/usr/include/X11 -c csrc/traffic_detector.cpp -o build/traffic_detector.o
+Compiling C++: csrc/traffic_service.cpp
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I/usr/include/X11 -c csrc/traffic_service.cpp -o build/traffic_service.o
+Compiling C++: csrc/yolop_opencv_integration.cpp
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I/usr/include/X11 -c csrc/yolop_opencv_integration.cpp -o build/yolop_opencv_integration.o
+Linking: build/pcie_capture
+g++  build/fspi_module.o  build/preprocess.o  build/yolo_integration.o  build/main.o  build/postprocess.o  build/traffic_detector.o  build/traffic_service.o  build/yolop_opencv_integration.o /home/linaro/local_restore_20261031_a074cb04/candidate/M/build/shared_memory.o -o build/pcie_capture -Llib -L../lib -lrknnrt -pthread -lm -ldl -lX11 -lXext
+Build successful: build/pcie_capture
+make[1]: Leaving directory '/home/linaro/local_restore_20261031_a074cb04/candidate/M/pcie'
+PCIe module build complete
+Building UDP Network Module...
+make[1]: Entering directory '/home/linaro/local_restore_20261031_a074cb04/candidate/M/udp'
+======================================
+UDP Network Module Build System
+======================================
+Target: udp_sender
+Build Directory: build
+Compiler: gcc / g++
+======================================
+Compiling C++: csrc/main.cpp
+g++ -std=c++11 -Wall -O3 -march=native -MMD -MP -Iinclude -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -c csrc/main.cpp -o build/main.o
+Linking: build/udp_sender
+g++   build/main.o /home/linaro/local_restore_20261031_a074cb04/candidate/M/build/shared_memory.o -o build/udp_sender -pthread -lm
+Build successful: build/udp_sender
+make[1]: Leaving directory '/home/linaro/local_restore_20261031_a074cb04/candidate/M/udp'
+UDP module build complete
+g++ -std=c++11 -Wall -Wextra -Werror -O2 -Iinclude -I../include -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I/usr/include/X11 tests/test_line_style.cpp -o build/test_line_style
+./build/test_line_style
+scene bend=0 filled=0 expected=1/1 got=1/1 duty=100/100 spans=1/1
+scene bend=0 filled=0 expected=1/2 got=1/2 duty=100/58 spans=1/4
+scene bend=0 filled=0 expected=2/1 got=2/1 duty=58/100 spans=4/1
+scene bend=0 filled=0 expected=2/2 got=2/2 duty=58/58 spans=4/4
+scene bend=0 filled=1 expected=1/1 got=1/1 duty=100/100 spans=1/1
+scene bend=0 filled=1 expected=1/2 got=1/2 duty=100/58 spans=1/4
+scene bend=0 filled=1 expected=2/1 got=2/1 duty=58/100 spans=4/1
+scene bend=0 filled=1 expected=2/2 got=2/2 duty=58/58 spans=4/4
+scene bend=1 filled=0 expected=1/1 got=1/1 duty=100/100 spans=1/1
+scene bend=1 filled=0 expected=1/2 got=1/2 duty=100/58 spans=1/4
+scene bend=1 filled=0 expected=2/1 got=2/1 duty=58/100 spans=4/1
+scene bend=1 filled=0 expected=2/2 got=2/2 duty=58/58 spans=4/4
+scene bend=1 filled=1 expected=1/1 got=1/1 duty=100/100 spans=1/1
+scene bend=1 filled=1 expected=1/2 got=1/2 duty=100/58 spans=1/4
+scene bend=1 filled=1 expected=2/1 got=2/1 duty=58/100 spans=4/1
+scene bend=1 filled=1 expected=2/2 got=2/2 duty=58/58 spans=4/4
+framed horizon=40 offset=-12 types=2/1 reasons=OK/OK duty=48/100
+framed horizon=40 offset=0 types=2/1 reasons=OK/OK duty=50/100
+framed horizon=40 offset=12 types=2/1 reasons=OK/OK duty=45/100
+framed horizon=80 offset=-12 types=2/1 reasons=OK/OK duty=48/100
+framed horizon=80 offset=0 types=2/1 reasons=OK/OK duty=50/100
+framed horizon=80 offset=12 types=2/1 reasons=OK/OK duty=45/100
+framed horizon=110 offset=-12 types=2/1 reasons=OK/OK duty=48/100
+framed horizon=110 offset=0 types=2/1 reasons=OK/OK duty=50/100
+framed horizon=110 offset=12 types=2/1 reasons=OK/OK duty=45/100
+framed horizon=130 offset=-12 types=2/1 reasons=OK/OK duty=48/100
+framed horizon=130 offset=0 types=2/1 reasons=OK/OK duty=50/100
+framed horizon=130 offset=12 types=2/1 reasons=OK/OK duty=45/100
+line styles / RGB gaps / temporal identity / metadata expiry PASS
+g++ -std=c++11 -Wall -Wextra -Werror -O2 -Iinclude -I../include -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I/usr/include/X11 tests/test_ego_lane.cpp -o build/test_ego_lane
+./build/test_ego_lane
+inset three lines: SOLID/DASHED
+full curve=0 expected=1/1 got=1/1
+full curve=0 expected=1/2 got=1/2
+full curve=0 expected=2/1 got=2/1
+full curve=0 expected=2/2 got=2/2
+full curve=1 expected=1/1 got=1/1
+full curve=1 expected=1/2 got=1/2
+full curve=1 expected=2/1 got=2/1
+full curve=1 expected=2/2 got=2/2
+ego tracking: identity, missing evidence, expiry, wire lifetime and translated ROI PASS
+ego lane ownership / line style / negative evidence PASS
+g++ -std=c++11 -Wall -Wextra -Werror -O2 -Iinclude -I../include -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I/usr/include/X11 tests/test_traffic.cpp -o build/test_traffic
+./build/test_traffic
+TRAFFIC TEST PASS: middle-camera ROI/BGR normalization, raw-input immutability, RGB/color ambiguity, housing tracking, distinct-frame confirmation, lane-first admission/backoff, cross-clock wire TTL, duplicate expiry, CRC and bounds
+g++ -std=c++11 -Wall -Wextra -Werror -O2 -pthread -Iinclude -I../include -I/home/linaro/local_restore_20261031_a074cb04/candidate/M/include -I/usr/include/X11 tests/test_npu_scheduling.cpp -o build/test_npu_scheduling
+./build/test_npu_scheduling
+Optional traffic task stopped; lane worker continues
+[LINE_STYLE] source=1 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=OK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=OK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[LINE_STYLE] source=1 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=OK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=OK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+NPU SCHEDULING PASS: lane result published first, single owner, latest-only pending frame, optional failure does not stop lane
+BUILT candidate/M/imu/build/imu_dump
+BUILT candidate/M/imu/build/angle_monitor
+BUILT candidate/M/imu/build/feedback_inspect
+BUILT candidate/M/imu/build/imu_probe
+BUILT candidate/M/imu/build/test_imu
+PASS IMU: variable dt, axis/bias, wrap, duplicate/gap/session faults, identity and simulation isolation
+BUILT candidate/M/imu/build/test_snapshot
+PASS IMU1: CRC vector, signed axes/temperature, endianness, torn packet, flags, clock reversal and old FPGA rejection
+BUILT candidate/M/imu/build/test_stationary
+PASS stationary hold: noisy static drift bounded, nonzero angle retained, slow/fast signed motion preserved, immediate release, vibration and stale data rejected

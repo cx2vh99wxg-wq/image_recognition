@@ -1,0 +1,118 @@
+{
+  "date": "2026-10-31",
+  "branch": "codex/steering-integration",
+  "commit": "a074cb04e5c262009278be24fe3d3dbfebda01c2",
+  "status": "RESTORED_TO_LOCAL_SOURCE_WITH_IMU_RESTART_OBSERVATION",
+  "local_business_sources_unchanged": true,
+  "boards": {
+    "M": {
+      "status": "VERIFIED",
+      "board": "M",
+      "commit": "a074cb04e5c262009278be24fe3d3dbfebda01c2",
+      "sources_match_local": true,
+      "binaries_match_build": true,
+      "runtime_matches_build": true,
+      "protected_unchanged": true,
+      "service_state_ok": true,
+      "processes": [
+        {
+          "pid": 3176,
+          "exe": "/home/linaro/M/pcie/build/pcie_capture",
+          "sha256": "3511ec6878f141ab6209d77460de98b4f8eb357db9aebb3b25d33dbbb5a2532d"
+        },
+        {
+          "pid": 3179,
+          "exe": "/home/linaro/M/udp/build/udp_sender",
+          "sha256": "fbd289c8191d1524f584c973b8d8dd20daec2032192d85b31498975e61b16a1c"
+        },
+        {
+          "pid": 3324,
+          "exe": "/home/linaro/M/imu/build/angle_monitor",
+          "sha256": "9ee850bbc5d793cca5c42d7181f1ecac66787326626c1a7d9cff745aaded6cd2"
+        }
+      ],
+      "unit": {
+        "active": true,
+        "path": "/etc/systemd/system/m-steering-imu.service",
+        "sha256": "a82b0f312e3fc53c63723375416a8378e1c33b63b15dcc12aa9307b8bbed594c"
+      },
+      "backup": "/home/linaro/local_restore_20261031_a074cb04/backup"
+    },
+    "S": {
+      "status": "VERIFIED",
+      "board": "S",
+      "commit": "a074cb04e5c262009278be24fe3d3dbfebda01c2",
+      "sources_match_local": true,
+      "binaries_match_build": true,
+      "runtime_matches_build": true,
+      "protected_unchanged": true,
+      "service_state_ok": true,
+      "processes": [
+        {
+          "pid": 2981,
+          "exe": "/home/linaro/S/pcie/build/app",
+          "sha256": "05767650873be124f52ba190702a3a706c1ba37139cae114ef4bbf55f5028e60"
+        },
+        {
+          "pid": 2982,
+          "exe": "/home/linaro/S/udp/build/video_receiver",
+          "sha256": "c30143a5ac9627d34ac5ab2baa7b81c0eb18ecd1a92fb9e730a7041a70ff2879"
+        },
+        {
+          "pid": 2983,
+          "exe": "/home/linaro/S/fspi/build/vehicle_control",
+          "sha256": "2ed37fbc3316c29a588cdc6320e861f8b2e63e77da51b86b6d58aa3a8da8dcea"
+        },
+        {
+          "pid": 2984,
+          "exe": "/home/linaro/S/x11/csrc/build/eight_camera_renderer",
+          "sha256": "0da0dd33815bc0991be2a82e6d496d4b8fd27cc8c2e33dfeb1df26a811efa218"
+        }
+      ],
+      "unit": {
+        "active": false
+      },
+      "backup": "/home/linaro/local_restore_20261031_a074cb04/backup"
+    }
+  },
+  "backups": [
+    {
+      "board": "M",
+      "status": "BACKUP_CONTENTS_VERIFIED",
+      "files_checked": 105,
+      "archive_sha256": "0565565728aadc8214cef5b924d484bbfa1aec573a3008692e45362d39436f46",
+      "archive": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\local_restore_20261031_a074cb04\\M_before_restore.tar.gz"
+    },
+    {
+      "board": "S",
+      "status": "BACKUP_CONTENTS_VERIFIED",
+      "files_checked": 134,
+      "archive_sha256": "c3e3d9629fc2e5db17bfd4238f9b45a54850cdb45d2c47286d5eec642716bbaa",
+      "archive": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\local_restore_20261031_a074cb04\\S_before_restore_v2.tar.gz"
+    }
+  ],
+  "installed_files": {
+    "M": 96,
+    "S": 128
+  },
+  "removed_from_production_and_backed_up": {
+    "M": [
+      "M/imu/tests/test_udp_source.py",
+      "M/imu/tools/replay_stationary.c",
+      "M/pcie/include/lane_curve_analyzer.h",
+      "M/pcie/include/curve_geometry.h",
+      "M/pcie/tests/test_curve_geometry.cpp",
+      "M/pcie/tools/curve_geometry_replay.cpp"
+    ],
+    "S": [
+      "S/fspi/test_curve_execution.c",
+      "S/fspi/test_curve_snapshot.c",
+      "S/fspi/include/curve_execution.h"
+    ]
+  },
+  "models_runtime_libraries_calibration_unchanged": true,
+  "fpga_reprogrammed": false,
+  "software_tests": "M vision/line/traffic/scheduling/IMU; S braking/AUTO_BREAK/lane/traffic/speed/display/steering/telemetry passed",
+  "runtime_observation": "Rolled-back M IMU exited twice on STALE_OR_DISCONTINUOUS; systemd restarted it; final observed state active, PID 3324. No code fix added.",
+  "physical_actuator_tests_performed": false
+}

@@ -11,6 +11,12 @@ python3 tools/build.py --monitor
 ./feedback/build/steering_feedback_monitor --bind 192.168.100.20 --source 192.168.100.10 --port 54321 --duration-ms 10000 --csv logs/imu_telemetry_001.csv
 ```
 
+`--duration-ms 0` 可持续监听直到显式停止。2026-10-31 恢复网络修复时，
+已启动一个无CSV的持续被动监听器，日志在
+`/home/linaro/imu_network_restore_20261031/S_receiver.log`，PID记录在同目录的
+`S_receiver_pid`。它不自动接入控制、不写共享车控状态，也没有新增开机服务。
+若后续闭环工具需要独占54321端口，先停止这个已知被动监听进程，避免两个接收者抢占端口。
+
 CSV须使用新文件名；`raw_relative_deg`是源端报告的相对角度，不代表装车精度已经验收。输出始终显示`actuator_enabled=0`。
 
 - `REAL_RELATIVE`：真实、VALID，未声明机械零位；可观察相对角度，不能作为已归中反馈。

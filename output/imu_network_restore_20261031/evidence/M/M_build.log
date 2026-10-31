@@ -1,0 +1,14 @@
+BUILT candidate/M/imu/build/imu_dump
+BUILT candidate/M/imu/build/angle_monitor
+BUILT candidate/M/imu/build/feedback_inspect
+BUILT candidate/M/imu/build/imu_probe
+BUILT candidate/M/imu/build/replay_stationary
+BUILT candidate/M/imu/build/test_imu
+PASS IMU: variable dt, axis/bias, wrap, duplicate/gap/session faults, identity and simulation isolation
+BUILT candidate/M/imu/build/test_snapshot
+PASS IMU1: CRC vector, signed axes/temperature, endianness, torn packet, flags, clock reversal and old FPGA rejection
+BUILT candidate/M/imu/build/test_stationary
+PASS real CLI UDP: valid STF1, advancing samples, wildcard source/unconnected socket, clean shutdown
+PASS stationary hold: noisy static drift bounded, nonzero angle retained, slow/fast signed motion preserved, bounded release, vibration and stale data rejected
+PASS tools: calibration, UDP, mock isolation, zero arming, CSV protection; runtime relative zero preserves sampling/session semantics and never grants mechanical zero
+M_NATIVE_BUILD_TESTS_PASS

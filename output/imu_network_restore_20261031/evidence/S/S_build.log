@@ -1,0 +1,4 @@
+PASS telemetry tracker: CRC/length, signed angles, wrap, duplicate expiry, ordering, clock faults, sessions, simulation, invalidation and age overflow
+PASS UDP monitor: relative/zero/simulated isolation, CRC/length, duplicate/order/session faults, expiry, silence, signed angles and CSV protection
+PASS continuous telemetry mode: real receive, expiry, explicit termination; actuator disabled
+S_NATIVE_BUILD_TESTS_PASS

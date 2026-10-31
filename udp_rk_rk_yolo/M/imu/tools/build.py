@@ -26,6 +26,9 @@ def build_imu() -> dict[str, Path]:
         [COMMON / "contracts" / "steering_feedback_wire.c", ROOT / "tools" / "feedback_inspect.c"], INCLUDES)
     outputs["imu_probe"] = compile_program(ROOT / "build" / "imu_probe",
         [*SOURCES, ROOT / "tools" / "imu_probe.c"], INCLUDES)
+    outputs["replay_stationary"] = compile_program(ROOT / "build" / "replay_stationary",
+        [ROOT / "csrc" / "steering_angle.c", ROOT / "csrc" / "imu_stationary.c",
+         ROOT / "tools" / "replay_stationary.c"], INCLUDES)
     return outputs
 
 
@@ -39,6 +42,8 @@ def check_m() -> None:
         [ROOT / "csrc" / "steering_angle.c", ROOT / "csrc" / "imu_stationary.c",
          ROOT / "tests" / "test_stationary.c"], INCLUDES)
     print(run(hold, []).stdout.strip())
+    if sys.platform.startswith("linux"):
+        subprocess.run([sys.executable, str(ROOT / "tests" / "test_udp_source.py")], check=True)
 
 
 def main() -> int:

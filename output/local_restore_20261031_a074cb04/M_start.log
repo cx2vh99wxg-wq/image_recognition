@@ -1,0 +1,6 @@
+[?2004l
+[ 1639.736881] addr_size = 32;     current_len = 380(dw)
+[ 1639.736922] dma_addr_r  = 0x4350d000; offset_addr = 0x0
+[ 1639.736929] dma_addr_w  = 0x15c9c000; offset_addr = 0x0
+{"status": "INSTALLED_RUNNING", "board": "M", "processes": [{"pid": 3176, "exe": "/home/linaro/M/pcie/build/pcie_capture"}, {"pid": 3179, "exe": "/home/linaro/M/udp/build/udp_sender"}], "unit": {"active": true, "path": "/etc/systemd/system/m-steering-imu.service", "sha256": "a82b0f312e3fc53c63723375416a8378e1c33b63b15dcc12aa9307b8bbed594c"}}
+STEER_CMD_930c891f4fee4fd799cba9cbaa9edb39:0

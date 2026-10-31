@@ -29,7 +29,7 @@ int main(int argc, char **argv)
         const char *key = argv[i];
         if (!strcmp(key, "--help")) {
             puts("steering_feedback_monitor [--bind IPv4] [--source IPv4] [--port N]\n"
-                 " [--duration-ms 1..600000] [--timeout-ms 1..60000] [--print-every N] [--csv NEW_FILE]\n"
+                 " [--duration-ms 0..600000 (0=continuous)] [--timeout-ms 1..60000] [--print-every N] [--csv NEW_FILE]\n"
                  "Port 0 chooses a test port. Monitor only: never opens SPI or drives steering.\n"
                  "Expiry checks source age plus local holding time, excluding unknown network transit.");
             return 0;
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
         else if (!strcmp(key, "--print-every")) { if (!number(value, &print_every)) return 2; }
         else return 2;
     }
-    if (port > 65535 || !duration || duration > 600000 || !print_every) return 2;
+    if (port > 65535 || duration > 600000 || !print_every) return 2;
     feedback_tracker_t tracker;
     if (feedback_tracker_init(&tracker, timeout) != STEER_OK) return 2;
     struct sockaddr_in address = {0};
@@ -75,7 +75,7 @@ int main(int argc, char **argv)
     uint64_t accepted = 0, rejected = 0, foreign = 0, relative = 0, centered = 0, simulated = 0;
     uint64_t session_changes = 0;
     int last_status = -1, exit_code = 0;
-    while (!cancelled && steering_now_ns() - start < span) {
+    while (!cancelled && (!duration || steering_now_ns() - start < span)) {
         uint64_t now = steering_now_ns();
         feedback_status_t status = feedback_tracker_status(&tracker, now);
         if ((int)status != last_status) {
