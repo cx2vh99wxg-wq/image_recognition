@@ -1,0 +1,58 @@
+{
+  "schema": "STEER_ROAD_CHAIN_DIAGNOSTIC_V1",
+  "stage": "WAITING_FOR_ROAD_FRAME_AND_PHYSICAL_REFERENCE",
+  "M_samples": 590,
+  "S_samples": 578,
+  "matching_frame_result_tuples": 193,
+  "examples": [
+    [
+      11161,
+      0,
+      40,
+      0
+    ],
+    [
+      11170,
+      0,
+      0,
+      0
+    ],
+    [
+      11170,
+      0,
+      40,
+      0
+    ],
+    [
+      11179,
+      0,
+      0,
+      0
+    ],
+    [
+      11179,
+      0,
+      40,
+      0
+    ]
+  ],
+  "M_confidences": [
+    0,
+    40
+  ],
+  "S_confidences": [
+    0,
+    40
+  ],
+  "M_curve_types": [
+    0
+  ],
+  "S_curve_types": [
+    0
+  ],
+  "current_imu_session": 4033203686,
+  "configured_reference_session": 290675832,
+  "S_vehicle_control_running": false,
+  "actual_motor_pulses_issued": 0,
+  "physical_reference_not_assumed": true
+}

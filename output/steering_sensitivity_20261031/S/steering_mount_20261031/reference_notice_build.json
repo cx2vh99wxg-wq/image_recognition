@@ -1,0 +1,6 @@
+{
+  "schema": "STEER_REFERENCE_NOTICE_BUILD_V1",
+  "tests_passed": true,
+  "no_actuation": true,
+  "binary_sha256": "e582fe2cad4d7e21d7fb9244a2fa4976d7a429dccfccf12891a5e6a8ad9dc9ab"
+}

@@ -1,0 +1,6 @@
+{
+  "schema": "M_EGO_CURVE_FINAL_BUILD_V1",
+  "state": "BUILT_NOT_INSTALLED",
+  "default_mode": "ego-boundaries",
+  "binary_sha256": "8c469b55f374195c493b4ec6b45af7380e3e96c7c78d826b9f28e6bf8a1d5726"
+}

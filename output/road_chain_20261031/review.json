@@ -1,0 +1,73 @@
+{
+  "schema": "STEER_ROAD_RECHECK_REVIEW_V1",
+  "state": "WAITING_FOR_FIXED_CURVE_IMAGE",
+  "reference_session": 4033203686,
+  "zero_raw_deg": 0.059,
+  "reference_reconfirmed_by_user": true,
+  "radio_drift_mode_discovered_by_user": true,
+  "independent_left_pulse": {
+    "requested_ms": 60,
+    "actual_software_ms": 60.165,
+    "measured_delta_deg": 8.4735,
+    "logical_left_n": 0
+  },
+  "real_video_test": {
+    "state": "TEST_STOPPED_OUTPUTS_RELEASED",
+    "stop_reason": "process_exited",
+    "seconds": 22.113849927000047,
+    "control_pid": 2775,
+    "returncode": 0,
+    "pulse_count": 22,
+    "angle_min": -15.532,
+    "angle_max": 16.905,
+    "last_angles": [
+      7.759,
+      7.76,
+      7.76,
+      7.762,
+      7.761,
+      7.761,
+      7.761,
+      7.761,
+      7.761,
+      7.761,
+      7.761,
+      7.761
+    ],
+    "actual_road_input": true,
+    "synthetic_lane_input": false
+  },
+  "real_video_assessment": "motion confirmed; overshoot and repeated corrections observed; not accepted as stable",
+  "fine_only_test": {
+    "state": "TEST_STOPPED_OUTPUTS_RELEASED",
+    "stop_reason": "bounded_test_complete",
+    "seconds": 25.008199136999792,
+    "control_pid": 2821,
+    "returncode": 0,
+    "pulse_count": 0,
+    "angle_min": 1.782,
+    "angle_max": 1.782,
+    "last_angles": [
+      1.782,
+      1.782,
+      1.782,
+      1.782,
+      1.782,
+      1.782,
+      1.782,
+      1.782,
+      1.782,
+      1.782,
+      1.782,
+      1.782
+    ],
+    "actual_road_input": true,
+    "synthetic_lane_input": false
+  },
+  "fine_only_input_review": "No road in independently inspected raw frame; no eligible M results in 30 seconds. Not a successful steering validation. Ignore unconditional actual_road_input label in raw runner summary.",
+  "candidate_installed": false,
+  "existing_model_cells_unchanged": true,
+  "vehicle_control_running": false,
+  "latest_centered_angle_deg": 1.782,
+  "no_HMI_FPGA_or_M_perception_code_changes": true
+}

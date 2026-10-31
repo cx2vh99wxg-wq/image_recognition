@@ -1,0 +1,27 @@
+{
+  "state": "TEST_STOPPED_OUTPUTS_RELEASED",
+  "stop_reason": "bounded_test_complete",
+  "seconds": 12.058337671999652,
+  "control_pid": 3388,
+  "returncode": 0,
+  "pulse_count": 0,
+  "angle_min": -2.742,
+  "angle_max": -2.742,
+  "last_angles": [
+    -2.742,
+    -2.742,
+    -2.742,
+    -2.742,
+    -2.742,
+    -2.742,
+    -2.742,
+    -2.742,
+    -2.742,
+    -2.742,
+    -2.742,
+    -2.742
+  ],
+  "input_source": "production_M_metadata",
+  "synthetic_lane_input": false,
+  "road_visibility_requires_snapshot_review": true
+}

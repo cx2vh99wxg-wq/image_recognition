@@ -1,0 +1,225 @@
+{
+  "label": "restart2",
+  "pid": 3000,
+  "state": "REAL_RESTART_HOLD_PASS",
+  "samples": 21,
+  "observed_seconds": 20.002688,
+  "hold_fraction_after_5s": 1.0,
+  "range_deg_after_5s": 0.0,
+  "angle_final_deg": 0.06433,
+  "transitions": 1.0,
+  "mechanical_zero_asserted": false,
+  "command": "/home/linaro/M/imu/build/angle_monitor --backend fpga --samples 0 --interval-ms 1 --print-every 100 --wait-device --send-to 192.168.100.20 --port 54321 --calibration /home/linaro/M/imu/calibration/startup_bias.current.cal --stationary-hold ",
+  "rows": [
+    {
+      "seq": 1.0,
+      "t_ns": 1680526459980.0,
+      "age_ms": 3.0,
+      "relative_deg": 0.0,
+      "rate_dps": -0.03468,
+      "ZERO_VALID": 0.0,
+      "static_hold": 0.0,
+      "hold_changes": 0.0
+    },
+    {
+      "seq": 101.0,
+      "t_ns": 1681521311980.0,
+      "age_ms": 2.0,
+      "relative_deg": 0.0304,
+      "rate_dps": -0.00414,
+      "ZERO_VALID": 0.0,
+      "static_hold": 0.0,
+      "hold_changes": 0.0
+    },
+    {
+      "seq": 201.0,
+      "t_ns": 1682521446980.0,
+      "age_ms": 4.0,
+      "relative_deg": 0.06056,
+      "rate_dps": 0.07219,
+      "ZERO_VALID": 0.0,
+      "static_hold": 0.0,
+      "hold_changes": 0.0
+    },
+    {
+      "seq": 301.0,
+      "t_ns": 1683523341980.0,
+      "age_ms": 3.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    },
+    {
+      "seq": 401.0,
+      "t_ns": 1684523475980.0,
+      "age_ms": 4.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    },
+    {
+      "seq": 501.0,
+      "t_ns": 1685523610980.0,
+      "age_ms": 2.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    },
+    {
+      "seq": 601.0,
+      "t_ns": 1686523744980.0,
+      "age_ms": 3.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    },
+    {
+      "seq": 701.0,
+      "t_ns": 1687523879980.0,
+      "age_ms": 3.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    },
+    {
+      "seq": 801.0,
+      "t_ns": 1688524013980.0,
+      "age_ms": 2.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    },
+    {
+      "seq": 901.0,
+      "t_ns": 1689525908980.0,
+      "age_ms": 2.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    },
+    {
+      "seq": 1001.0,
+      "t_ns": 1690526043980.0,
+      "age_ms": 2.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    },
+    {
+      "seq": 1101.0,
+      "t_ns": 1691526177980.0,
+      "age_ms": 3.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    },
+    {
+      "seq": 1201.0,
+      "t_ns": 1692526311980.0,
+      "age_ms": 2.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    },
+    {
+      "seq": 1301.0,
+      "t_ns": 1693526446980.0,
+      "age_ms": 3.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    },
+    {
+      "seq": 1401.0,
+      "t_ns": 1694526580980.0,
+      "age_ms": 4.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    },
+    {
+      "seq": 1501.0,
+      "t_ns": 1695526715980.0,
+      "age_ms": 4.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    },
+    {
+      "seq": 1601.0,
+      "t_ns": 1696528610980.0,
+      "age_ms": 2.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    },
+    {
+      "seq": 1701.0,
+      "t_ns": 1697528744980.0,
+      "age_ms": 4.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    },
+    {
+      "seq": 1801.0,
+      "t_ns": 1698528879980.0,
+      "age_ms": 2.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    },
+    {
+      "seq": 1901.0,
+      "t_ns": 1699529013980.0,
+      "age_ms": 4.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    },
+    {
+      "seq": 2001.0,
+      "t_ns": 1700529147980.0,
+      "age_ms": 3.0,
+      "relative_deg": 0.06433,
+      "rate_dps": 0.0,
+      "ZERO_VALID": 0.0,
+      "static_hold": 1.0,
+      "hold_changes": 1.0
+    }
+  ]
+}

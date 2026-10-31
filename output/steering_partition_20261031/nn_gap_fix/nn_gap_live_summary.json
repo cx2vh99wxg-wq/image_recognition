@@ -1,0 +1,3976 @@
+{
+  "schema": "STEER_NN_GAP_LIVE_V1",
+  "accepted_curve_count": 153,
+  "curve_types": {
+    "2": 97,
+    "1": 56
+  },
+  "pulse_count": 120,
+  "directions": {
+    "2": 81,
+    "1": 39
+  },
+  "steps": [
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90250",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30152.500",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90259",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30219.292",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90268",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30178.459",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90283",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30117.500",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90301",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30068.209",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90310",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30254.000",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90316",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30152.500",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90325",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30135.875",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90343",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30382.917",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90361",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30163.584",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90370",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30138.208",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90403",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30321.958",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90412",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30153.375",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90421",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30202.666",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90454",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30094.750",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90463",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30351.125",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90472",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30204.416",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90481",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30075.792",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90496",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30437.459",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90505",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30121.292",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90514",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30332.750",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90532",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30264.500",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90982",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30337.708",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "90991",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30857.167",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "91000",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30569.875",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92530",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30125.375",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92539",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30209.667",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92548",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200102.001",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92572",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200254.834",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92590",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200156.542",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92626",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200167.917",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92641",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200455.208",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92659",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200101.417",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92677",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200173.750",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92701",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30100.875",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92737",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200687.667",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92755",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200835.250",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92788",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30163.584",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92797",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30358.708",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92806",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200211.958",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92824",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200599.584",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92875",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30171.750",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92911",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200290.125",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92929",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200094.417",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92944",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200248.417",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92980",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30259.542",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92989",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30480.917",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "92998",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30077.833",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93022",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200127.083",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93118",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200077.500",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93136",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "201665.917",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93151",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200357.209",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93169",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30066.167",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93178",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200616.500",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93223",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200186.001",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93241",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200459.001",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93259",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200452.584",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93274",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200228.291",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93292",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200197.959",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93310",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "201165.708",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93328",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "201898.376",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93346",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200120.958",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93364",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200334.458",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93379",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200146.916",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93397",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200142.250",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93565",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30060.333",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93571",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30163.000",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93598",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30165.041",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93625",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30157.458",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93634",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200102.292",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93649",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200084.792",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93667",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200174.042",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93685",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200128.542",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93748",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30103.792",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93817",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30191.292",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93958",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30159.791",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93973",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30069.959",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93982",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30150.458",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "93991",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30129.459",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94087",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30332.750",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94096",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30358.417",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94105",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200556.708",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94123",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30186.041",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94132",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30107.000",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94150",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30162.125",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94159",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30160.083",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94168",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30137.334",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94183",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30144.916",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94192",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30126.250",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94201",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30228.041",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94246",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200214.584",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94261",
+        "type": "1",
+        "confidence": "60",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200113.959",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94288",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200091.792",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "1",
+        "duration_us": "200000",
+        "current_deg": "-0.910",
+        "target_deg": "6.250",
+        "guard_deg": "18.000",
+        "expected_error_deg": "0.000",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94306",
+        "type": "1",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "1",
+        "requested_us": "200000",
+        "actual_us": "200183.959",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": 0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94324",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30167.084",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94333",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30130.042",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94342",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30244.083",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94366",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30083.375",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94375",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30151.042",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94384",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30143.167",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94393",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30431.917",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94411",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30226.291",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94420",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30291.917",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94429",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30082.500",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94444",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30069.958",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94453",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30227.166",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94462",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30081.625",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94471",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30168.250",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94813",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30345.000",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94969",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30296.583",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94978",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30098.250",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "94987",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30639.583",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "95005",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30139.959",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "95020",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30132.958",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "95029",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30323.125",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "95038",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30101.750",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "95056",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30330.709",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "95065",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30285.792",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "95080",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "end": {
+        "pulse": "1",
+        "direction": "2",
+        "requested_us": "30000",
+        "actual_us": "30207.041",
+        "early_release": "0"
+      },
+      "last_observed_deg": -0.91,
+      "measured_directional_excursion_deg": -0.0,
+      "observed_range_deg": [
+        -0.91,
+        -0.91
+      ]
+    },
+    {
+      "begin": {
+        "pulse": "1",
+        "direction": "2",
+        "duration_us": "30000",
+        "current_deg": "-0.910",
+        "target_deg": "-6.250",
+        "guard_deg": "6.262",
+        "expected_error_deg": "2.155",
+        "reposition": "0"
+      },
+      "lane": {
+        "frame": "95089",
+        "type": "2",
+        "confidence": "90",
+        "road_angle": "25",
+        "target_deg": "-6.250",
+        "result": "OK"
+      },
+      "last_observed_deg": null,
+      "measured_directional_excursion_deg": 0,
+      "observed_range_deg": null
+    }
+  ],
+  "faults": [],
+  "last_shared_result": {
+    "frame": 95089,
+    "type": "RIGHT",
+    "confidence": 90,
+    "road_angle": 25,
+    "angle": -0.91
+  },
+  "source_log": "/home/linaro/steering_mount_20261031/production_nn_gap_fix.log",
+  "source_bytes": 840421,
+  "old_valid_curve_reads_without_any_pulse": 225
+}

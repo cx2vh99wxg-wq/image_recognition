@@ -1,0 +1,22 @@
+{
+  "schema": "STEER_DEADLINE_DEPLOY_V1",
+  "state": "INSTALLED_CONTROL_STOPPED",
+  "changed": [
+    {
+      "path": "S/steering/controller/steering_runtime.c",
+      "sha256": "c04b0d53c34f48fd7006f1682abf015dd02cdbe41359b565d3bd1c38ef8dba70"
+    },
+    {
+      "path": "S/steering/tests/controller/test_runtime_integration.c",
+      "sha256": "56ac15dbbb21ae5d11de2f69bac50e62efca8b63db3a399a5b203a300913b043"
+    },
+    {
+      "path": "S/fspi/build/vehicle_control",
+      "sha256": "b79474280918b6e2f0be3a078198e3214352856c1f3019c6028fa40ce39a63cb"
+    }
+  ],
+  "preserved_model": true,
+  "preserved_HMI": true,
+  "preserved_FPGA": true,
+  "timing_tolerance_unchanged": true
+}

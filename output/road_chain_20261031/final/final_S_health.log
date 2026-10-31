@@ -1,0 +1,16 @@
+python3 -c "import pathlib,hashlib,json; p=pathlib.Path('/home/linaro/S/fspi/build/vehicle_control'); t=pathlib.Path('/home/linaro/S/steering/logs/road_recheck_20261031/production_final.log').read_text(errors='replace'); print(json.dumps({'controller_pid_alive':pathlib.Path('/proc/3684').exists(),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'pulse_starts_since_install':t.count('[STEER_PULSE_BEGIN]')})); print(''.join(t.splitlines(True)[-10:]))"; printf '\nSIX_CMD_DONE\n'
+[?2004l{"controller_pid_alive": true, "sha256": "b79474280918b6e2f0be3a078198e3214352856c1f3019c6028fa40ce39a63cb", "pulse_starts_since_install": 0}
+[SHM Read] Frame14641: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:0.759 | Feedback:1
+[STEER_HEARTBEAT] seq=402 status=3 angle=0.759 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame14650: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:0.759 | Feedback:1
+[SHM Read] Frame14650: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:0.759 | Feedback:1
+[SHM Read] Frame14650: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:0.759 | Feedback:1
+[SHM Read] Frame14650: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:0.759 | Feedback:1
+[SHM Read] Frame14659: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:0.759 | Feedback:1
+[SHM Read] Frame14659: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:0.759 | Feedback:1
+[SHM Read] Frame14668: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:0.759 | Feedback:1
+[SHM Read] Frame14668: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:0.759 | Feedback:1
+
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

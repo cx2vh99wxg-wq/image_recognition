@@ -4,6 +4,7 @@
 #include "yolo_integration.h"
 #include "line_style_analyzer.h"
 #include "line_style_snapshot.h"
+#include "lane_curve_geometry.h"
 #include "traffic_vision.h"
 #include <cstdio>
 #include <cstdlib>
@@ -65,6 +66,9 @@ public:
         : engine_(engine), optional_task_(optional_task), width_(width), height_(height),
           pending_pixels_((size_t)width * height * 3),
           working_pixels_((size_t)width * height * 3) {
+        const char* curve_mode=std::getenv("LANE_CURVE_MODE");
+        ego_curve_=!curve_mode||std::strcmp(curve_mode,"ego-boundaries")==0;
+        std::fprintf(stderr,"[CURVE_MODE] %s\n",ego_curve_?"ego-boundaries candidate":"legacy projection");
         thread_ = std::thread(&LatestWorker::run, this);
     }
     ~LatestWorker() { stop(); }
@@ -157,8 +161,18 @@ private:
                             ++dump_count_;dump_ns_=now;
                         }
                         int pixels = yolo_overlay_lane_and_drivable(working_pixels_.data(), width_, height_, &raw);
-                        if (yolo_analyze_annotated_curve(working_pixels_.data(), width_, height_,
-                                                        pixels, &result->curve) == 0) {
+                        int curve_status=0;
+                        if(ego_curve_) {
+                            EgoCurve observed_curve=estimate_ego_curve(observed);
+                            EgoCurve curve=curve_confirm_.update(observed_curve,source,captured);
+                            result->curve.curve_type=curve.type;result->curve.confidence=curve.confidence;result->curve.angle=curve.angle;
+                            if(!curve_log_ns_||now-curve_log_ns_>=2000000000ULL){
+                                std::fprintf(stderr,"[CURVE_EGO] source=%llu raw_type=%u type=%u confidence=%u shift_px=%.2f span_px=%.1f reason=%u\n",
+                                    (unsigned long long)source,observed_curve.type,curve.type,curve.confidence,curve.shift_px,curve.span_px,curve.reason);
+                                curve_log_ns_=now;
+                            }
+                        } else curve_status=yolo_analyze_annotated_curve(working_pixels_.data(), width_, height_,pixels, &result->curve);
+                        if (curve_status == 0) {
                             result->width = raw.width;
                             result->height = raw.height;
                             size_t count = (size_t)raw.width * raw.height;
@@ -208,8 +222,10 @@ private:
     YOLOEngine* engine_;
     traffic::NpuTask* optional_task_;
     LineStyleAnalyzer line_analyzer_;
+    EgoCurveConfirm curve_confirm_;
+    bool ego_curve_=false;
     SnapshotRequest snapshot_request_;
-    uint64_t line_log_ns_=0,dump_ns_=0;
+    uint64_t line_log_ns_=0,dump_ns_=0,curve_log_ns_=0;
     unsigned dump_count_=0;
     int width_, height_;
     mutable std::mutex mutex_;

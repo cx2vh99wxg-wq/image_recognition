@@ -16,5 +16,9 @@
 `--calibration /绝对路径/安装标定.cal`。本次实板仅应用测得的静止零偏，Z 轴仍是待验证参考轴，
 服务没有 `--zero-at-center`；不能将其相对角度作为已确认的机械中位角度。
 
+服务入口`tools/start_angle_monitor.py`在每次启动时先做约12秒静止零偏校准及独立回放，
+通过后加载`calibration/startup_bias.current.cal`启动原测角程序。开机前约15秒保持静止；
+启动样本不合格时不发送有效角度。此流程不自动确认机械中位，详情见上一级README。
+
 新增只读健康检查：`python3 tools/feedback_health.py --seconds 3`，检查常驻进程和样本是否持续推进；
 不重启采集、不访问SPI、不设置零位。它是低频诊断，不替代S闭环100ms的新鲜度检查。

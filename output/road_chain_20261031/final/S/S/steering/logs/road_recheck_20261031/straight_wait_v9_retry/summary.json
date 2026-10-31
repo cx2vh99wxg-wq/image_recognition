@@ -1,0 +1,28 @@
+{
+  "schema": "STEER_WAITING_ROAD_TRIAL_V1",
+  "passed": false,
+  "stop_reason": "process_exited",
+  "seconds": 108.92492192700047,
+  "pid": 3493,
+  "expected_type": 0,
+  "target_deg": 0,
+  "pulse_count": 0,
+  "completed_pulses": [],
+  "accepted_targets": [],
+  "last_angles": [
+    -8.878,
+    -8.878,
+    -8.878,
+    -8.878,
+    -8.878,
+    -8.878,
+    -8.878,
+    -8.878,
+    -8.878,
+    -8.878
+  ],
+  "angle_min": -8.878,
+  "angle_max": -8.878,
+  "outputs_released": true,
+  "synthetic_lane_input": false
+}

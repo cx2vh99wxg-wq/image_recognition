@@ -1,0 +1,1 @@
+test_runtime_intermittent_baseline: /home/linaro/steering_mount_20261031/candidate_v8/S/steering/tests/controller/test_runtime_integration.c:82: main: Assertion `starts==1&&fabsf(angle-5)<2&&!active' failed.

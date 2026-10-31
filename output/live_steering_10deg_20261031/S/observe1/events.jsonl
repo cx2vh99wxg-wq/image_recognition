@@ -1,0 +1,504 @@
+{"local_ns": 2179208269704, "line": "[STEER_LANE] frame=61774 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2179208269704, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.653 target=-10.000 error=-2.347 result=OK"}
+{"local_ns": 2179313627579, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=61774 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2179313627579, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.653 target=-10.000 error=nan result=OK"}
+{"local_ns": 2179543086121, "line": "[STEER_LANE] frame=61783 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2179543086121, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.653 target=-10.000 error=-2.347 result=OK"}
+{"local_ns": 2179645870621, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=61783 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2179645870621, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.653 target=-10.000 error=nan result=OK"}
+{"local_ns": 2180324132413, "line": "[STEER_LANE] frame=61810 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2180324132413, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=-7.653 target_deg=0.000 guard_deg=4.926 expected_error_deg=4.655 reposition=0"}
+{"local_ns": 2180383450413, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30140.833 early_release=0"}
+{"local_ns": 2180383450413, "line": "[STEER_STATE] state=5 name=SETTLING angle=-7.653 target=0.000 error=7.653 result=OK"}
+{"local_ns": 2180544895497, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=61810 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2180544895497, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-5.980 target=0.000 error=nan result=OK"}
+{"local_ns": 2180603230580, "line": "[STEER_LANE] frame=61816 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2180654650247, "line": "[STEER_STATE] state=5 name=SETTLING angle=-5.987 target=0.000 error=5.987 result=OK"}
+{"local_ns": 2180714929580, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=61816 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2180714929580, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-5.991 target=0.000 error=nan result=OK"}
+{"local_ns": 2182315775039, "line": "[STEER_LANE] frame=61870 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2182315775039, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=-5.987 target_deg=10.000 guard_deg=6.653 expected_error_deg=13.309 reposition=0"}
+{"local_ns": 2182369683789, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30174.375 early_release=0"}
+{"local_ns": 2182369683789, "line": "[STEER_STATE] state=5 name=SETTLING angle=-5.988 target=10.000 error=15.988 result=OK"}
+{"local_ns": 2182535117997, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=61870 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2182535117997, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-3.744 target=10.000 error=nan result=OK"}
+{"local_ns": 2182645521706, "line": "[STEER_LANE] frame=61876 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2182645521706, "line": "[STEER_STATE] state=5 name=SETTLING angle=-3.728 target=10.000 error=13.728 result=OK"}
+{"local_ns": 2182757521998, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=61876 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2182757521998, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-3.732 target=10.000 error=nan result=OK"}
+{"local_ns": 2183857210915, "line": "[STEER_LANE] frame=61912 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2183857210915, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=-3.755 target_deg=10.000 guard_deg=6.653 expected_error_deg=11.077 reposition=0"}
+{"local_ns": 2183857210915, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30167.375 early_release=0"}
+{"local_ns": 2183857210915, "line": "[STEER_STATE] state=5 name=SETTLING angle=-3.758 target=10.000 error=13.758 result=OK"}
+{"local_ns": 2183914588165, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=61912 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2183965999665, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-2.660 target=10.000 error=nan result=OK"}
+{"local_ns": 2184357240165, "line": "[STEER_LANE] frame=61927 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2184357240165, "line": "[STEER_STATE] state=5 name=SETTLING angle=-1.590 target=10.000 error=11.590 result=OK"}
+{"local_ns": 2184357240165, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=-1.590 target_deg=10.000 guard_deg=6.564 expected_error_deg=8.809 reposition=0"}
+{"local_ns": 2184357240165, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30142.291 early_release=0"}
+{"local_ns": 2184465280790, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=61927 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2184465280790, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-0.824 target=10.000 error=nan result=OK"}
+{"local_ns": 2184636243540, "line": "[STEER_LANE] frame=61936 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2184636243540, "line": "[STEER_STATE] state=5 name=SETTLING angle=0.530 target=10.000 error=9.470 result=OK"}
+{"local_ns": 2184737252665, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=61936 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2184737252665, "line": "[STEER_STATE] state=3 name=CANCELLED angle=0.541 target=10.000 error=nan result=OK"}
+{"local_ns": 2184916564665, "line": "[STEER_LANE] frame=61945 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2184979931582, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=0.536 target_deg=10.000 guard_deg=6.564 expected_error_deg=6.683 reposition=0"}
+{"local_ns": 2184979931582, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30292.500 early_release=0"}
+{"local_ns": 2184979931582, "line": "[STEER_STATE] state=5 name=SETTLING angle=0.539 target=10.000 error=9.461 result=OK"}
+{"local_ns": 2185035352332, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=61945 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2185035352332, "line": "[STEER_STATE] state=3 name=CANCELLED angle=1.488 target=10.000 error=nan result=OK"}
+{"local_ns": 2185267524249, "line": "[STEER_LANE] frame=61954 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2185267524249, "line": "[STEER_STATE] state=5 name=SETTLING angle=2.728 target=10.000 error=7.272 result=OK"}
+{"local_ns": 2185325416290, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=61954 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2185325416290, "line": "[STEER_STATE] state=3 name=CANCELLED angle=2.724 target=10.000 error=nan result=OK"}
+{"local_ns": 2185536836999, "line": "[STEER_LANE] frame=61963 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2185536836999, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=2.717 target_deg=10.000 guard_deg=5.673 expected_error_deg=4.599 reposition=0"}
+{"local_ns": 2185589066332, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30130.917 early_release=0"}
+{"local_ns": 2185589066332, "line": "[STEER_STATE] state=5 name=SETTLING angle=2.716 target=10.000 error=7.284 result=OK"}
+{"local_ns": 2185647817332, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=61963 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2185647817332, "line": "[STEER_STATE] state=3 name=CANCELLED angle=4.028 target=10.000 error=nan result=OK"}
+{"local_ns": 2185765884582, "line": "[STEER_LANE] frame=61969 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2185765884582, "line": "[STEER_STATE] state=5 name=SETTLING angle=4.749 target=10.000 error=5.251 result=OK"}
+{"local_ns": 2185825816541, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=61969 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2185825816541, "line": "[STEER_STATE] state=3 name=CANCELLED angle=4.734 target=10.000 error=nan result=OK"}
+{"local_ns": 2186036902416, "line": "[STEER_LANE] frame=61978 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2186036902416, "line": "[STEER_STATE] state=5 name=SETTLING angle=4.735 target=10.000 error=5.265 result=OK"}
+{"local_ns": 2186088271041, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=4.740 target_deg=10.000 guard_deg=5.673 expected_error_deg=2.576 reposition=0"}
+{"local_ns": 2186088271041, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30226.292 early_release=0"}
+{"local_ns": 2186148296041, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=61978 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2186148296041, "line": "[STEER_STATE] state=3 name=CANCELLED angle=4.993 target=10.000 error=nan result=OK"}
+{"local_ns": 2186368648458, "line": "[STEER_LANE] frame=61987 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2186368648458, "line": "[STEER_STATE] state=5 name=SETTLING angle=6.681 target=10.000 error=3.319 result=OK"}
+{"local_ns": 2186427563083, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=61987 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2186427563083, "line": "[STEER_STATE] state=3 name=CANCELLED angle=6.687 target=10.000 error=nan result=OK"}
+{"local_ns": 2186649610958, "line": "[STEER_LANE] frame=61993 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2186649610958, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=6.688 target_deg=10.000 guard_deg=4.851 expected_error_deg=1.250 reposition=0"}
+{"local_ns": 2186708639916, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30230.666 early_release=0"}
+{"local_ns": 2186708639916, "line": "[STEER_STATE] state=5 name=SETTLING angle=6.686 target=10.000 error=3.314 result=OK"}
+{"local_ns": 2186767537041, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=61993 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2186767537041, "line": "[STEER_STATE] state=3 name=CANCELLED angle=7.596 target=10.000 error=nan result=OK"}
+{"local_ns": 2186937655125, "line": "[STEER_LANE] frame=62002 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2186937655125, "line": "[STEER_STATE] state=5 name=SETTLING angle=8.343 target=10.000 error=1.657 result=OK"}
+{"local_ns": 2187048146625, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62002 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2187048146625, "line": "[STEER_STATE] state=3 name=CANCELLED angle=8.348 target=10.000 error=nan result=OK"}
+{"local_ns": 2187276384250, "line": "[STEER_LANE] frame=62011 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2187276384250, "line": "[STEER_STATE] state=2 name=SETTLED angle=8.336 target=10.000 error=1.664 result=OK"}
+{"local_ns": 2187332777125, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62011 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2187332777125, "line": "[STEER_STATE] state=3 name=CANCELLED angle=8.342 target=10.000 error=nan result=OK"}
+{"local_ns": 2187558472000, "line": "[STEER_LANE] frame=62020 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2187558472000, "line": "[STEER_STATE] state=2 name=SETTLED angle=8.348 target=10.000 error=1.652 result=OK"}
+{"local_ns": 2187667478625, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62020 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2187667478625, "line": "[STEER_STATE] state=3 name=CANCELLED angle=8.343 target=10.000 error=nan result=OK"}
+{"local_ns": 2187879107000, "line": "[STEER_LANE] frame=62029 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2187879107000, "line": "[STEER_STATE] state=2 name=SETTLED angle=8.337 target=10.000 error=1.663 result=OK"}
+{"local_ns": 2187937305000, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62029 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2187937305000, "line": "[STEER_STATE] state=3 name=CANCELLED angle=8.344 target=10.000 error=nan result=OK"}
+{"local_ns": 2188046323875, "line": "[STEER_LANE] frame=62038 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2188046323875, "line": "[STEER_STATE] state=2 name=SETTLED angle=8.343 target=10.000 error=1.657 result=OK"}
+{"local_ns": 2188259606584, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62038 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2188259606584, "line": "[STEER_STATE] state=3 name=CANCELLED angle=8.349 target=10.000 error=nan result=OK"}
+{"local_ns": 2188377850584, "line": "[STEER_LANE] frame=62044 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2188377850584, "line": "[STEER_STATE] state=2 name=SETTLED angle=8.354 target=10.000 error=1.646 result=OK"}
+{"local_ns": 2188428205375, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62044 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2188486147292, "line": "[STEER_STATE] state=3 name=CANCELLED angle=8.352 target=10.000 error=nan result=OK"}
+{"local_ns": 2189256853126, "line": "[STEER_LANE] frame=62071 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2189256853126, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=8.355 target_deg=0.000 guard_deg=5.881 expected_error_deg=6.047 reposition=0"}
+{"local_ns": 2189307542751, "line": "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30198.875 early_release=0"}
+{"local_ns": 2189307542751, "line": "[STEER_STATE] state=5 name=SETTLING angle=8.357 target=0.000 error=-8.357 result=OK"}
+{"local_ns": 2189367356876, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62071 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2189367356876, "line": "[STEER_STATE] state=3 name=CANCELLED angle=8.025 target=0.000 error=nan result=OK"}
+{"local_ns": 2189479710667, "line": "[STEER_LANE] frame=62080 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2189479710667, "line": "[STEER_STATE] state=5 name=SETTLING angle=7.744 target=0.000 error=-7.744 result=OK"}
+{"local_ns": 2189647413751, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62080 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2189647413751, "line": "[STEER_STATE] state=3 name=CANCELLED angle=7.727 target=0.000 error=nan result=OK"}
+{"local_ns": 2189757622918, "line": "[STEER_LANE] frame=62089 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2189757622918, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=7.723 target_deg=0.000 guard_deg=5.881 expected_error_deg=5.415 reposition=0"}
+{"local_ns": 2189807998418, "line": "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30254.583 early_release=0"}
+{"local_ns": 2189807998418, "line": "[STEER_STATE] state=5 name=SETTLING angle=7.718 target=0.000 error=-7.718 result=OK"}
+{"local_ns": 2189986088043, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62089 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2189986088043, "line": "[STEER_STATE] state=3 name=CANCELLED angle=5.855 target=0.000 error=nan result=OK"}
+{"local_ns": 2190148555418, "line": "[STEER_LANE] frame=62098 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2190148555418, "line": "[STEER_STATE] state=5 name=SETTLING angle=5.838 target=0.000 error=-5.838 result=OK"}
+{"local_ns": 2190260753168, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=5.831 target_deg=0.000 guard_deg=8.179 expected_error_deg=2.809 reposition=0"}
+{"local_ns": 2190260753168, "line": "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30133.250 early_release=0"}
+{"local_ns": 2190260753168, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62098 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2190260753168, "line": "[STEER_STATE] state=3 name=CANCELLED angle=5.825 target=0.000 error=nan result=OK"}
+{"local_ns": 2190377799876, "line": "[STEER_LANE] frame=62107 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2190377799876, "line": "[STEER_STATE] state=5 name=SETTLING angle=3.809 target=0.000 error=-3.809 result=OK"}
+{"local_ns": 2190604132043, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62107 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2190604132043, "line": "[STEER_STATE] state=3 name=CANCELLED angle=3.233 target=0.000 error=nan result=OK"}
+{"local_ns": 2190658672251, "line": "[STEER_LANE] frame=62116 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2190719512751, "line": "[STEER_STATE] state=5 name=SETTLING angle=3.218 target=0.000 error=-3.218 result=OK"}
+{"local_ns": 2190777144335, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=3.223 target_deg=0.000 guard_deg=8.179 expected_error_deg=1.051 reposition=0"}
+{"local_ns": 2190777144335, "line": "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30075.792 early_release=0"}
+{"local_ns": 2190777144335, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62116 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2190777144335, "line": "[STEER_STATE] state=3 name=CANCELLED angle=3.214 target=0.000 error=nan result=OK"}
+{"local_ns": 2191008355502, "line": "[STEER_LANE] frame=62125 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2191008355502, "line": "[STEER_STATE] state=5 name=SETTLING angle=0.589 target=0.000 error=-0.589 result=OK"}
+{"local_ns": 2191129631377, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62125 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2191129631377, "line": "[STEER_STATE] state=3 name=CANCELLED angle=0.537 target=0.000 error=nan result=OK"}
+{"local_ns": 2191297763210, "line": "[STEER_LANE] frame=62134 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2191297763210, "line": "[STEER_STATE] state=5 name=SETTLING angle=0.519 target=0.000 error=-0.519 result=OK"}
+{"local_ns": 2191354393793, "line": "[STEER_STATE] state=2 name=SETTLED angle=0.537 target=0.000 error=-0.537 result=OK"}
+{"local_ns": 2191408984752, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62134 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2191408984752, "line": "[STEER_STATE] state=3 name=CANCELLED angle=0.532 target=0.000 error=nan result=OK"}
+{"local_ns": 2192390033877, "line": "[STEER_LANE] frame=62167 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2192390033877, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=0.534 target_deg=10.000 guard_deg=6.564 expected_error_deg=6.685 reposition=0"}
+{"local_ns": 2192448428461, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30098.834 early_release=0"}
+{"local_ns": 2192448428461, "line": "[STEER_STATE] state=5 name=SETTLING angle=0.532 target=10.000 error=9.468 result=OK"}
+{"local_ns": 2192609119002, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62167 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2192609119002, "line": "[STEER_STATE] state=3 name=CANCELLED angle=1.493 target=10.000 error=nan result=OK"}
+{"local_ns": 2192710192002, "line": "[STEER_LANE] frame=62176 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2192710192002, "line": "[STEER_STATE] state=5 name=SETTLING angle=1.434 target=10.000 error=8.566 result=OK"}
+{"local_ns": 2192930087377, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62176 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2192930087377, "line": "[STEER_STATE] state=3 name=CANCELLED angle=1.431 target=10.000 error=nan result=OK"}
+{"local_ns": 2192989887211, "line": "[STEER_LANE] frame=62185 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2192989887211, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=1.434 target_deg=10.000 guard_deg=6.564 expected_error_deg=5.785 reposition=0"}
+{"local_ns": 2193040472711, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30399.833 early_release=0"}
+{"local_ns": 2193040472711, "line": "[STEER_STATE] state=5 name=SETTLING angle=1.434 target=10.000 error=8.566 result=OK"}
+{"local_ns": 2193201146919, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62185 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2193201146919, "line": "[STEER_STATE] state=3 name=CANCELLED angle=3.274 target=10.000 error=nan result=OK"}
+{"local_ns": 2193317568586, "line": "[STEER_LANE] frame=62191 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2193317568586, "line": "[STEER_STATE] state=5 name=SETTLING angle=3.232 target=10.000 error=6.768 result=OK"}
+{"local_ns": 2193428146711, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62191 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2193428146711, "line": "[STEER_STATE] state=3 name=CANCELLED angle=3.232 target=10.000 error=nan result=OK"}
+{"local_ns": 2193599597419, "line": "[STEER_LANE] frame=62200 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2193599597419, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=3.230 target_deg=10.000 guard_deg=5.673 expected_error_deg=4.086 reposition=0"}
+{"local_ns": 2193659630003, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30265.083 early_release=0"}
+{"local_ns": 2193659630003, "line": "[STEER_STATE] state=5 name=SETTLING angle=3.231 target=10.000 error=6.769 result=OK"}
+{"local_ns": 2193720234544, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62200 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2193720234544, "line": "[STEER_STATE] state=3 name=CANCELLED angle=4.201 target=10.000 error=nan result=OK"}
+{"local_ns": 2193881919086, "line": "[STEER_LANE] frame=62209 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2193939372753, "line": "[STEER_STATE] state=5 name=SETTLING angle=5.128 target=10.000 error=4.872 result=OK"}
+{"local_ns": 2193989744170, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62209 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2193989744170, "line": "[STEER_STATE] state=3 name=CANCELLED angle=5.124 target=10.000 error=nan result=OK"}
+{"local_ns": 2194090164711, "line": "[STEER_LANE] frame=62218 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2194090164711, "line": "[STEER_STATE] state=5 name=SETTLING angle=5.118 target=10.000 error=4.882 result=OK"}
+{"local_ns": 2194142820753, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=5.129 target_deg=10.000 guard_deg=5.673 expected_error_deg=2.187 reposition=0"}
+{"local_ns": 2194142820753, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30497.250 early_release=0"}
+{"local_ns": 2194311430336, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62218 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2194311430336, "line": "[STEER_STATE] state=3 name=CANCELLED angle=6.955 target=10.000 error=nan result=OK"}
+{"local_ns": 2194418269295, "line": "[STEER_LANE] frame=62224 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2194418269295, "line": "[STEER_STATE] state=5 name=SETTLING angle=6.783 target=10.000 error=3.217 result=OK"}
+{"local_ns": 2194530275128, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62224 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2194530275128, "line": "[STEER_STATE] state=3 name=CANCELLED angle=6.789 target=10.000 error=nan result=OK"}
+{"local_ns": 2194701353378, "line": "[STEER_LANE] frame=62233 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2194701353378, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=6.789 target_deg=10.000 guard_deg=4.851 expected_error_deg=1.172 reposition=0"}
+{"local_ns": 2194760287253, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30402.458 early_release=0"}
+{"local_ns": 2194760287253, "line": "[STEER_STATE] state=5 name=SETTLING angle=6.789 target=10.000 error=3.211 result=OK"}
+{"local_ns": 2194811022670, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62233 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2194811022670, "line": "[STEER_STATE] state=3 name=CANCELLED angle=7.374 target=10.000 error=nan result=OK"}
+{"local_ns": 2195630125337, "line": "[STEER_LANE] frame=62260 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2195630125337, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=8.387 target_deg=0.000 guard_deg=5.881 expected_error_deg=6.079 reposition=0"}
+{"local_ns": 2195630125337, "line": "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30086.292 early_release=0"}
+{"local_ns": 2195630125337, "line": "[STEER_STATE] state=5 name=SETTLING angle=8.388 target=0.000 error=-8.388 result=OK"}
+{"local_ns": 2195689756879, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62260 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2195689756879, "line": "[STEER_STATE] state=3 name=CANCELLED angle=8.139 target=0.000 error=nan result=OK"}
+{"local_ns": 2195903556129, "line": "[STEER_LANE] frame=62269 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2195903556129, "line": "[STEER_STATE] state=5 name=SETTLING angle=7.781 target=0.000 error=-7.781 result=OK"}
+{"local_ns": 2196011055129, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62269 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2196011055129, "line": "[STEER_STATE] state=3 name=CANCELLED angle=7.765 target=0.000 error=nan result=OK"}
+{"local_ns": 2196129965587, "line": "[STEER_LANE] frame=62278 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2196129965587, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=7.759 target_deg=0.000 guard_deg=5.881 expected_error_deg=5.451 reposition=0"}
+{"local_ns": 2196129965587, "line": "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30162.708 early_release=0"}
+{"local_ns": 2196129965587, "line": "[STEER_STATE] state=5 name=SETTLING angle=7.752 target=0.000 error=-7.752 result=OK"}
+{"local_ns": 2196333599379, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62278 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2196333599379, "line": "[STEER_STATE] state=3 name=CANCELLED angle=5.858 target=0.000 error=nan result=OK"}
+{"local_ns": 2196509409337, "line": "[STEER_LANE] frame=62287 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2196509409337, "line": "[STEER_STATE] state=5 name=SETTLING angle=5.821 target=0.000 error=-5.821 result=OK"}
+{"local_ns": 2196569990838, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=5.817 target_deg=0.000 guard_deg=8.179 expected_error_deg=2.796 reposition=0"}
+{"local_ns": 2196620569921, "line": "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30333.917 early_release=0"}
+{"local_ns": 2196620569921, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62287 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2196620569921, "line": "[STEER_STATE] state=3 name=CANCELLED angle=5.810 target=0.000 error=nan result=OK"}
+{"local_ns": 2196830898046, "line": "[STEER_LANE] frame=62296 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2196830898046, "line": "[STEER_STATE] state=5 name=SETTLING angle=3.309 target=0.000 error=-3.309 result=OK"}
+{"local_ns": 2196940138004, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62296 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2196940138004, "line": "[STEER_STATE] state=3 name=CANCELLED angle=3.267 target=0.000 error=nan result=OK"}
+{"local_ns": 2197042782796, "line": "[STEER_LANE] frame=62305 type=0 confidence=75 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2197042782796, "line": "[STEER_STATE] state=5 name=SETTLING angle=3.253 target=0.000 error=-3.253 result=OK"}
+{"local_ns": 2197100760879, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=3.255 target_deg=0.000 guard_deg=8.179 expected_error_deg=1.056 reposition=0"}
+{"local_ns": 2197159967463, "line": "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30378.833 early_release=0"}
+{"local_ns": 2197210870004, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62305 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2197264634671, "line": "[STEER_STATE] state=3 name=CANCELLED angle=1.365 target=0.000 error=nan result=OK"}
+{"local_ns": 2197321890005, "line": "[STEER_LANE] frame=62311 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2197321890005, "line": "[STEER_STATE] state=5 name=SETTLING angle=0.914 target=0.000 error=-0.914 result=OK"}
+{"local_ns": 2197433194380, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62311 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2197433194380, "line": "[STEER_STATE] state=3 name=CANCELLED angle=0.857 target=0.000 error=nan result=OK"}
+{"local_ns": 2197660331255, "line": "[STEER_LANE] frame=62320 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2197660331255, "line": "[STEER_STATE] state=5 name=SETTLING angle=0.835 target=0.000 error=-0.835 result=OK"}
+{"local_ns": 2197710935130, "line": "[STEER_STATE] state=2 name=SETTLED angle=0.854 target=0.000 error=-0.854 result=OK"}
+{"local_ns": 2197763107005, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62320 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2197763107005, "line": "[STEER_STATE] state=3 name=CANCELLED angle=0.842 target=0.000 error=nan result=OK"}
+{"local_ns": 2197929937713, "line": "[STEER_LANE] frame=62329 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2197929937713, "line": "[STEER_STATE] state=2 name=SETTLED angle=0.849 target=0.000 error=-0.849 result=OK"}
+{"local_ns": 2198040875755, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62329 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2198040875755, "line": "[STEER_STATE] state=3 name=CANCELLED angle=0.843 target=0.000 error=nan result=OK"}
+{"local_ns": 2198151393505, "line": "[STEER_LANE] frame=62338 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2198151393505, "line": "[STEER_STATE] state=2 name=SETTLED angle=0.845 target=0.000 error=-0.845 result=OK"}
+{"local_ns": 2198372120130, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62338 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2198372120130, "line": "[STEER_STATE] state=3 name=CANCELLED angle=0.843 target=0.000 error=nan result=OK"}
+{"local_ns": 2198432816838, "line": "[STEER_LANE] frame=62347 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2198432816838, "line": "[STEER_STATE] state=2 name=SETTLED angle=0.838 target=0.000 error=-0.838 result=OK"}
+{"local_ns": 2198653960839, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62347 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2198653960839, "line": "[STEER_STATE] state=3 name=CANCELLED angle=0.842 target=0.000 error=nan result=OK"}
+{"local_ns": 2199622297964, "line": "[STEER_LANE] frame=62380 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2199681648339, "line": "[STEER_STATE] state=2 name=SETTLED angle=0.837 target=0.000 error=-0.837 result=OK"}
+{"local_ns": 2199740842672, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62380 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2199740842672, "line": "[STEER_STATE] state=3 name=CANCELLED angle=0.836 target=0.000 error=nan result=OK"}
+{"local_ns": 2201074001715, "line": "[STEER_LANE] frame=62422 type=2 confidence=75 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2201074001715, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=0.837 target_deg=-10.000 guard_deg=6.262 expected_error_deg=7.652 reposition=0"}
+{"local_ns": 2201074001715, "line": "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30096.791 early_release=0"}
+{"local_ns": 2201074001715, "line": "[STEER_STATE] state=5 name=SETTLING angle=0.837 target=-10.000 error=-10.837 result=OK"}
+{"local_ns": 2201133107090, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62422 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2201133107090, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-0.072 target=-10.000 error=nan result=OK"}
+{"local_ns": 2201931904798, "line": "[STEER_LANE] frame=62449 type=0 confidence=75 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2201931904798, "line": "[STEER_STATE] state=2 name=SETTLED angle=-1.861 target=0.000 error=1.861 result=OK"}
+{"local_ns": 2202044084757, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62449 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2202044084757, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-1.857 target=0.000 error=nan result=OK"}
+{"local_ns": 2202272184715, "line": "[STEER_LANE] frame=62458 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2202272184715, "line": "[STEER_STATE] state=2 name=SETTLED angle=-1.859 target=0.000 error=1.859 result=OK"}
+{"local_ns": 2202374334840, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62458 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2202374334840, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-1.862 target=0.000 error=nan result=OK"}
+{"local_ns": 2202427778382, "line": "[STEER_LANE] frame=62467 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2202484576674, "line": "[STEER_STATE] state=2 name=SETTLED angle=-1.861 target=0.000 error=1.861 result=OK"}
+{"local_ns": 2202663645132, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62467 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2202663645132, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-1.865 target=0.000 error=nan result=OK"}
+{"local_ns": 2202833748632, "line": "[STEER_LANE] frame=62476 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2202833748632, "line": "[STEER_STATE] state=2 name=SETTLED angle=-1.863 target=0.000 error=1.863 result=OK"}
+{"local_ns": 2202943292799, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62476 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2202943292799, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-1.861 target=0.000 error=nan result=OK"}
+{"local_ns": 2203664451758, "line": "[STEER_LANE] frame=62503 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2203664451758, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=-1.852 target_deg=10.000 guard_deg=6.564 expected_error_deg=9.071 reposition=0"}
+{"local_ns": 2203664451758, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30548.583 early_release=0"}
+{"local_ns": 2203664451758, "line": "[STEER_STATE] state=5 name=SETTLING angle=-1.853 target=10.000 error=11.853 result=OK"}
+{"local_ns": 2203878618508, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62503 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2203878618508, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-0.766 target=10.000 error=nan result=OK"}
+{"local_ns": 2203932301799, "line": "[STEER_LANE] frame=62509 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2203985608549, "line": "[STEER_STATE] state=5 name=SETTLING angle=-0.794 target=10.000 error=10.794 result=OK"}
+{"local_ns": 2204043789633, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62509 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2204043789633, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-0.785 target=10.000 error=nan result=OK"}
+{"local_ns": 2206594286301, "line": "[STEER_LANE] frame=62587 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2206594286301, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=-0.792 target_deg=-10.000 guard_deg=6.262 expected_error_deg=6.023 reposition=0"}
+{"local_ns": 2206594286301, "line": "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30183.416 early_release=0"}
+{"local_ns": 2206594286301, "line": "[STEER_STATE] state=5 name=SETTLING angle=-0.792 target=-10.000 error=-9.208 result=OK"}
+{"local_ns": 2206653879342, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62587 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2206653879342, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-0.944 target=-10.000 error=nan result=OK"}
+{"local_ns": 2206866185551, "line": "[STEER_LANE] frame=62596 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2206866185551, "line": "[STEER_STATE] state=5 name=SETTLING angle=-1.936 target=-10.000 error=-8.064 result=OK"}
+{"local_ns": 2206983910092, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62596 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2206983910092, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-1.939 target=-10.000 error=nan result=OK"}
+{"local_ns": 2207154219218, "line": "[STEER_LANE] frame=62605 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2207154219218, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=-1.932 target_deg=-10.000 guard_deg=6.262 expected_error_deg=4.883 reposition=0"}
+{"local_ns": 2207212966426, "line": "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30099.125 early_release=0"}
+{"local_ns": 2207212966426, "line": "[STEER_STATE] state=5 name=SETTLING angle=-1.931 target=-10.000 error=-8.069 result=OK"}
+{"local_ns": 2207265404301, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62605 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2207265404301, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-2.997 target=-10.000 error=nan result=OK"}
+{"local_ns": 2207495646843, "line": "[STEER_LANE] frame=62614 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2207495646843, "line": "[STEER_STATE] state=5 name=SETTLING angle=-5.041 target=-10.000 error=-4.959 result=OK"}
+{"local_ns": 2207553262093, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62614 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2207553262093, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-5.042 target=-10.000 error=nan result=OK"}
+{"local_ns": 2207655156134, "line": "[STEER_LANE] frame=62620 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2207655156134, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=-5.038 target_deg=-10.000 guard_deg=7.422 expected_error_deg=1.668 reposition=0"}
+{"local_ns": 2207714249843, "line": "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30140.833 early_release=0"}
+{"local_ns": 2207714249843, "line": "[STEER_STATE] state=5 name=SETTLING angle=-5.054 target=-10.000 error=-4.946 result=OK"}
+{"local_ns": 2207767302260, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62620 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2207767302260, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-6.397 target=-10.000 error=nan result=OK"}
+{"local_ns": 2207946081676, "line": "[STEER_LANE] frame=62629 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2208004178760, "line": "[STEER_STATE] state=5 name=SETTLING angle=-7.904 target=-10.000 error=-2.096 result=OK"}
+{"local_ns": 2208054585760, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62629 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2208054585760, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.899 target=-10.000 error=nan result=OK"}
+{"local_ns": 2208267566885, "line": "[STEER_LANE] frame=62638 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2208267566885, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.889 target=-10.000 error=-2.111 result=OK"}
+{"local_ns": 2208375395468, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62638 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2208375395468, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.895 target=-10.000 error=nan result=OK"}
+{"local_ns": 2208547130843, "line": "[STEER_LANE] frame=62647 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2208604649552, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.894 target=-10.000 error=-2.106 result=OK"}
+{"local_ns": 2208657601635, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62647 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2208657601635, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.889 target=-10.000 error=nan result=OK"}
+{"local_ns": 2208886848427, "line": "[STEER_LANE] frame=62656 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2208886848427, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.889 target=-10.000 error=-2.111 result=OK"}
+{"local_ns": 2208946942552, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62656 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2209004209843, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.891 target=-10.000 error=nan result=OK"}
+{"local_ns": 2209176998427, "line": "[STEER_LANE] frame=62665 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2209176998427, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.898 target=-10.000 error=-2.102 result=OK"}
+{"local_ns": 2209296827927, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62665 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2209296827927, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.896 target=-10.000 error=nan result=OK"}
+{"local_ns": 2209649046344, "line": "[STEER_LANE] frame=62680 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2209704781802, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.892 target=-10.000 error=-2.108 result=OK"}
+{"local_ns": 2209755150010, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62680 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2209755150010, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.891 target=-10.000 error=nan result=OK"}
+{"local_ns": 2209969846427, "line": "[STEER_LANE] frame=62689 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2209969846427, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.896 target=-10.000 error=-2.104 result=OK"}
+{"local_ns": 2210089236677, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62689 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2210089236677, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.894 target=-10.000 error=nan result=OK"}
+{"local_ns": 2210255179552, "line": "[STEER_LANE] frame=62698 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2210255179552, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.893 target=-10.000 error=-2.107 result=OK"}
+{"local_ns": 2210367297969, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62698 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2210367297969, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.893 target=-10.000 error=nan result=OK"}
+{"local_ns": 2210586467386, "line": "[STEER_LANE] frame=62707 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2210586467386, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.893 target=-10.000 error=-2.107 result=OK"}
+{"local_ns": 2210705634511, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62707 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2210705634511, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.893 target=-10.000 error=nan result=OK"}
+{"local_ns": 2210865712553, "line": "[STEER_LANE] frame=62716 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2210865712553, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.893 target=-10.000 error=-2.107 result=OK"}
+{"local_ns": 2210978132261, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62716 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2210978132261, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.893 target=-10.000 error=nan result=OK"}
+{"local_ns": 2211198245803, "line": "[STEER_LANE] frame=62725 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2211198245803, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.893 target=-10.000 error=-2.107 result=OK"}
+{"local_ns": 2211255780553, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62725 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2211308636386, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.893 target=-10.000 error=nan result=OK"}
+{"local_ns": 2211467324636, "line": "[STEER_LANE] frame=62734 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2211467324636, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.893 target=-10.000 error=-2.107 result=OK"}
+{"local_ns": 2211587685845, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62734 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2211587685845, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.893 target=-10.000 error=nan result=OK"}
+{"local_ns": 2211996787428, "line": "[STEER_LANE] frame=62749 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2211996787428, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.893 target=-10.000 error=-2.107 result=OK"}
+{"local_ns": 2212106275303, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62749 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2212106275303, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.893 target=-10.000 error=nan result=OK"}
+{"local_ns": 2212266579678, "line": "[STEER_LANE] frame=62758 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2212266579678, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.893 target=-10.000 error=-2.107 result=OK"}
+{"local_ns": 2212379292803, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62758 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2212379292803, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.893 target=-10.000 error=nan result=OK"}
+{"local_ns": 2212557524178, "line": "[STEER_LANE] frame=62767 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2212616494512, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.893 target=-10.000 error=-2.107 result=OK"}
+{"local_ns": 2212777687012, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62767 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2212777687012, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.893 target=-10.000 error=nan result=OK"}
+{"local_ns": 2212885734054, "line": "[STEER_LANE] frame=62776 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2212885734054, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.893 target=-10.000 error=-2.107 result=OK"}
+{"local_ns": 2212996874804, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62776 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2212996874804, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.893 target=-10.000 error=nan result=OK"}
+{"local_ns": 2213158725304, "line": "[STEER_LANE] frame=62785 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2213216958012, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.893 target=-10.000 error=-2.107 result=OK"}
+{"local_ns": 2213276676179, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62785 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2213276676179, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.893 target=-10.000 error=nan result=OK"}
+{"local_ns": 2214269106138, "line": "[STEER_LANE] frame=62818 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2214269106138, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.893 target=-10.000 error=-2.107 result=OK"}
+{"local_ns": 2214377832763, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62818 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2214377832763, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.893 target=-10.000 error=nan result=OK"}
+{"local_ns": 2214607666388, "line": "[STEER_LANE] frame=62827 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2214607666388, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.893 target=-10.000 error=-2.107 result=OK"}
+{"local_ns": 2214777655555, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62827 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2214777655555, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.893 target=-10.000 error=nan result=OK"}
+{"local_ns": 2214887741346, "line": "[STEER_LANE] frame=62833 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2214887741346, "line": "[STEER_STATE] state=2 name=SETTLED angle=-7.893 target=-10.000 error=-2.107 result=OK"}
+{"local_ns": 2215000471680, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62833 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2215000471680, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-7.893 target=-10.000 error=nan result=OK"}
+{"local_ns": 2216310247514, "line": "[STEER_LANE] frame=62878 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2216310247514, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=-7.893 target_deg=10.000 guard_deg=4.926 expected_error_deg=14.895 reposition=0"}
+{"local_ns": 2216310247514, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30251.083 early_release=0"}
+{"local_ns": 2216310247514, "line": "[STEER_STATE] state=5 name=SETTLING angle=-7.893 target=10.000 error=17.893 result=OK"}
+{"local_ns": 2216481166805, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62878 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2216481166805, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-6.189 target=10.000 error=nan result=OK"}
+{"local_ns": 2216589174472, "line": "[STEER_LANE] frame=62887 type=1 confidence=75 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2216589174472, "line": "[STEER_STATE] state=5 name=SETTLING angle=-6.199 target=10.000 error=16.199 result=OK"}
+{"local_ns": 2216762150014, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=-6.211 target_deg=10.000 guard_deg=4.926 expected_error_deg=13.213 reposition=0"}
+{"local_ns": 2216816976347, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30080.458 early_release=0"}
+{"local_ns": 2216816976347, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62887 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2216816976347, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-6.196 target=10.000 error=nan result=OK"}
+{"local_ns": 2218598811181, "line": "[STEER_LANE] frame=62947 type=1 confidence=75 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2218598811181, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=-3.546 target_deg=10.000 guard_deg=6.653 expected_error_deg=10.868 reposition=0"}
+{"local_ns": 2218651489681, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30156.583 early_release=0"}
+{"local_ns": 2218651489681, "line": "[STEER_STATE] state=5 name=SETTLING angle=-3.547 target=10.000 error=13.547 result=OK"}
+{"local_ns": 2218819216098, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62947 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2218819216098, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-1.404 target=10.000 error=nan result=OK"}
+{"local_ns": 2218930763432, "line": "[STEER_LANE] frame=62956 type=1 confidence=75 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2218930763432, "line": "[STEER_STATE] state=5 name=SETTLING angle=-1.406 target=10.000 error=11.406 result=OK"}
+{"local_ns": 2219100246848, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62956 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2219100246848, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-1.404 target=10.000 error=nan result=OK"}
+{"local_ns": 2219810875182, "line": "[STEER_LANE] frame=62980 type=0 confidence=75 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2219810875182, "line": "[STEER_STATE] state=2 name=SETTLED angle=-1.414 target=0.000 error=1.414 result=OK"}
+{"local_ns": 2219919258807, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62980 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2219919258807, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-1.412 target=0.000 error=nan result=OK"}
+{"local_ns": 2220140756015, "line": "[STEER_LANE] frame=62989 type=0 confidence=75 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2220140756015, "line": "[STEER_STATE] state=2 name=SETTLED angle=-1.414 target=0.000 error=1.414 result=OK"}
+{"local_ns": 2220190957974, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62989 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2220241021682, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-1.413 target=0.000 error=nan result=OK"}
+{"local_ns": 2220302289182, "line": "[STEER_LANE] frame=62998 type=0 confidence=75 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2220302289182, "line": "[STEER_STATE] state=2 name=SETTLED angle=-1.411 target=0.000 error=1.411 result=OK"}
+{"local_ns": 2220519318057, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=62998 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2220519318057, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-1.414 target=0.000 error=nan result=OK"}
+{"local_ns": 2220630701182, "line": "[STEER_LANE] frame=63007 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2220630701182, "line": "[STEER_STATE] state=2 name=SETTLED angle=-1.416 target=0.000 error=1.416 result=OK"}
+{"local_ns": 2220810248849, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63007 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2220810248849, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-1.424 target=0.000 error=nan result=OK"}
+{"local_ns": 2222121500808, "line": "[STEER_LANE] frame=63049 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2222121500808, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=-1.422 target_deg=10.000 guard_deg=6.564 expected_error_deg=8.641 reposition=0"}
+{"local_ns": 2222180597433, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30152.209 early_release=0"}
+{"local_ns": 2222180597433, "line": "[STEER_STATE] state=5 name=SETTLING angle=-1.422 target=10.000 error=11.422 result=OK"}
+{"local_ns": 2222240561766, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63049 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2222240561766, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-0.468 target=10.000 error=nan result=OK"}
+{"local_ns": 2222423056142, "line": "[STEER_LANE] frame=63058 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2222423056142, "line": "[STEER_STATE] state=5 name=SETTLING angle=0.679 target=10.000 error=9.321 result=OK"}
+{"local_ns": 2222529564350, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63058 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2222529564350, "line": "[STEER_STATE] state=3 name=CANCELLED angle=0.682 target=10.000 error=nan result=OK"}
+{"local_ns": 2222629913433, "line": "[STEER_LANE] frame=63067 type=1 confidence=60 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2222629913433, "line": "[STEER_STATE] state=5 name=SETTLING angle=0.682 target=10.000 error=9.318 result=OK"}
+{"local_ns": 2222629913433, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=0.685 target_deg=10.000 guard_deg=6.564 expected_error_deg=6.534 reposition=0"}
+{"local_ns": 2222682100475, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30126.250 early_release=0"}
+{"local_ns": 2222841497767, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63067 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2222841497767, "line": "[STEER_STATE] state=3 name=CANCELLED angle=2.604 target=10.000 error=nan result=OK"}
+{"local_ns": 2222945445142, "line": "[STEER_LANE] frame=63076 type=1 confidence=75 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2222945445142, "line": "[STEER_STATE] state=5 name=SETTLING angle=2.518 target=10.000 error=7.482 result=OK"}
+{"local_ns": 2223121074850, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63076 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2223121074850, "line": "[STEER_STATE] state=3 name=CANCELLED angle=2.511 target=10.000 error=nan result=OK"}
+{"local_ns": 2223229783392, "line": "[STEER_LANE] frame=63085 type=1 confidence=75 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2223229783392, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=30000 current_deg=2.515 target_deg=10.000 guard_deg=5.673 expected_error_deg=4.801 reposition=0"}
+{"local_ns": 2223283528517, "line": "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30076.958 early_release=0"}
+{"local_ns": 2223283528517, "line": "[STEER_STATE] state=5 name=SETTLING angle=2.518 target=10.000 error=7.482 result=OK"}
+{"local_ns": 2223450008059, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63085 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2223450008059, "line": "[STEER_STATE] state=3 name=CANCELLED angle=4.515 target=10.000 error=nan result=OK"}
+{"local_ns": 2223501873100, "line": "[STEER_LANE] frame=63091 type=1 confidence=75 road_angle=25 target_deg=10.000 result=OK"}
+{"local_ns": 2223562313434, "line": "[STEER_STATE] state=5 name=SETTLING angle=4.464 target=10.000 error=5.536 result=OK"}
+{"local_ns": 2223622530642, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63091 valid=1 type=1 confidence=0 road_angle=25"}
+{"local_ns": 2223622530642, "line": "[STEER_STATE] state=3 name=CANCELLED angle=4.465 target=10.000 error=nan result=OK"}
+{"local_ns": 2230153957645, "line": "[STEER_LANE] frame=63289 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2230153957645, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=4.471 target_deg=-10.000 guard_deg=8.179 expected_error_deg=11.405 reposition=0"}
+{"local_ns": 2230213379187, "line": "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30217.250 early_release=0"}
+{"local_ns": 2230213379187, "line": "[STEER_STATE] state=5 name=SETTLING angle=4.471 target=-10.000 error=-14.471 result=OK"}
+{"local_ns": 2230264891312, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63289 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2230264891312, "line": "[STEER_STATE] state=3 name=CANCELLED angle=4.138 target=-10.000 error=nan result=OK"}
+{"local_ns": 2232533487480, "line": "[STEER_LANE] frame=63358 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2232533487480, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=3.794 target_deg=-10.000 guard_deg=8.179 expected_error_deg=10.728 reposition=0"}
+{"local_ns": 2232591107980, "line": "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30181.958 early_release=0"}
+{"local_ns": 2232591107980, "line": "[STEER_STATE] state=5 name=SETTLING angle=3.794 target=-10.000 error=-13.794 result=OK"}
+{"local_ns": 2232655162063, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63358 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2232655162063, "line": "[STEER_STATE] state=3 name=CANCELLED angle=3.346 target=-10.000 error=nan result=OK"}
+{"local_ns": 2232884264772, "line": "[STEER_LANE] frame=63367 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2232884264772, "line": "[STEER_STATE] state=5 name=SETTLING angle=1.554 target=-10.000 error=-11.554 result=OK"}
+{"local_ns": 2232935686772, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63367 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2232935686772, "line": "[STEER_STATE] state=3 name=CANCELLED angle=1.572 target=-10.000 error=nan result=OK"}
+{"local_ns": 2233154545855, "line": "[STEER_LANE] frame=63376 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2233154545855, "line": "[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=1.580 target_deg=-10.000 guard_deg=6.262 expected_error_deg=8.395 reposition=0"}
+{"local_ns": 2233204794480, "line": "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30116.042 early_release=0"}
+{"local_ns": 2233204794480, "line": "[STEER_STATE] state=5 name=SETTLING angle=1.578 target=-10.000 error=-11.578 result=OK"}
+{"local_ns": 2233264669272, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63376 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2233264669272, "line": "[STEER_STATE] state=3 name=CANCELLED angle=0.602 target=-10.000 error=nan result=OK"}
+{"local_ns": 2233375719022, "line": "[STEER_LANE] frame=63385 type=2 confidence=60 road_angle=25 target_deg=-10.000 result=OK"}
+{"local_ns": 2233375719022, "line": "[STEER_STATE] state=5 name=SETTLING angle=-0.857 target=-10.000 error=-9.143 result=OK"}
+{"local_ns": 2233543510188, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63385 valid=1 type=2 confidence=0 road_angle=25"}
+{"local_ns": 2233543510188, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-0.859 target=-10.000 error=nan result=OK"}
+{"local_ns": 2234547510272, "line": "[STEER_LANE] frame=63421 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2234547510272, "line": "[STEER_STATE] state=2 name=SETTLED angle=-0.845 target=0.000 error=0.845 result=OK"}
+{"local_ns": 2234777338356, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63421 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2234777338356, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-0.845 target=0.000 error=nan result=OK"}
+{"local_ns": 2234835213189, "line": "[STEER_LANE] frame=63430 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2234887520106, "line": "[STEER_STATE] state=2 name=SETTLED angle=-0.844 target=0.000 error=0.844 result=OK"}
+{"local_ns": 2235045983773, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63430 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2235045983773, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-0.843 target=0.000 error=nan result=OK"}
+{"local_ns": 2235158809481, "line": "[STEER_LANE] frame=63436 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2235158809481, "line": "[STEER_STATE] state=2 name=SETTLED angle=-0.842 target=0.000 error=0.842 result=OK"}
+{"local_ns": 2235274741439, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63436 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2235274741439, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-0.846 target=0.000 error=nan result=OK"}
+{"local_ns": 2235445407564, "line": "[STEER_LANE] frame=63445 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2235445407564, "line": "[STEER_STATE] state=2 name=SETTLED angle=-0.842 target=0.000 error=0.842 result=OK"}
+{"local_ns": 2235558226273, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63445 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2235558226273, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-0.839 target=0.000 error=nan result=OK"}
+{"local_ns": 2235777263273, "line": "[STEER_LANE] frame=63454 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2235777263273, "line": "[STEER_STATE] state=2 name=SETTLED angle=-0.839 target=0.000 error=0.839 result=OK"}
+{"local_ns": 2235835768398, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63454 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2235895929023, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-0.837 target=0.000 error=nan result=OK"}
+{"local_ns": 2235956823190, "line": "[STEER_LANE] frame=63463 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"}
+{"local_ns": 2235956823190, "line": "[STEER_STATE] state=2 name=SETTLED angle=-0.840 target=0.000 error=0.840 result=OK"}
+{"local_ns": 2236179161273, "line": "[STEER_CANCEL] reason=lane_invalid_or_expired frame=63463 valid=1 type=0 confidence=0 road_angle=0"}
+{"local_ns": 2236179161273, "line": "[STEER_STATE] state=3 name=CANCELLED angle=-0.837 target=0.000 error=nan result=OK"}

@@ -1,0 +1,14 @@
+python3 -c "import pathlib,hashlib,json; p=pathlib.Path('/home/linaro/M/pcie/build/pcie_capture'); print(json.dumps({'capture_pid_alive':pathlib.Path('/proc/5016').exists(),'imu_pid_unchanged_alive':pathlib.Path('/proc/1318').exists(),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()})); print(''.join(pathlib.Path('/home/linaro/curve_ego_20261031/production_capture.log').read_text(errors='replace').splitlines(True)[-8:]))"; printf '\nSIX_CMD_DONE\n'
+[?2004l{"capture_pid_alive": true, "imu_pid_unchanged_alive": true, "sha256": "8c469b55f374195c493b4ec6b45af7380e3e96c7c78d826b9f28e6bf8a1d5726"}
+[LINE_STYLE] source=14503 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=14503 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=14571 detector=14492 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2632 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.40 npu_hz=1.20 calls=3 mean_ms=42.38 max_ms=43.08 skip_curve=0 skip_budget=23 boxes=0 budget_backoff=0
+[PERF M] capture_loop_fps=29.98 raw_changed_fps=29.98 inference_fps=3.38 fresh_result_fps=3.38 publish_fps=29.98 dma_ms=15.11 color_ms=1.07 infer_ms=271.99 overlay_ms=7.64 analysis_ms=11.39 shm_ms=0.68 render_ms=4.69 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=14572 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=14572 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=14632 detector=14571 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2033 reason=1 flags=40 box=0,0,0,0
+
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

@@ -1,0 +1,280 @@
+{
+  "curve_read_count": 557,
+  "valid_curve_read_count": 225,
+  "valid_curve_angles": {
+    "25": 225
+  },
+  "last_curve_reads": [
+    {
+      "line": 28250,
+      "frame": 50857,
+      "type": "LEFT",
+      "confidence": 90,
+      "road_angle": 25,
+      "wheel": -0.88
+    },
+    {
+      "line": 28253,
+      "frame": 50857,
+      "type": "LEFT",
+      "confidence": 90,
+      "road_angle": 25,
+      "wheel": -0.88
+    },
+    {
+      "line": 28254,
+      "frame": 50857,
+      "type": "LEFT",
+      "confidence": 0,
+      "road_angle": 25,
+      "wheel": -0.88
+    },
+    {
+      "line": 28256,
+      "frame": 50863,
+      "type": "RIGHT",
+      "confidence": 90,
+      "road_angle": 25,
+      "wheel": -0.88
+    },
+    {
+      "line": 28259,
+      "frame": 50863,
+      "type": "RIGHT",
+      "confidence": 0,
+      "road_angle": 25,
+      "wheel": -0.88
+    },
+    {
+      "line": 28260,
+      "frame": 50863,
+      "type": "RIGHT",
+      "confidence": 0,
+      "road_angle": 25,
+      "wheel": -0.88
+    },
+    {
+      "line": 28261,
+      "frame": 50872,
+      "type": "RIGHT",
+      "confidence": 90,
+      "road_angle": 25,
+      "wheel": -0.88
+    },
+    {
+      "line": 28263,
+      "frame": 50872,
+      "type": "RIGHT",
+      "confidence": 0,
+      "road_angle": 25,
+      "wheel": -0.88
+    },
+    {
+      "line": 28264,
+      "frame": 50872,
+      "type": "RIGHT",
+      "confidence": 0,
+      "road_angle": 25,
+      "wheel": -0.88
+    },
+    {
+      "line": 28266,
+      "frame": 50881,
+      "type": "LEFT",
+      "confidence": 90,
+      "road_angle": 25,
+      "wheel": -0.88
+    },
+    {
+      "line": 28268,
+      "frame": 50881,
+      "type": "LEFT",
+      "confidence": 0,
+      "road_angle": 25,
+      "wheel": -0.88
+    },
+    {
+      "line": 28270,
+      "frame": 50881,
+      "type": "LEFT",
+      "confidence": 0,
+      "road_angle": 25,
+      "wheel": -0.88
+    },
+    {
+      "line": 28272,
+      "frame": 50890,
+      "type": "RIGHT",
+      "confidence": 90,
+      "road_angle": 25,
+      "wheel": -0.88
+    },
+    {
+      "line": 28274,
+      "frame": 50890,
+      "type": "RIGHT",
+      "confidence": 0,
+      "road_angle": 25,
+      "wheel": -0.88
+    },
+    {
+      "line": 28277,
+      "frame": 50890,
+      "type": "RIGHT",
+      "confidence": 0,
+      "road_angle": 25,
+      "wheel": -0.88
+    }
+  ],
+  "last_accepted_curves": [
+    {
+      "line": 27164,
+      "text": "[STEER_LANE] frame=48727 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK",
+      "next": [
+        "[STEER_STATE] state=5 name=SETTLING angle=0.297 target=6.250 error=5.953 result=OK",
+        "[STEER_HEARTBEAT] seq=1707 status=5 angle=0.297 target=6.250 feedback=1 no_motion_pulse=1",
+        "[SHM Read] Frame48727: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:0.297 | Feedback:1",
+        "[STEER_STATE] state=3 name=CANCELLED angle=0.297 target=6.250 error=nan result=OK",
+        "[SHM Read] Frame48727: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:0.297 | Feedback:1",
+        "[SHM Read] Frame48736: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:0.297 | Feedback:1"
+      ]
+    },
+    {
+      "line": 27189,
+      "text": "[STEER_LANE] frame=48760 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK",
+      "next": [
+        "[STEER_STATE] state=5 name=SETTLING angle=0.297 target=-6.250 error=-6.547 result=OK",
+        "[SHM Read] Frame48760: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:0.297 | Feedback:1",
+        "[STEER_STATE] state=3 name=CANCELLED angle=0.297 target=-6.250 error=nan result=OK",
+        "[SHM Read] Frame48760: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:0.297 | Feedback:1",
+        "[SHM Read] Frame48769: STRAIGHT | Conf:60% | RoadAngle:0 | WheelDeg:0.297 | Feedback:1",
+        "[STEER_LANE] frame=48769 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK"
+      ]
+    },
+    {
+      "line": 28221,
+      "text": "[STEER_LANE] frame=50803 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=UNEXPECTED_DEVICE",
+      "next": [
+        "[STEER_HEARTBEAT] seq=1776 status=4 angle=-0.891 target=0.000 feedback=1 no_motion_pulse=1",
+        "[SHM Read] Frame50803: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-0.889 | Feedback:1",
+        "[SHM Read] Frame50803: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-0.887 | Feedback:1",
+        "[\u81ea\u52a8\u5239\u505c\u94fe\u8def] \u65e0\u4eba\u786e\u8ba4\u671f\u6216\u63a8\u7406\u6545\u969c\uff08\u8be6\u89c1PCIe\u65e5\u5fd7\uff09: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0\uff1bAUTO\u53ca\u5b9e\u9645STOP\u9501\u5b58\u7531FPGA\u51b3\u5b9a",
+        "[SHM Read] Frame50812: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-0.889 | Feedback:1",
+        "[STEER_LANE] frame=50812 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=UNEXPECTED_DEVICE"
+      ]
+    },
+    {
+      "line": 28227,
+      "text": "[STEER_LANE] frame=50812 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=UNEXPECTED_DEVICE",
+      "next": [
+        "[SHM Read] Frame50812: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-0.887 | Feedback:1",
+        "[\u81ea\u52a8\u5239\u505c\u94fe\u8def] \u6709\u6548person\u8bf7\u6c42: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0\uff1bAUTO\u53ca\u5b9e\u9645STOP\u9501\u5b58\u7531FPGA\u51b3\u5b9a",
+        "[SHM Read] Frame50821: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-0.885 | Feedback:1",
+        "[STEER_LANE] frame=50821 type=1 confidence=90 road_angle=25 target_deg=6.250 result=UNEXPECTED_DEVICE",
+        "[SHM Read] Frame50821: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-0.885 | Feedback:1",
+        "[SHM Read] Frame50821: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-0.883 | Feedback:1"
+      ]
+    },
+    {
+      "line": 28231,
+      "text": "[STEER_LANE] frame=50821 type=1 confidence=90 road_angle=25 target_deg=6.250 result=UNEXPECTED_DEVICE",
+      "next": [
+        "[SHM Read] Frame50821: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-0.885 | Feedback:1",
+        "[SHM Read] Frame50821: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-0.883 | Feedback:1",
+        "[SHM Read] Frame50830: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1",
+        "[STEER_LANE] frame=50830 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=UNEXPECTED_DEVICE",
+        "[SHM Read] Frame50830: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-0.882 | Feedback:1",
+        "[SHM Read] Frame50830: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1"
+      ]
+    },
+    {
+      "line": 28235,
+      "text": "[STEER_LANE] frame=50830 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=UNEXPECTED_DEVICE",
+      "next": [
+        "[SHM Read] Frame50830: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-0.882 | Feedback:1",
+        "[SHM Read] Frame50830: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1",
+        "[STEER_HEARTBEAT] seq=1777 status=4 angle=-0.880 target=0.000 feedback=1 no_motion_pulse=1",
+        "[SHM Read] Frame50839: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1",
+        "[STEER_LANE] frame=50839 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=UNEXPECTED_DEVICE",
+        "[SHM Read] Frame50839: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-0.883 | Feedback:1"
+      ]
+    },
+    {
+      "line": 28240,
+      "text": "[STEER_LANE] frame=50839 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=UNEXPECTED_DEVICE",
+      "next": [
+        "[SHM Read] Frame50839: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-0.883 | Feedback:1",
+        "[\u81ea\u52a8\u5239\u505c\u94fe\u8def] \u65e0\u4eba\u786e\u8ba4\u671f\u6216\u63a8\u7406\u6545\u969c\uff08\u8be6\u89c1PCIe\u65e5\u5fd7\uff09: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0\uff1bAUTO\u53ca\u5b9e\u9645STOP\u9501\u5b58\u7531FPGA\u51b3\u5b9a",
+        "[SHM Read] Frame50839: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-0.877 | Feedback:1",
+        "[SHM Read] Frame50848: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:-0.880 | Feedback:1",
+        "[\u81ea\u52a8\u5239\u505c\u94fe\u8def] \u6709\u6548person\u8bf7\u6c42: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0\uff1bAUTO\u53ca\u5b9e\u9645STOP\u9501\u5b58\u7531FPGA\u51b3\u5b9a",
+        "[STEER_LANE] frame=50848 type=0 confidence=90 road_angle=0 target_deg=0.000 result=UNEXPECTED_DEVICE"
+      ]
+    },
+    {
+      "line": 28252,
+      "text": "[STEER_LANE] frame=50857 type=1 confidence=90 road_angle=25 target_deg=6.250 result=UNEXPECTED_DEVICE",
+      "next": [
+        "[SHM Read] Frame50857: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1",
+        "[SHM Read] Frame50857: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1",
+        "[\u81ea\u52a8\u5239\u505c\u94fe\u8def] \u65e0\u4eba\u786e\u8ba4\u671f\u6216\u63a8\u7406\u6545\u969c\uff08\u8be6\u89c1PCIe\u65e5\u5fd7\uff09: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0\uff1bAUTO\u53ca\u5b9e\u9645STOP\u9501\u5b58\u7531FPGA\u51b3\u5b9a",
+        "[SHM Read] Frame50863: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1",
+        "[STEER_LANE] frame=50863 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=UNEXPECTED_DEVICE",
+        "[STEER_HEARTBEAT] seq=1778 status=4 angle=-0.880 target=0.000 feedback=1 no_motion_pulse=1"
+      ]
+    },
+    {
+      "line": 28257,
+      "text": "[STEER_LANE] frame=50863 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=UNEXPECTED_DEVICE",
+      "next": [
+        "[STEER_HEARTBEAT] seq=1778 status=4 angle=-0.880 target=0.000 feedback=1 no_motion_pulse=1",
+        "[SHM Read] Frame50863: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1",
+        "[SHM Read] Frame50863: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1",
+        "[SHM Read] Frame50872: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1",
+        "[STEER_LANE] frame=50872 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=UNEXPECTED_DEVICE",
+        "[SHM Read] Frame50872: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1"
+      ]
+    },
+    {
+      "line": 28262,
+      "text": "[STEER_LANE] frame=50872 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=UNEXPECTED_DEVICE",
+      "next": [
+        "[SHM Read] Frame50872: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1",
+        "[SHM Read] Frame50872: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1",
+        "[\u81ea\u52a8\u5239\u505c\u94fe\u8def] \u6709\u6548person\u8bf7\u6c42: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0\uff1bAUTO\u53ca\u5b9e\u9645STOP\u9501\u5b58\u7531FPGA\u51b3\u5b9a",
+        "[SHM Read] Frame50881: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1",
+        "[STEER_LANE] frame=50881 type=1 confidence=90 road_angle=25 target_deg=6.250 result=UNEXPECTED_DEVICE",
+        "[SHM Read] Frame50881: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1"
+      ]
+    },
+    {
+      "line": 28267,
+      "text": "[STEER_LANE] frame=50881 type=1 confidence=90 road_angle=25 target_deg=6.250 result=UNEXPECTED_DEVICE",
+      "next": [
+        "[SHM Read] Frame50881: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1",
+        "[\u81ea\u52a8\u5239\u505c\u94fe\u8def] \u65e0\u4eba\u786e\u8ba4\u671f\u6216\u63a8\u7406\u6545\u969c\uff08\u8be6\u89c1PCIe\u65e5\u5fd7\uff09: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0\uff1bAUTO\u53ca\u5b9e\u9645STOP\u9501\u5b58\u7531FPGA\u51b3\u5b9a",
+        "[SHM Read] Frame50881: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1",
+        "[\u81ea\u52a8\u5239\u505c\u94fe\u8def] \u6709\u6548person\u8bf7\u6c42: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0\uff1bAUTO\u53ca\u5b9e\u9645STOP\u9501\u5b58\u7531FPGA\u51b3\u5b9a",
+        "[SHM Read] Frame50890: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1",
+        "[STEER_LANE] frame=50890 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=UNEXPECTED_DEVICE"
+      ]
+    },
+    {
+      "line": 28273,
+      "text": "[STEER_LANE] frame=50890 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=UNEXPECTED_DEVICE",
+      "next": [
+        "[SHM Read] Frame50890: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1",
+        "[\u81ea\u52a8\u5239\u505c\u94fe\u8def] \u65e0\u4eba\u786e\u8ba4\u671f\u6216\u63a8\u7406\u6545\u969c\uff08\u8be6\u89c1PCIe\u65e5\u5fd7\uff09: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0\uff1bAUTO\u53ca\u5b9e\u9645STOP\u9501\u5b58\u7531FPGA\u51b3\u5b9a",
+        "[STEER_HEARTBEAT] seq=1779 status=4 angle=-0.880 target=0.000 feedback=1 no_motion_pulse=1",
+        "[SHM Read] Frame50890: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-0.880 | Feedback:1",
+        "[SHM Read] Frame50899: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.880 | Feedback:1",
+        "[SHM Read] Frame50899: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.880 | Feedback:1"
+      ]
+    }
+  ],
+  "pulse_count": 0,
+  "last_pulses": [],
+  "last_faults": [
+    "[STEER_STATE] state=4 name=FAULT angle=18.170 target=0.000 error=nan result=UNEXPECTED_DEVICE"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "state": "REAL_S_UDP_STATIC_HOLD_PASS",
+  "accepted": 3000,
+  "rejected": 0,
+  "session": "963551372",
+  "span_deg": 0.0,
+  "angle_first_deg": 0.064,
+  "angle_last_deg": 0.064,
+  "rate_hz": 99.95909976281462,
+  "maximum_source_age_ms": 5,
+  "actuator_enabled": false,
+  "mechanical_zero_asserted": false
+}

@@ -1,0 +1,208 @@
+{
+  "schema": "ROAD_STEERING_FINAL_VERIFICATION_V1",
+  "recorded_at": "2026-10-31T21:03:50.542981+08:00",
+  "state": "BENCH_SAMPLE_CHECKS_PASSED_NORMAL_PROGRAMS_INSTALLED",
+  "acceptance": {
+    "schema": "STEER_ROAD_ACCEPTANCE_V1",
+    "state": "PASSED_BENCH_SAMPLE_CHECKS",
+    "cases": [
+      {
+        "case": "left",
+        "target_deg": 6.25,
+        "measured_deg": 4.138,
+        "error_deg": 2.112,
+        "input_source": "live_camera",
+        "pulse_count": 1,
+        "pulse_end_records": [
+          "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30408.292 early_release=0"
+        ],
+        "passed": true
+      },
+      {
+        "case": "right",
+        "target_deg": -6.25,
+        "measured_deg": -8.878,
+        "error_deg": 2.628,
+        "input_source": "live_camera",
+        "pulse_count": 1,
+        "pulse_end_records": [
+          "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30148.708 early_release=0"
+        ],
+        "passed": true
+      },
+      {
+        "case": "straight",
+        "target_deg": 0,
+        "measured_deg": 0.703,
+        "error_deg": 0.703,
+        "input_source": "recorded_raw_camera_frame_through_RKNN_UDP_and_control",
+        "pulse_count": 2,
+        "pulse_end_records": [
+          "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30261.583 early_release=0",
+          "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30429.292 early_release=0"
+        ],
+        "passed": true
+      }
+    ],
+    "tolerance_deg": 3,
+    "reference_session": 4033203686,
+    "zero_raw_deg": 0.059,
+    "independent_goals_passed": 4,
+    "limitation": "Straight was recorded pixel replay, not live-camera acceptance. Fixed chassis, IMU-relative angle; no on-road accuracy claim.",
+    "S_binary_sha256": "b79474280918b6e2f0be3a078198e3214352856c1f3019c6028fa40ce39a63cb",
+    "no_HMI_or_FPGA_changes": true
+  },
+  "perception_saved_raw_input_QA": {
+    "schema": "M_SAVED_INPUT_QA_V1",
+    "returncode": 0,
+    "passed": true,
+    "restored_pid": 4912,
+    "imu_pid_unchanged": 1318
+  },
+  "root_causes": [
+    "Legacy global lane-pixel projection switched boundary contributions between image bands and inverted direction. Its pixel-count confidence was not a direction probability.",
+    "The previous coarse pulse profile treated a 6.25 degree goal as a large-angle action and could overshoot. Road mode now uses the previously measured V2 fine pulse table.",
+    "Starting a SPI status read too near pulse release could delay the 30ms pulse past timing protection. Final 6ms uses a recent bounded-age logical snapshot.",
+    "Remote drift mode and missing actual road input also occurred during earlier tests; neither is counted as a successful steering test."
+  ],
+  "current_profile": {
+    "schema": "STEER_RUNTIME_LAUNCH_V1",
+    "enabled": true,
+    "environment": {
+      "STEERING_CONTROL_MODE": "closed-loop",
+      "STEERING_RESPONSE_TABLE": "/home/linaro/S/steering/logs/road_recheck_20261031/response_model.fine_only.table",
+      "STEERING_REFERENCE_FILE": "/home/linaro/S/steering/logs/road_recheck_20261031/center.reference",
+      "STEERING_PRIORITY": "10",
+      "STEERING_TARGET_TOLERANCE_DEG": "3",
+      "STEERING_CENTER_TOLERANCE_DEG": "3",
+      "STEERING_LANE_TARGET_LIMIT_DEG": "12",
+      "STEERING_CURVE_GAIN": "0.25",
+      "STEERING_MAX_CORRECTION_PULSES": "3"
+    }
+  },
+  "measured_performance": {
+    "capture_and_publish_fps": "29.7-30.0",
+    "lane_inference_hz": "3.38-3.60",
+    "stale_result_or_worker_failures_in_final_observation": 0
+  },
+  "preserved": [
+    "HMI event codes and UI",
+    "FPGA bitstream and IO pins",
+    "Original RKNN models",
+    "Line-style classification",
+    "STOP, manual override and red-light GO priority",
+    "Existing IMU static hold and source freshness checks"
+  ],
+  "limitations": [
+    "Only two live fixed road scenes and one saved raw-camera straight scene were accepted, not an on-road accuracy or comprehensive video benchmark.",
+    "Curve angle remains the existing nominal 25 degree estimate; gain 0.25 yields a wheel target of +/-6.25 degrees, not continuous road-curvature calibration.",
+    "The physical reference is bound to M IMU session 4033203686; a new IMU session or changed mounting requires physical-center confirmation, never silent startup-zero homing.",
+    "Final provenance files include intermediate stage states; acceptance.json and production_final.json are the final phase records."
+  ],
+  "local_board_hash_receipts": [
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/build/pcie_capture",
+      "sha256": "8c469b55f374195c493b4ec6b45af7380e3e96c7c78d826b9f28e6bf8a1d5726",
+      "matches_board": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/fspi/build/vehicle_control",
+      "sha256": "b79474280918b6e2f0be3a078198e3214352856c1f3019c6028fa40ce39a63cb",
+      "matches_board": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/runtime.json",
+      "sha256": "036020e5ad7e55386b9f81310bbf6b1543897aa4286470e0dd49c90f9197de9a",
+      "matches_board": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/logs/road_recheck_20261031/center.reference",
+      "sha256": "9b1a6dac1a5d32d565528efa3f40e6c2f0f9fa8e29558acb8d95bfa04a3dd2ba",
+      "matches_board": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/logs/road_recheck_20261031/center.reference.json",
+      "sha256": "5cfb20728d4c189c417d1bcb77c9b950c7c7ccc9bd944295490ad6394d260b35",
+      "matches_board": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/logs/road_recheck_20261031/rebind_provenance.json",
+      "sha256": "205c839bf64ae5a93dfd49c1ba5166c7a496b795b285a16407f19c7f7ac890ab",
+      "matches_board": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/logs/road_recheck_20261031/response_model.table",
+      "sha256": "ce8e63311f837d02ae9759e615d1f0292984ca66eaa608db07cca3a6b2b58efa",
+      "matches_board": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/logs/road_recheck_20261031/response_model.fine_only.table",
+      "sha256": "5ecbcb62be79f08d876d0de94eef8f70ebb92fcdf8afb7f22bf08432ce892401",
+      "matches_board": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/logs/road_recheck_20261031/fine_only_provenance.json",
+      "sha256": "7e2ba4b1639805b52ec0da6111e6b7c8fbe7b678a1ac18227800bebab7ba4f40",
+      "matches_board": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/logs/road_recheck_20261031/acceptance.json",
+      "sha256": "372dad37a553f63799aa1922abd3df6775deab44312fae32887a5446d9c24831",
+      "matches_board": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/logs/road_recheck_20261031/production_final.json",
+      "sha256": "16e8b06442fe80e1147fba29c1359805c016395619fcdb4b83688a56476e05e7",
+      "matches_board": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/Makefile",
+      "sha256": "f190e2616c2ad75661246e92f8359345dcf29ddc02ed7d649eb423d743a836f2",
+      "matches_board": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/include/lane_curve_geometry.h",
+      "sha256": "6457083217f4706f6ac1e3cae8ceb0f2140a8a9b7fb91845beddbb344d6a7ade",
+      "matches_board": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/include/latest_lane_worker.h",
+      "sha256": "823987177e20869f72d3bcb7df26a4d77a5cc7552eb9989adef169746beff6ab",
+      "matches_board": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/tests/test_lane_curve_geometry.cpp",
+      "sha256": "32ab9310d5a13db50061b9cd71f55f094d5c28123d903390ac1138d24e8ce8ee",
+      "matches_board": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/tests/EGO_CURVE_CANDIDATE.md",
+      "sha256": "72eb85143f33e7af7f9d385648dd0025b8e2be4a282ee6b387ec4bd922053dd4",
+      "matches_board": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/tools/curve_frame_replay.cpp",
+      "sha256": "e3d68bf4828e96776651b7fed2c02a2442a9e62bd0cfad7d40922ac148d4d75d",
+      "matches_board": true
+    }
+  ],
+  "board_install_receipts": {
+    "M": "M/production_install.json",
+    "S": "S/S/steering/logs/road_recheck_20261031/production_final.json"
+  },
+  "startup": "Use normal M and S make run entries; no FPGA flashing is needed for these ARM software changes.",
+  "final_health": {
+    "M_capture_pid": 5016,
+    "M_imu_pid": 1318,
+    "S_controller_pid": 3684,
+    "all_alive": true,
+    "M_capture_and_publish_fps": 29.98,
+    "M_lane_inference_hz": 3.38,
+    "M_worker_failed": 0,
+    "M_stale_results": 0,
+    "S_feedback_fresh": true,
+    "S_wheel_deg": 0.759,
+    "S_pulse_starts_during_final_no_road_observation": 0,
+    "binary_SHA256_matches_local": true
+  }
+}

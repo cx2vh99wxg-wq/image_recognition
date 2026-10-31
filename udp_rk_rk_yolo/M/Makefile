@@ -9,6 +9,15 @@
 PROJECT_NAME = M-End_FPGA_System
 TOPDIR = $(shell pwd)
 
+# Same choice for normal, background and direct PCIe launch commands.
+LANE_CURVE_MODE ?= ego-boundaries
+ifneq ($(words $(LANE_CURVE_MODE)),1)
+$(error LANE_CURVE_MODE must be ego-boundaries or legacy-projection)
+endif
+ifeq ($(filter $(LANE_CURVE_MODE),ego-boundaries legacy-projection),)
+$(error LANE_CURVE_MODE must be ego-boundaries or legacy-projection)
+endif
+
 # 源代码目录
 SRCDIR = csrc
 INCDIR = include
@@ -126,7 +135,7 @@ test: test-pcie test-udp
 #############################################################################
 run-pcie: pcie
 	@echo "Running PCIe capture module..."
-	cd $(PCIE_DIR) && ./build/pcie_capture
+	cd $(PCIE_DIR) && env LANE_CURVE_MODE=$(LANE_CURVE_MODE) ./build/pcie_capture
 
 run-udp: udp tune-network
 	@echo "Running UDP sender module..."
@@ -159,7 +168,7 @@ run: all tune-network
 	@# 启动PCIe模块 (后台运行，输出到终端)
 	@echo "启动PCIe图像采集模块..."
 	@echo "运行PCIe程序需要sudo权限..."
-	@cd $(PCIE_DIR) && sudo ./build/pcie_capture &
+	@cd $(PCIE_DIR) && sudo env LANE_CURVE_MODE=$(LANE_CURVE_MODE) ./build/pcie_capture &
 	@echo "PCIe模块已启动，等待共享内存创建..."
 	@# 等待共享内存创建（最多等待30秒）
 	@WAIT_COUNT=0; \
@@ -213,7 +222,7 @@ run-background: all tune-network
 	@# 启动PCIe后台程序
 	@echo "启动PCIe图像采集后台程序..."
 	@echo "运行PCIe程序需要sudo权限..."
-	@cd $(PCIE_DIR) && sudo nohup ./build/pcie_capture > pcie.log 2>&1 &
+	@cd $(PCIE_DIR) && sudo env LANE_CURVE_MODE=$(LANE_CURVE_MODE) nohup ./build/pcie_capture > pcie.log 2>&1 &
 	@echo "PCIe程序已启动，等待共享内存创建..."
 	@# 等待共享内存创建（最多等待30秒）
 	@WAIT_COUNT=0; \

@@ -1,0 +1,59 @@
+{
+  "schema": "M_CURVE_FINAL_INSTALL_V1",
+  "state": "PRODUCTION_RUNNING",
+  "pid": 5016,
+  "previous_pid": 4912,
+  "binary_sha256": "8c469b55f374195c493b4ec6b45af7380e3e96c7c78d826b9f28e6bf8a1d5726",
+  "normal_make_launch_mode": "ego-boundaries",
+  "direct_binary_default": "ego-boundaries",
+  "original_model_unchanged": true,
+  "line_style_and_HMI_unchanged": true,
+  "imu_pid_unchanged": 1318,
+  "changes": [
+    {
+      "path": "Makefile",
+      "sha256": "f190e2616c2ad75661246e92f8359345dcf29ddc02ed7d649eb423d743a836f2",
+      "previous_sha256": "a4c8870854f3d608a8c5d3c7f42971fa85a0a80c77627a66707740ff16c57ccd"
+    },
+    {
+      "path": "pcie/include/lane_curve_geometry.h",
+      "sha256": "6457083217f4706f6ac1e3cae8ceb0f2140a8a9b7fb91845beddbb344d6a7ade",
+      "previous_sha256": null
+    },
+    {
+      "path": "pcie/include/latest_lane_worker.h",
+      "sha256": "823987177e20869f72d3bcb7df26a4d77a5cc7552eb9989adef169746beff6ab",
+      "previous_sha256": "97a2cf478b8308b76ad9f34b4e67da1f14cc3cd0bce870cddb31a683ad39869d"
+    },
+    {
+      "path": "pcie/tests/test_lane_curve_geometry.cpp",
+      "sha256": "32ab9310d5a13db50061b9cd71f55f094d5c28123d903390ac1138d24e8ce8ee",
+      "previous_sha256": null
+    },
+    {
+      "path": "pcie/tests/EGO_CURVE_CANDIDATE.md",
+      "sha256": "72eb85143f33e7af7f9d385648dd0025b8e2be4a282ee6b387ec4bd922053dd4",
+      "previous_sha256": null
+    },
+    {
+      "path": "pcie/tools/curve_frame_replay.cpp",
+      "sha256": "e3d68bf4828e96776651b7fed2c02a2442a9e62bd0cfad7d40922ac148d4d75d",
+      "previous_sha256": null
+    },
+    {
+      "path": "pcie/build/main.o",
+      "sha256": "1974a82f657c4dc358737e453cd07de5a377ce0ef6495953982db0da7b5d4dce",
+      "previous_sha256": "93782809f35f4769feff310545720e11e037d8bf602a7c20d6db9a18202f324e"
+    },
+    {
+      "path": "pcie/build/main.d",
+      "sha256": "d7b5d0e5fdf1841d3e98311e22c97a98cf8c8ab3e584d17f133e51f3953db3c6",
+      "previous_sha256": "404e6ef19092461511ef32ba18843415710a2f47a8f2d639fde1b76ab8df7648"
+    },
+    {
+      "path": "pcie/build/pcie_capture",
+      "sha256": "8c469b55f374195c493b4ec6b45af7380e3e96c7c78d826b9f28e6bf8a1d5726",
+      "previous_sha256": "1b9a3ba5d72be191aba37f4b448447c9c680a85a99f9536351cafc51f2149dcb"
+    }
+  ]
+}

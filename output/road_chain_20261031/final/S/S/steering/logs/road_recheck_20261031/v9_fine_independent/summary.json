@@ -1,0 +1,50 @@
+{
+  "schema": "STEER_V9_FINE_GOAL_CHECK_V1",
+  "state": "COMPLETE",
+  "records": [
+    {
+      "target_deg": 6.25,
+      "returncode": 0,
+      "passed": true,
+      "measured_deg": 5.3,
+      "pulse_count": 1,
+      "actual_pulse_us": [
+        30381.75
+      ]
+    },
+    {
+      "target_deg": 0,
+      "returncode": 0,
+      "passed": true,
+      "measured_deg": 0.802,
+      "pulse_count": 1,
+      "actual_pulse_us": [
+        30204.125
+      ]
+    },
+    {
+      "target_deg": -6.25,
+      "returncode": 0,
+      "passed": true,
+      "measured_deg": -6.47,
+      "pulse_count": 1,
+      "actual_pulse_us": [
+        30228.625
+      ]
+    },
+    {
+      "target_deg": 0,
+      "returncode": 0,
+      "passed": true,
+      "measured_deg": -0.37,
+      "pulse_count": 1,
+      "actual_pulse_us": [
+        30102.625
+      ]
+    }
+  ],
+  "vision_used": false,
+  "feedback_and_FSPI_real": true,
+  "tolerance_deg": 3,
+  "outputs_released": true
+}

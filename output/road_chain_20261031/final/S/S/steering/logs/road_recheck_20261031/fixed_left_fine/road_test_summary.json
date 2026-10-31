@@ -1,0 +1,27 @@
+{
+  "state": "TEST_STOPPED_OUTPUTS_RELEASED",
+  "stop_reason": "controller_fault",
+  "seconds": 19.944831968000017,
+  "control_pid": 2889,
+  "returncode": 0,
+  "pulse_count": 6,
+  "angle_min": -5.703,
+  "angle_max": 1.723,
+  "last_angles": [
+    0.65,
+    0.636,
+    0.633,
+    0.634,
+    -2.893,
+    -5.703,
+    -5.509,
+    -5.507,
+    -5.494,
+    -5.503,
+    -5.504,
+    -5.507
+  ],
+  "input_source": "production_M_metadata",
+  "synthetic_lane_input": false,
+  "road_visibility_requires_snapshot_review": true
+}

@@ -1,0 +1,417 @@
+
+==============================
+PCIE+YOLOPv2车道线检测系统启动
+==============================
+编译时间: Oct 31 2026 12:47:48
+渲染功能: 启用
+==============================
+
+=== 缓冲区分配 ===
+RGB565原始缓冲区: 729600 bytes
+RGB888处理缓冲区: 921600 bytes
+RGB565输出缓冲区: 614400 bytes
+
+=== FSPI模块初始化 ===
+========== SPI可靠读写程序 ==========
+FSPI Configuration:
+  Device: /dev/spidev4.0
+  Mode: 0x00000003
+  Bits per word: 8
+  Speed: 100000000 Hz (100000 KHz)
+FSPI initialized successfully
+✓ FSPI模块初始化成功
+
+=== PCIE设备初始化 ===
+正在初始化PCIE设备...
+PCIE设备信息获取成功
+设备ID: 0x0, 厂商ID: 0x0
+PCIE设备初始化成功
+✓ PCIE设备初始化成功
+
+=== YOLOPv2引擎初始化 ===
+正在初始化YOLOPv2引擎（车道线和可行驶区域检测）...
+模型输入数量: 1, 输出数量: 5
+输出 0: seg
+输出 1: ll
+输出 2: pred0
+输出 3: pred1
+输出 4: pred2
+模型输入尺寸: 640x480
+输出缓冲区: 车道线=1228800 bytes, 可行驶区域=2457600 bytes
+YOLOPv2引擎初始化成功
+✓ YOLOPv2引擎初始化成功
+
+=== PCIe共享内存初始化 ===
+正在初始化PCIe共享内存 (key=0x12345679, size=614504 bytes)
+PCIe shared memory initialized successfully (id=54, ptr=0x7fb8a45000)
+Initialized control structure for PCIe
+✓ PCIe共享内存初始化成功
+
+=== 弯道检测共享内存初始化 ===
+正在初始化弯道检测共享内存 (key=0x1234567e, size=72 bytes)
+弯道检测共享内存初始化成功 (id=55, ptr=0x7fba099000)
+初始化弯道检测控制结构
+✓ 弯道检测共享内存初始化成功
+
+=== 视频流采集初始化 ===
+初始化视频流采集...
+DMA rows/request=1 (fixed by the current FPGA streaming protocol)
+DMA参数配置: current_len=380 dword (1520字节), offset_addr=0x0
+正在映射DMA地址...
+DMA地址映射完成
+正在重置DMA读取地址...
+DMA读取地址重置完成
+视频流采集初始化完成
+✓ 视频流采集初始化成功
+
+=== 渲染引擎初始化 ===
+正在初始化渲染引擎...
+DISPLAY环境变量: :0.0
+尝试连接X服务器...
+✓ X服务器连接成功
+屏幕信息: 2560x1440, 深度: 24位, 屏幕: 0
+创建窗口: 640x480...
+✓ 窗口创建成功
+设置窗口属性...
+映射窗口到屏幕...
+等待窗口显示...
+✓ 窗口已成功显示
+M X11 transfer=MIT-SHM (server-read fence enabled)
+渲染引擎初始化成功
+✓ 渲染引擎初始化成功
+=== 系统初始化完成 ===
+图像尺寸: 640x480
+窗口尺寸: 640x480
+YOLOPv2模型: model/yolopv2_Nx3x480x640_rk3568.rknn
+按任意键或点击窗口退出...
+
+=== 开始视频流处理和车道线检测 ===
+切换到视频流 5...
+正在切换到视频流 5...
+    [WRITE] 地址: 0x0000, 数据: 0x05
+TX Buffer: [0x00] [0x00] [0x05]
+视频流切换成功: 流ID=5
+    [READ]  地址: 0x0000
+TX Address: [0x00] [0x00]
+RX Data: [0x00]
+TX Address: [0x00] [0x00]
+RX Data: [0x00]
+TX Address: [0x00] [0x00]
+RX Data: [0x00]
+TX Address: [0x00] [0x00]
+RX Data: [0x00]
+TX Address: [0x00] [0x00]
+RX Data: [0x00]
+    [READ]  结果: 0x00
+警告：视频流切换验证失败 (写入=5, 读取=0)
+视频流切换成功: 当前流5
+NN submission interval: 3 captured frames; completed inference FPS is reported separately
+Performance timing report interval: 5 seconds
+[TRAFFIC] enabled=1 ready=1 input=320 max_locator_rate=1Hz max_NPU_passes=3 color_rate=10Hz single_NPU_owner=lane_worker control_output=none
+[TRAFFIC INPUT] source_rect=320,240,320,240 source_order=BGR detector_order=RGB
+[CURVE_MODE] ego-boundaries candidate
+M inference=latest-frame worker, capture target=30 fps (0=unlimited), NN result max age=500ms
+[TRAFFIC] source=1 detector=0 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=0 reason=1 flags=8 box=0,0,0,0
+[LINE_STYLE] source=1 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=1 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=55 detector=0 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=0 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=55 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=55 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC PERF] locator_hz=1.00 npu_hz=3.00 calls=1 mean_ms=41.50 max_ms=41.50 skip_curve=0 skip_budget=9 boxes=0 budget_backoff=0
+[TRAFFIC] source=117 detector=82 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1165 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=118 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=118 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[PERF M] capture_loop_fps=28.35 raw_changed_fps=28.35 inference_fps=3.19 fresh_result_fps=3.19 publish_fps=28.35 dma_ms=14.70 color_ms=1.39 infer_ms=279.28 overlay_ms=7.69 analysis_ms=11.79 shm_ms=0.76 render_ms=13.03 pending_replaced=30 stale_results=0 worker_failed=0 dma_rows=1
+[TRAFFIC] source=180 detector=117 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2116 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=178 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=178 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=242 detector=194 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1598 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=238 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=238 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC PERF] locator_hz=0.47 npu_hz=1.41 calls=3 mean_ms=42.50 max_ms=43.02 skip_curve=0 skip_budget=19 boxes=0 budget_backoff=0
+[PERF M] capture_loop_fps=29.90 raw_changed_fps=29.90 inference_fps=3.59 fresh_result_fps=3.59 publish_fps=29.90 dma_ms=14.21 color_ms=1.34 infer_ms=273.59 overlay_ms=7.76 analysis_ms=10.95 shm_ms=0.74 render_ms=12.18 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[TRAFFIC] source=304 detector=273 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1033 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=298 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=298 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=364 detector=273 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=3033 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=367 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=367 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=425 detector=402 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=758 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=427 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=427 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.40 fresh_result_fps=3.40 publish_fps=30.00 dma_ms=14.02 color_ms=1.37 infer_ms=272.72 overlay_ms=7.86 analysis_ms=11.51 shm_ms=0.77 render_ms=12.13 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[TRAFFIC PERF] locator_hz=0.29 npu_hz=0.87 calls=2 mean_ms=42.81 max_ms=44.21 skip_curve=0 skip_budget=22 boxes=0 budget_backoff=0
+[TRAFFIC] source=486 detector=479 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=236 reason=1 flags=8 box=0,0,0,0
+[LINE_STYLE] source=490 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=490 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=548 detector=479 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2301 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=559 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=559 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.38 fresh_result_fps=3.38 publish_fps=30.00 dma_ms=14.00 color_ms=1.33 infer_ms=273.28 overlay_ms=7.73 analysis_ms=10.80 shm_ms=0.75 render_ms=12.17 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[TRAFFIC] source=608 detector=556 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1737 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=628 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=628 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=670 detector=556 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=3799 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.28 npu_hz=0.83 calls=2 mean_ms=41.97 max_ms=42.45 skip_curve=0 skip_budget=23 boxes=0 budget_backoff=0
+[LINE_STYLE] source=697 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=697 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=732 detector=696 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1199 reason=1 flags=40 box=0,0,0,0
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=30.00 dma_ms=14.03 color_ms=1.28 infer_ms=274.47 overlay_ms=7.85 analysis_ms=11.21 shm_ms=0.75 render_ms=12.29 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=766 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=766 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=792 detector=781 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=373 reason=1 flags=8 box=0,0,0,0
+[LINE_STYLE] source=826 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=826 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=853 detector=781 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2404 reason=1 flags=40 box=0,0,0,0
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.40 fresh_result_fps=3.40 publish_fps=30.00 dma_ms=13.97 color_ms=1.40 infer_ms=272.67 overlay_ms=7.88 analysis_ms=11.04 shm_ms=0.75 render_ms=12.16 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=895 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=895 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC PERF] locator_hz=0.28 npu_hz=0.83 calls=2 mean_ms=42.36 max_ms=43.19 skip_curve=0 skip_budget=23 boxes=0 budget_backoff=0
+[TRAFFIC] source=914 detector=911 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=101 reason=1 flags=8 box=0,0,0,0
+[LINE_STYLE] source=955 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=955 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=976 detector=911 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2164 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=1015 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=1015 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=1037 detector=989 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1599 reason=1 flags=40 box=0,0,0,0
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.58 fresh_result_fps=3.58 publish_fps=30.00 dma_ms=14.02 color_ms=1.30 infer_ms=273.27 overlay_ms=7.76 analysis_ms=10.92 shm_ms=0.73 render_ms=12.18 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=1084 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=1084 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=1098 detector=989 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=3631 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.28 npu_hz=0.83 calls=2 mean_ms=42.71 max_ms=43.01 skip_curve=0 skip_budget=23 boxes=0 budget_backoff=0
+[LINE_STYLE] source=1144 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=1144 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=1158 detector=1128 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1002 reason=1 flags=40 box=0,0,0,0
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.38 fresh_result_fps=3.38 publish_fps=30.00 dma_ms=14.10 color_ms=1.33 infer_ms=273.72 overlay_ms=7.81 analysis_ms=10.99 shm_ms=0.74 render_ms=12.22 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=1207 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=1207 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=1218 detector=1204 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=470 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=1267 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=1267 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=1279 detector=1255 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=799 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.43 npu_hz=1.30 calls=3 mean_ms=41.76 max_ms=42.61 skip_curve=0 skip_budget=21 boxes=0 budget_backoff=0
+[TRAFFIC] source=1342 detector=1335 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=232 reason=1 flags=8 box=0,0,0,0
+[LINE_STYLE] source=1336 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[PERF M] capture_loop_fps=29.80 raw_changed_fps=29.80 inference_fps=3.38 fresh_result_fps=3.38 publish_fps=29.80 dma_ms=14.66 color_ms=1.19 infer_ms=272.91 overlay_ms=7.79 analysis_ms=10.98 shm_ms=0.73 render_ms=7.89 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[CURVE_EGO] source=1336 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=1405 detector=1335 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2332 reason=1 flags=8 box=0,0,0,0
+[LINE_STYLE] source=1405 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=1405 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=1465 detector=1401 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2134 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=1474 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.102 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=1474 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[PERF M] capture_loop_fps=29.98 raw_changed_fps=29.98 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=29.98 dma_ms=14.86 color_ms=1.16 infer_ms=271.74 overlay_ms=7.57 analysis_ms=10.79 shm_ms=0.77 render_ms=5.89 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[TRAFFIC] source=1526 detector=1472 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1800 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=1534 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=1534 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC PERF] locator_hz=0.40 npu_hz=1.20 calls=3 mean_ms=41.30 max_ms=42.18 skip_curve=0 skip_budget=23 boxes=0 budget_backoff=0
+[TRAFFIC] source=1587 detector=1558 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=967 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=1594 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=1594 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[PERF M] capture_loop_fps=30.02 raw_changed_fps=30.02 inference_fps=3.38 fresh_result_fps=3.38 publish_fps=30.02 dma_ms=14.95 color_ms=1.15 infer_ms=274.16 overlay_ms=7.51 analysis_ms=11.27 shm_ms=0.77 render_ms=6.04 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[TRAFFIC] source=1648 detector=1637 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=365 reason=1 flags=8 box=0,0,0,0
+[LINE_STYLE] source=1657 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=1657 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=1710 detector=1637 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2432 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.38 npu_hz=1.15 calls=2 mean_ms=41.12 max_ms=41.32 skip_curve=0 skip_budget=16 boxes=0 budget_backoff=0
+[LINE_STYLE] source=1717 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=1717 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=1771 detector=1716 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1832 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=1786 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=1786 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[PERF M] capture_loop_fps=29.99 raw_changed_fps=29.99 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=29.99 dma_ms=14.97 color_ms=1.15 infer_ms=272.55 overlay_ms=7.47 analysis_ms=11.44 shm_ms=0.76 render_ms=6.05 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[TRAFFIC] source=1832 detector=1793 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1300 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=1846 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=1846 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC PERF] locator_hz=0.38 npu_hz=1.15 calls=2 mean_ms=41.78 max_ms=42.20 skip_curve=0 skip_budget=16 boxes=0 budget_backoff=0
+[TRAFFIC] source=1895 detector=1871 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=800 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=1906 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=1906 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[PERF M] capture_loop_fps=29.99 raw_changed_fps=29.99 inference_fps=3.40 fresh_result_fps=3.40 publish_fps=29.99 dma_ms=14.93 color_ms=1.16 infer_ms=273.70 overlay_ms=7.44 analysis_ms=10.75 shm_ms=0.80 render_ms=6.00 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[TRAFFIC] source=1958 detector=1948 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=332 reason=1 flags=8 box=0,0,0,0
+[LINE_STYLE] source=1969 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=1969 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=2020 detector=1948 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2404 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.38 npu_hz=1.15 calls=2 mean_ms=41.80 max_ms=42.02 skip_curve=0 skip_budget=16 boxes=0 budget_backoff=0
+[LINE_STYLE] source=2029 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=2029 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=2081 detector=2027 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1801 reason=1 flags=40 box=0,0,0,0
+[PERF M] capture_loop_fps=30.02 raw_changed_fps=30.02 inference_fps=3.38 fresh_result_fps=3.38 publish_fps=30.02 dma_ms=14.91 color_ms=1.14 infer_ms=272.80 overlay_ms=7.51 analysis_ms=11.30 shm_ms=0.76 render_ms=6.11 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=2098 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=2098 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=2145 detector=2104 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1368 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=2158 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=2158 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC PERF] locator_hz=0.38 npu_hz=1.15 calls=2 mean_ms=41.44 max_ms=41.92 skip_curve=0 skip_budget=16 boxes=0 budget_backoff=0
+[TRAFFIC] source=2209 detector=2183 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=868 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=2218 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=2218 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[PERF M] capture_loop_fps=29.99 raw_changed_fps=29.99 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=29.99 dma_ms=14.81 color_ms=1.17 infer_ms=272.74 overlay_ms=7.50 analysis_ms=11.50 shm_ms=0.79 render_ms=6.10 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[TRAFFIC] source=2271 detector=2260 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=366 reason=1 flags=8 box=0,0,0,0
+[LINE_STYLE] source=2281 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=2281 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=2332 detector=2260 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2399 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.38 npu_hz=1.15 calls=2 mean_ms=41.81 max_ms=42.74 skip_curve=0 skip_budget=16 boxes=0 budget_backoff=0
+[LINE_STYLE] source=2341 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=2341 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=2393 detector=2339 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1801 reason=1 flags=40 box=0,0,0,0
+[PERF M] capture_loop_fps=29.99 raw_changed_fps=29.99 inference_fps=3.40 fresh_result_fps=3.40 publish_fps=29.99 dma_ms=14.85 color_ms=1.15 infer_ms=273.22 overlay_ms=7.45 analysis_ms=11.12 shm_ms=0.77 render_ms=6.32 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=2410 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=2410 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=2455 detector=2416 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1299 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=2470 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=2470 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=2517 detector=2416 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=3365 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=2539 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[PERF M] capture_loop_fps=30.02 raw_changed_fps=30.02 inference_fps=3.38 fresh_result_fps=3.38 publish_fps=30.02 dma_ms=14.77 color_ms=1.16 infer_ms=273.61 overlay_ms=7.48 analysis_ms=11.26 shm_ms=0.75 render_ms=6.83 pending_replaced=34 stale_results=0 worker_failed=0 dma_rows=1
+[CURVE_EGO] source=2539 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC PERF] locator_hz=0.28 npu_hz=0.83 calls=2 mean_ms=41.79 max_ms=42.65 skip_curve=0 skip_budget=23 boxes=0 budget_backoff=0
+[TRAFFIC] source=2578 detector=2556 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=732 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=2599 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=2599 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=2640 detector=2633 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=233 reason=1 flags=8 box=0,0,0,0
+[LINE_STYLE] source=2659 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=2659 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[PERF M] capture_loop_fps=29.99 raw_changed_fps=29.99 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=29.99 dma_ms=14.80 color_ms=1.14 infer_ms=272.90 overlay_ms=7.48 analysis_ms=11.10 shm_ms=0.76 render_ms=6.40 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[TRAFFIC] source=2704 detector=2633 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2368 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.38 npu_hz=1.15 calls=2 mean_ms=42.97 max_ms=44.84 skip_curve=0 skip_budget=16 boxes=0 budget_backoff=0
+[LINE_STYLE] source=2722 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=2722 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=2767 detector=2711 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1867 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=2791 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=2791 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=2830 detector=2788 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1401 reason=1 flags=40 box=0,0,0,0
+[PERF M] capture_loop_fps=30.01 raw_changed_fps=30.01 inference_fps=3.38 fresh_result_fps=3.38 publish_fps=30.01 dma_ms=14.77 color_ms=1.15 infer_ms=272.88 overlay_ms=7.47 analysis_ms=11.25 shm_ms=0.75 render_ms=6.52 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=2860 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=2860 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC PERF] locator_hz=0.36 npu_hz=1.09 calls=2 mean_ms=42.13 max_ms=42.28 skip_curve=0 skip_budget=17 boxes=0 budget_backoff=0
+[TRAFFIC] source=2891 detector=2876 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=499 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=2920 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=2920 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=2952 detector=2876 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2533 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=2989 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=2989 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[PERF M] capture_loop_fps=29.99 raw_changed_fps=29.99 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=29.99 dma_ms=14.74 color_ms=1.13 infer_ms=272.35 overlay_ms=7.46 analysis_ms=11.52 shm_ms=0.76 render_ms=6.88 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[TRAFFIC] source=3015 detector=2876 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=4634 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.17 npu_hz=0.52 calls=1 mean_ms=42.34 max_ms=42.34 skip_curve=0 skip_budget=19 boxes=0 budget_backoff=0
+[LINE_STYLE] source=3049 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=3049 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=3078 detector=3048 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=998 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=3118 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=3118 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=3139 detector=3124 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=500 reason=1 flags=40 box=0,0,0,0
+[PERF M] capture_loop_fps=29.99 raw_changed_fps=29.99 inference_fps=3.40 fresh_result_fps=3.40 publish_fps=29.99 dma_ms=14.74 color_ms=1.16 infer_ms=272.84 overlay_ms=7.50 analysis_ms=11.25 shm_ms=0.75 render_ms=6.57 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=3178 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=3178 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=3202 detector=3124 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2601 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.39 npu_hz=1.16 calls=2 mean_ms=40.94 max_ms=40.97 skip_curve=0 skip_budget=16 boxes=0 budget_backoff=0
+[LINE_STYLE] source=3238 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=3238 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=3265 detector=3202 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2098 reason=1 flags=40 box=0,0,0,0
+[PERF M] capture_loop_fps=30.02 raw_changed_fps=30.02 inference_fps=3.38 fresh_result_fps=3.38 publish_fps=30.02 dma_ms=14.78 color_ms=1.16 infer_ms=272.75 overlay_ms=7.41 analysis_ms=11.27 shm_ms=0.75 render_ms=6.82 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=3301 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=3301 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=3326 detector=3280 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1534 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.38 npu_hz=1.15 calls=2 mean_ms=41.48 max_ms=41.70 skip_curve=0 skip_budget=16 boxes=0 budget_backoff=0
+[LINE_STYLE] source=3361 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=3361 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=3386 detector=3357 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=967 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=3430 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=3430 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=3447 detector=3357 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=3000 reason=1 flags=40 box=0,0,0,0
+[PERF M] capture_loop_fps=29.99 raw_changed_fps=29.99 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=29.99 dma_ms=14.74 color_ms=1.14 infer_ms=273.01 overlay_ms=7.45 analysis_ms=11.37 shm_ms=0.75 render_ms=6.97 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=3490 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=3490 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=3507 detector=3447 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2000 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.38 npu_hz=1.15 calls=2 mean_ms=40.91 max_ms=41.20 skip_curve=0 skip_budget=16 boxes=0 budget_backoff=0
+[LINE_STYLE] source=3550 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.004 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=3550 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=3571 detector=3514 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1899 reason=1 flags=40 box=0,0,0,0
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.40 fresh_result_fps=3.40 publish_fps=30.00 dma_ms=14.71 color_ms=1.16 infer_ms=272.50 overlay_ms=7.53 analysis_ms=10.81 shm_ms=0.73 render_ms=6.81 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=3610 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=3610 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=3632 detector=3583 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1632 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=3679 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=3679 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=3692 detector=3583 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=3632 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.30 npu_hz=0.91 calls=2 mean_ms=42.32 max_ms=43.47 skip_curve=0 skip_budget=21 boxes=0 budget_backoff=0
+[LINE_STYLE] source=3739 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=3739 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=30.00 dma_ms=14.60 color_ms=1.16 infer_ms=272.39 overlay_ms=7.55 analysis_ms=11.30 shm_ms=0.71 render_ms=7.04 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[TRAFFIC] source=3753 detector=3712 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1367 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=3802 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=3802 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=3814 detector=3792 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=732 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.38 npu_hz=1.15 calls=2 mean_ms=42.10 max_ms=42.13 skip_curve=0 skip_budget=16 boxes=0 budget_backoff=0
+[TRAFFIC] source=3876 detector=3869 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=233 reason=1 flags=8 box=0,0,0,0
+[LINE_STYLE] source=3871 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=3871 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.38 fresh_result_fps=3.38 publish_fps=30.00 dma_ms=14.69 color_ms=1.13 infer_ms=273.31 overlay_ms=7.43 analysis_ms=11.15 shm_ms=0.72 render_ms=7.28 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[TRAFFIC] source=3938 detector=3869 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2298 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=3940 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=3940 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=3998 detector=3948 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1667 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=4000 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=4000 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[PERF M] capture_loop_fps=30.01 raw_changed_fps=30.01 inference_fps=3.38 fresh_result_fps=3.38 publish_fps=30.01 dma_ms=14.65 color_ms=1.18 infer_ms=272.67 overlay_ms=7.49 analysis_ms=11.33 shm_ms=0.71 render_ms=7.44 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[TRAFFIC] source=4061 detector=3948 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=3768 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=4069 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=4069 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC PERF] locator_hz=0.28 npu_hz=0.83 calls=2 mean_ms=42.28 max_ms=42.77 skip_curve=0 skip_budget=23 boxes=0 budget_backoff=0
+[TRAFFIC] source=4122 detector=4084 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1268 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=4129 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=4129 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=4183 detector=4084 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=3300 reason=1 flags=40 box=0,0,0,0
+[PERF M] capture_loop_fps=29.99 raw_changed_fps=29.99 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=29.99 dma_ms=14.64 color_ms=1.19 infer_ms=272.55 overlay_ms=7.57 analysis_ms=10.90 shm_ms=0.71 render_ms=7.37 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=4198 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=4198 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=4243 detector=4084 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=5300 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.17 npu_hz=0.50 calls=1 mean_ms=41.18 max_ms=41.18 skip_curve=0 skip_budget=20 boxes=0 budget_backoff=0
+[LINE_STYLE] source=4267 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=4267 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=4306 detector=4265 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1371 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=4336 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=4336 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[PERF M] capture_loop_fps=30.02 raw_changed_fps=30.02 inference_fps=3.38 fresh_result_fps=3.38 publish_fps=30.02 dma_ms=14.50 color_ms=1.20 infer_ms=272.79 overlay_ms=7.39 analysis_ms=11.43 shm_ms=0.71 render_ms=7.52 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[TRAFFIC] source=4370 detector=4333 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1233 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=4405 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=4405 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC PERF] locator_hz=0.38 npu_hz=1.15 calls=2 mean_ms=42.50 max_ms=43.57 skip_curve=0 skip_budget=16 boxes=0 budget_backoff=0
+[TRAFFIC] source=4432 detector=4422 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=335 reason=1 flags=8 box=0,0,0,0
+[LINE_STYLE] source=4465 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=4465 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=4492 detector=4422 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2337 reason=1 flags=40 box=0,0,0,0
+[PERF M] capture_loop_fps=29.99 raw_changed_fps=29.99 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=29.99 dma_ms=14.55 color_ms=1.23 infer_ms=272.85 overlay_ms=7.41 analysis_ms=10.80 shm_ms=0.72 render_ms=7.62 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=4534 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=4534 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=4556 detector=4541 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=500 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=4594 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=4594 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=4619 detector=4541 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2599 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.29 npu_hz=0.87 calls=2 mean_ms=42.69 max_ms=43.17 skip_curve=0 skip_budget=22 boxes=0 budget_backoff=0
+[PERF M] capture_loop_fps=30.01 raw_changed_fps=30.01 inference_fps=3.38 fresh_result_fps=3.38 publish_fps=30.01 dma_ms=14.53 color_ms=1.20 infer_ms=273.10 overlay_ms=7.39 analysis_ms=11.08 shm_ms=0.69 render_ms=7.72 pending_replaced=34 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=4654 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=4654 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=4679 detector=4629 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1666 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=4717 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=4717 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=4740 detector=4707 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1100 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=4777 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=4777 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=4801 detector=4774 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=901 reason=1 flags=40 box=0,0,0,0
+[PERF M] capture_loop_fps=29.99 raw_changed_fps=29.99 inference_fps=3.60 fresh_result_fps=3.60 publish_fps=29.99 dma_ms=14.44 color_ms=1.23 infer_ms=272.87 overlay_ms=7.49 analysis_ms=11.21 shm_ms=0.72 render_ms=7.86 pending_replaced=32 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=4846 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=4846 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=4862 detector=4774 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2934 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.38 npu_hz=1.15 calls=3 mean_ms=41.72 max_ms=41.96 skip_curve=0 skip_budget=24 boxes=0 budget_backoff=0
+[LINE_STYLE] source=4906 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=4906 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=4924 detector=4862 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=2067 reason=1 flags=40 box=0,0,0,0
+[PERF M] capture_loop_fps=30.00 raw_changed_fps=30.00 inference_fps=3.38 fresh_result_fps=3.38 publish_fps=30.00 dma_ms=14.49 color_ms=1.25 infer_ms=272.99 overlay_ms=7.41 analysis_ms=11.41 shm_ms=0.70 render_ms=7.73 pending_replaced=33 stale_results=0 worker_failed=0 dma_rows=1
+[LINE_STYLE] source=4966 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=4966 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=4988 detector=4941 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=1565 reason=1 flags=40 box=0,0,0,0
+[LINE_STYLE] source=5035 camera=1 left=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 right=UNKNOWN q=0 raw=UNKNOWN reason=NO MASK duty=0 spans=0 mask_range=0.000..0.000 ego_ref=0.0 road=0 objects=0
+[CURVE_EGO] source=5035 raw_type=0 type=0 confidence=0 shift_px=0.00 span_px=0.0 reason=1
+[TRAFFIC] source=5049 detector=4941 state=UNKNOWN raw=UNKNOWN color_q=0 detector_q=0 age_ms=3600 reason=1 flags=40 box=0,0,0,0
+[TRAFFIC PERF] locator_hz=0.29 npu_hz=0.87 calls=2 mean_ms=41.09 max_ms=41.27 skip_curve=0 skip_budget=22 boxes=0 budget_backoff=0

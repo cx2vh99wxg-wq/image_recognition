@@ -1,0 +1,9 @@
+{
+  "schema": "S_CURVE_FINAL_RESTORE_V1",
+  "state": "PRODUCTION_RUNNING",
+  "pid": 3684,
+  "profile": "fine-only empirical response, tolerance 3 degrees",
+  "reference_session": 4033203686,
+  "HMI_and_FPGA_unchanged": true,
+  "binary_sha256": "b79474280918b6e2f0be3a078198e3214352856c1f3019c6028fa40ce39a63cb"
+}

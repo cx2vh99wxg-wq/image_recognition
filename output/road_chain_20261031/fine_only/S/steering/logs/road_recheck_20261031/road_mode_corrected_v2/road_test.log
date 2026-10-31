@@ -1,0 +1,649 @@
+=== 车辆控制程序 (弯道检测自动转向) ===
+版本: 8.2 (SMDT原生三字节FSPI + 按轴转向 + 制动心跳隔离)
+作者: 科研轮转
+功能: 弯道检测自动左右转 + 人员检测紧急制动 + 显示控制
+工作模式说明:
+- 实时读取: 从FSPI寄存器0读取实际模式值
+- 显示控制: 六个物理视角22/33/44/66/77/88，99六路全景；11/55兼容归并到中间视角
+- 左右转向: 完全由弯道检测自动控制
+- 原始制动请求: 有人或检测不可用写4=0，连续两秒无人写1仅清除请求
+- STOP锁存: FPGA保持低电平直到人工REARM；允许有人时强制解除当前报警
+- 制动开关: HMI功能0F的FF开启/EE关闭，默认关闭和最终门控由FPGA负责；S不依赖开关读回
+- 弯道检测: 自动读取UDP传来的弯道信息，智能控制车辆转向
+  * 智能转向: 左弯→左转，右弯→右转，直道→回中
+- 检测间隔: 每100ms检测一次模式变化
+- 实时响应: 检测到指令时立即执行对应操作
+
+=== FSPI模块初始化 ===
+FSPI Configuration:
+  Device: /dev/spidev4.0
+  Speed: 24000000 Hz (24000 KHz)
+FSPI initialized successfully
+  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes
+FSPI初始化成功！
+初始化控制寄存器: 制动4写1，方向0-3写1
+✓ 寄存器0初始化成功
+✓ 寄存器1初始化成功
+✓ 寄存器2初始化成功
+✓ 寄存器3初始化成功
+
+=== 显示控制共享内存初始化 ===
+正在初始化显示控制共享内存 (key=0x1234567c, size=64 bytes, is_writer=1)
+显示控制共享内存初始化完成，默认模式: 所有摄像头 (0x99)
+显示控制共享内存初始化成功
+
+=== 紧急制动共享内存初始化 ===
+[TRAFFIC_GO] signal=UNKNOWN confirmed=UNKNOWN go_hold=0 reg5_write=OK (not pin readback); green restores stored GO, STOP/BACK remain independent
+[SPEED_GEAR] estimated_gear=1 link=OK errno=0 warning=NONE (no speed sensor; no motion writes)
+正在初始化紧急制动共享内存 (key=0x1234567d, size=60 bytes, is_writer=0)
+角色: 读取者(FSPI-制动控制)
+紧急制动共享内存连接成功 (读取者模式)
+[自动刹停] 已连接行人检测共享内存
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+
+=== 弯道检测共享内存初始化 ===
+正在初始化弯道检测共享内存 (key=0x1234567e, size=72 bytes)
+弯道检测共享内存初始化成功 (id=42, ptr=0x7f911de000)
+弯道检测共享内存初始化成功，FSPI将读取UDP传来的弯道信息
+
+=== 开始实际模式读取 ===
+[STEER_INIT] table=/home/linaro/S/steering/logs/road_recheck_20261031/response_model.table reference_session=4033203686 zero_raw=0.059 max_pulse_us=200000 priority=10 target_tolerance=3.0 center_tolerance=3.0; awaiting fresh matching session
+[STEER_MODE] closed-loop requested result=OK; legacy turn pulses disabled
+将持续监控FSPI寄存器0的模式值变化...
+按 Ctrl+C 退出程序
+
+=== 开始监控FSPI寄存器0 ===
+按钮逻辑: 按下时产生指令值，松开时回到0x00
+支持的指令值:
+  显示控制: 22/33/44/66/77/88(六个物理视角), 99(六路全景)
+  左右转向: 完全由弯道检测自动控制
+  制动功能控制: S持续发布原始请求；HMI AUTO开关和实际STOP锁存由FPGA决定
+  紧急制动: 有人或检测失效写0，连续两秒无人写1；STOP锁存仅由人工REARM解除
+  弯道检测: 自动读取UDP传来的弯道信息并控制车辆转向 [置信度≥60%时执行]
+  检测通道: 已连接PCIe人员检测；FPGA实际AUTO/STOP状态不作软件推断
+  人员检测停车功能: 开关状态以HMI/FPGA为准，S不伪造开启或关闭状态
+  弯道检测功能: 已启用，自动控制车辆转向
+
+[Road Detection] Initialized successfully
+[SHM Read] Frame26338: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:nan | Feedback:0
+[转向链路] HMI选择码=0x00；自动转向写reg2/3，最终引脚由FPGA手动优先及STOP仲裁
+[STEER_REFERENCE] explicitly confirmed current session; physical zero offset bound
+[STEER_STATE] state=3 name=CANCELLED angle=-1.136 target=nan error=nan result=OK
+[STEER_HEARTBEAT] seq=1 status=3 angle=-1.136 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26338: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-1.136 | Feedback:1
+[SHM Read] Frame26338: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-1.136 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame26347: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-1.136 | Feedback:1
+[STEER_LANE] frame=26347 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=-1.136 target_deg=-6.250 guard_deg=6.262 expected_error_deg=1.929 reposition=0
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30089.792 early_release=0
+[STEER_STATE] state=5 name=SETTLING angle=-1.136 target=-6.250 error=-5.114 result=OK
+[SHM Read] Frame26347: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-2.415 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26347 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-3.153 target=-6.250 error=nan result=OK
+[SHM Read] Frame26347: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.873 | Feedback:1
+[SHM Read] Frame26356: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-7.684 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[STEER_LANE] frame=26356 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-7.720 target=-6.250 error=1.470 result=OK
+[SHM Read] Frame26356: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.752 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26356 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-7.749 target=-6.250 error=nan result=OK
+[SHM Read] Frame26356: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.760 | Feedback:1
+[SHM Read] Frame26365: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:-7.775 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[STEER_LANE] frame=26365 type=0 confidence=90 road_angle=0 target_deg=0.000 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-7.770 target=0.000 error=7.770 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=200000 current_deg=-7.757 target_deg=0.000 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=200000 actual_us=98954.042 early_release=1
+[STEER_HEARTBEAT] seq=2 status=5 angle=-5.537 target=0.000 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26365: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-5.537 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26365 valid=1 type=0 confidence=0 road_angle=0
+[STEER_STATE] state=3 name=CANCELLED angle=-5.537 target=0.000 error=nan result=OK
+[SHM Read] Frame26374: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:8.691 | Feedback:1
+[STEER_LANE] frame=26374 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=8.691 target=-6.250 error=-14.941 result=OK
+[SHM Read] Frame26374: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:10.517 | Feedback:1
+[SHM Read] Frame26374: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:10.547 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26374 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=10.547 target=-6.250 error=nan result=OK
+[SHM Read] Frame26374: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:10.559 | Feedback:1
+[SHM Read] Frame26380: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:10.556 | Feedback:1
+[SHM Read] Frame26380: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:10.539 | Feedback:1
+[SHM Read] Frame26389: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:10.539 | Feedback:1
+[STEER_LANE] frame=26389 type=0 confidence=90 road_angle=0 target_deg=0.000 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=200000 current_deg=10.539 target_deg=0.000 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=200000 actual_us=120661.042 early_release=1
+[STEER_STATE] state=5 name=SETTLING angle=8.019 target=0.000 error=-8.019 result=OK
+[SHM Read] Frame26389: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:8.019 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26389 valid=1 type=0 confidence=0 road_angle=0
+[STEER_STATE] state=3 name=CANCELLED angle=8.019 target=0.000 error=nan result=OK
+[SHM Read] Frame26389: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.955 | Feedback:1
+[STEER_HEARTBEAT] seq=3 status=3 angle=-14.266 target=0.000 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26398: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-14.399 | Feedback:1
+[STEER_LANE] frame=26398 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-14.343 target=-6.250 error=8.093 result=OK
+[SHM Read] Frame26398: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-14.189 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26398 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-14.195 target=-6.250 error=nan result=OK
+[SHM Read] Frame26398: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-14.187 | Feedback:1
+[SHM Read] Frame26407: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:-14.197 | Feedback:1
+[STEER_LANE] frame=26407 type=0 confidence=90 road_angle=0 target_deg=0.000 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-14.195 target=0.000 error=14.195 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=200000 current_deg=-14.186 target_deg=0.000 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=200000 actual_us=158024.416 early_release=1
+[SHM Read] Frame26407: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-5.625 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26407 valid=1 type=0 confidence=0 road_angle=0
+[STEER_STATE] state=3 name=CANCELLED angle=-5.625 target=0.000 error=nan result=OK
+[SHM Read] Frame26416: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:10.142 | Feedback:1
+[STEER_LANE] frame=26416 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=10.142 target=-6.250 error=-16.392 result=OK
+[SHM Read] Frame26416: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:12.477 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26416 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=12.420 target=-6.250 error=nan result=OK
+[SHM Read] Frame26425: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:12.379 | Feedback:1
+[STEER_LANE] frame=26425 type=0 confidence=90 road_angle=0 target_deg=0.000 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=12.369 target=0.000 error=-12.369 result=OK
+[SHM Read] Frame26425: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:12.391 | Feedback:1
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[STEER_HEARTBEAT] seq=4 status=5 angle=12.374 target=0.000 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26425: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:12.368 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26425 valid=1 type=0 confidence=0 road_angle=0
+[STEER_STATE] state=3 name=CANCELLED angle=12.368 target=0.000 error=nan result=OK
+[SHM Read] Frame26425: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:12.379 | Feedback:1
+[SHM Read] Frame26434: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:12.370 | Feedback:1
+[STEER_LANE] frame=26434 type=0 confidence=90 road_angle=0 target_deg=0.000 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=200000 current_deg=12.370 target_deg=0.000 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=200000 actual_us=140872.667 early_release=1
+[STEER_STATE] state=5 name=SETTLING angle=8.386 target=0.000 error=-8.386 result=OK
+[SHM Read] Frame26434: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:8.386 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26434 valid=1 type=0 confidence=0 road_angle=0
+[STEER_STATE] state=3 name=CANCELLED angle=8.386 target=0.000 error=nan result=OK
+[SHM Read] Frame26443: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:-8.483 | Feedback:1
+[STEER_LANE] frame=26443 type=0 confidence=90 road_angle=0 target_deg=0.000 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-8.483 target=0.000 error=8.483 result=OK
+[SHM Read] Frame26443: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-13.156 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26443 valid=1 type=0 confidence=0 road_angle=0
+[STEER_STATE] state=3 name=CANCELLED angle=-13.156 target=0.000 error=nan result=OK
+[SHM Read] Frame26443: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-13.079 | Feedback:1
+[SHM Read] Frame26452: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-13.089 | Feedback:1
+[STEER_LANE] frame=26452 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-13.093 target=-6.250 error=6.843 result=OK
+[SHM Read] Frame26452: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-13.084 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26452 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-13.084 target=-6.250 error=nan result=OK
+[SHM Read] Frame26452: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-13.097 | Feedback:1
+[STEER_HEARTBEAT] seq=5 status=3 angle=-13.097 target=-6.250 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26461: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-13.090 | Feedback:1
+[STEER_LANE] frame=26461 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=200000 current_deg=-13.087 target_deg=6.250 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=200000 actual_us=185861.958 early_release=1
+[STEER_STATE] state=5 name=SETTLING angle=0.672 target=6.250 error=5.578 result=OK
+[SHM Read] Frame26461: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:0.672 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26461 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=0.672 target=6.250 error=nan result=OK
+[SHM Read] Frame26470: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:13.888 | Feedback:1
+[STEER_LANE] frame=26470 type=0 confidence=90 road_angle=0 target_deg=0.000 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=14.345 target=0.000 error=-14.345 result=OK
+[SHM Read] Frame26470: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:14.339 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26470 valid=1 type=0 confidence=0 road_angle=0
+[STEER_STATE] state=3 name=CANCELLED angle=14.336 target=0.000 error=nan result=OK
+[SHM Read] Frame26470: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:14.343 | Feedback:1
+[SHM Read] Frame26479: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:14.379 | Feedback:1
+[STEER_LANE] frame=26479 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=14.366 target=6.250 error=-8.116 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=200000 current_deg=14.362 target_deg=6.250 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=200000 actual_us=100452.042 early_release=1
+[SHM Read] Frame26479: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:13.495 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26479 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=13.495 target=6.250 error=nan result=OK
+[SHM Read] Frame26488: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-1.228 | Feedback:1
+[STEER_LANE] frame=26488 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-1.228 target=6.250 error=7.478 result=OK
+[STEER_HEARTBEAT] seq=6 status=5 angle=-4.378 target=6.250 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26488: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-6.569 | Feedback:1
+[SHM Read] Frame26488: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-6.431 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26488 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-6.431 target=6.250 error=nan result=OK
+[SHM Read] Frame26497: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-6.424 | Feedback:1
+[STEER_LANE] frame=26497 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-6.424 target=6.250 error=12.674 result=OK
+[SHM Read] Frame26497: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-6.419 | Feedback:1
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=200000 current_deg=-6.413 target_deg=6.250 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=200000 actual_us=138751.375 early_release=1
+[SHM Read] Frame26506: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:0.359 | Feedback:1
+[SHM Read] Frame26506: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:14.886 | Feedback:1
+[SHM Read] Frame26506: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:15.996 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26506 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=16.002 target=6.250 error=nan result=OK
+[SHM Read] Frame26512: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:15.961 | Feedback:1
+[STEER_LANE] frame=26512 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=15.961 target=6.250 error=-9.711 result=OK
+[SHM Read] Frame26512: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:15.983 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26512 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=15.983 target=6.250 error=nan result=OK
+[STEER_HEARTBEAT] seq=7 status=3 angle=15.979 target=6.250 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26512: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:15.976 | Feedback:1
+[SHM Read] Frame26521: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:15.982 | Feedback:1
+[STEER_LANE] frame=26521 type=0 confidence=90 road_angle=0 target_deg=0.000 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=200000 current_deg=15.982 target_deg=0.000 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=200000 actual_us=153591.083 early_release=1
+[STEER_STATE] state=5 name=SETTLING angle=8.173 target=0.000 error=-8.173 result=OK
+[SHM Read] Frame26521: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:8.173 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26521 valid=1 type=0 confidence=0 road_angle=0
+[STEER_STATE] state=3 name=CANCELLED angle=8.173 target=0.000 error=nan result=OK
+[SHM Read] Frame26530: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-9.251 | Feedback:1
+[STEER_LANE] frame=26530 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-10.536 target=6.250 error=16.786 result=OK
+[SHM Read] Frame26530: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-14.669 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26530 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-14.571 target=6.250 error=nan result=OK
+[SHM Read] Frame26530: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-14.246 | Feedback:1
+[SHM Read] Frame26539: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-14.277 | Feedback:1
+[STEER_LANE] frame=26539 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-14.277 target=6.250 error=20.527 result=OK
+[SHM Read] Frame26539: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-14.266 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26539 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-14.266 target=6.250 error=nan result=OK
+[SHM Read] Frame26539: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-14.271 | Feedback:1
+[STEER_HEARTBEAT] seq=8 status=3 angle=-14.277 target=6.250 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26548: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-14.272 | Feedback:1
+[STEER_LANE] frame=26548 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=200000 current_deg=-14.271 target_deg=6.250 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=200000 actual_us=189819.875 early_release=1
+[STEER_STATE] state=5 name=SETTLING angle=0.369 target=6.250 error=5.881 result=OK
+[SHM Read] Frame26548: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:0.369 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26548 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=0.369 target=6.250 error=nan result=OK
+[SHM Read] Frame26557: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:14.905 | Feedback:1
+[STEER_LANE] frame=26557 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=14.905 target=6.250 error=-8.655 result=OK
+[SHM Read] Frame26557: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:15.516 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26557 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=15.516 target=6.250 error=nan result=OK
+[SHM Read] Frame26557: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:15.531 | Feedback:1
+[SHM Read] Frame26566: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:15.553 | Feedback:1
+[STEER_LANE] frame=26566 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=15.553 target=6.250 error=-9.303 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=200000 current_deg=15.540 target_deg=6.250 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=200000 actual_us=111924.750 early_release=1
+[SHM Read] Frame26575: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:14.522 | Feedback:1
+[SHM Read] Frame26575: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:0.240 | Feedback:1
+[STEER_HEARTBEAT] seq=9 status=5 angle=-5.100 target=6.250 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26575: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-5.372 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26575 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-5.377 target=6.250 error=nan result=OK
+[SHM Read] Frame26581: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-5.205 | Feedback:1
+[STEER_LANE] frame=26581 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-5.205 target=6.250 error=11.455 result=OK
+[SHM Read] Frame26581: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-5.205 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26581 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-5.205 target=6.250 error=nan result=OK
+[SHM Read] Frame26581: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-5.198 | Feedback:1
+[SHM Read] Frame26590: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-5.214 | Feedback:1
+[STEER_LANE] frame=26590 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=200000 current_deg=-5.214 target_deg=6.250 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=200000 actual_us=145154.917 early_release=1
+[STEER_STATE] state=5 name=SETTLING angle=1.083 target=6.250 error=5.167 result=OK
+[SHM Read] Frame26590: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:1.083 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26590 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=1.083 target=6.250 error=nan result=OK
+[SHM Read] Frame26599: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:15.660 | Feedback:1
+[STEER_LANE] frame=26599 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=16.324 target=6.250 error=-10.074 result=OK
+[SHM Read] Frame26599: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:16.460 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26599 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=16.460 target=6.250 error=nan result=OK
+[SHM Read] Frame26599: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:16.415 | Feedback:1
+[SHM Read] Frame26608: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:16.451 | Feedback:1
+[STEER_LANE] frame=26608 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=16.451 target=6.250 error=-10.201 result=OK
+[STEER_HEARTBEAT] seq=10 status=5 angle=16.446 target=6.250 feedback=1 no_motion_pulse=1
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=200000 current_deg=16.445 target_deg=6.250 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=200000 actual_us=117057.208 early_release=1
+[SHM Read] Frame26608: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:14.731 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26608 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=14.731 target=6.250 error=nan result=OK
+[SHM Read] Frame26617: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:0.387 | Feedback:1
+[STEER_LANE] frame=26617 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-1.192 target=6.250 error=7.442 result=OK
+[SHM Read] Frame26617: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-8.635 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26617 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-8.741 target=6.250 error=nan result=OK
+[SHM Read] Frame26617: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-8.821 | Feedback:1
+[SHM Read] Frame26626: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-8.824 | Feedback:1
+[STEER_LANE] frame=26626 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-8.829 target=6.250 error=15.079 result=OK
+[SHM Read] Frame26626: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-8.833 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26626 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-8.833 target=6.250 error=nan result=OK
+[SHM Read] Frame26626: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-8.839 | Feedback:1
+[SHM Read] Frame26635: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-8.846 | Feedback:1
+[STEER_LANE] frame=26635 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=200000 current_deg=-8.846 target_deg=6.250 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=200000 actual_us=163921.042 early_release=1
+[STEER_STATE] state=5 name=SETTLING angle=1.753 target=6.250 error=4.497 result=OK
+[STEER_HEARTBEAT] seq=11 status=5 angle=1.753 target=6.250 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26635: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:1.753 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26635 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=3.253 target=6.250 error=nan result=OK
+[SHM Read] Frame26644: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:16.403 | Feedback:1
+[STEER_LANE] frame=26644 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=17.012 target=6.250 error=-10.762 result=OK
+[SHM Read] Frame26644: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:16.865 | Feedback:1
+[SHM Read] Frame26644: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:16.874 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26644 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=16.874 target=6.250 error=nan result=OK
+[SHM Read] Frame26650: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:16.905 | Feedback:1
+[STEER_LANE] frame=26650 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=16.899 target=6.250 error=-10.649 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=200000 current_deg=16.893 target_deg=6.250 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=200000 actual_us=110463.791 early_release=1
+[SHM Read] Frame26650: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:14.848 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26650 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=14.848 target=6.250 error=nan result=OK
+[SHM Read] Frame26659: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-1.519 | Feedback:1
+[STEER_LANE] frame=26659 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-1.519 target=6.250 error=7.769 result=OK
+[SHM Read] Frame26659: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-9.651 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26659 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-9.696 target=6.250 error=nan result=OK
+[SHM Read] Frame26659: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-9.653 | Feedback:1
+[STEER_HEARTBEAT] seq=12 status=3 angle=-9.658 target=6.250 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26668: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-9.658 | Feedback:1
+[STEER_LANE] frame=26668 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-9.658 target=6.250 error=15.908 result=OK
+[SHM Read] Frame26668: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-9.659 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26668 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-9.656 target=6.250 error=nan result=OK
+[SHM Read] Frame26668: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-9.667 | Feedback:1
+[SHM Read] Frame26677: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-9.667 | Feedback:1
+[STEER_LANE] frame=26677 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=200000 current_deg=-9.665 target_deg=6.250 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=200000 actual_us=159225.208 early_release=1
+[STEER_STATE] state=5 name=SETTLING angle=0.339 target=6.250 error=5.911 result=OK
+[SHM Read] Frame26677: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:0.339 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26677 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=0.339 target=6.250 error=nan result=OK
+[SHM Read] Frame26686: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:14.311 | Feedback:1
+[STEER_LANE] frame=26686 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=15.706 target=6.250 error=-9.456 result=OK
+[SHM Read] Frame26686: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:15.884 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26686 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=15.884 target=6.250 error=nan result=OK
+[SHM Read] Frame26686: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:15.879 | Feedback:1
+[SHM Read] Frame26695: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:15.915 | Feedback:1
+[STEER_LANE] frame=26695 type=0 confidence=90 road_angle=0 target_deg=0.000 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=15.913 target=0.000 error=-15.913 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=200000 current_deg=15.896 target_deg=0.000 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=200000 actual_us=148281.583 early_release=1
+[STEER_HEARTBEAT] seq=13 status=5 angle=8.236 target=0.000 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26704: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:8.236 | Feedback:1
+[SHM Read] Frame26704: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:-9.896 | Feedback:1
+[SHM Read] Frame26704: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-15.532 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26704 valid=1 type=0 confidence=0 road_angle=0
+[STEER_STATE] state=3 name=CANCELLED angle=-15.532 target=0.000 error=nan result=OK
+[SHM Read] Frame26713: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-15.076 | Feedback:1
+[STEER_LANE] frame=26713 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-15.076 target=-6.250 error=8.826 result=OK
+[SHM Read] Frame26713: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-15.066 | Feedback:1
+[SHM Read] Frame26713: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-15.065 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26713 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-15.068 target=-6.250 error=nan result=OK
+[SHM Read] Frame26719: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-15.071 | Feedback:1
+[STEER_LANE] frame=26719 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=200000 current_deg=-15.071 target_deg=6.250 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=200000 actual_us=192430.000 early_release=1
+[STEER_STATE] state=5 name=SETTLING angle=1.572 target=6.250 error=4.678 result=OK
+[SHM Read] Frame26719: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:1.572 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26719 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=1.572 target=6.250 error=nan result=OK
+[SHM Read] Frame26728: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:15.922 | Feedback:1
+[STEER_LANE] frame=26728 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=16.428 target=-6.250 error=-22.678 result=OK
+[STEER_HEARTBEAT] seq=14 status=5 angle=16.360 target=-6.250 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26728: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:16.355 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26728 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=16.355 target=-6.250 error=nan result=OK
+[SHM Read] Frame26728: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:16.384 | Feedback:1
+[SHM Read] Frame26737: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:16.400 | Feedback:1
+[STEER_LANE] frame=26737 type=0 confidence=90 road_angle=0 target_deg=0.000 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=16.400 target=0.000 error=-16.400 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=200000 current_deg=16.403 target_deg=0.000 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=200000 actual_us=149023.875 early_release=1
+[SHM Read] Frame26746: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:8.159 | Feedback:1
+[STEER_LANE] frame=26746 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[SHM Read] Frame26746: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-9.576 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26746 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-9.576 target=-6.250 error=nan result=OK
+[SHM Read] Frame26746: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-15.259 | Feedback:1
+[SHM Read] Frame26755: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-14.746 | Feedback:1
+[STEER_LANE] frame=26755 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-14.752 target=6.250 error=21.002 result=OK
+[SHM Read] Frame26755: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:-14.760 | Feedback:1
+[SHM Read] Frame26755: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:-14.731 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26755 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-14.731 target=6.250 error=nan result=OK
+[STEER_HEARTBEAT] seq=15 status=3 angle=-14.752 target=6.250 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26764: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:-14.741 | Feedback:1
+[STEER_LANE] frame=26764 type=0 confidence=90 road_angle=0 target_deg=0.000 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=200000 current_deg=-14.743 target_deg=0.000 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=200000 actual_us=150323.250 early_release=1
+[STEER_STATE] state=5 name=SETTLING angle=-5.366 target=0.000 error=5.366 result=OK
+[SHM Read] Frame26764: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-5.366 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26764 valid=1 type=0 confidence=0 road_angle=0
+[STEER_STATE] state=3 name=CANCELLED angle=-5.366 target=0.000 error=nan result=OK
+[SHM Read] Frame26764: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:10.846 | Feedback:1
+[SHM Read] Frame26773: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:13.484 | Feedback:1
+[STEER_LANE] frame=26773 type=0 confidence=90 road_angle=0 target_deg=0.000 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=13.484 target=0.000 error=-13.484 result=OK
+[SHM Read] Frame26773: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:13.499 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26773 valid=1 type=0 confidence=0 road_angle=0
+[STEER_STATE] state=3 name=CANCELLED angle=13.499 target=0.000 error=nan result=OK
+[SHM Read] Frame26773: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:13.507 | Feedback:1
+[SHM Read] Frame26782: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:13.487 | Feedback:1
+[STEER_LANE] frame=26782 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=200000 current_deg=13.490 target_deg=6.250 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=200000 actual_us=98838.250 early_release=1
+[STEER_STATE] state=5 name=SETTLING angle=12.519 target=6.250 error=-6.269 result=OK
+[SHM Read] Frame26782: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:12.519 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26782 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=12.519 target=6.250 error=nan result=OK
+[SHM Read] Frame26791: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-0.529 | Feedback:1
+[STEER_LANE] frame=26791 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-1.873 target=-6.250 error=-4.377 result=OK
+[STEER_HEARTBEAT] seq=16 status=5 angle=-7.219 target=-6.250 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26791: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-7.333 | Feedback:1
+[SHM Read] Frame26791: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.055 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26791 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-7.055 target=-6.250 error=nan result=OK
+[SHM Read] Frame26797: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-7.054 | Feedback:1
+[STEER_LANE] frame=26797 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=-7.054 target=-6.250 error=0.804 result=OK
+[SHM Read] Frame26797: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.054 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26797 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-7.054 target=-6.250 error=nan result=OK
+[SHM Read] Frame26797: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.053 | Feedback:1
+[SHM Read] Frame26806: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-7.052 | Feedback:1
+[STEER_LANE] frame=26806 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=-7.052 target=-6.250 error=0.802 result=OK
+[SHM Read] Frame26806: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.054 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26806 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-7.054 target=-6.250 error=nan result=OK
+[SHM Read] Frame26806: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.050 | Feedback:1
+[SHM Read] Frame26815: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-7.053 | Feedback:1
+[STEER_LANE] frame=26815 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=-7.054 target=-6.250 error=0.804 result=OK
+[SHM Read] Frame26815: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.056 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26815 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-7.056 target=-6.250 error=nan result=OK
+[STEER_HEARTBEAT] seq=17 status=3 angle=-7.058 target=-6.250 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26815: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.060 | Feedback:1
+[SHM Read] Frame26824: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-7.056 | Feedback:1
+[STEER_LANE] frame=26824 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=-7.054 target=-6.250 error=0.804 result=OK
+[SHM Read] Frame26824: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.057 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26824 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-7.058 target=-6.250 error=nan result=OK
+[SHM Read] Frame26824: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.050 | Feedback:1
+[SHM Read] Frame26833: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-7.054 | Feedback:1
+[STEER_LANE] frame=26833 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=-7.054 target=-6.250 error=0.804 result=OK
+[SHM Read] Frame26833: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.049 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26833 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-7.048 target=-6.250 error=nan result=OK
+[SHM Read] Frame26833: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.052 | Feedback:1
+[SHM Read] Frame26842: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-7.054 | Feedback:1
+[STEER_LANE] frame=26842 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=-7.054 target=-6.250 error=0.804 result=OK
+[SHM Read] Frame26842: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.058 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26842 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-7.059 target=-6.250 error=nan result=OK
+[SHM Read] Frame26842: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.058 | Feedback:1
+[STEER_HEARTBEAT] seq=18 status=3 angle=-7.062 target=-6.250 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26851: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-7.062 | Feedback:1
+[STEER_LANE] frame=26851 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=-7.062 target=-6.250 error=0.812 result=OK
+[SHM Read] Frame26851: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.059 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26851 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-7.060 target=-6.250 error=nan result=OK
+[SHM Read] Frame26860: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-7.061 | Feedback:1
+[STEER_LANE] frame=26860 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=-7.061 target=-6.250 error=0.811 result=OK
+[SHM Read] Frame26860: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-7.063 | Feedback:1
+[SHM Read] Frame26860: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.066 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26860 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-7.066 target=-6.250 error=nan result=OK
+[SHM Read] Frame26866: RIGHT | Conf:90% | RoadAngle:25 | WheelDeg:-7.066 | Feedback:1
+[STEER_LANE] frame=26866 type=2 confidence=90 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=-7.066 target=-6.250 error=0.816 result=OK
+[SHM Read] Frame26866: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.066 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26866 valid=1 type=2 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=-7.066 target=-6.250 error=nan result=OK
+[SHM Read] Frame26866: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-7.066 | Feedback:1
+[SHM Read] Frame26875: STRAIGHT | Conf:90% | RoadAngle:0 | WheelDeg:-7.066 | Feedback:1
+[STEER_LANE] frame=26875 type=0 confidence=90 road_angle=0 target_deg=0.000 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=200000 current_deg=-7.066 target_deg=0.000 guard_deg=18.000 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=200000 actual_us=113379.000 early_release=1
+[STEER_STATE] state=5 name=SETTLING angle=-5.712 target=0.000 error=5.712 result=OK
+[SHM Read] Frame26875: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-5.712 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26875 valid=1 type=0 confidence=0 road_angle=0
+[STEER_STATE] state=3 name=CANCELLED angle=-5.038 target=0.000 error=nan result=OK
+[STEER_HEARTBEAT] seq=19 status=3 angle=-0.233 target=0.000 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26875: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:6.322 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame26884: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:7.772 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[STEER_LANE] frame=26884 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=7.729 target=6.250 error=-1.479 result=OK
+[SHM Read] Frame26884: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.763 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26884 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=7.749 target=6.250 error=nan result=OK
+[SHM Read] Frame26884: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.748 | Feedback:1
+[SHM Read] Frame26893: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:7.754 | Feedback:1
+[STEER_LANE] frame=26893 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=7.755 target=6.250 error=-1.505 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=7.737 target=6.250 error=-1.487 result=OK
+[SHM Read] Frame26893: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.743 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26893 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=7.755 target=6.250 error=nan result=OK
+[SHM Read] Frame26893: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.747 | Feedback:1
+[SHM Read] Frame26902: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:7.743 | Feedback:1
+[STEER_LANE] frame=26902 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=7.748 target=6.250 error=-1.498 result=OK
+[SHM Read] Frame26902: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.751 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26902 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=7.749 target=6.250 error=nan result=OK
+[SHM Read] Frame26911: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:7.751 | Feedback:1
+[STEER_LANE] frame=26911 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=7.752 target=6.250 error=-1.502 result=OK
+[STEER_HEARTBEAT] seq=20 status=2 angle=7.754 target=6.250 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26911: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:7.754 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame26911: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.753 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26911 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=7.755 target=6.250 error=nan result=OK
+[SHM Read] Frame26920: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:7.750 | Feedback:1
+[STEER_LANE] frame=26920 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=7.749 target=6.250 error=-1.499 result=OK
+[SHM Read] Frame26920: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:7.751 | Feedback:1
+[SHM Read] Frame26920: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.752 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26920 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=7.749 target=6.250 error=nan result=OK
+[SHM Read] Frame26929: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:7.754 | Feedback:1
+[STEER_LANE] frame=26929 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=7.754 target=6.250 error=-1.504 result=OK
+[SHM Read] Frame26929: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:7.753 | Feedback:1
+[SHM Read] Frame26929: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.759 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26929 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=7.759 target=6.250 error=nan result=OK
+[SHM Read] Frame26938: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:7.757 | Feedback:1
+[STEER_LANE] frame=26938 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=7.757 target=6.250 error=-1.507 result=OK
+[SHM Read] Frame26938: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:7.760 | Feedback:1
+[STEER_HEARTBEAT] seq=21 status=2 angle=7.760 target=6.250 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26938: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.757 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26938 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=7.757 target=6.250 error=nan result=OK
+[SHM Read] Frame26947: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:7.762 | Feedback:1
+[STEER_LANE] frame=26947 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=7.762 target=6.250 error=-1.512 result=OK
+[SHM Read] Frame26947: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:7.759 | Feedback:1
+[SHM Read] Frame26947: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.760 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26947 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=7.760 target=6.250 error=nan result=OK
+[SHM Read] Frame26953: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.760 | Feedback:1
+[SHM Read] Frame26953: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.762 | Feedback:1
+[SHM Read] Frame26953: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.761 | Feedback:1
+[SHM Read] Frame26962: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.761 | Feedback:1
+[SHM Read] Frame26962: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.761 | Feedback:1
+[SHM Read] Frame26962: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.761 | Feedback:1
+[STEER_HEARTBEAT] seq=22 status=3 angle=7.761 target=6.250 feedback=1 no_motion_pulse=1
+[SHM Read] Frame26971: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.761 | Feedback:1
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame26971: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.761 | Feedback:1
+[SHM Read] Frame26980: LEFT | Conf:90% | RoadAngle:25 | WheelDeg:7.761 | Feedback:1
+[STEER_LANE] frame=26980 type=1 confidence=90 road_angle=25 target_deg=6.250 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=7.761 target=6.250 error=-1.511 result=OK
+[SHM Read] Frame26980: LEFT | Conf:0% | RoadAngle:25 | WheelDeg:7.761 | Feedback:1
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=26980 valid=1 type=1 confidence=0 road_angle=25
+[STEER_STATE] state=3 name=CANCELLED angle=7.761 target=6.250 error=nan result=OK
+
+收到SIGTERM信号，正在退出...
+
+=== 程序退出清理 ===
+释放所有方向控制...
+正在停止 前进...
+调试信息: 命令=0, enable=0, 地址=0x0000, 发送值=1
+车辆控制成功: 前进 停止 (地址=0x0000, 值=1)
+正在停止 后退...
+调试信息: 命令=1, enable=0, 地址=0x0001, 发送值=1
+车辆控制成功: 后退 停止 (地址=0x0001, 值=1)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+所有方向控制已释放
+清理弯道检测共享内存...
+弯道检测共享内存已清理
+清理紧急制动共享内存...
+紧急制动共享内存清理完成
+清理显示控制共享内存...
+显示控制共享内存已标记为无效
+显示控制共享内存已删除
+显示控制共享内存清理完成
+清理FSPI资源...
+FSPI resources cleaned up
+所有资源清理完成，程序退出

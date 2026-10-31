@@ -16,6 +16,9 @@ static steering_keepalive_t keepalive;
 static ControlSnapshot snapshot;
 static uint64_t snapshot_ns,lane_ns;
 static uint32_t reference_session,last_frame,blocked_frame;
+static uint64_t reference_notice_ns;
+static uint32_t reference_notice_session;
+static steer_result_t reference_notice_result;
 static float zero_raw,curve_gain=.25f,target_limit=12,last_target,target_tolerance=2,center_tolerance=3;
 static int initialized,confirmed,bench,have_lane,have_frame;
 static int scheduling_changed,memory_locked,previous_policy;
@@ -35,7 +38,13 @@ static steer_result_t permission(void *ctx,steer_direction_t d)
 {
     (void)ctx;uint64_t now=steering_now_ns();
     uint64_t deadline=steering_pulse_deadline_ns();
-    int near_release=deadline&&deadline>=now&&deadline-now<=2000000&&snapshot_ns&&now>=snapshot_ns&&now-snapshot_ns<10000000;
+    /* An RX/status transaction can block several milliseconds in the SPI
+     * driver. Starting one just before release can stretch a 30ms contact
+     * beyond its timing envelope. Reuse the recent snapshot in the final
+     * 6ms; the ordinary 5ms refresh makes its maximum holding time 11ms.
+     * The FPGA still applies STOP/manual arbitration to the physical output.
+     * Feedback freshness and the actuator deadline are checked every tick. */
+    int near_release=deadline&&deadline>=now&&deadline-now<=6000000&&snapshot_ns&&now>=snapshot_ns&&now-snapshot_ns<12000000;
     if(!near_release&&(!snapshot_ns||now<snapshot_ns||now-snapshot_ns>=5000000)){
         if(fspi_read_control_snapshot(&snapshot))return STEER_ERR_IO;
         snapshot_ns=now;
@@ -101,6 +110,7 @@ steer_result_t steering_runtime_init(int bench_mode)
         scheduling_changed=1;
     }
     steering_keepalive_init(&keepalive,1000);bench=bench_mode;initialized=1;confirmed=have_lane=have_frame=0;snapshot_ns=0;blocked_frame=0;
+    reference_notice_ns=0;reference_notice_session=0;reference_notice_result=STEER_OK;
     printf("[STEER_INIT] table=%s reference_session=%u zero_raw=%.3f max_pulse_us=%u priority=%u target_tolerance=%.1f center_tolerance=%.1f; awaiting fresh matching session\n",table,reference_session,zero_raw,model.burst_max_us?model.burst_max_us:60000,priority,target_tolerance,center_tolerance);
     return STEER_OK;
 }
@@ -109,9 +119,20 @@ void steering_runtime_tick(void)
 {
     if(!initialized)return;
     if(!confirmed){
-        steering_feedback_t f;
-        if(steering_feedback_read(&f)==STEER_OK&&f.session_id==reference_session){
-            if(steering_confirm_reference(reference_session,zero_raw)==STEER_OK){confirmed=1;puts("[STEER_REFERENCE] explicitly confirmed current session; physical zero offset bound");}
+        steering_feedback_t f={0};
+        steer_result_t rc=steering_feedback_read(&f);
+        if(rc==STEER_OK&&f.session_id==reference_session){
+            rc=steering_confirm_reference(reference_session,zero_raw);
+            if(rc==STEER_OK){confirmed=1;puts("[STEER_REFERENCE] explicitly confirmed current session; physical zero offset bound");return;}
+        }
+        uint64_t now=steering_now_ns();
+        if(!reference_notice_ns||now-reference_notice_ns>=5000000000ULL||
+           f.session_id!=reference_notice_session||rc!=reference_notice_result){
+            const char *reason=rc!=STEER_OK?"feedback_not_ready":
+                f.session_id!=reference_session?"imu_session_changed":"reference_not_ready";
+            printf("[STEER_WAIT_REFERENCE] reason=%s expected_session=%u received_session=%u feedback=%s automatic_steering=blocked physical_center_confirmation_required=1\n",
+                reason,reference_session,f.session_id,steer_result_name(rc));
+            reference_notice_ns=now;reference_notice_session=f.session_id;reference_notice_result=rc;
         }
         return;
     }
@@ -133,7 +154,13 @@ void steering_runtime_tick(void)
 void steering_runtime_lane(int valid,uint32_t frame,unsigned type,unsigned confidence,unsigned road_angle)
 {
     if(!initialized||!confirmed)return;
-    if(!valid||confidence<60||type>2||road_angle>90){if(have_lane)steering_runtime_cancel();return;}
+    if(!valid||confidence<60||type>2||road_angle>90){
+        if(have_lane){
+            steering_runtime_cancel();
+            printf("[STEER_CANCEL] reason=lane_invalid_or_expired frame=%u valid=%d type=%u confidence=%u road_angle=%u\n",frame,valid,type,confidence,road_angle);
+        }
+        return;
+    }
     if(have_frame&&frame==last_frame)return;
     have_frame=1;last_frame=frame;lane_ns=steering_now_ns();
     if(frame==blocked_frame)return;

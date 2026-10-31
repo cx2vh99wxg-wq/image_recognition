@@ -20,10 +20,13 @@ static int pulse_is_burst,planned_release_reason;
 static steering_response_model_t choice_model;
 static steer_direction_t previous_direction;
 static uint64_t stable_since,settle_deadline,target_deadline,last_tick_ns,feedback_deadline;
+static uint64_t stability_last_ns;
+static void reset_stability(void);
 
 static steer_result_t fail(steer_result_t rc,steering_status_t status)
 {
     if(actuator.status==ACTUATOR_IDLE&&actuator.direction==STEER_RELEASE&&state.status==status&&state.last_error==rc)return rc;
+    if(actuator.status==ACTUATOR_ACTIVE)reset_stability();
     steer_result_t released=steering_actuator_stop(&actuator);
     state.status=released==STEER_OK?status:STEERING_FAULT;
     state.last_error=released==STEER_OK?rc:released;
@@ -44,10 +47,25 @@ static steer_result_t read_angle(steering_feedback_t *f)
     state.error_deg=have_target?state.target_deg-state.angle_deg:NAN;
     return state.angle_deg<config.min_angle_deg||state.angle_deg>config.max_angle_deg?STEER_ERR_DEVICE:STEER_OK;
 }
-static void settling(uint64_t now)
+static void reset_stability(void)
 {
-    state.status=STEERING_SETTLING;stable_since=0;stable_samples=0;
+    stable_since=0;stable_samples=0;stability_last_ns=0;
     stable_low=1e9f;stable_high=-1e9f;last_sequence=0;
+}
+static void observe_stability(const steering_feedback_t *f,uint64_t now)
+{
+    if(f->sequence==last_sequence)return;
+    if(stability_last_ns&&(now<stability_last_ns||now-stability_last_ns>=(uint64_t)config.feedback_timeout_ms*1000000))reset_stability();
+    last_sequence=f->sequence;
+    if(fabsf(f->rate_mdps/1000.f)>2){reset_stability();return;}
+    stability_last_ns=now;
+    if(!stable_since)stable_since=now;
+    stable_low=fminf(stable_low,state.angle_deg);stable_high=fmaxf(stable_high,state.angle_deg);++stable_samples;
+    if(stable_high-stable_low>.4f){stable_since=now;stable_samples=1;stable_low=stable_high=state.angle_deg;}
+}
+static void settling(uint64_t now,int reset)
+{
+    state.status=STEERING_SETTLING;if(reset)reset_stability();
     settle_deadline=now+UINT64_C(2500000000);
 }
 steer_result_t steering_bind(steering_controller_io_t binding)
@@ -68,7 +86,7 @@ steer_result_t steering_init(const steering_config_t *c)
     if(initialized)(void)steering_actuator_stop(&actuator);
     config=*c;goal_tolerance=c->tolerance_deg;steer_result_t rc=steering_actuator_init(&actuator,io.actuator,c->max_pulse_ms);
     if(rc!=STEER_OK)return rc;
-    initialized=1;reference_valid=have_target=0;last_tick_ns=feedback_deadline=0;reposition_used=0;after_reposition=0;blocked_left_us=blocked_right_us=requested_total_us=0; pulse_is_burst=planned_release_reason=0;
+    initialized=1;reference_valid=have_target=0;last_tick_ns=feedback_deadline=0;reposition_used=0;after_reposition=0;blocked_left_us=blocked_right_us=requested_total_us=0; pulse_is_burst=planned_release_reason=0;reset_stability();
     state=(steering_state_t){NAN,NAN,NAN,STEERING_NOT_READY,STEER_ERR_NOT_READY,0};return STEER_OK;
 }
 steer_result_t steering_confirm_reference(uint32_t session,float raw)
@@ -81,6 +99,7 @@ steer_result_t steering_confirm_reference(uint32_t session,float raw)
        f.source_age_ms>=config.feedback_timeout_ms||!f.sample_time_ns)return STEER_ERR_STALE;
     rc=steering_actuator_stop(&actuator);if(rc!=STEER_OK)return rc;
     reference_session=session;zero_raw=raw;reference_valid=1;have_target=0;after_pulse=0;
+    reset_stability();
     state.status=STEERING_CANCELLED;state.last_error=STEER_OK;return read_angle(&f);
 }
 steer_result_t steering_set_target_deg(float target)
@@ -99,6 +118,7 @@ steer_result_t steering_set_target_with_tolerance_deg(float target,float toleran
     if(have_target&&fabsf(target-state.target_deg)<.001f&&fabsf(goal_tolerance-tolerance)<.001f)return state.last_error;
     steering_feedback_t f;steer_result_t rc=read_angle(&f);
     if(rc!=STEER_OK)return fail(rc,STEERING_FAULT);
+    int interrupted_motion=actuator.status==ACTUATOR_ACTIVE;
     rc=steering_actuator_stop(&actuator);if(rc!=STEER_OK)return fail(rc,STEERING_FAULT);
     uint64_t now=io.actuator.now_ns(io.actuator.context);if(!now)return fail(STEER_ERR_IO,STEERING_FAULT);
     if(last_tick_ns&&now<last_tick_ns)return fail(STEER_ERR_STALE,STEERING_FAULT);
@@ -107,7 +127,10 @@ steer_result_t steering_set_target_with_tolerance_deg(float target,float toleran
     have_target=1;goal_tolerance=tolerance;state.target_deg=target;state.error_deg=target-state.angle_deg;state.last_error=STEER_OK;
     if(!unfinished){pulses=reversals=no_progress=reposition_used=0;blocked_left_us=blocked_right_us=requested_total_us=0;previous_direction=STEER_RELEASE;
         target_deadline=now+(uint64_t)(io.max_pulses+1)*UINT64_C(3000000000);}
-    after_pulse=0;settling(now);return STEER_OK;
+    /* The IMU is sampled continuously, independently of vision arrivals.
+     * A fresh target must not discard an already stable steering history.
+     * A stopped active pulse still needs its entire post-motion settling. */
+    after_pulse=0;settling(now,interrupted_motion);return STEER_OK;
 }
 steer_result_t steering_tick(void)
 {
@@ -118,7 +141,9 @@ steer_result_t steering_tick(void)
     int was_active=actuator.status==ACTUATOR_ACTIVE;
     steer_result_t rc=steering_actuator_tick(&actuator);if(rc!=STEER_OK)return fail(rc,STEERING_FAULT);
     steering_feedback_t f;rc=read_angle(&f);
-    if(rc!=STEER_OK)return fail(rc,reference_valid?STEERING_FAULT:STEERING_NOT_READY);
+    if(rc!=STEER_OK){reset_stability();return fail(rc,reference_valid?STEERING_FAULT:STEERING_NOT_READY);}
+    if(actuator.status==ACTUATOR_ACTIVE||was_active)reset_stability();
+    else observe_stability(&f,now);
     if(!have_target)return STEER_OK;
     if(state.status==STEERING_FAULT||state.status==STEERING_RESOLUTION_LIMIT)return state.last_error;
     rc=io.permission(io.context,actuator.status==ACTUATOR_ACTIVE?actuator.direction:STEER_RELEASE);
@@ -138,22 +163,15 @@ steer_result_t steering_tick(void)
                pulses,previous_direction,actuator.requested_us,actual/1000.,planned_release_reason);
         if((!planned_release_reason&&actual+50000<(uint64_t)actuator.requested_us*1000)||actual>(uint64_t)actuator.requested_us*1000+2000000)
             return fail(STEER_ERR_IO,STEERING_FAULT);
-        after_pulse=1;settling(now);
+        after_pulse=1;settling(now,1);
     }
     if(actuator.status==ACTUATOR_ACTIVE)return STEER_OK;
     if(state.status==STEERING_SETTLED){
         if(fabsf(state.error_deg)<=goal_tolerance)return STEER_OK;
-        target_deadline=now+(uint64_t)(io.max_pulses+1)*UINT64_C(3000000000);settling(now);
+        target_deadline=now+(uint64_t)(io.max_pulses+1)*UINT64_C(3000000000);settling(now,0);
     }
     if(state.status!=STEERING_SETTLING)return STEER_OK;
     if(now>settle_deadline)return fail(STEER_ERR_STALE,STEERING_FAULT);
-    if(f.sequence!=last_sequence){
-        last_sequence=f.sequence;
-        if(fabsf(f.rate_mdps/1000.f)>2){stable_since=0;stable_samples=0;stable_low=1e9f;stable_high=-1e9f;return STEER_OK;}
-        if(!stable_since)stable_since=now;
-        stable_low=fminf(stable_low,state.angle_deg);stable_high=fmaxf(stable_high,state.angle_deg);++stable_samples;
-        if(stable_high-stable_low>.4f){stable_since=now;stable_samples=1;stable_low=stable_high=state.angle_deg;}
-    }
     if(!stable_since||now-stable_since<(uint64_t)io.settle_ms*1000000||stable_samples<3)return STEER_OK;
     if(after_pulse){
         int sign=previous_direction==STEER_LEFT?1:-1;

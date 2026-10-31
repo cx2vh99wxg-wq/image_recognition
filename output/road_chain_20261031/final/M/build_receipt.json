@@ -1,0 +1,9 @@
+{
+  "schema": "M_EGO_CURVE_BUILD_V1",
+  "state": "CANDIDATE_COMPILED_NOT_RUNNING",
+  "binary_sha256": "2e3d1e672e37ffe799ffdceff67c41caac11f3ced9cf8dd4911349fa46d66e23",
+  "feature_requires_explicit_LANE_CURVE_MODE": true,
+  "model_unchanged": true,
+  "line_style_unchanged": true,
+  "HMI_unchanged": true
+}

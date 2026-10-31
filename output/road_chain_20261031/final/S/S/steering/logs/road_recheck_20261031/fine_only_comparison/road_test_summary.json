@@ -1,0 +1,26 @@
+{
+  "state": "TEST_STOPPED_OUTPUTS_RELEASED",
+  "stop_reason": "bounded_test_complete",
+  "seconds": 25.008199136999792,
+  "control_pid": 2821,
+  "returncode": 0,
+  "pulse_count": 0,
+  "angle_min": 1.782,
+  "angle_max": 1.782,
+  "last_angles": [
+    1.782,
+    1.782,
+    1.782,
+    1.782,
+    1.782,
+    1.782,
+    1.782,
+    1.782,
+    1.782,
+    1.782,
+    1.782,
+    1.782
+  ],
+  "actual_road_input": true,
+  "synthetic_lane_input": false
+}

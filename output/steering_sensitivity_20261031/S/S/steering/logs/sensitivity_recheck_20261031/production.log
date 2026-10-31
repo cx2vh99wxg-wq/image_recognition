@@ -1,0 +1,487 @@
+=== 车辆控制程序 (弯道检测自动转向) ===
+版本: 8.2 (SMDT原生三字节FSPI + 按轴转向 + 制动心跳隔离)
+作者: 科研轮转
+功能: 弯道检测自动左右转 + 人员检测紧急制动 + 显示控制
+工作模式说明:
+- 实时读取: 从FSPI寄存器0读取实际模式值
+- 显示控制: 六个物理视角22/33/44/66/77/88，99六路全景；11/55兼容归并到中间视角
+- 左右转向: 完全由弯道检测自动控制
+- 原始制动请求: 有人或检测不可用写4=0，连续两秒无人写1仅清除请求
+- STOP锁存: FPGA保持低电平直到人工REARM；允许有人时强制解除当前报警
+- 制动开关: HMI功能0F的FF开启/EE关闭，默认关闭和最终门控由FPGA负责；S不依赖开关读回
+- 弯道检测: 自动读取UDP传来的弯道信息，智能控制车辆转向
+  * 智能转向: 左弯→左转，右弯→右转，直道→回中
+- 检测间隔: 每100ms检测一次模式变化
+- 实时响应: 检测到指令时立即执行对应操作
+
+=== FSPI模块初始化 ===
+FSPI Configuration:
+  Device: /dev/spidev4.0
+  Speed: 24000000 Hz (24000 KHz)
+FSPI initialized successfully
+  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes
+FSPI初始化成功！
+初始化控制寄存器: 制动4写1，方向0-3写1
+✓ 寄存器0初始化成功
+✓ 寄存器1初始化成功
+✓ 寄存器2初始化成功
+✓ 寄存器3初始化成功
+
+=== 显示控制共享内存初始化 ===
+正在初始化显示控制共享内存 (key=0x1234567c, size=64 bytes, is_writer=1)
+显示控制共享内存初始化完成，默认模式: 所有摄像头 (0x99)
+显示控制共享内存初始化成功
+
+=== 紧急制动共享内存初始化 ===
+[TRAFFIC_GO] signal=UNKNOWN confirmed=UNKNOWN go_hold=0 reg5_write=OK (not pin readback); green restores stored GO, STOP/BACK remain independent
+[SPEED_GEAR] estimated_gear=1 link=OK errno=0 warning=NONE (no speed sensor; no motion writes)
+正在初始化紧急制动共享内存 (key=0x1234567d, size=60 bytes, is_writer=0)
+角色: 读取者(FSPI-制动控制)
+紧急制动共享内存连接成功 (读取者模式)
+[自动刹停] 已连接行人检测共享内存
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+
+=== 弯道检测共享内存初始化 ===
+正在初始化弯道检测共享内存 (key=0x1234567e, size=72 bytes)
+弯道检测共享内存初始化成功 (id=37, ptr=0x7fbd2d9000)
+弯道检测共享内存初始化成功，FSPI将读取UDP传来的弯道信息
+
+=== 开始实际模式读取 ===
+[STEER_INIT] table=/home/linaro/S/steering/logs/road_recheck_20261031/response_model.fine_only.table reference_session=4194177452 zero_raw=0.119 max_pulse_us=60000 priority=10 target_tolerance=3.0 center_tolerance=3.0; awaiting fresh matching session
+[STEER_MODE] closed-loop requested result=OK; legacy turn pulses disabled
+将持续监控FSPI寄存器0的模式值变化...
+按 Ctrl+C 退出程序
+
+=== 开始监控FSPI寄存器0 ===
+按钮逻辑: 按下时产生指令值，松开时回到0x00
+支持的指令值:
+  显示控制: 22/33/44/66/77/88(六个物理视角), 99(六路全景)
+  左右转向: 完全由弯道检测自动控制
+  制动功能控制: S持续发布原始请求；HMI AUTO开关和实际STOP锁存由FPGA决定
+  紧急制动: 有人或检测失效写0，连续两秒无人写1；STOP锁存仅由人工REARM解除
+  弯道检测: 自动读取UDP传来的弯道信息并控制车辆转向 [置信度≥60%时执行]
+  检测通道: 已连接PCIe人员检测；FPGA实际AUTO/STOP状态不作软件推断
+  人员检测停车功能: 开关状态以HMI/FPGA为准，S不伪造开启或关闭状态
+  弯道检测功能: 已启用，自动控制车辆转向
+
+[STEER_REFERENCE] explicitly confirmed current session; physical zero offset bound
+[Road Detection] Initialized successfully
+[SHM Read] Frame41077: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[转向链路] HMI选择码=0x00；自动转向写reg2/3，最终引脚由FPGA手动优先及STOP仲裁
+[STEER_STATE] state=3 name=CANCELLED angle=-0.859 target=nan error=nan result=OK
+[STEER_HEARTBEAT] seq=1 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41077: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41077: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41086: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41086: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41086: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41092: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41092: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41101: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41101: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41101: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=2 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41110: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41110: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41110: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41119: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41119: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41119: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41128: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41128: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41128: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41134: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=3 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41134: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41143: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41143: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41143: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41152: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41152: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41152: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41161: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41161: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41161: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=4 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41170: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41170: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41170: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41179: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41179: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41179: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41188: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41188: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41188: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41194: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=5 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41194: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41203: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41203: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41203: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41212: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41212: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41212: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41221: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41221: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41221: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=6 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41227: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41227: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41227: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41236: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41236: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41245: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41245: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41245: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41254: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41254: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=7 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41254: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41260: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41260: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41260: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41269: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41269: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41269: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41278: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41278: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41278: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=8 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41287: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41287: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41296: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41296: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41296: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41302: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41302: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41302: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41311: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41311: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=9 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41311: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41320: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41320: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41320: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41329: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41329: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41338: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41338: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41338: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41344: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=10 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41344: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41344: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41353: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41353: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41353: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41353: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41362: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41362: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41371: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41371: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=11 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41371: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41377: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41377: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41377: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41386: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41386: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41395: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41395: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41395: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41404: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=12 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41404: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41404: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41410: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41410: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41410: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41419: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41419: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41419: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41428: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41428: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=13 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41437: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41437: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41437: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41443: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41443: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41443: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41452: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41452: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41452: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41461: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=14 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41461: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41461: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41470: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41470: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41470: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41479: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41479: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41479: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41488: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41488: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=15 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41488: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41494: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41494: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41503: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41503: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41503: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41512: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41512: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41512: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41512: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=16 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41521: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41521: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41530: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41530: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41530: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41536: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41536: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41536: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41545: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41545: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=17 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41545: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41554: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41554: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41563: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41563: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41563: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41563: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41572: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41572: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41581: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=18 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41581: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41581: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41587: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41587: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41587: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41596: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41596: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41596: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41605: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41605: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=19 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41605: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41614: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41614: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41614: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41623: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41623: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41632: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41632: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41632: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41632: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=20 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41641: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41641: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41650: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41650: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41650: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41656: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41656: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41656: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41665: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41665: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=21 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41665: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41674: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41674: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41674: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41683: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41683: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41683: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41692: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41692: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41692: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=22 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41701: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41701: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41707: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41707: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41707: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41716: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41716: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41716: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41725: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41725: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=23 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41725: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41731: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41731: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41731: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41740: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41740: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41740: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41749: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41749: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41758: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=24 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41758: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41758: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41767: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41767: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41767: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41776: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41776: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41776: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41785: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41785: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=25 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41785: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41791: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41791: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41791: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41800: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41800: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41800: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41809: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41809: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41809: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=26 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41818: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41818: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41827: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41827: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41827: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41827: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41836: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41836: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41845: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41845: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=27 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41845: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41851: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41851: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41851: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41860: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41860: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41860: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41869: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41869: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41878: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=28 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41878: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41878: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41887: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41887: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41887: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41896: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41896: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41896: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41905: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41905: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=29 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41905: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41914: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41914: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41914: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41920: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41920: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41920: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41929: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41929: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41929: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=30 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41938: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41938: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41947: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41947: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41947: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41953: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41953: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41953: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41962: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41962: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=31 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41962: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41971: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41971: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41971: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41980: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41980: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41989: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41989: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41989: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41989: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=32 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame41998: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41998: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame41998: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42007: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42007: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42016: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42016: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42016: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42022: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42022: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=33 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame42022: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42031: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42031: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42031: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42040: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42040: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42040: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42049: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42049: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42049: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=34 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame42058: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42058: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42058: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42067: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42067: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42067: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42073: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42073: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42073: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42082: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=35 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame42082: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42091: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42091: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42091: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42100: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42100: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42100: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42106: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42106: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42106: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=36 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame42115: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42115: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42115: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42124: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42124: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42133: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42133: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42133: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42142: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42142: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=37 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame42142: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42148: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42148: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42148: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42157: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42157: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42157: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42166: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42166: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42166: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[STEER_HEARTBEAT] seq=38 status=3 angle=-0.859 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame42175: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42175: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42184: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42184: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42184: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42184: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42193: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1
+[SHM Read] Frame42193: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-0.859 | Feedback:1

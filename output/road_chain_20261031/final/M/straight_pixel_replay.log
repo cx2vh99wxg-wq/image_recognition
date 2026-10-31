@@ -1,0 +1,115 @@
+正在初始化YOLOPv2引擎（车道线和可行驶区域检测）...
+模型输入数量: 1, 输出数量: 5
+输出 0: seg
+输出 1: ll
+输出 2: pred0
+输出 3: pred1
+输出 4: pred2
+模型输入尺寸: 640x480
+输出缓冲区: 车道线=1228800 bytes, 可行驶区域=2457600 bytes
+YOLOPv2引擎初始化成功
+正在初始化PCIe共享内存 (key=0x12345679, size=614504 bytes)
+PCIe shared memory initialized successfully (id=44, ptr=0x7faf67d000)
+Initialized control structure for PCIe
+正在初始化弯道检测共享内存 (key=0x1234567e, size=72 bytes)
+弯道检测共享内存初始化成功 (id=45, ptr=0x7fb099f000)
+初始化弯道检测控制结构
+RECORDED_FRAME_REPLAY_ACTIVE input=/home/linaro/curve_ego_20261031/frozen_straight/m_lane_snapshot.ppm live_camera=0 classifier_and_NPU_real=1 seconds=20
+[CURVE_MODE] ego-boundaries candidate
+[LINE_STYLE] source=1 camera=1 left=UNKNOWN q=0 raw=DASHED reason=WAIT 3 duty=50 spans=3 right=UNKNOWN q=0 raw=DASHED reason=WAIT 3 duty=46 spans=3 mask_range=0.000..1.000 ego_ref=142.2 road=12108 objects=3
+[CURVE_EGO] source=1 raw_type=0 type=0 confidence=0 shift_px=3.70 span_px=65.0 reason=6
+REPLAY_NN source=1 type=0 confidence=0 angle=0 replayed_pixels=1
+REPLAY_NN source=10 type=0 confidence=0 angle=0 replayed_pixels=1
+REPLAY_NN source=18 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=26 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=34 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=42 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=50 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=58 type=0 confidence=75 angle=0 replayed_pixels=1
+[LINE_STYLE] source=66 camera=1 left=DASHED q=83 raw=DASHED reason=OK duty=50 spans=3 right=DASHED q=83 raw=DASHED reason=OK duty=46 spans=3 mask_range=0.000..1.000 ego_ref=142.2 road=12108 objects=3
+[CURVE_EGO] source=66 raw_type=0 type=0 confidence=75 shift_px=3.70 span_px=65.0 reason=0
+REPLAY_NN source=66 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=75 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=83 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=91 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=99 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=107 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=115 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=123 type=0 confidence=75 angle=0 replayed_pixels=1
+[LINE_STYLE] source=131 camera=1 left=DASHED q=83 raw=DASHED reason=OK duty=50 spans=3 right=DASHED q=83 raw=DASHED reason=OK duty=46 spans=3 mask_range=0.000..1.000 ego_ref=142.2 road=12108 objects=3
+[CURVE_EGO] source=131 raw_type=0 type=0 confidence=75 shift_px=3.70 span_px=65.0 reason=0
+REPLAY_NN source=131 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=139 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=147 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=155 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=164 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=172 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=180 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=188 type=0 confidence=75 angle=0 replayed_pixels=1
+[LINE_STYLE] source=196 camera=1 left=DASHED q=83 raw=DASHED reason=OK duty=50 spans=3 right=DASHED q=83 raw=DASHED reason=OK duty=46 spans=3 mask_range=0.000..1.000 ego_ref=142.2 road=12108 objects=3
+[CURVE_EGO] source=196 raw_type=0 type=0 confidence=75 shift_px=3.70 span_px=65.0 reason=0
+REPLAY_NN source=196 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=204 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=212 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=220 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=228 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=236 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=244 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=252 type=0 confidence=75 angle=0 replayed_pixels=1
+[LINE_STYLE] source=260 camera=1 left=DASHED q=83 raw=DASHED reason=OK duty=50 spans=3 right=DASHED q=83 raw=DASHED reason=OK duty=46 spans=3 mask_range=0.000..1.000 ego_ref=142.2 road=12108 objects=3
+[CURVE_EGO] source=260 raw_type=0 type=0 confidence=75 shift_px=3.70 span_px=65.0 reason=0
+REPLAY_NN source=260 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=268 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=277 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=285 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=293 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=301 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=309 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=317 type=0 confidence=75 angle=0 replayed_pixels=1
+[LINE_STYLE] source=325 camera=1 left=DASHED q=83 raw=DASHED reason=OK duty=50 spans=3 right=DASHED q=83 raw=DASHED reason=OK duty=46 spans=3 mask_range=0.000..1.000 ego_ref=142.2 road=12108 objects=3
+[CURVE_EGO] source=325 raw_type=0 type=0 confidence=75 shift_px=3.70 span_px=65.0 reason=0
+REPLAY_NN source=325 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=333 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=341 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=349 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=357 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=366 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=374 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=382 type=0 confidence=75 angle=0 replayed_pixels=1
+[LINE_STYLE] source=390 camera=1 left=DASHED q=83 raw=DASHED reason=OK duty=50 spans=3 right=DASHED q=83 raw=DASHED reason=OK duty=46 spans=3 mask_range=0.000..1.000 ego_ref=142.2 road=12108 objects=3
+[CURVE_EGO] source=390 raw_type=0 type=0 confidence=75 shift_px=3.70 span_px=65.0 reason=0
+REPLAY_NN source=390 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=398 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=406 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=414 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=422 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=430 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=438 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=446 type=0 confidence=75 angle=0 replayed_pixels=1
+[LINE_STYLE] source=454 camera=1 left=DASHED q=83 raw=DASHED reason=OK duty=50 spans=3 right=DASHED q=83 raw=DASHED reason=OK duty=46 spans=3 mask_range=0.000..1.000 ego_ref=142.2 road=12108 objects=3
+[CURVE_EGO] source=454 raw_type=0 type=0 confidence=75 shift_px=3.70 span_px=65.0 reason=0
+REPLAY_NN source=454 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=463 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=471 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=479 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=487 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=495 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=503 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=511 type=0 confidence=75 angle=0 replayed_pixels=1
+[LINE_STYLE] source=519 camera=1 left=DASHED q=83 raw=DASHED reason=OK duty=50 spans=3 right=DASHED q=83 raw=DASHED reason=OK duty=46 spans=3 mask_range=0.000..1.000 ego_ref=142.2 road=12108 objects=3
+[CURVE_EGO] source=519 raw_type=0 type=0 confidence=75 shift_px=3.70 span_px=65.0 reason=0
+REPLAY_NN source=519 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=527 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=535 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=543 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=551 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=559 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=567 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=576 type=0 confidence=75 angle=0 replayed_pixels=1
+[LINE_STYLE] source=584 camera=1 left=DASHED q=83 raw=DASHED reason=OK duty=50 spans=3 right=DASHED q=83 raw=DASHED reason=OK duty=46 spans=3 mask_range=0.000..1.000 ego_ref=142.2 road=12108 objects=3
+[CURVE_EGO] source=584 raw_type=0 type=0 confidence=75 shift_px=3.70 span_px=65.0 reason=0
+REPLAY_NN source=584 type=0 confidence=75 angle=0 replayed_pixels=1
+REPLAY_NN source=592 type=0 confidence=75 angle=0 replayed_pixels=1
+弯道检测共享内存已清理
+Shared memory cleaned up
+RECORDED_FRAME_REPLAY_COMPLETE live_capture_must_be_restored=1

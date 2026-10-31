@@ -67,6 +67,13 @@ int main(void){
     assert(get().status==STEERING_SETTLED&&fabsf(angle-10)<.001f&&starts==2&&direction==STEER_RELEASE);
     for(unsigned i=0;i<100;++i)assert(steering_set_target_deg(10)==STEER_OK);
     advance(1000);assert(starts==2);
+    /* Real NN results can be usable for less than the settling interval.
+     * Quiet feedback acquired before the target must remain usable. */
+    setup();advance(300);assert(steering_set_target_deg(10)==STEER_OK);advance(2);
+    assert(starts==1&&direction==STEER_LEFT);
+    assert(steering_cancel()==STEER_OK);assert(steering_set_target_deg(-5)==STEER_OK);
+    advance(90);assert(starts==1); /* Cancellation of motion invalidated history. */
+    advance(25);assert(starts==2);
     setup();assert(steering_set_target_deg(-10)==STEER_OK);advance(600);assert(get().status==STEERING_SETTLED&&fabsf(angle+10)<.001f);
     setup();assert(steering_set_target_deg(10)==STEER_OK);advance(105);assert(steering_pulse_active());
     blocked=1;advance(1);assert(direction==STEER_RELEASE&&get().status==STEERING_CANCELLED);

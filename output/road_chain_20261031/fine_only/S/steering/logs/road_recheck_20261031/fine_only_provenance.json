@@ -1,0 +1,12 @@
+{
+  "schema": "STEER_FINE_ONLY_COMPARISON_V1",
+  "source": "/home/linaro/S/steering/logs/road_recheck_20261031/response_model.table",
+  "source_sha256": "ce8e63311f837d02ae9759e615d1f0292984ca66eaa608db07cca3a6b2b58efa",
+  "target": "/home/linaro/S/steering/logs/road_recheck_20261031/response_model.fine_only.table",
+  "target_sha256": "5ecbcb62be79f08d876d0de94eef8f70ebb92fcdf8afb7f22bf08432ce892401",
+  "cells_unchanged": true,
+  "coarse_disabled_for_comparison": true,
+  "reference_session": 4033203686,
+  "reason": "6.25 degree lane target was invoking continuous large-angle mode",
+  "installed": false
+}

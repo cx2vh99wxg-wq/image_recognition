@@ -1,0 +1,9 @@
+{
+  "no_actuation": true,
+  "no_udp_bind": true,
+  "feedback_samples": 17994,
+  "lane_samples": 0,
+  "events": 504,
+  "last_lane": null,
+  "seconds": 180.033369044
+}

@@ -1,0 +1,20 @@
+FSPI Configuration:
+  Device: /dev/spidev4.0
+  Speed: 24000000 Hz (24000 KHz)
+FSPI initialized successfully
+  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes
+[STEER_INIT] table=/home/linaro/S/steering/logs/road_recheck_20261031/response_model.fine_only.table reference_session=4033203686 zero_raw=0.059 max_pulse_us=60000 priority=10 target_tolerance=2.0 center_tolerance=3.0; awaiting fresh matching session
+[STEER_REFERENCE] explicitly confirmed current session; physical zero offset bound
+[STEER_STATE] state=5 name=SETTLING angle=7.776 target=0.000 error=-7.776 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=30000 current_deg=7.776 target_deg=0.000 guard_deg=5.881 expected_error_deg=5.468 reposition=0
+[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30135.584 early_release=0
+[STEER_RESPONSE] pulse=1 before_deg=7.776 after_deg=3.408 delta_deg=-4.368 error_deg=-3.408
+[STEER_PULSE_BEGIN] pulse=2 direction=2 duration_us=30000 current_deg=3.408 target_deg=0.000 guard_deg=8.179 expected_error_deg=1.081 reposition=0
+[STEER_PULSE_END] pulse=2 direction=2 requested_us=30000 actual_us=30103.791 early_release=0
+[STEER_RESPONSE] pulse=2 before_deg=3.408 after_deg=-3.772 delta_deg=-7.180 error_deg=3.772
+[STEER_PULSE_BEGIN] pulse=3 direction=1 duration_us=30000 current_deg=-3.772 target_deg=0.000 guard_deg=6.653 expected_error_deg=1.174 reposition=0
+[STEER_PULSE_END] pulse=3 direction=1 requested_us=30000 actual_us=30067.334 early_release=0
+[STEER_RESPONSE] pulse=3 before_deg=-3.772 after_deg=1.798 delta_deg=5.570 error_deg=-1.798
+[STEER_STATE] state=2 name=SETTLED angle=1.798 target=0.000 error=-1.798 result=OK
+GOAL_RESULT status=2 target_deg=0.000 measured_deg=1.798 error_deg=-1.798 tolerance_deg=3.0 result=OK state_name=SETTLED
+FSPI resources cleaned up

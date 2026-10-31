@@ -1,0 +1,5 @@
+ego_curve_type=1 confidence=60 shift=-29.3782 span=29.0 reason=0
+legacy_global_lane_pixels=2363 legacy_shift=43.2069 row_centers= -1.00 -1.00 -1.00 -1.00 224.91 201.09 133.64 -1.00
+left type=0 quality=0 reason=3 first=167 last=202 a=126.041672 b=-58.474213 c=0.000000
+right type=2 quality=76 reason=0 first=166 last=196 a=332.418671 b=311.329346 c=0.000000
+ego_area=4322 objects=2 overlap=29.0 center_c=0.000000 bend_image_deg=0.00000

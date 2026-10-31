@@ -1,0 +1,23 @@
+{
+  "state": "RUNNING",
+  "seconds": 22.011577593999846,
+  "control_pid": 2775,
+  "pulse_count": 22,
+  "recent_angles": [
+    7.76,
+    7.762,
+    7.761,
+    7.761,
+    7.761,
+    7.761,
+    7.761,
+    7.761,
+    7.761,
+    7.761
+  ],
+  "recent_pulses": [
+    "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=200000 current_deg=-14.743 target_deg=0.000 guard_deg=18.000 expected_error_deg=0.000 reposition=0",
+    "[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=200000 current_deg=13.490 target_deg=6.250 guard_deg=18.000 expected_error_deg=0.000 reposition=0",
+    "[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=200000 current_deg=-7.066 target_deg=0.000 guard_deg=18.000 expected_error_deg=0.000 reposition=0"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "schema": "M_STRAIGHT_PIXEL_REPLAY_V1",
+  "replay_returncode": 0,
+  "replay_duration_s": 20,
+  "input_source": "saved_real_camera_P6",
+  "model_and_classifier_real": true,
+  "live_camera_during_replay": false,
+  "old_capture_pid": 3512,
+  "restored_capture_pid": 4479,
+  "imu_pid_unchanged": 1318,
+  "restored_candidate_v2": true,
+  "production_binary_unchanged": true
+}

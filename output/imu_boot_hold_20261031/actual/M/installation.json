@@ -1,0 +1,49 @@
+{
+  "schema": "IMU_BOOT_HOLD_INSTALL_V1",
+  "state": "TWO_SERVICE_RESTARTS_VERIFIED",
+  "old_replay": {
+    "samples": 1200.0,
+    "seconds": 11.989,
+    "hold_fraction": 0.0,
+    "post5_hold_fraction": 0.0,
+    "transitions": 0.0,
+    "angle_change": -0.898677,
+    "post5_range_deg": 0.512696,
+    "initial_deg": 0.0,
+    "final_deg": -0.898677
+  },
+  "new_replay": {
+    "samples": 1200.0,
+    "seconds": 11.989,
+    "hold_fraction": 0.826667,
+    "post5_hold_fraction": 1.0,
+    "transitions": 1.0,
+    "angle_change": -0.002127,
+    "post5_range_deg": 0.0,
+    "initial_deg": 0.0,
+    "final_deg": -0.002127
+  },
+  "source_manifest_sha256": "9ddca6616f7ae4d3026b84de1c2e3e883b0e06d69cb8661859dad9c1f2342260",
+  "files": [
+    {
+      "file": "/home/linaro/M/imu/tools/start_angle_monitor.py",
+      "sha256": "5a6057c463ac27b8cba45dc6e63dc15eaa9762de7a90180614ad1e35f45605a6"
+    },
+    {
+      "file": "/home/linaro/M/imu/tests/test_startup_bias.py",
+      "sha256": "1eaa8f8b005084b3c0c1e63bf96519310bc0d84c65c03eaf704eb87251e3ecfe"
+    },
+    {
+      "file": "/home/linaro/M/imu/feedback/m-steering-imu.service",
+      "sha256": "e951db31a60c79b39acc769991c320a44876ab781b8af3e4ab50b50211be2786"
+    },
+    {
+      "file": "/home/linaro/M/imu/README.md",
+      "sha256": "7d72495e38eb5f68a0aab748dd27d0ce51551b2e172e316d7fbf9fc19d1817e3"
+    }
+  ],
+  "motion_thresholds_unchanged": true,
+  "axis_unchanged": true,
+  "mechanical_zero_not_asserted": true,
+  "actuator_access": false
+}

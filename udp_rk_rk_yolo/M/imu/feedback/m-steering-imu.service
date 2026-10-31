@@ -2,6 +2,8 @@
 Description=M FPGA MPU-9250 steering telemetry (no actuator control)
 Wants=network-online.target
 After=network-online.target
+StartLimitIntervalSec=120
+StartLimitBurst=3
 
 [Service]
 Type=simple
@@ -10,7 +12,7 @@ WorkingDirectory=/home/linaro/M/imu
 # Physical center is deliberately NOT asserted by this telemetry service.
 Environment="IMU_CALIBRATION_ARGS="
 EnvironmentFile=-/etc/default/m-steering-imu
-ExecStart=/home/linaro/M/imu/build/angle_monitor --backend fpga --samples 0 --interval-ms 1 --print-every 100 --wait-device --send-to 192.168.100.20 --port 54321 $IMU_CALIBRATION_ARGS
+ExecStart=/usr/bin/python3 /home/linaro/M/imu/tools/start_angle_monitor.py --backend fpga --samples 0 --interval-ms 1 --print-every 100 --wait-device --send-to 192.168.100.20 --port 54321 $IMU_CALIBRATION_ARGS
 Restart=on-failure
 RestartSec=2
 SuccessExitStatus=130

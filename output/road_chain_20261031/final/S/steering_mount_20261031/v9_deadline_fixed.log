@@ -1,0 +1,53 @@
+[STEER_INIT] table=/home/linaro/steering_mount_20261031/intermittent_fixture.table reference_session=7 zero_raw=0.000 max_pulse_us=60000 priority=0 target_tolerance=2.0 center_tolerance=3.0; awaiting fresh matching session
+[STEER_REFERENCE] explicitly confirmed current session; physical zero offset bound
+[STEER_LANE] frame=1 type=1 confidence=90 road_angle=20 target_deg=5.000 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=0.000 target=5.000 error=5.000 result=OK
+[STEER_HEARTBEAT] seq=1 status=5 angle=0.000 target=5.000 feedback=1 no_motion_pulse=1
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=10000 current_deg=0.000 target_deg=5.000 guard_deg=6.300 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=10000 actual_us=10652.541 early_release=0
+[STEER_RESPONSE] pulse=1 before_deg=0.000 after_deg=5.325 delta_deg=5.325 error_deg=-0.325
+[STEER_STATE] state=2 name=SETTLED angle=5.325 target=5.000 error=-0.325 result=OK
+[STEER_HEARTBEAT] seq=2 status=2 angle=5.325 target=5.000 feedback=1 no_motion_pulse=1
+[STEER_STATE] state=4 name=FAULT angle=nan target=5.000 error=nan result=STALE_OR_DISCONTINUOUS
+[STEER_LANE] frame=13 type=2 confidence=90 road_angle=20 target_deg=-5.000 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=5.325 target=-5.000 error=-10.325 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=2 duration_us=10000 current_deg=5.325 target_deg=-5.000 guard_deg=6.300 expected_error_deg=5.325 reposition=0
+[STEER_STATE] state=3 name=CANCELLED angle=5.325 target=-5.000 error=-10.325 result=BUSY
+[STEER_INIT] table=/home/linaro/steering_mount_20261031/intermittent_fixture.table reference_session=7 zero_raw=0.000 max_pulse_us=60000 priority=0 target_tolerance=2.0 center_tolerance=3.0; awaiting fresh matching session
+[STEER_REFERENCE] explicitly confirmed current session; physical zero offset bound
+[STEER_HEARTBEAT] seq=1 status=3 angle=0.000 target=nan feedback=1 no_motion_pulse=1
+[STEER_LANE] frame=1000 type=1 confidence=90 road_angle=20 target_deg=5.000 result=OK
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=10000 current_deg=0.000 target_deg=5.000 guard_deg=6.300 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=10000 actual_us=11091.209 early_release=0
+[STEER_STATE] state=5 name=SETTLING angle=0.000 target=5.000 error=5.000 result=OK
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=1000 valid=1 type=1 confidence=0 road_angle=20
+[STEER_STATE] state=3 name=CANCELLED angle=5.545 target=5.000 error=nan result=OK
+[STEER_LANE] frame=1001 type=1 confidence=90 road_angle=20 target_deg=5.000 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=5.545 target=5.000 error=-0.545 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=5.545 target=5.000 error=-0.545 result=OK
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=1001 valid=1 type=1 confidence=0 road_angle=20
+[STEER_STATE] state=3 name=CANCELLED angle=5.545 target=5.000 error=nan result=OK
+[STEER_HEARTBEAT] seq=2 status=3 angle=5.545 target=5.000 feedback=1 no_motion_pulse=1
+[STEER_LANE] frame=1002 type=1 confidence=90 road_angle=20 target_deg=5.000 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=5.545 target=5.000 error=-0.545 result=OK
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=1002 valid=1 type=1 confidence=0 road_angle=20
+[STEER_STATE] state=3 name=CANCELLED angle=5.545 target=5.000 error=nan result=OK
+[STEER_LANE] frame=1003 type=1 confidence=90 road_angle=20 target_deg=5.000 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=5.545 target=5.000 error=-0.545 result=OK
+[STEER_CANCEL] reason=lane_invalid_or_expired frame=1003 valid=1 type=1 confidence=0 road_angle=20
+[STEER_STATE] state=3 name=CANCELLED angle=5.545 target=5.000 error=nan result=OK
+[STEER_LANE] frame=2000 type=1 confidence=90 road_angle=20 target_deg=5.000 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=5.545 target=5.000 error=-0.545 result=OK
+[STEER_INIT] table=/home/linaro/steering_mount_20261031/intermittent_fixture.table reference_session=7 zero_raw=0.000 max_pulse_us=60000 priority=0 target_tolerance=2.0 center_tolerance=3.0; awaiting fresh matching session
+[STEER_REFERENCE] explicitly confirmed current session; physical zero offset bound
+[STEER_LANE] frame=258 type=1 confidence=90 road_angle=20 target_deg=5.000 result=OK
+[STEER_STATE] state=5 name=SETTLING angle=0.000 target=5.000 error=5.000 result=OK
+[STEER_HEARTBEAT] seq=1 status=5 angle=0.000 target=5.000 feedback=1 no_motion_pulse=1
+[STEER_PULSE_BEGIN] pulse=1 direction=1 duration_us=10000 current_deg=0.000 target_deg=5.000 guard_deg=6.300 expected_error_deg=0.000 reposition=0
+[STEER_PULSE_END] pulse=1 direction=1 requested_us=10000 actual_us=10897.542 early_release=0
+[STEER_RESPONSE] pulse=1 before_deg=0.000 after_deg=5.448 delta_deg=5.448 error_deg=-0.448
+[STEER_STATE] state=2 name=SETTLED angle=5.448 target=5.000 error=-0.448 result=OK
+[STEER_HEARTBEAT] seq=2 status=2 angle=5.448 target=5.000 feedback=1 no_motion_pulse=1
+PASS delayed SPI regression: release deadline retained with 7ms status RX latency; FAKE IO only
+PASS intermittent NN regression: 3.3Hz, 80ms valid window, expiry releases, idle IMU history retained; FAKE IO only
+PASS runtime integration: lane angle mapping, duplicate frame/goal suppression, stale feedback, S/R rearm, STOP release; FAKE IO only

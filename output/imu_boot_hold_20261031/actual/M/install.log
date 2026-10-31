@@ -1,0 +1,6 @@
+PASS startup bias: cold residual recovery, independent holdout split, session/gap/simulation/motion/drift rejection, unchanged axis/physical zero, atomic persistence and persistent service entry
+REAL_OLD_NEW_REPLAY {"old": {"samples": 1200.0, "seconds": 11.989, "hold_fraction": 0.0, "post5_hold_fraction": 0.0, "transitions": 0.0, "angle_change": -0.898677, "post5_range_deg": 0.512696, "initial_deg": 0.0, "final_deg": -0.898677}, "new": {"samples": 1200.0, "seconds": 11.989, "hold_fraction": 0.826667, "post5_hold_fraction": 1.0, "transitions": 1.0, "angle_change": -0.002127, "post5_range_deg": 0.0, "initial_deg": 0.0, "final_deg": -0.002127}, "old_residual_norm_dps": 0.15045546453185607}
+PASS stationary hold: noisy static drift bounded, nonzero angle retained, slow/fast signed motion preserved, bounded release, vibration and stale data rejected
+/lib/systemd/system/bootanim.service:9: Unit uses KillMode=none. This is unsafe, as it disables systemd's process lifecycle management for the service. Please update the service to use a safer KillMode=, such as 'mixed' or 'control-group'. Support for KillMode=none is deprecated and will eventually be removed.
+Configuration file /lib/systemd/system/rkaiq_3A.service is marked world-writable. Please remove world writability permission bits. Proceeding anyway.
+PERSISTENT_BOOT_HOLD_INSTALLED_CALIBRATING

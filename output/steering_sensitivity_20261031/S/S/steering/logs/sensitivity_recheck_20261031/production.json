@@ -1,0 +1,72 @@
+{
+  "schema": "STEER_SENSITIVITY_PRODUCTION_V1",
+  "state": "PRODUCTION_RUNNING",
+  "pid": 2401,
+  "curve_gain": 0.4,
+  "nominal_curve_wheel_target_deg": 10,
+  "target_limit_deg": 12,
+  "tolerance_deg": 3,
+  "physical_reference_session": 4194177452,
+  "zero_raw_deg": 0.119,
+  "independent_real_tests": {
+    "schema": "STEER_TEN_DEGREE_GOAL_CHECK_V1",
+    "state": "COMPLETE",
+    "records": [
+      {
+        "target_deg": 10,
+        "returncode": 0,
+        "passed": true,
+        "measured_deg": 8.178,
+        "pulse_count": 2,
+        "actual_pulse_us": [
+          30242.917,
+          30142.0
+        ]
+      },
+      {
+        "target_deg": 0,
+        "returncode": 0,
+        "passed": true,
+        "measured_deg": -0.622,
+        "pulse_count": 3,
+        "actual_pulse_us": [
+          30165.042,
+          30116.917,
+          30103.208
+        ]
+      },
+      {
+        "target_deg": -10,
+        "returncode": 0,
+        "passed": true,
+        "measured_deg": -8.984,
+        "pulse_count": 2,
+        "actual_pulse_us": [
+          30239.709,
+          30091.25
+        ]
+      },
+      {
+        "target_deg": 0,
+        "returncode": 0,
+        "passed": true,
+        "measured_deg": -0.844,
+        "pulse_count": 3,
+        "actual_pulse_us": [
+          30383.208,
+          30152.208,
+          30602.542
+        ]
+      }
+    ],
+    "vision_used": false,
+    "feedback_and_FSPI_real": true,
+    "tolerance_deg": 3,
+    "outputs_released": true
+  },
+  "live_road_ten_degree_validation": false,
+  "M_model_and_lane_geometry_unchanged": true,
+  "HMI_and_FPGA_unchanged": true,
+  "binary_sha256": "e582fe2cad4d7e21d7fb9244a2fa4976d7a429dccfccf12891a5e6a8ad9dc9ab",
+  "source_sha256": "11cb32b84d73efeb623fb0a97e947382a1e22fbb66616e0769e7a24b0025bfc7"
+}

@@ -1,0 +1,26 @@
+{
+  "schema": "STEER_NN_GAP_FINAL_STATE_V1",
+  "automatic_vehicle_control": "STOPPED_AT_USER_REQUEST",
+  "car_powered": false,
+  "imu_fixed_on_steering": true,
+  "real_powered_angle_verification": "PENDING",
+  "software_gap_regression": "OLD_FAIL_NEW_PASS",
+  "observed_curve_reads": 153,
+  "observed_pulses": 120,
+  "observed_directions": {
+    "2": 81,
+    "1": 39
+  },
+  "maximum_observed_response_deg": -0.0,
+  "hmi_fpga_M_perception_unchanged": true,
+  "last_logical_snapshot": {
+    "hmi": 0,
+    "go_n": 1,
+    "back_n": 0,
+    "left_n": 1,
+    "right_n": 1,
+    "stop_n": 1,
+    "auto": 0
+  },
+  "before_powering_car": "Press and release existing S/R; verify GO/BACK both inactive/high. Automatic controller remains stopped."
+}

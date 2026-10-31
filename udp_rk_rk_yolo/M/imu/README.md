@@ -65,6 +65,30 @@ python3 tools/calibrate.py --input stationary.csv --output mounting.cal --statio
 当前台架服务可通过 `/etc/default/m-steering-imu` 启用；正式装车须验证安装轴及最低转速，
 不应将静止时显示稳定等同于绝对角度准确。该选项与重力辅助实验选项不同时使用。
 
+### 重启后的零偏准备
+
+`feedback/m-steering-imu.service`现在通过`tools/start_angle_monitor.py`启动。
+**启动前约12秒必须保持车身与传感器静止。** 原始采集1200点，前200点等待稳定，
+400点估计三轴角速度零偏，后600点独立检查静止方差、时间/会话连续性及C算法回放。
+检查失败时不发布有效角度，不自动套用旧偏置继续漂移。服务最多尝试3次，失败原因写入journal。
+车辆正在运动时不应重启该台架测角服务；单IMU无法可靠分辨启动阶段极慢恒转与恒定零偏。
+
+通过后原子保存`calibration/startup_bias.current.cal`及验证报告，保留原安装轴和基准文件；
+完整原始记录位于`calibration/startup_runs/`。正常测角进程随后使用本次校准文件，
+原有约2秒静止判定、运动退出阈值和运行时残余补偿不变，未把小转动阈值放宽。
+冷启动时旧残余偏差可能已超过0.10°/s进入阈值；仅在hold后学习偏差会造成“不能进入、
+也不能学习”的循环。每次启动用新鲜静止样本重新估计，避免依赖上次进程的内存状态。
+
+此步骤校准角速度零偏，**不确认机械中位、不设置ZERO_VALID**。服务启动产生新会话，
+S端旧机械参考仍须按已有流程重新人工确认。可用以下命令查看真实状态：
+
+```sh
+sudo journalctl -u m-steering-imu --no-pager -n 15
+```
+
+先出现`IMU_STARTUP_CALIBRATING`，通过后出现`IMU_STARTUP_READY`，静置约2秒后
+`static_hold=1`。`IMU_STARTUP_REJECTED`表示启动样本不合格，需要停稳后检查/重试。
+
 运行中把当前位置设为相对 0°，无需重启传感器或服务：
 
 本次 M 板已安装短命令 `sudo imu-zero`（源文件 `tools/imu_zero.sh`）。

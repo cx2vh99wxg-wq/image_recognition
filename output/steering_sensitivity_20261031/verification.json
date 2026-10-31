@@ -1,0 +1,191 @@
+{
+  "schema": "STEERING_SENSITIVITY_VERIFICATION_V1",
+  "recorded_at": "2026-10-31T21:36:04.200521+08:00",
+  "root_causes_confirmed": {
+    "old_S_reference_session": 4033203686,
+    "new_M_session": 4194177452,
+    "reference_mismatch_blocked_steering": true,
+    "previous_nominal_target_deg": 6.25,
+    "tolerance_deg": 3,
+    "previous_minimum_angle_to_count_as_settled_deg": 3.25
+  },
+  "center_binding": {
+    "schema": "STEER_REFERENCE_REBIND_V1",
+    "session": 4194177452,
+    "zero_raw_deg": 0.119,
+    "user_physical_center_confirmed": true,
+    "user_fixed_chassis_confirmed": true,
+    "user_mount_unchanged": true,
+    "baseline_samples": 60,
+    "baseline_span_deg": 0.0,
+    "previous_reference": "/home/linaro/S/steering/logs/road_recheck_20261031/center.reference",
+    "mapping_cells_unchanged": true,
+    "mechanical_ZERO_VALID_granted": false
+  },
+  "after_reference_rebind_live_road_observation": {
+    "schema": "STEER_SENSITIVITY_OBSERVATION_V1",
+    "session": 4194177452,
+    "zero_raw_deg": 0.119,
+    "reference_confirmed": true,
+    "pulse_starts": 2,
+    "lane_records": [
+      "[STEER_LANE] frame=35263 type=1 confidence=75 road_angle=25 target_deg=6.250 result=OK",
+      "[STEER_LANE] frame=35272 type=1 confidence=75 road_angle=25 target_deg=6.250 result=OK",
+      "[STEER_LANE] frame=35569 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK",
+      "[STEER_LANE] frame=35575 type=0 confidence=60 road_angle=0 target_deg=0.000 result=OK",
+      "[STEER_LANE] frame=35602 type=1 confidence=60 road_angle=25 target_deg=6.250 result=OK",
+      "[STEER_LANE] frame=35611 type=1 confidence=60 road_angle=25 target_deg=6.250 result=OK",
+      "[STEER_LANE] frame=35647 type=1 confidence=60 road_angle=25 target_deg=6.250 result=OK",
+      "[STEER_LANE] frame=35662 type=1 confidence=60 road_angle=25 target_deg=6.250 result=OK",
+      "[STEER_LANE] frame=35671 type=1 confidence=60 road_angle=25 target_deg=6.250 result=OK",
+      "[STEER_LANE] frame=35686 type=1 confidence=60 road_angle=25 target_deg=6.250 result=OK",
+      "[STEER_LANE] frame=35695 type=1 confidence=60 road_angle=25 target_deg=6.250 result=OK",
+      "[STEER_LANE] frame=35704 type=1 confidence=60 road_angle=25 target_deg=6.250 result=OK",
+      "[STEER_LANE] frame=35713 type=1 confidence=60 road_angle=25 target_deg=6.250 result=OK",
+      "[STEER_LANE] frame=35722 type=1 confidence=60 road_angle=25 target_deg=6.250 result=OK",
+      "[STEER_LANE] frame=35737 type=1 confidence=60 road_angle=25 target_deg=6.250 result=OK",
+      "[STEER_LANE] frame=35746 type=1 confidence=60 road_angle=25 target_deg=6.250 result=OK",
+      "[STEER_LANE] frame=35755 type=1 confidence=60 road_angle=25 target_deg=6.250 result=OK",
+      "[STEER_LANE] frame=35764 type=1 confidence=60 road_angle=25 target_deg=6.250 result=OK",
+      "[STEER_LANE] frame=35770 type=1 confidence=60 road_angle=25 target_deg=6.250 result=OK"
+    ],
+    "pulse_records": [
+      "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30153.083 early_release=0",
+      "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30117.209 early_release=0"
+    ],
+    "state_records": [
+      "[STEER_STATE] state=3 name=CANCELLED angle=0.000 target=nan error=nan result=OK",
+      "[STEER_STATE] state=5 name=SETTLING angle=0.000 target=6.250 error=6.250 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=0.193 target=6.250 error=nan result=OK",
+      "[STEER_STATE] state=5 name=SETTLING angle=1.143 target=6.250 error=5.107 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=1.152 target=6.250 error=nan result=OK",
+      "[STEER_STATE] state=2 name=SETTLED angle=1.149 target=0.000 error=-1.149 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=1.149 target=0.000 error=nan result=OK",
+      "[STEER_STATE] state=2 name=SETTLED angle=1.149 target=0.000 error=-1.149 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=1.149 target=0.000 error=nan result=OK",
+      "[STEER_STATE] state=5 name=SETTLING angle=1.149 target=6.250 error=5.101 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=3.900 target=6.250 error=nan result=OK",
+      "[STEER_STATE] state=5 name=SETTLING angle=3.858 target=6.250 error=2.392 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=3.851 target=6.250 error=nan result=OK",
+      "[STEER_STATE] state=2 name=SETTLED angle=3.851 target=6.250 error=2.399 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=3.858 target=6.250 error=nan result=OK",
+      "[STEER_STATE] state=2 name=SETTLED angle=3.856 target=6.250 error=2.394 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=3.854 target=6.250 error=nan result=OK",
+      "[STEER_STATE] state=2 name=SETTLED angle=3.853 target=6.250 error=2.397 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=3.851 target=6.250 error=nan result=OK",
+      "[STEER_STATE] state=2 name=SETTLED angle=3.851 target=6.250 error=2.399 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=3.851 target=6.250 error=nan result=OK",
+      "[STEER_STATE] state=2 name=SETTLED angle=3.851 target=6.250 error=2.399 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=3.851 target=6.250 error=nan result=OK",
+      "[STEER_STATE] state=2 name=SETTLED angle=3.851 target=6.250 error=2.399 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=3.851 target=6.250 error=nan result=OK",
+      "[STEER_STATE] state=2 name=SETTLED angle=3.851 target=6.250 error=2.399 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=3.851 target=6.250 error=nan result=OK",
+      "[STEER_STATE] state=2 name=SETTLED angle=3.851 target=6.250 error=2.399 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=3.851 target=6.250 error=nan result=OK",
+      "[STEER_STATE] state=2 name=SETTLED angle=3.851 target=6.250 error=2.399 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=3.851 target=6.250 error=nan result=OK",
+      "[STEER_STATE] state=2 name=SETTLED angle=3.851 target=6.250 error=2.399 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=3.851 target=6.250 error=nan result=OK",
+      "[STEER_STATE] state=2 name=SETTLED angle=3.851 target=6.250 error=2.399 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=3.851 target=6.250 error=nan result=OK",
+      "[STEER_STATE] state=2 name=SETTLED angle=3.851 target=6.250 error=2.399 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=3.851 target=6.250 error=nan result=OK",
+      "[STEER_STATE] state=2 name=SETTLED angle=3.851 target=6.250 error=2.399 result=OK",
+      "[STEER_STATE] state=3 name=CANCELLED angle=3.851 target=6.250 error=nan result=OK"
+    ],
+    "controller_stopped": true,
+    "binary_sha256": "e582fe2cad4d7e21d7fb9244a2fa4976d7a429dccfccf12891a5e6a8ad9dc9ab"
+  },
+  "new_profile": {
+    "schema": "STEER_SENSITIVITY_PRODUCTION_V1",
+    "state": "PRODUCTION_RUNNING",
+    "pid": 2401,
+    "curve_gain": 0.4,
+    "nominal_curve_wheel_target_deg": 10,
+    "target_limit_deg": 12,
+    "tolerance_deg": 3,
+    "physical_reference_session": 4194177452,
+    "zero_raw_deg": 0.119,
+    "independent_real_tests": {
+      "schema": "STEER_TEN_DEGREE_GOAL_CHECK_V1",
+      "state": "COMPLETE",
+      "records": [
+        {
+          "target_deg": 10,
+          "returncode": 0,
+          "passed": true,
+          "measured_deg": 8.178,
+          "pulse_count": 2,
+          "actual_pulse_us": [
+            30242.917,
+            30142.0
+          ]
+        },
+        {
+          "target_deg": 0,
+          "returncode": 0,
+          "passed": true,
+          "measured_deg": -0.622,
+          "pulse_count": 3,
+          "actual_pulse_us": [
+            30165.042,
+            30116.917,
+            30103.208
+          ]
+        },
+        {
+          "target_deg": -10,
+          "returncode": 0,
+          "passed": true,
+          "measured_deg": -8.984,
+          "pulse_count": 2,
+          "actual_pulse_us": [
+            30239.709,
+            30091.25
+          ]
+        },
+        {
+          "target_deg": 0,
+          "returncode": 0,
+          "passed": true,
+          "measured_deg": -0.844,
+          "pulse_count": 3,
+          "actual_pulse_us": [
+            30383.208,
+            30152.208,
+            30602.542
+          ]
+        }
+      ],
+      "vision_used": false,
+      "feedback_and_FSPI_real": true,
+      "tolerance_deg": 3,
+      "outputs_released": true
+    },
+    "live_road_ten_degree_validation": false,
+    "M_model_and_lane_geometry_unchanged": true,
+    "HMI_and_FPGA_unchanged": true,
+    "binary_sha256": "e582fe2cad4d7e21d7fb9244a2fa4976d7a429dccfccf12891a5e6a8ad9dc9ab",
+    "source_sha256": "11cb32b84d73efeb623fb0a97e947382a1e22fbb66616e0769e7a24b0025bfc7"
+  },
+  "local_binary_sha256": "e582fe2cad4d7e21d7fb9244a2fa4976d7a429dccfccf12891a5e6a8ad9dc9ab",
+  "local_profile_matches_board": true,
+  "scope_preserved": [
+    "M neural models and lane geometry",
+    "HMI events and UI",
+    "FPGA image and pins",
+    "Visual source freshness thresholds",
+    "STOP and manual override arbitration"
+  ],
+  "validation_limits": [
+    "Live road observation at the original 6.25 degree target produced real MPU motion after center rebind.",
+    "The new +/-10 degree targets and center passed isolated real FSPI/MPU tests; they are not a live road-video acceptance test.",
+    "A future M IMU reboot invalidates the current center reference and still requires physical-center confirmation.",
+    "The gain adjustment increases steering amplitude; it does not increase neural inference rate or change direction confirmation."
+  ],
+  "artifact_paths": {
+    "live_camera_frame": "../../tmp/imu_boot_hold_20261031/sensitivity_road.png",
+    "new_session_no_pulse_regression": "S/steering_mount_20261031/reference_notice_test.log"
+  }
+}

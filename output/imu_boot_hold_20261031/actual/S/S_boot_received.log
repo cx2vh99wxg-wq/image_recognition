@@ -1,0 +1,35 @@
+LISTEN bind=0.0.0.0 port=54321 source=192.168.100.10 MONITOR_ONLY actuator_enabled=0
+STATUS NO_SAMPLE actuator_enabled=0
+RX session=963551372 seq=1636 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=4 status=REAL_RELATIVE rx_local_ns=1697200604641 actuator_enabled=0
+STATUS REAL_RELATIVE actuator_enabled=0
+RX session=963551372 seq=1735 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=2 status=REAL_RELATIVE rx_local_ns=1698188332350 actuator_enabled=0
+RX session=963551372 seq=1835 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=4 status=REAL_RELATIVE rx_local_ns=1699190391392 actuator_enabled=0
+RX session=963551372 seq=1935 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=2 status=REAL_RELATIVE rx_local_ns=1700189109976 actuator_enabled=0
+RX session=963551372 seq=2035 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=4 status=REAL_RELATIVE rx_local_ns=1701190602893 actuator_enabled=0
+RX session=963551372 seq=2135 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=4 status=REAL_RELATIVE rx_local_ns=1702192448435 actuator_enabled=0
+RX session=963551372 seq=2235 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=4 status=REAL_RELATIVE rx_local_ns=1703192611352 actuator_enabled=0
+RX session=963551372 seq=2335 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=2 status=REAL_RELATIVE rx_local_ns=1704191028936 actuator_enabled=0
+RX session=963551372 seq=2435 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=2 status=REAL_RELATIVE rx_local_ns=1705190562728 actuator_enabled=0
+RX session=963551372 seq=2535 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=2 status=REAL_RELATIVE rx_local_ns=1706191353312 actuator_enabled=0
+RX session=963551372 seq=2635 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=3 status=REAL_RELATIVE rx_local_ns=1707192289146 actuator_enabled=0
+RX session=963551372 seq=2735 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=4 status=REAL_RELATIVE rx_local_ns=1708195559480 actuator_enabled=0
+RX session=963551372 seq=2835 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=3 status=REAL_RELATIVE rx_local_ns=1709194080605 actuator_enabled=0
+RX session=963551372 seq=2935 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=4 status=REAL_RELATIVE rx_local_ns=1710195287106 actuator_enabled=0
+RX session=963551372 seq=3035 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=4 status=REAL_RELATIVE rx_local_ns=1711194989773 actuator_enabled=0
+RX session=963551372 seq=3135 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=2 status=REAL_RELATIVE rx_local_ns=1712194117273 actuator_enabled=0
+RX session=963551372 seq=3235 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=2 status=REAL_RELATIVE rx_local_ns=1713193822565 actuator_enabled=0
+RX session=963551372 seq=3335 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=3 status=REAL_RELATIVE rx_local_ns=1714196372774 actuator_enabled=0
+RX session=963551372 seq=3435 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=3 status=REAL_RELATIVE rx_local_ns=1715196586150 actuator_enabled=0
+RX session=963551372 seq=3535 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=2 status=REAL_RELATIVE rx_local_ns=1716196718150 actuator_enabled=0
+RX session=963551372 seq=3635 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=2 status=REAL_RELATIVE rx_local_ns=1717196352567 actuator_enabled=0
+RX session=963551372 seq=3735 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=2 status=REAL_RELATIVE rx_local_ns=1718195819859 actuator_enabled=0
+RX session=963551372 seq=3835 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=3 status=REAL_RELATIVE rx_local_ns=1719196818693 actuator_enabled=0
+RX session=963551372 seq=3935 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=4 status=REAL_RELATIVE rx_local_ns=1720198759319 actuator_enabled=0
+RX session=963551372 seq=4035 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=3 status=REAL_RELATIVE rx_local_ns=1721198648361 actuator_enabled=0
+RX session=963551372 seq=4135 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=3 status=REAL_RELATIVE rx_local_ns=1722199222528 actuator_enabled=0
+RX session=963551372 seq=4235 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=2 status=REAL_RELATIVE rx_local_ns=1723198483028 actuator_enabled=0
+RX session=963551372 seq=4335 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=2 status=REAL_RELATIVE rx_local_ns=1724197822279 actuator_enabled=0
+RX session=963551372 seq=4435 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=2 status=REAL_RELATIVE rx_local_ns=1725198317404 actuator_enabled=0
+RX session=963551372 seq=4535 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=4 status=REAL_RELATIVE rx_local_ns=1726200542988 actuator_enabled=0
+RX session=963551372 seq=4635 flags=1 raw_relative_deg=0.064 rate_dps=0.000 source_age_ms=4 status=REAL_RELATIVE rx_local_ns=1727202375114 actuator_enabled=0
+SUMMARY accepted=3000 rejected=0 foreign=0 real_relative=3000 zero_flagged=0 simulated=0 session_changes=0 final_status=REAL_RELATIVE actuator_enabled=0

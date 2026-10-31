@@ -1,0 +1,6 @@
+{
+  "state": "SOFTWARE_TESTED_NO_ACTUATION",
+  "baseline_failed_as_expected": true,
+  "fixed_intermittent_passed": true,
+  "source_manifest_sha256": "239d609c74220f48a41bd626bf090b888261a8f7c3030d74470a6255a042a246"
+}

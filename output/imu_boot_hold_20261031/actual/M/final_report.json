@@ -1,0 +1,58 @@
+{
+  "state": "REAL_STATIC_HOLD_REBOOT_PATH_VERIFIED",
+  "old": {
+    "samples": 1200.0,
+    "seconds": 11.989,
+    "hold_fraction": 0.0,
+    "post5_hold_fraction": 0.0,
+    "transitions": 0.0,
+    "angle_change": -0.898677,
+    "post5_range_deg": 0.512696,
+    "initial_deg": 0.0,
+    "final_deg": -0.898677
+  },
+  "new": {
+    "samples": 1200.0,
+    "seconds": 11.989,
+    "hold_fraction": 0.826667,
+    "post5_hold_fraction": 1.0,
+    "transitions": 1.0,
+    "angle_change": -0.002127,
+    "post5_range_deg": 0.0,
+    "initial_deg": 0.0,
+    "final_deg": -0.002127
+  },
+  "restarts": [
+    {
+      "label": "restart1",
+      "pid": 2942,
+      "state": "REAL_RESTART_HOLD_PASS",
+      "samples": 62,
+      "observed_seconds": 61.020524,
+      "hold_fraction_after_5s": 1.0,
+      "range_deg_after_5s": 0.0,
+      "angle_final_deg": -0.01279,
+      "transitions": 1.0,
+      "mechanical_zero_asserted": false
+    },
+    {
+      "label": "restart2",
+      "pid": 3000,
+      "state": "REAL_RESTART_HOLD_PASS",
+      "samples": 21,
+      "observed_seconds": 20.002688,
+      "hold_fraction_after_5s": 1.0,
+      "range_deg_after_5s": 0.0,
+      "angle_final_deg": 0.06433,
+      "transitions": 1.0,
+      "mechanical_zero_asserted": false
+    }
+  ],
+  "hardware_power_cycle_performed": false,
+  "physical_zero_granted": false,
+  "axis_and_motion_thresholds_unchanged": true,
+  "enabled": "enabled",
+  "current_calibration_sha256": "8c1b02c8eabc250b102c5c145cca9ce6ccf1a5554bd9b2f3fd8ea10ee62d745c",
+  "unit_sha256": "e951db31a60c79b39acc769991c320a44876ab781b8af3e4ab50b50211be2786",
+  "wrapper_sha256": "5a6057c463ac27b8cba45dc6e63dc15eaa9762de7a90180614ad1e35f45605a6"
+}

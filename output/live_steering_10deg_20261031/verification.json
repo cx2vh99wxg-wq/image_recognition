@@ -1,0 +1,67 @@
+{
+  "schema": "LIVE_STEERING_TEN_DEGREE_VERIFICATION_V1",
+  "recorded_at": "2026-10-31T21:51:44.819919+08:00",
+  "state": "COMMAND_FOLLOWING_OBSERVED_FIXED_IMAGE_GROUND_TRUTH_PENDING",
+  "source": "Live camera -> original RKNN -> existing UDP/shared memory -> normal S controller -> FSPI -> real M MPU. No scene replay or injected perception labels.",
+  "commands": {
+    "schema": "LIVE_10_DEGREE_COMMAND_FOLLOWING_V1",
+    "gain": 0.4,
+    "tolerance_deg": 3,
+    "settled_groups": {
+      "10.000": {
+        "min_deg": 7.198,
+        "max_deg": 8.354,
+        "count": 11
+      },
+      "0.000": {
+        "min_deg": -1.996,
+        "max_deg": 2.722,
+        "count": 53
+      },
+      "-10.000": {
+        "min_deg": -7.924,
+        "max_deg": -7.647,
+        "count": 40
+      }
+    },
+    "pulse_starts": 67,
+    "pulse_ends": 67,
+    "actual_pulse_us_min": 30074.625,
+    "actual_pulse_us_max": 30548.583,
+    "fault_states": 0,
+    "resolution_limit_states": 0,
+    "cancelled_states": 222,
+    "fixed_image_perception_ground_truth_verified": false,
+    "latest_image_had_no_road": true,
+    "HMI_and_other_features_unchanged": true
+  },
+  "M_metadata": {
+    "samples": 2361,
+    "eligible_samples": 328,
+    "eligible_type_observations": {
+      "1": 82,
+      "0": 161,
+      "2": 85
+    },
+    "counts_are_observations_not_independent_trials": true
+  },
+  "passive_feedback_capture": {
+    "samples": 17994,
+    "all_reference_sessions_match": true,
+    "session": 4194177452,
+    "angle_min_deg": -7.923,
+    "angle_max_deg": 8.583,
+    "events_recorded": 504,
+    "UDP_receive_port_not_bound_by_observer": true
+  },
+  "limits": [
+    "The initial source 54538 and latest source 65860 image showed laboratory scenes, not a road. This was reported immediately.",
+    "During the video interval, classified left/right/straight commands all produced matching signed steering and feedback settling within 3 degrees. Saved raw camera ground truth was not aligned with all three intervals, so this is not a perception-direction accuracy acceptance.",
+    "Repeated SETTLED observations of the same target are not independent successful trials.",
+    "Invalid/expired source data caused cancellation; this verification does not claim improved or measured overall recognition accuracy."
+  ],
+  "changes_to_product_sources": [],
+  "HMI_or_configuration_changes_in_this_turn": false,
+  "normal_capture_and_controller_left_running": true,
+  "next_required_input": "A fixed clear left bend, then right bend and straight road placed at Front Center and independently checked in fresh raw snapshots."
+}

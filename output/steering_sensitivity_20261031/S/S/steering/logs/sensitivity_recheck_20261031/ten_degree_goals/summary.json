@@ -1,0 +1,56 @@
+{
+  "schema": "STEER_TEN_DEGREE_GOAL_CHECK_V1",
+  "state": "COMPLETE",
+  "records": [
+    {
+      "target_deg": 10,
+      "returncode": 0,
+      "passed": true,
+      "measured_deg": 8.178,
+      "pulse_count": 2,
+      "actual_pulse_us": [
+        30242.917,
+        30142.0
+      ]
+    },
+    {
+      "target_deg": 0,
+      "returncode": 0,
+      "passed": true,
+      "measured_deg": -0.622,
+      "pulse_count": 3,
+      "actual_pulse_us": [
+        30165.042,
+        30116.917,
+        30103.208
+      ]
+    },
+    {
+      "target_deg": -10,
+      "returncode": 0,
+      "passed": true,
+      "measured_deg": -8.984,
+      "pulse_count": 2,
+      "actual_pulse_us": [
+        30239.709,
+        30091.25
+      ]
+    },
+    {
+      "target_deg": 0,
+      "returncode": 0,
+      "passed": true,
+      "measured_deg": -0.844,
+      "pulse_count": 3,
+      "actual_pulse_us": [
+        30383.208,
+        30152.208,
+        30602.542
+      ]
+    }
+  ],
+  "vision_used": false,
+  "feedback_and_FSPI_real": true,
+  "tolerance_deg": 3,
+  "outputs_released": true
+}

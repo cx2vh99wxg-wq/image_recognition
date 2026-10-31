@@ -1,0 +1,1964 @@
+=== 车辆控制程序 (弯道检测自动转向) ===
+版本: 8.2 (SMDT原生三字节FSPI + 按轴转向 + 制动心跳隔离)
+作者: 科研轮转
+功能: 弯道检测自动左右转 + 人员检测紧急制动 + 显示控制
+工作模式说明:
+- 实时读取: 从FSPI寄存器0读取实际模式值
+- 显示控制: 六个物理视角22/33/44/66/77/88，99六路全景；11/55兼容归并到中间视角
+- 左右转向: 完全由弯道检测自动控制
+- 原始制动请求: 有人或检测不可用写4=0，连续两秒无人写1仅清除请求
+- STOP锁存: FPGA保持低电平直到人工REARM；允许有人时强制解除当前报警
+- 制动开关: HMI功能0F的FF开启/EE关闭，默认关闭和最终门控由FPGA负责；S不依赖开关读回
+- 弯道检测: 自动读取UDP传来的弯道信息，智能控制车辆转向
+  * 智能转向: 左弯→左转，右弯→右转，直道→回中
+- 检测间隔: 每100ms检测一次模式变化
+- 实时响应: 检测到指令时立即执行对应操作
+
+=== FSPI模块初始化 ===
+FSPI Configuration:
+  Device: /dev/spidev4.0
+  Speed: 24000000 Hz (24000 KHz)
+FSPI initialized successfully
+  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes
+FSPI初始化成功！
+初始化控制寄存器: 制动4写1，方向0-3写1
+✓ 寄存器0初始化成功
+✓ 寄存器1初始化成功
+✓ 寄存器2初始化成功
+✓ 寄存器3初始化成功
+
+=== 显示控制共享内存初始化 ===
+正在初始化显示控制共享内存 (key=0x1234567c, size=64 bytes, is_writer=1)
+显示控制共享内存初始化完成，默认模式: 所有摄像头 (0x99)
+显示控制共享内存初始化成功
+
+=== 紧急制动共享内存初始化 ===
+[TRAFFIC_GO] signal=UNKNOWN confirmed=UNKNOWN go_hold=1 reg5_write=OK (not pin readback); green restores stored GO, STOP/BACK remain independent
+[SPEED_GEAR] estimated_gear=1 link=OK errno=0 warning=NONE (no speed sensor; no motion writes)
+正在初始化紧急制动共享内存 (key=0x1234567d, size=60 bytes, is_writer=0)
+角色: 读取者(FSPI-制动控制)
+紧急制动共享内存连接成功 (读取者模式)
+[自动刹停] 已连接行人检测共享内存
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+
+=== 弯道检测共享内存初始化 ===
+正在初始化弯道检测共享内存 (key=0x1234567e, size=72 bytes)
+弯道检测共享内存初始化成功 (id=42, ptr=0x7fb0ba9000)
+弯道检测共享内存初始化成功，FSPI将读取UDP传来的弯道信息
+
+=== 开始实际模式读取 ===
+[STEER_INIT] table=/home/linaro/S/steering/logs/road_recheck_20261031/response_model.fine_only.table reference_session=4033203686 zero_raw=0.059 max_pulse_us=60000 priority=10 target_tolerance=3.0 center_tolerance=3.0; awaiting fresh matching session
+[STEER_MODE] closed-loop requested result=OK; legacy turn pulses disabled
+将持续监控FSPI寄存器0的模式值变化...
+按 Ctrl+C 退出程序
+
+=== 开始监控FSPI寄存器0 ===
+按钮逻辑: 按下时产生指令值，松开时回到0x00
+支持的指令值:
+  显示控制: 22/33/44/66/77/88(六个物理视角), 99(六路全景)
+  左右转向: 完全由弯道检测自动控制
+  制动功能控制: S持续发布原始请求；HMI AUTO开关和实际STOP锁存由FPGA决定
+  紧急制动: 有人或检测失效写0，连续两秒无人写1；STOP锁存仅由人工REARM解除
+  弯道检测: 自动读取UDP传来的弯道信息并控制车辆转向 [置信度≥60%时执行]
+  检测通道: 已连接PCIe人员检测；FPGA实际AUTO/STOP状态不作软件推断
+  人员检测停车功能: 开关状态以HMI/FPGA为准，S不伪造开启或关闭状态
+  弯道检测功能: 已启用，自动控制车辆转向
+
+[Road Detection] Initialized successfully
+[SHM Read] Frame23641: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:nan | Feedback:0
+[转向链路] HMI选择码=0x00；自动转向写reg2/3，最终引脚由FPGA手动优先及STOP仲裁
+[STEER_REFERENCE] explicitly confirmed current session; physical zero offset bound
+[STEER_STATE] state=3 name=CANCELLED angle=-8.878 target=nan error=nan result=OK
+[STEER_HEARTBEAT] seq=1 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame23650: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23650: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23650: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23650: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23659: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23659: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23668: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23668: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23668: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23674: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=2 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame23674: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23674: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23683: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23683: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23683: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23692: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23692: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23692: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23701: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23701: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=3 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame23701: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23710: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23710: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23710: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23719: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23719: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23728: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23728: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23728: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23728: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=4 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame23737: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23737: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23746: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23746: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23746: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23752: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame23752: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23752: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23761: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23761: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[STEER_HEARTBEAT] seq=5 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame23761: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23770: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame23770: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame23770: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23779: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23779: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23779: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23788: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23788: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23788: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=6 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame23797: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23797: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23806: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23806: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23806: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23806: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23815: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23815: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23815: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23824: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=7 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame23824: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23833: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23833: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23833: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame23839: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23839: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23839: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23848: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23848: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame23848: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[STEER_HEARTBEAT] seq=8 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame23857: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23857: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame23857: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23866: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23866: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23875: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23875: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23875: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23884: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=9 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame23884: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23884: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23893: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23893: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23893: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23893: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23902: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23902: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23911: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23911: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=10 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame23911: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23917: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23917: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame23917: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23926: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23926: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23926: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23935: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23935: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23935: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=11 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame23944: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23944: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23953: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23953: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23953: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23962: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23962: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23962: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23971: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23971: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=12 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame23971: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23980: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23980: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23980: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23986: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23986: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame23986: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23995: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame23995: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame23995: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=13 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24004: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24004: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24004: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24013: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24013: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24022: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24022: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24022: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24022: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24031: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[STEER_HEARTBEAT] seq=14 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24031: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24040: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24040: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24040: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24046: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24046: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24046: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24055: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24055: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24055: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=15 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24064: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24064: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24064: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24073: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24073: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24073: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24082: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24082: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24091: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24091: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=16 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24091: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24091: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24100: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24100: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24100: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24109: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24109: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24118: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24118: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24118: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=17 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24124: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24124: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24124: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24133: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24133: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24133: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24142: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24142: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24142: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24151: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=18 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24151: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24151: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24160: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24160: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24169: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24169: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24169: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24178: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24178: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24178: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=19 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24187: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24187: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24187: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24196: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24196: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24196: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24202: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24202: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24202: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24211: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=20 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24211: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24211: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24220: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24220: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24229: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24229: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24229: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24238: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24238: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24238: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[STEER_HEARTBEAT] seq=21 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24247: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24247: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24247: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24256: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24256: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24256: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24265: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24265: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24265: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24274: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=22 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24274: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24274: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24280: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24280: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24280: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24289: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24289: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24289: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24298: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24298: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=23 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24307: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24307: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24307: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24316: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24316: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24316: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24325: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24325: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24325: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24334: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=24 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24334: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24334: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24343: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24343: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24343: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24352: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24352: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24352: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24358: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24358: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=25 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24358: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24367: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24367: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24367: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24376: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24376: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24385: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24385: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24385: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24394: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=26 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24394: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24394: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24403: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24403: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24403: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24412: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24412: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24412: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24421: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24421: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=27 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24421: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24430: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24430: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24430: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24436: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24436: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24445: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24445: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24445: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24454: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=28 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24454: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24454: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24463: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24463: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24463: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24472: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24472: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24472: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24481: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24481: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=29 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24481: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24490: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24490: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24490: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24499: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24499: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24499: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24508: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24508: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24508: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=30 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24517: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24517: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24517: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24523: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24523: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24532: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24532: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24532: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24541: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24541: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[STEER_HEARTBEAT] seq=31 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24541: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24550: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24550: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24550: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24559: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24559: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24559: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24568: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24568: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24568: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=32 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24574: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24574: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24583: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24583: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24583: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24592: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24592: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24592: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24601: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24601: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[STEER_HEARTBEAT] seq=33 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24601: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24610: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24610: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24610: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24619: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24619: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24619: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24628: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24628: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24634: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=34 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24634: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24634: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24643: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24643: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24643: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24652: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24652: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24652: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24661: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24661: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=35 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24661: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24670: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24670: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24670: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24679: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24679: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24688: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24688: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24688: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24688: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=36 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24697: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24697: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24706: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24706: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24706: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24712: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24712: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24712: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24721: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24721: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=37 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24721: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24730: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24730: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24730: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24739: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24739: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24739: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24748: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24748: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24748: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=38 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24757: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24757: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24766: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24766: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24766: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24766: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24775: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24775: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24784: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24784: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=39 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24784: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24790: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24790: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24790: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24799: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24799: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24799: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24808: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24808: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24808: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=40 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24817: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24817: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24826: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24826: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24826: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24835: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24835: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24835: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24844: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24844: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=41 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24844: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24853: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24853: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24853: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24862: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24862: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24862: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24871: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24871: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24871: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=42 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24877: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24877: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24877: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24886: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24886: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24886: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24895: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24895: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24904: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24904: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=43 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24904: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24913: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24913: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24913: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24922: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24922: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24922: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24931: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24931: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24931: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=44 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24940: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24940: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24940: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24949: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24949: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24949: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24955: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24955: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24955: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24964: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=45 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24964: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24964: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24973: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24973: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24982: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24982: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24982: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24991: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24991: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24991: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=46 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame24997: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame24997: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame24997: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25006: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25006: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25006: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25015: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25015: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25015: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25024: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[STEER_HEARTBEAT] seq=47 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25024: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25033: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25033: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25033: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25042: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25042: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25042: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25051: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25051: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25051: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=48 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25057: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25057: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25057: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25066: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25066: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25075: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25075: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25075: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25084: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25084: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=49 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25084: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25093: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25093: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25093: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25102: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25102: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25102: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25111: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25111: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25111: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=50 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25117: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25117: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25117: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25126: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25126: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25126: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25135: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25135: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25144: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25144: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=51 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25144: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25153: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25153: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25153: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25162: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25162: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25162: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25171: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25171: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25171: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=52 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25180: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25180: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25180: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25189: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25189: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25189: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25198: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25198: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25198: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25207: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=53 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25207: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25207: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25213: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25213: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25222: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25222: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25222: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25231: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25231: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25231: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=54 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25240: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25240: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25240: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25249: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25249: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25249: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25258: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25258: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25258: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25267: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=55 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25267: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25267: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25276: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25276: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25276: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25285: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25285: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25285: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25291: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25291: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=56 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25300: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25300: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25300: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25309: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25309: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25309: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25318: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25318: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25318: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25327: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=57 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25327: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25327: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25333: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25333: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25342: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25342: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25342: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25351: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25351: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25351: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=58 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25360: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25360: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25360: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25369: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25369: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25369: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25378: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25378: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25387: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25387: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=59 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25387: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25387: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25396: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25396: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25405: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25405: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25405: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25411: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25411: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25411: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=60 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25420: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25420: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25420: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25429: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25429: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25429: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25438: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25438: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25438: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25447: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=61 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25447: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25447: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25456: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25456: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25465: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25465: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25465: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25465: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25474: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25474: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=62 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25474: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25483: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25483: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25492: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25492: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25492: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25498: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25498: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25498: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25507: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=63 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25507: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25507: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25516: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25516: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25516: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25525: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25525: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25525: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25534: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25534: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=64 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25534: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25543: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25543: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25552: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25552: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25552: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25552: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25561: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25561: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25561: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=65 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25570: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25570: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25579: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25579: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25579: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25585: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25585: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25585: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25594: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25594: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=66 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25594: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25603: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25603: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25603: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25612: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25612: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25612: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25621: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25621: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25630: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=67 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25630: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25630: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25630: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25639: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25639: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25639: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25648: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25648: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25657: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25657: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=68 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25657: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25663: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25663: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25663: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25672: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25672: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25672: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25681: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25681: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25681: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=69 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25690: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25690: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25690: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25699: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25699: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25708: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25708: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25708: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25708: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25717: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[STEER_HEARTBEAT] seq=70 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25717: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25726: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25726: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25726: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25735: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25735: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25735: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25741: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25741: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25741: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=71 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25750: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25750: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25750: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25759: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25759: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25768: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25768: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25768: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25777: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25777: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=72 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25777: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25786: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25786: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25786: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25795: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25795: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25795: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25804: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25804: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25804: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=73 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25813: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25813: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25813: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25819: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25819: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25819: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25828: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25828: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25828: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25837: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=74 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25837: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25846: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25846: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25846: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25855: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25855: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25855: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25864: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25864: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25864: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=75 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25873: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25873: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25873: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25882: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25882: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25882: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25891: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25891: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25891: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25897: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=76 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25897: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25897: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25906: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25906: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25906: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25915: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25915: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25924: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25924: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25924: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[STEER_HEARTBEAT] seq=77 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25933: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25933: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25933: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25942: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25942: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25942: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25951: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25951: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25951: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25960: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=78 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25960: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25960: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25969: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25969: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25969: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25975: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25975: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame25975: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25984: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25984: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=79 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame25984: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25993: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25993: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame25993: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame26002: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26002: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26002: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26011: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26011: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26020: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=80 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26020: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26020: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26029: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26029: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26029: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26038: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame26038: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame26038: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26047: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26047: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=81 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26047: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26056: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26056: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26056: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26065: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26065: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26065: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26071: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26071: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26080: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=82 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26080: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26080: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26089: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26089: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26089: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26098: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26098: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame26098: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26107: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26107: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=83 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26107: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26116: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26116: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26116: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26125: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26125: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26125: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26134: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26134: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26134: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=84 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26143: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26143: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26143: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26149: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26149: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26158: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26158: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26158: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26167: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26167: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=85 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26167: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26176: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26176: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26176: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26185: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26185: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26185: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26194: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26194: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26194: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=86 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26200: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26200: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26200: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26209: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26209: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26218: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26218: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26218: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26227: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26227: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=87 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26227: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26236: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26236: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame26236: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26245: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26245: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26245: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26254: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26254: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26254: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=88 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26263: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26263: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26263: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26272: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26272: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26272: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26281: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26281: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26281: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26287: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=89 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26287: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26296: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26296: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26296: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26305: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26305: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26305: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26314: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26314: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26314: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=90 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26323: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26323: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26323: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26332: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26332: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26332: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26341: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26341: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26341: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26350: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=91 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26350: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26350: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26359: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26359: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26359: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26368: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26368: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26368: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26374: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame26374: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=92 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26383: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26383: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26383: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26392: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26392: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26392: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26401: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26401: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame26401: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26410: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=93 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26410: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26410: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26419: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26419: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26428: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame26428: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26428: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame26428: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26437: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26437: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=94 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26437: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26446: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26446: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26455: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26455: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26455: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26461: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26461: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame26461: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26470: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=95 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26470: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26470: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26479: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame26479: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26479: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26488: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26488: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26488: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26497: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26497: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[STEER_HEARTBEAT] seq=96 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26497: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26506: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26506: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26515: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26515: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26515: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26521: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26521: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26521: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26530: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=97 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26530: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26530: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26539: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26539: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26539: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26548: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26548: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26548: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26557: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26557: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[STEER_HEARTBEAT] seq=98 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26557: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26566: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26566: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame26575: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26575: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26575: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26575: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26584: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26584: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26593: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=99 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26593: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26593: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26602: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26602: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26602: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26608: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26608: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26608: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26617: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26617: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=100 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26617: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26626: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26626: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26626: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26635: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26635: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26635: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26644: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26644: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26653: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=101 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26653: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26653: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26653: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26662: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26662: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26662: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26671: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26671: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26671: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26680: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=102 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26680: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26689: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26689: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26689: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26689: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26698: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26698: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26698: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26707: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26707: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=103 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26716: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26716: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26716: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26722: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26722: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26722: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26731: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26731: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26731: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26740: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=104 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26740: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26740: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26749: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26749: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26758: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26758: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26758: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26767: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26767: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26767: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=105 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26776: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26776: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26776: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26785: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26785: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26785: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26794: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26794: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26794: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26800: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=106 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26800: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26800: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26809: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26809: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26809: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26818: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26818: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26818: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26827: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26827: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=107 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26836: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26836: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26836: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26845: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26845: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26845: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26854: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26854: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26854: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26863: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=108 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26863: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26863: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26872: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26872: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26872: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26881: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26881: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26881: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26887: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26887: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=109 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26887: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26896: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26896: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26896: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26905: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26905: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26914: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26914: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26914: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26923: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=110 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26923: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26923: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26932: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26932: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26932: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26941: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26941: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26941: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26950: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26950: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=111 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26950: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26959: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26959: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26959: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26965: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26965: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26965: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26974: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26974: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26974: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=112 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame26983: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26983: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26992: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26992: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame26992: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27001: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27001: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27001: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27007: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27007: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=113 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27007: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27016: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27016: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27016: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27025: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27025: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27034: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27034: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27034: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27043: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=114 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27043: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27043: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27052: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27052: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27052: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27061: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27061: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27061: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27070: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27070: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=115 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27070: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27079: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27079: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27079: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27088: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27088: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27088: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27094: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27094: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27094: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=116 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27103: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27103: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27103: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27112: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27112: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27121: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27121: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27121: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27130: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27130: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=117 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27130: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27139: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27139: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27139: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27148: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27148: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27148: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27157: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27157: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27157: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=118 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27166: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27166: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27166: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27175: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27175: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27175: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27181: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27181: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27190: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27190: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=119 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27190: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27199: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27199: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27199: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27208: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27208: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27208: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27217: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27217: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27217: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=120 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27223: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27223: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27223: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27232: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27232: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27241: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27241: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27241: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27250: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27250: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=121 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27250: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27259: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27259: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27259: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27268: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27268: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27268: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27277: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27277: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27277: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=122 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27286: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27286: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27286: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27295: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27295: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27295: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27301: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27301: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27301: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27310: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=123 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27310: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27319: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27319: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27319: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27328: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27328: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27328: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27337: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27337: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=124 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27337: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27346: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27346: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27346: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27355: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27355: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27355: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27364: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27364: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27364: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=125 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27373: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27373: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27373: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27382: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27382: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27382: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27391: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27391: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27400: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27400: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=126 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27400: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27400: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27409: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27409: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27418: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27418: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27418: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27424: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27424: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27424: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=127 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27433: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27433: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27433: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27442: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27442: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27442: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27451: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27451: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27451: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27460: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=128 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27460: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27460: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27469: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27469: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27478: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27478: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27478: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27478: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27487: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27487: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=129 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27487: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27496: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27496: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27505: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27505: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27505: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27511: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27511: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27511: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27520: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=130 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27520: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27520: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27529: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27529: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27529: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27538: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27538: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27538: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27547: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27547: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=131 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27556: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27556: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27556: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27565: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27565: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27565: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27574: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27574: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27574: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27583: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=132 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27583: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27583: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27592: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27592: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27592: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27598: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27598: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27598: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27607: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27607: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=133 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27607: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27616: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27616: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27625: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27625: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27625: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27634: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27634: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27634: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27643: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=134 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27643: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27643: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27652: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27652: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27652: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27661: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27661: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27661: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27670: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27670: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=135 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27670: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效person请求: valid=1 person=1 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求有效：发送reg4=0；实际刹停由FPGA AUTO开关和锁存决定
+[自动刹停FSPI] reg4=0写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27679: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 无人确认期或推理故障（详见PCIe日志）: valid=1 person=0 brake_enable=0 raw_request=1 -> reg4=0；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27679: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27679: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27685: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27685: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27685: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27694: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27694: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27694: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=136 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27703: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27703: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27712: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27712: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27712: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27721: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27721: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27721: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27730: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27730: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=137 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27730: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27739: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27739: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[自动刹停链路] 有效无人、请求清除: valid=1 person=0 brake_enable=1 raw_request=0 -> reg4=1；AUTO及实际STOP锁存由FPGA决定
+[自动刹停] 原始请求清除：发送reg4=1；不会解除FPGA已有STOP锁存
+[自动刹停FSPI] reg4=1写事务返回成功（未读回FPGA）；AUTO及实际STOP锁存由FPGA决定
+[SHM Read] Frame27739: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27748: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27748: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27748: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27757: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27757: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27757: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=138 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27766: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27766: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27766: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27772: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27772: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27781: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27781: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27781: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27790: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27790: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=139 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27790: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27799: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27799: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27799: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27808: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27808: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27808: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27817: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27817: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27817: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=140 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27826: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27826: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27826: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27835: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27835: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27835: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27844: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27844: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27844: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27853: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=141 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27853: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27853: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27859: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27859: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27868: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27868: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27868: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27877: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27877: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27877: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=142 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27886: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27886: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27886: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27895: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27895: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27895: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27904: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27904: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27904: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27913: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=143 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27913: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27913: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27922: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27922: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27922: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27931: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27931: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27931: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27937: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27937: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=144 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27946: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27946: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27946: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27955: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27955: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27955: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27964: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27964: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27964: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27973: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=145 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame27973: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27973: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27982: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27982: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27982: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27991: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27991: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame27991: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28000: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28000: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=146 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame28009: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28009: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28009: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28009: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28018: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28018: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28018: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28027: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28027: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28027: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=147 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame28036: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28036: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28045: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28045: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28045: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28045: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28054: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28054: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28063: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28063: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=148 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame28063: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28069: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28069: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28069: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28078: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28078: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28078: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28087: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28087: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28087: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=149 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame28096: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28096: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28096: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28105: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28105: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28105: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28114: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28114: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28114: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28123: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=150 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame28123: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28132: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28132: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28132: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28141: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28141: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28141: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28150: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28150: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28150: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=151 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame28156: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28156: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28156: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28165: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28165: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28165: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28174: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28174: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28174: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28183: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=152 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame28183: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28192: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28192: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28192: STRAIGHT | Conf:0% | RoadAngle:0 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28201: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28201: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28201: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28210: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28210: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-8.878 | Feedback:1
+[SHM Read] Frame28210: RIGHT | Conf:0% | RoadAngle:25 | WheelDeg:-8.878 | Feedback:1
+[STEER_HEARTBEAT] seq=153 status=3 angle=-8.878 target=nan feedback=1 no_motion_pulse=1
+[SHM Read] Frame28219: RIGHT | Conf:60% | RoadAngle:25 | WheelDeg:-8.878 | Feedback:1
+[STEER_LANE] frame=28219 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK
+[STEER_STATE] state=2 name=SETTLED angle=-8.878 target=-6.250 error=2.628 result=OK
+
+收到SIGTERM信号，正在退出...
+
+=== 程序退出清理 ===
+释放所有方向控制...
+正在停止 前进...
+调试信息: 命令=0, enable=0, 地址=0x0000, 发送值=1
+车辆控制成功: 前进 停止 (地址=0x0000, 值=1)
+正在停止 后退...
+调试信息: 命令=1, enable=0, 地址=0x0001, 发送值=1
+车辆控制成功: 后退 停止 (地址=0x0001, 值=1)
+正在停止 左转...
+调试信息: 命令=2, enable=0, 地址=0x0002, 发送值=1
+车辆控制成功: 左转 停止 (地址=0x0002, 值=1)
+正在停止 右转...
+调试信息: 命令=3, enable=0, 地址=0x0003, 发送值=1
+车辆控制成功: 右转 停止 (地址=0x0003, 值=1)
+所有方向控制已释放
+清理弯道检测共享内存...
+弯道检测共享内存已清理
+清理紧急制动共享内存...
+紧急制动共享内存清理完成
+清理显示控制共享内存...
+显示控制共享内存已标记为无效
+显示控制共享内存已删除
+显示控制共享内存清理完成
+清理FSPI资源...
+FSPI resources cleaned up
+所有资源清理完成，程序退出

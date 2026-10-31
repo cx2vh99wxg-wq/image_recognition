@@ -1,0 +1,55 @@
+{
+  "schema": "STEER_NN_GAP_FIX_DEPLOYMENT_V1",
+  "state": "RUNNING",
+  "pid": 14870,
+  "previous_pid": 14206,
+  "log": "/home/linaro/steering_mount_20261031/production_nn_gap_fix.log",
+  "model_unchanged": true,
+  "vision_ttl_unchanged": true,
+  "confidence_threshold_unchanged": true,
+  "hmi_fpga_M_perception_unchanged": true,
+  "source_manifest_sha256": "239d609c74220f48a41bd626bf090b888261a8f7c3030d74470a6255a042a246",
+  "binary_sha256": "3d2dd7a1f2e084ecf053baacc273ce393745877b11cab26e67c51c9f84dfbb73",
+  "changed_files": [
+    {
+      "file": "S/steering/controller/README.md",
+      "previous_sha256": "d88b5c95ca603e28b39a6ff1cc25484e1aebe18029078c17825df3b657c3b5a0",
+      "new_sha256": "ab34305a9416c249323d0dda4330c767a9021a1491e4af0906df14afaf44ee86"
+    },
+    {
+      "file": "S/steering/controller/steering_controller.c",
+      "previous_sha256": "c9e3673ec07a5e9bc9d8fcfc650f25ef4b3c264bf6b53fa0bd274ed408f7b542",
+      "new_sha256": "5f91ac32c5c3d2bb9b8f73753414f226e3524c4b1b775f4c054fdfa9abae722d"
+    },
+    {
+      "file": "S/steering/controller/steering_runtime.c",
+      "previous_sha256": "61315de582e361c5748d5d9747bc288e4c7742a721ffb2cf1628ce66e98dbe16",
+      "new_sha256": "f7628ecc528afb6bb7b6313c4d112ffbe10119c5c0deffd84f2dd715f494e57d"
+    },
+    {
+      "file": "S/steering/tests/controller/test_controller.c",
+      "previous_sha256": "038451a8607f7a39461d3b15bff890d874ff4398d4910730c4e7f3b921a26e58",
+      "new_sha256": "6f5670da02aa791c2c4cbfb6ee3c9f27fd8cf0af671880962f5241b84db56b76"
+    },
+    {
+      "file": "S/steering/tests/controller/test_runtime_integration.c",
+      "previous_sha256": "05a352f3251fe04bf2d6ff96cd4b578cc9e9948e76e70f281ae6cc99f45c39ab",
+      "new_sha256": "605a59acb747a613a5d8e7ccc7caf48b7fbab94ab03a0fb6ebf59c7b410be0fc"
+    },
+    {
+      "file": "S/fspi/build/vehicle_control",
+      "previous_sha256": "d4003de83b35edaff448f765c07e6e013b26bca304208ac617a0455934617640",
+      "new_sha256": "3d2dd7a1f2e084ecf053baacc273ce393745877b11cab26e67c51c9f84dfbb73"
+    },
+    {
+      "file": "S/steering/actuator/build/steering_goal_fspi",
+      "previous_sha256": "8a38a9c243a49c046df86445f524644d8dbaa2fae7055a288507c0473fabf79c",
+      "new_sha256": "90cca576f3b1884357689316072bbc902d331d201442620875f440cbd206e374"
+    },
+    {
+      "file": "S/steering/actuator/build/steering_lane_goal_fspi",
+      "previous_sha256": "85d1b639ee91582acac85988b8a21d16ce0fc4be252212c98e5f4dd2c18a0d2e",
+      "new_sha256": "263fdb80572ad0a0761163c74bb0f0312dbbdd2c07b1f037ddcc2d6426df2e37"
+    }
+  ]
+}

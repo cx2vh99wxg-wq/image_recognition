@@ -1,0 +1,26 @@
+{
+  "state": "TEST_STOPPED_OUTPUTS_RELEASED",
+  "stop_reason": "process_exited",
+  "seconds": 22.113849927000047,
+  "control_pid": 2775,
+  "returncode": 0,
+  "pulse_count": 22,
+  "angle_min": -15.532,
+  "angle_max": 16.905,
+  "last_angles": [
+    7.759,
+    7.76,
+    7.76,
+    7.762,
+    7.761,
+    7.761,
+    7.761,
+    7.761,
+    7.761,
+    7.761,
+    7.761,
+    7.761
+  ],
+  "actual_road_input": true,
+  "synthetic_lane_input": false
+}

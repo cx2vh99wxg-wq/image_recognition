@@ -1,0 +1,52 @@
+{
+  "schema": "STEER_WAITING_ROAD_TRIAL_V1",
+  "passed": true,
+  "stop_reason": "settled_real_road",
+  "seconds": 116.44829326400031,
+  "pid": 3417,
+  "expected_type": 2,
+  "target_deg": -6.25,
+  "pulse_count": 1,
+  "completed_pulses": [
+    "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30148.708 early_release=0"
+  ],
+  "accepted_targets": [
+    "[STEER_LANE] frame=21064 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21073 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21082 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21091 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21097 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21106 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21115 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21124 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21133 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21142 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21151 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21160 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21169 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21178 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21187 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21193 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21202 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21211 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21220 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21229 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK",
+    "[STEER_LANE] frame=21238 type=2 confidence=60 road_angle=25 target_deg=-6.250 result=OK"
+  ],
+  "last_angles": [
+    -8.878,
+    -8.878,
+    -8.878,
+    -8.878,
+    -8.878,
+    -8.878,
+    -8.878,
+    -8.878,
+    -8.878,
+    -8.878
+  ],
+  "angle_min": -9.097,
+  "angle_max": -2.742,
+  "outputs_released": true,
+  "synthetic_lane_input": false
+}
