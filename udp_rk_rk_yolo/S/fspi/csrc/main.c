@@ -394,6 +394,19 @@ static void publish_motion_hint(uint8_t hmi_code)
     __atomic_store_n(&display_control_shm->motion_snapshot, snapshot, __ATOMIC_RELEASE);
 }
 
+/* Keep road events independent of the slower SPI/policy/logging pass. This
+ * callback only reads existing metadata; all physical output stays owned by
+ * the normal steering runtime and its STOP/manual/reference checks. */
+static int read_steering_lane(void *context,uint32_t *frame,unsigned *type,
+                             unsigned *confidence,unsigned *angle) {
+    (void)context;
+    CurveType kind=CURVE_NONE;
+    uint32_t quality=0,road_angle=0;
+    int rc=curve_detection_read(frame,&kind,&quality,&road_angle);
+    *type=(unsigned)kind;*confidence=quality;*angle=road_angle;
+    return rc;
+}
+
 int main(int argc, char *argv[]) {
     /* An explicit bench session must survive human observation pauses.
      * Check before any SPI initialization or cleanup that could write contacts. */
@@ -529,8 +542,10 @@ int main(int argc, char *argv[]) {
     int curve_data_valid = 0;  // 标记当前周期的弯道数据是否有效
 
     uint64_t next_policy_ns=0;
+    int control_io_failed=1; /* No automatic action before the first IO check. */
     while (g_running) {
         if(closed_loop){
+            steering_runtime_poll_lane(!control_io_failed,read_steering_lane,NULL);
             steering_runtime_tick();
             uint64_t tick_now=line_clock_ns();
             if(steering_pulse_active()||tick_now<next_policy_ns){steering_runtime_wait();continue;}
@@ -611,12 +626,11 @@ int main(int argc, char *argv[]) {
         }
 
         // 2. 发布原始制动请求。FPGA决定实际STOP；仅实际写故障暂停软件转向。
-        int control_io_failed = monitor_emergency_brake();
+        control_io_failed = monitor_emergency_brake();
 
         // 3. 根据弯道检测结果执行自动转向控制（在读取FSPI指令之前）
         if(closed_loop){
-            steering_runtime_lane(!control_io_failed&&curve_data_valid,current_curve_frame_id,
-                current_curve_type,current_curve_confidence,current_curve_angle);
+            if(control_io_failed)steering_runtime_cancel();
         } else if (!control_io_failed && curve_data_valid) {
             // 静态变量跟踪上次的弯道类型，用于避免重复执行
             static CurveType last_applied_curve_type = CURVE_NONE;

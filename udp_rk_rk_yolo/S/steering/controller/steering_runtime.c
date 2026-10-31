@@ -14,7 +14,7 @@
 static steering_response_model_t model;
 static steering_keepalive_t keepalive;
 static ControlSnapshot snapshot;
-static uint64_t snapshot_ns,lane_ns;
+static uint64_t snapshot_ns,lane_ns,next_lane_poll_ns;
 static uint32_t reference_session,last_frame,blocked_frame;
 static uint64_t reference_notice_ns;
 static uint32_t reference_notice_session;
@@ -110,11 +110,21 @@ steer_result_t steering_runtime_init(int bench_mode)
         scheduling_changed=1;
     }
     steering_keepalive_init(&keepalive,1000);bench=bench_mode;initialized=1;confirmed=have_lane=have_frame=0;snapshot_ns=0;blocked_frame=0;
-    reference_notice_ns=0;reference_notice_session=0;reference_notice_result=STEER_OK;
+    reference_notice_ns=0;reference_notice_session=0;reference_notice_result=STEER_OK;next_lane_poll_ns=0;
     printf("[STEER_INIT] table=%s reference_session=%u zero_raw=%.3f max_pulse_us=%u priority=%u target_tolerance=%.1f center_tolerance=%.1f; awaiting fresh matching session\n",table,reference_session,zero_raw,model.burst_max_us?model.burst_max_us:60000,priority,target_tolerance,center_tolerance);
     return STEER_OK;
 }
 void steering_runtime_cancel(void){if(initialized)(void)steering_cancel();have_lane=0;blocked_frame=last_frame;}
+void steering_runtime_poll_lane(int allowed,steering_lane_reader_t reader,void *context)
+{
+    if(!initialized||bench||!reader||steering_pulse_active())return;
+    uint64_t now=steering_now_ns();
+    if(next_lane_poll_ns&&now<next_lane_poll_ns)return;
+    next_lane_poll_ns=now+10000000ULL;
+    uint32_t frame=0;unsigned type=0,confidence=0,angle=0;
+    int valid=reader(context,&frame,&type,&confidence,&angle)==0;
+    steering_runtime_lane(allowed&&valid,frame,type,confidence,angle);
+}
 void steering_runtime_tick(void)
 {
     if(!initialized)return;

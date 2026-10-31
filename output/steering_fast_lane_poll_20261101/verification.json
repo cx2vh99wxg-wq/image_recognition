@@ -1,0 +1,127 @@
+{
+  "schema": "STEERING_FAST_LANE_POLL_VERIFICATION_V1",
+  "recorded_at": "2026-11-01T00:00:59.564642+08:00",
+  "state": "NATIVE_REGRESSION_PASSED_PRODUCTION_INSTALLED_REFERENCE_CONFIRMED",
+  "root_causes": {
+    "old_reference_session": 4194177452,
+    "actual_M_session": 4003770268,
+    "old_policy_poll_ms": 100,
+    "demonstrated_valid_result_window_ms": 60
+  },
+  "behavior": {
+    "road_shared_memory_check_ms": 10,
+    "other_policy_check_ms": 100,
+    "nominal_turn_target_deg": 10,
+    "center_target_deg": 0,
+    "tolerance_deg": 3,
+    "pulse_active_skips_road_poll_to_protect_release_deadline": true,
+    "visual_TTL_extended": false,
+    "feedback_TTL_extended": false
+  },
+  "tests": {
+    "native_board_fake_IO": [
+      "Old 100ms consumer misses a 60ms window; new 10ms consumer actuates on same input",
+      "Expiry releases, denied policy cannot actuate, bench tools do not poll road inputs",
+      "Manual/STOP cancellation, stale feedback, session mismatch, duplicate goal suppression and 7ms SPI deadline regression"
+    ],
+    "existing_S_regressions": [
+      "lane-rule",
+      "traffic-go",
+      "control-status"
+    ],
+    "manual_center_acceptance_tests": [
+      "S native Python: 3 tests passed",
+      "Windows Python: 3 tests passed"
+    ],
+    "real_center_confirmation": {
+      "schema": "STEER_MANUAL_CENTER_CONFIRM_V1",
+      "session": 4003770268,
+      "zero_raw_deg": 0.196,
+      "sample_count": 181,
+      "same_mount_declared": true,
+      "physical_center_declared": true,
+      "fixed_chassis_declared": true,
+      "automatic_homing": false,
+      "IMU_reset": false,
+      "previous_reference": "/home/linaro/S/steering/logs/sensitivity_recheck_20261031/center.reference",
+      "controller_pid": 2389,
+      "production_log": "/home/linaro/S/steering/logs/center_confirm_1793462334981512985/production.log",
+      "normal_control_resumed": true
+    },
+    "live_road_after_patch_verified": false
+  },
+  "normal_runtime": {
+    "schema": "STEER_RUNTIME_LAUNCH_V1",
+    "enabled": true,
+    "environment": {
+      "STEERING_CONTROL_MODE": "closed-loop",
+      "STEERING_RESPONSE_TABLE": "/home/linaro/S/steering/logs/road_recheck_20261031/response_model.fine_only.table",
+      "STEERING_REFERENCE_FILE": "/home/linaro/S/steering/logs/center_confirm_1793462334981512985/center.reference",
+      "STEERING_PRIORITY": "10",
+      "STEERING_TARGET_TOLERANCE_DEG": "3",
+      "STEERING_CENTER_TOLERANCE_DEG": "3",
+      "STEERING_LANE_TARGET_LIMIT_DEG": "12",
+      "STEERING_CURVE_GAIN": "0.4",
+      "STEERING_MAX_CORRECTION_PULSES": "3"
+    }
+  },
+  "binary_sha256": "91326d9538b66a29d6dc02fb92718fd6214f4d4bd20e152f5576895bb2194ab9",
+  "local_board_source_hashes_match": true,
+  "source_hash_receipts": [
+    {
+      "path": "S/fspi/csrc/main.c",
+      "sha256": "4ec49997139c45edc40edf8a88588f1d0cf3e8faf787395d569645b5bef2d06e"
+    },
+    {
+      "path": "S/steering/controller/steering_runtime.c",
+      "sha256": "c83508e6ed3ed13a99b14703e45e0170b35f7edbc5a8ace23e30260eb2fc2fb1"
+    },
+    {
+      "path": "S/steering/controller/steering_runtime.h",
+      "sha256": "821c49fd3622815f91fbc570cecc6bd1b0e9a1266ed89986119525ef6cfa7267"
+    },
+    {
+      "path": "S/steering/tests/controller/test_runtime_integration.c",
+      "sha256": "d8c91ad16ad6d02d3530036b5dbe0149d24d66ebfad03edaa9a7f80edb41ddc8"
+    },
+    {
+      "path": "S/fspi/build/vehicle_control",
+      "sha256": "91326d9538b66a29d6dc02fb92718fd6214f4d4bd20e152f5576895bb2194ab9"
+    },
+    {
+      "path": "S/steering/controller/README.md",
+      "sha256": "de3e59e49ff3630a26c59b6fa2da58da3f65d2bdc1a77dd3bc37893e61595f0c"
+    },
+    {
+      "path": "S/steering/tools/build.py",
+      "sha256": "35a7a50602a3d4ca88e8ed236047811e552c9c8a85608286c95933d92fb5d467"
+    },
+    {
+      "path": "S/steering/tests/feedback/test_confirm_center.py",
+      "sha256": "f3ee95b68e3c0f51bc3c272702efbf42e344d17fb5bb4afa2bc236440732e505"
+    },
+    {
+      "path": "S/steering/tools/calibration/confirm_center.py",
+      "sha256": "23fb3361395045225a41797b844170309d4f230a76a5f8df65c13745813d8a08"
+    }
+  ],
+  "current_board_health": {
+    "S_pid": 2389,
+    "S_reference_session": 4003770268,
+    "feedback_valid": true,
+    "angle_deg": 0.0,
+    "pulse_begins_during_no_valid_lane_observation": 0,
+    "fault_states": 0
+  },
+  "preserved": [
+    "HMI event information and buttons",
+    "FPGA bitstream and IO pins",
+    "M perception model and lane classifier",
+    "Original source freshness and manual/STOP arbitration"
+  ],
+  "limitations": [
+    "10ms is a polling schedule, not an end-to-end NPU/UDP/actuator latency guarantee.",
+    "Tests reproducing the missed result use fake SPI/plant on the real S board; the new version has not passed a live-road steering acceptance in this turn.",
+    "Manual mechanical-center confirmation is still required after M IMU restart; this is not automatic homing."
+  ]
+}

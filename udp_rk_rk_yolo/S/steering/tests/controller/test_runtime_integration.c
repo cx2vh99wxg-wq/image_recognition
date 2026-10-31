@@ -16,6 +16,12 @@ static unsigned starts;static int active;
 static float angle;
 static uint32_t seq,frame,feedback_session=7;
 static int slow_release_window,late_status_reads;
+static uint32_t lane_frame;
+static unsigned lane_confidence,lane_reads;
+static int read_lane(void *context,uint32_t *id,unsigned *kind,unsigned *quality,unsigned *road_angle){
+    (void)context;assert(!active);++lane_reads;
+    *id=lane_frame;*kind=1;*quality=lane_confidence;*road_angle=20;return 0;
+}
 int printf(const char *format,...){
     assert(!(active&&strstr(format,"[STEER_STATE]")));
     va_list args;va_start(args,format);int result=vfprintf(stdout,format,args);va_end(args);return result;
@@ -108,6 +114,43 @@ int main(int argc,char **argv){
     slow_release_window=0;steering_runtime_close();
     puts("PASS delayed SPI regression: release deadline retained with 7ms status RX latency; FAKE IO only");
     puts("PASS intermittent NN regression: 3.3Hz, 80ms valid window, expiry releases, idle IMU history retained; FAKE IO only");
+    /* An NN result may be valid only in [120,180)ms of each 300ms period.
+     * A 100ms consumer misses it even though a 30fps display can show it.
+     * Exercise the production 10ms poll API against the same input/plant. */
+    for(int fast=0;fast<2;++fast){
+        starts=0;active=0;angle=0;lane_reads=0;
+        assert(steering_runtime_init(0)==STEER_OK);feed();steering_runtime_tick();
+        start=steering_now_ns();
+        while(steering_now_ns()-start<450000000){feed();steering_runtime_tick();steering_sleep_ms(1);}
+        start=steering_now_ns();next_lane=0;
+        while(steering_now_ns()-start<1200000000){
+            uint64_t elapsed=steering_now_ns()-start,phase=elapsed%300000000;
+            lane_frame=3000+(uint32_t)(elapsed/300000000);
+            lane_confidence=phase>=120000000&&phase<180000000?90:0;
+            feed();
+            if(fast)steering_runtime_poll_lane(1,read_lane,NULL);
+            else if(elapsed>=next_lane){
+                uint32_t id;unsigned kind,quality,road;
+                read_lane(NULL,&id,&kind,&quality,&road);
+                steering_runtime_lane(1,id,kind,quality,road);
+                next_lane=(elapsed/100000000+1)*100000000;
+            }
+            steering_runtime_tick();steering_sleep_ms(1);
+        }
+        assert(!active);
+        if(fast)assert(starts==1&&fabsf(angle-5)<2&&lane_reads>40);
+        else assert(starts==0&&fabsf(angle)<.01f);
+        steering_runtime_close();
+    }
+    /* Policy denial and explicit bench mode cannot be bypassed by polling. */
+    starts=0;active=0;angle=0;lane_reads=0;lane_frame=4000;lane_confidence=90;
+    assert(steering_runtime_init(0)==STEER_OK);feed();steering_runtime_tick();
+    start=steering_now_ns();
+    while(steering_now_ns()-start<450000000){feed();steering_runtime_poll_lane(0,read_lane,NULL);steering_runtime_tick();steering_sleep_ms(1);}
+    assert(!active&&starts==0);steering_runtime_close();
+    lane_reads=0;assert(steering_runtime_init(1)==STEER_OK);feed();steering_runtime_tick();
+    steering_runtime_poll_lane(1,read_lane,NULL);assert(!lane_reads&&!starts);steering_runtime_close();
+    puts("PASS short-valid-lane regression: 100ms polling misses 60ms windows, 10ms poll acts, expiry releases, denial and bench isolation retained; FAKE IO only");
     /* A new M boot must remain visibly blocked by the old physical reference.
      * Sending plausible curve/angle data must not silently rebind that zero. */
     starts=0;active=0;angle=0;feedback_session=8;

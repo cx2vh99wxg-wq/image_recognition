@@ -92,7 +92,7 @@ def check_s() -> None:
     run(cli, ["--backend", "fspi", "--direction", "left", "--duration-us", "20001",
               "--max-pulse-ms", "20"], 2)
     print("PASS CLI: microsecond input, fractional output, exclusive units and pre-open bound")
-    for name in ["test_bench.py", "test_response_model.py", "test_partition_response.py", "test_target.py", "test_auto_calibration.py"]:
+    for name in ["test_bench.py", "test_response_model.py", "test_partition_response.py", "test_target.py", "test_auto_calibration.py", "test_confirm_center.py"]:
         result = subprocess.run([sys.executable, str(ROOT / "tests" / "feedback" / name)],
                                 text=True, capture_output=True, timeout=30)
         if result.returncode:

@@ -1,0 +1,7 @@
+{
+  "schema": "STEER_FAST_LANE_POLL_BUILD_V1",
+  "short_valid_window_test_passed": true,
+  "tests_passed": true,
+  "no_actuation": true,
+  "binary_sha256": "91326d9538b66a29d6dc02fb92718fd6214f4d4bd20e152f5576895bb2194ab9"
+}

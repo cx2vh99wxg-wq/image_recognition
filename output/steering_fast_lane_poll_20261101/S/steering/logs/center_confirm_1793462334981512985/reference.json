@@ -1,0 +1,15 @@
+{
+  "schema": "STEER_MANUAL_CENTER_CONFIRM_V1",
+  "session": 4003770268,
+  "zero_raw_deg": 0.196,
+  "sample_count": 181,
+  "same_mount_declared": true,
+  "physical_center_declared": true,
+  "fixed_chassis_declared": true,
+  "automatic_homing": false,
+  "IMU_reset": false,
+  "previous_reference": "/home/linaro/S/steering/logs/sensitivity_recheck_20261031/center.reference",
+  "controller_pid": 2389,
+  "production_log": "/home/linaro/S/steering/logs/center_confirm_1793462334981512985/production.log",
+  "normal_control_resumed": true
+}
