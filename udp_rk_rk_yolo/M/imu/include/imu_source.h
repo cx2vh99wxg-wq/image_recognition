@@ -11,6 +11,8 @@ typedef struct {
     uint32_t session_id, generation;
     uint64_t anchor_fpga_us, anchor_host_ns;
     uint64_t captured_age_ns, capture_host_ns;
+    /* Diagnostic copy only: never accepted as angle feedback after a fault. */
+    fpga_imu_snapshot_t last_snapshot;
     int anchored;
 } imu_source_t;
 steer_result_t imu_source_open(imu_source_t *source, imu_source_kind_t kind,

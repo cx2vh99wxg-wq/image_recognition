@@ -1,0 +1,151 @@
+{
+  "schema": "STEER_ENDPOINT_HOME_V1",
+  "start_raw_deg": 2.627,
+  "left_raw_deg": 19.98966666666667,
+  "right_raw_deg": -12.1155,
+  "span_deg": 32.10516666666667,
+  "midpoint_raw_deg": 3.9370833333333337,
+  "final_raw_deg": 3.166,
+  "error_deg": -0.7710833333333338,
+  "pulse_records": [
+    {
+      "phase": "seek_left",
+      "direction": 1,
+      "requested_us": 30000,
+      "before_raw_deg": 2.627,
+      "after_raw_deg": 9.1715,
+      "delta_deg": 6.5445,
+      "verified_full_stroke_rebound": false
+    },
+    {
+      "phase": "seek_left",
+      "direction": 1,
+      "requested_us": 30000,
+      "before_raw_deg": 9.1715,
+      "after_raw_deg": 15.629,
+      "delta_deg": 6.4575,
+      "verified_full_stroke_rebound": false
+    },
+    {
+      "phase": "seek_left",
+      "direction": 1,
+      "requested_us": 30000,
+      "before_raw_deg": 15.629,
+      "after_raw_deg": 17.722,
+      "delta_deg": 2.0930000000000017,
+      "verified_full_stroke_rebound": false
+    },
+    {
+      "phase": "seek_left",
+      "direction": 1,
+      "requested_us": 30000,
+      "before_raw_deg": 17.722,
+      "after_raw_deg": 19.839,
+      "delta_deg": 2.1169999999999973,
+      "verified_full_stroke_rebound": false
+    },
+    {
+      "phase": "seek_left",
+      "direction": 1,
+      "requested_us": 30000,
+      "before_raw_deg": 19.839,
+      "after_raw_deg": 20.0865,
+      "delta_deg": 0.24750000000000227,
+      "verified_full_stroke_rebound": false
+    },
+    {
+      "phase": "seek_left",
+      "direction": 1,
+      "requested_us": 30000,
+      "before_raw_deg": 20.0865,
+      "after_raw_deg": 20.0155,
+      "delta_deg": -0.0710000000000015,
+      "verified_full_stroke_rebound": false
+    },
+    {
+      "phase": "seek_left",
+      "direction": 1,
+      "requested_us": 30000,
+      "before_raw_deg": 20.0155,
+      "after_raw_deg": 19.867,
+      "delta_deg": -0.14849999999999852,
+      "verified_full_stroke_rebound": false
+    },
+    {
+      "phase": "seek_right",
+      "direction": -1,
+      "requested_us": 30000,
+      "before_raw_deg": 19.867,
+      "after_raw_deg": 11.905,
+      "delta_deg": -7.9620000000000015,
+      "verified_full_stroke_rebound": false
+    },
+    {
+      "phase": "seek_right",
+      "direction": -1,
+      "requested_us": 30000,
+      "before_raw_deg": 11.905,
+      "after_raw_deg": 3.804,
+      "delta_deg": -8.100999999999999,
+      "verified_full_stroke_rebound": false
+    },
+    {
+      "phase": "seek_right",
+      "direction": -1,
+      "requested_us": 30000,
+      "before_raw_deg": 3.804,
+      "after_raw_deg": -4.7125,
+      "delta_deg": -8.5165,
+      "verified_full_stroke_rebound": false
+    },
+    {
+      "phase": "seek_right",
+      "direction": -1,
+      "requested_us": 30000,
+      "before_raw_deg": -4.7125,
+      "after_raw_deg": -12.006,
+      "delta_deg": -7.2935,
+      "verified_full_stroke_rebound": false
+    },
+    {
+      "phase": "seek_right",
+      "direction": -1,
+      "requested_us": 30000,
+      "before_raw_deg": -12.006,
+      "after_raw_deg": -14.4165,
+      "delta_deg": -2.410499999999999,
+      "verified_full_stroke_rebound": false
+    },
+    {
+      "phase": "seek_right",
+      "direction": -1,
+      "requested_us": 30000,
+      "before_raw_deg": -14.4165,
+      "after_raw_deg": -12.1155,
+      "delta_deg": 2.3009999999999984,
+      "verified_full_stroke_rebound": true
+    },
+    {
+      "phase": "inward_to_calibrated_region",
+      "direction": 1,
+      "requested_us": 30000,
+      "before_raw_deg": -12.1155,
+      "after_raw_deg": -3.0885,
+      "delta_deg": 9.027000000000001,
+      "verified_full_stroke_rebound": false
+    }
+  ],
+  "fine_requests_us": [
+    30000
+  ],
+  "total_requested_us": 450000,
+  "center_source": "verified_mechanical_endpoint_midpoint",
+  "passed": true,
+  "session": 4091763351,
+  "S_boot_id": "f9a0b5a0-efb3-4c62-9f3c-ec3777668f82",
+  "commissioning": false,
+  "physical_straight_visually_confirmed": true,
+  "source": "real_M_telemetry_and_real_FSPI_no_perception_injection",
+  "reference_file": "/home/linaro/S/steering/logs/auto_home_1793513387432877026/center.reference",
+  "restored_controller_pid": 4206
+}

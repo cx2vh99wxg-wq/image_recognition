@@ -11,13 +11,31 @@
 #include <time.h>
 #endif
 
+static volatile sig_atomic_t cancelled;
+static void cancel_handler(int number) { (void)number; cancelled = 1; }
+
 static int wait_for_tick(int hardware, uint64_t deadline_ns)
 {
 #ifdef STEERING_WITH_FSPI
     if (hardware) {
-        struct timespec deadline = {(time_t)(deadline_ns / UINT64_C(1000000000)),
-                                    (long)(deadline_ns % UINT64_C(1000000000))};
-        return clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &deadline, NULL);
+        /* Cold desktop startup can wake an absolute sleep ~2ms late even
+         * with FIFO scheduling. Sleep to an early wake point, then spend at
+         * most 3ms on a cancellable deadline check. Keep the same release
+         * deadline and timing acceptance; never extend the contact request. */
+        const uint64_t guard = UINT64_C(3000000);
+        uint64_t wake = deadline_ns > guard ? deadline_ns - guard : 0;
+        if (steering_now_ns() < wake) {
+            struct timespec deadline = {(time_t)(wake / UINT64_C(1000000000)),
+                                        (long)(wake % UINT64_C(1000000000))};
+            int rc = clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &deadline, NULL);
+            if (rc) return rc;
+        }
+        while (!cancelled) {
+            uint64_t now = steering_now_ns();
+            if (!now) return EIO;
+            if (now >= deadline_ns) break;
+        }
+        return 0;
     }
 #else
     (void)hardware; (void)deadline_ns;
@@ -50,8 +68,6 @@ static steer_result_t trace_active_contact(unsigned pulse, steer_direction_t dir
 #endif
 }
 
-static volatile sig_atomic_t cancelled;
-static void cancel_handler(int number) { (void)number; cancelled = 1; }
 static int number(const char *text, unsigned *value)
 {
     char *end; errno = 0;

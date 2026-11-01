@@ -34,6 +34,7 @@ module mpu9250_sampler #(parameter CLK_HZ=25000000)(
     reg [7:0] micro_div;
     reg [31:0] delay_count;
     reg [4:0] state,config_index;
+    reg [1:0] sample_nack_retries;
     reg start,read_op;
     reg [7:0] reg_address,write_value;
     reg [4:0] read_length;
@@ -65,7 +66,7 @@ module mpu9250_sampler #(parameter CLK_HZ=25000000)(
         enabled<=0;identified<=0;valid_sample<=0;who<=8'hff;error_code<=0;
         device_address<=7'h68;sample_sequence<=0;errors<=0;generation<=0;raw_sample<=0;
         now_us<=0;sample_us<=0;transaction_us<=0;micro_div<=0;
-        delay_count<=0;state<=PROBE;config_index<=0;start<=0;read_op<=0;
+        delay_count<=0;state<=PROBE;config_index<=0;sample_nack_retries<=0;start<=0;read_op<=0;
         reg_address<=0;write_value<=0;read_length<=1;
       end else begin
         start<=0;
@@ -74,6 +75,7 @@ module mpu9250_sampler #(parameter CLK_HZ=25000000)(
         if(new_command&&command_address==16'h4d00)begin
           enabled<=command_value==8'ha5;identified<=0;valid_sample<=0;
           sample_sequence<=0;generation<=generation+1'b1;who<=8'hff;error_code<=0;
+          sample_nack_retries<=0;
           state<=PROBE;device_address<=7'h68;delay_count<=CLK_HZ/100;
         end else if(enabled&&!busy)begin
           if(delay_count!=0)delay_count<=delay_count-1'b1;
@@ -96,8 +98,16 @@ module mpu9250_sampler #(parameter CLK_HZ=25000000)(
         if(done&&enabled)begin
           if(bus_error!=0)begin
             error_code<=bus_error;errors<=errors+1'b1;valid_sample<=0;
-            if(state==PROBE_WAIT&&device_address==7'h68)begin device_address<=7'h69;state<=PROBE;end
-            else begin identified<=0;state<=RETRY;delay_count<=CLK_HZ/2;end
+            // A NACK before a sample read returns no usable bytes. Retry
+            // that transaction twice without resetting the identified MPU,
+            // timestamps or sequence. Invalidity remains visible until a
+            // genuinely new successful sample; persistent/other faults keep
+            // the original slow recovery and host freshness protection.
+            if(state==SAMPLE_WAIT&&identified&&bus_error==1&&sample_nack_retries<2)begin
+              sample_nack_retries<=sample_nack_retries+1'b1;
+              state<=SAMPLE;delay_count<=CLK_HZ/1000;
+            end else if(state==PROBE_WAIT&&device_address==7'h68)begin device_address<=7'h69;state<=PROBE;end
+            else begin identified<=0;sample_nack_retries<=0;state<=RETRY;delay_count<=CLK_HZ/2;end
           end else case(state)
             PROBE_WAIT:begin
               who<=read_data[119:112];
@@ -112,6 +122,7 @@ module mpu9250_sampler #(parameter CLK_HZ=25000000)(
               end
             end
             SAMPLE_WAIT:begin
+              sample_nack_retries<=0;
               if(read_data[112])begin // INT_STATUS.RAW_DATA_RDY_INT, not a repeat
                 raw_sample<=read_data[111:0];sample_us<=transaction_us;
                 sample_sequence<=sample_sequence+1'b1;valid_sample<=1;error_code<=0;

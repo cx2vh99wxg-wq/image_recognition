@@ -1,0 +1,8 @@
+FSPI Configuration:
+  Device: /dev/spidev4.0
+  Speed: 24000000 Hz (24000 KHz)
+FSPI initialized successfully
+  SMDT transport: host write=ADDR_H ADDR_L DATA (3 bytes); controller supplies 00/80 opcodes
+FPGA_ACTIVE pulse=1 contacts=0x57 gates=0xE0 left_n=1 right_n=0 requested_contact_low=YES (logical state, not measured voltage/angle)
+fspi pulse=1 direction=right requested_ms=30.000 software_elapsed_ms=30.754 COMMAND_COMPLETED (no angle/pin measurement)
+FSPI resources cleaned up

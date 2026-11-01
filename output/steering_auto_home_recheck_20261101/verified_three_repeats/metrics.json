@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "same_session": true,
+  "errors_deg": [
+    -1.1710833333333341,
+    -0.7710833333333338,
+    -1.5248333333333335
+  ],
+  "spans_deg": [
+    34.28216666666667,
+    32.10516666666667,
+    34.431666666666665
+  ],
+  "midpoints_raw_deg": [
+    3.7950833333333343,
+    3.9370833333333337,
+    2.9623333333333335
+  ],
+  "midpoint_range_deg": 0.9747500000000002,
+  "pulse_count": 50,
+  "actual_step_ms_min": 30.074042,
+  "actual_step_ms_max": 30.753625,
+  "max_receiver_gap_ms": 23.93825,
+  "peak_rate_dps": 133.03,
+  "software_contact_windows_only": true
+}

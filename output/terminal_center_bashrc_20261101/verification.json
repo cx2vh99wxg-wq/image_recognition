@@ -1,0 +1,55 @@
+{
+  "schema": "TERMINAL_CENTER_BASHRC_VERIFICATION_V1",
+  "recorded_at": "2026-11-01T00:21:59.099016+08:00",
+  "deployed": {
+    "schema": "STEER_BASHRC_AUTO_CENTER_DEPLOY_V1",
+    "target": "/home/linaro/.bashrc",
+    "installation_output": "TERMINAL_CENTER_HOOK_INSTALLED {\"schema\": \"STEER_TERMINAL_CENTER_INSTALL_V1\", \"target\": \"/home/linaro/.bashrc\", \"backup\": \"/home/linaro/S/steering/logs/terminal_center_install_1793463833696733450/bashrc.before\", \"new_sha256\": \"0de9e3e1122faeee67e2198a0911cc915173cfc3ef54b7348f8454a824f11957\", \"installed_before_foreground_make_run\": true, \"noninteractive_shells_unchanged\": true, \"normal_S_startup_preserved\": true, \"confirmation_executed_by_installer\": false}",
+    "syntax_checked": true,
+    "idempotence_checked": true,
+    "passive_check": "AUTO_CENTER_WAIT keep steering physically centered and stationary until confirmation completes\nAUTO_CENTER_CHECK new_M_session=2298424043 reference_session=4003770268 would_confirm=1 no_actuation=1",
+    "controller_pid_unchanged": "2389",
+    "reference_unchanged_during_install": true,
+    "root_bashrc_unchanged": true,
+    "source_hashes": [
+      {
+        "path": "S/steering/controller/README.md",
+        "sha256": "52be2a8879ee0d862373afd14ecaf912f66e19cea3754e283c75f6478f74c0fb"
+      },
+      {
+        "path": "S/steering/startup/terminal_center.bash",
+        "sha256": "b0bf70f92ffae4cd53ee8f6194dc869e47c05691f0213689a0b4693db2c18cd7"
+      },
+      {
+        "path": "S/steering/tests/feedback/test_terminal_center.py",
+        "sha256": "b7d25919e55b5d8407385ff854052d3659bda3a3ca5f5b67b8c616f466165d88"
+      },
+      {
+        "path": "S/steering/tools/build.py",
+        "sha256": "0f34ecea2f6808fdb0854df39acd073213090e9ff5c011062522f1e0e94e1265"
+      },
+      {
+        "path": "S/steering/tools/calibration/install_terminal_center.py",
+        "sha256": "884ffe7a22da11f925c9f42feff8b2cdff89017ceca2b23b3a961654dc267bc6"
+      },
+      {
+        "path": "S/steering/tools/calibration/terminal_center.py",
+        "sha256": "921ebc8b82557ce04a506505c6ae75b215becab6192efb64a861c6fb7dd2e8a8"
+      }
+    ],
+    "bashrc_sha256": "0de9e3e1122faeee67e2198a0911cc915173cfc3ef54b7348f8454a824f11957",
+    "no_active_confirmation_test": true
+  },
+  "local_and_board_sources_match": true,
+  "original_bashrc_contents_preserved": true,
+  "physical_precondition": "Before the first S terminal after M IMU restart, the unchanged sensor/mechanism must be physically centered and fixed until confirmation completes.",
+  "behavior": [
+    "Interactive linaro terminals start a background check before the existing make run block.",
+    "Already bound M sessions are skipped without pausing or re-zeroing control.",
+    "New sessions wait for telemetry and stable S control startup, then run the explicitly requested confirmation command once.",
+    "Multiple terminal checks are serialized; no fresh data or bad stationary samples cannot become a new zero."
+  ],
+  "live_install_check": "Read-only check detected M session 2298424043 versus reference 4003770268. It reported would_confirm=1; no actual center confirmation was performed during installation.",
+  "active_startup_test_performed": false,
+  "log_path": "/home/linaro/.cache/steering/terminal-center.log"
+}

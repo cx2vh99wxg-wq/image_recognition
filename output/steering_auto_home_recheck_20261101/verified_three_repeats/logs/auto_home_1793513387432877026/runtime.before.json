@@ -1,0 +1,15 @@
+{
+  "schema": "STEER_RUNTIME_LAUNCH_V1",
+  "enabled": true,
+  "environment": {
+    "STEERING_CONTROL_MODE": "closed-loop",
+    "STEERING_RESPONSE_TABLE": "/home/linaro/S/steering/logs/road_recheck_20261031/response_model.fine_only.table",
+    "STEERING_REFERENCE_FILE": "/home/linaro/S/steering/logs/auto_home_1793513358714652513/center.reference",
+    "STEERING_PRIORITY": "10",
+    "STEERING_TARGET_TOLERANCE_DEG": "3",
+    "STEERING_CENTER_TOLERANCE_DEG": "3",
+    "STEERING_LANE_TARGET_LIMIT_DEG": "12",
+    "STEERING_CURVE_GAIN": "0.4",
+    "STEERING_MAX_CORRECTION_PULSES": "3"
+  }
+}

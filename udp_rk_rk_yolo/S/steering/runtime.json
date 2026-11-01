@@ -4,7 +4,7 @@
   "environment": {
     "STEERING_CONTROL_MODE": "closed-loop",
     "STEERING_RESPONSE_TABLE": "/home/linaro/S/steering/logs/road_recheck_20261031/response_model.fine_only.table",
-    "STEERING_REFERENCE_FILE": "/home/linaro/S/steering/logs/center_confirm_1793462334981512985/center.reference",
+    "STEERING_REFERENCE_FILE": "/home/linaro/S/steering/logs/auto_home_1793514668216122054/center.reference",
     "STEERING_PRIORITY": "10",
     "STEERING_TARGET_TOLERANCE_DEG": "3",
     "STEERING_CENTER_TOLERANCE_DEG": "3",

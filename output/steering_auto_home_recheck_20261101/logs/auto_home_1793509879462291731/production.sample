@@ -1,0 +1,39 @@
+[STEER_INIT] table=/home/linaro/S/steering/logs/road_recheck_20261031/response_model.fine_only.table reference_session=3900089669 zero_raw=-11.300 max_pulse_us=60000 priority=10 target_tolerance=3.0 center_tolerance=3.0; awaiting fresh matching session
+[STEER_MODE] closed-loop requested result=OK; legacy turn pulses disabled
+[STEER_WAIT_REFERENCE] reason=feedback_not_ready expected_session=3900089669 received_session=0 feedback=NOT_IMPLEMENTED_OR_NOT_READY automatic_steering=blocked physical_center_confirmation_required=1
+[STEER_REFERENCE] explicitly confirmed current session; physical zero offset bound
+[STEER_STATE] state=3 name=CANCELLED angle=-1.588 target=nan error=nan result=OK
+[STEER_HEARTBEAT] seq=1 status=3 angle=-1.588 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=2 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=3 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=4 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=5 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=6 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=7 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=8 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=9 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=10 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=11 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=12 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=13 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=14 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=15 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=16 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=17 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=18 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=19 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=20 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=21 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=22 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=23 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=24 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=25 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=26 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=27 status=3 angle=-1.605 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=28 status=3 angle=-1.508 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=29 status=3 angle=13.277 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=30 status=3 angle=-2.434 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=31 status=3 angle=-2.097 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=32 status=3 angle=-2.110 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=33 status=3 angle=-2.105 target=nan feedback=1 no_motion_pulse=1
+[STEER_HEARTBEAT] seq=34 status=3 angle=-2.101 target=nan feedback=1 no_motion_pulse=1

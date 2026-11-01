@@ -149,6 +149,7 @@ int imu_tool_main(int argc,char **argv,int estimate){
   fpga?"REAL FPGA":"SIMULATED MOCK",integrator.axis[0],integrator.axis[1],integrator.axis[2],bias[0],bias[1],bias[2],request_zero,
   fixed_chassis?"fixed-chassis bench declared":"relative motion only, chassis uncompensated");
  unsigned produced=0,duplicate_reads=0;uint64_t last_good=steering_now_ns(),next_sample=last_good,last_notice=0,previous_stamp=0;
+ uint32_t reported_i2c_errors=0;
  uint32_t previous_seq=0,session=(uint32_t)last_good^(uint32_t)(last_good>>32);
  if(!session)session=1;
  int have_sample=0,zero_valid=request_zero,exit_code=0;float gravity_ref[3]={0};
@@ -157,6 +158,11 @@ int imu_tool_main(int argc,char **argv,int estimate){
   rc=imu_source_read(&source,&sample);
   uint64_t now=steering_now_ns();
   if(rc!=STEER_OK){
+   if(fpga&&source.last_snapshot.error&&source.last_snapshot.errors!=reported_i2c_errors){
+    const fpga_imu_snapshot_t *s=&source.last_snapshot;reported_i2c_errors=s->errors;
+    fprintf(stderr,"IMU_BUS_FAULT code=%u (1=NACK,2=timeout,3=stuck_bus,4=identity) errors=%u flags=%u who=%02X seq=%u generation=%u sample_age_us=%llu; no valid feedback published\n",
+     s->error,s->errors,s->flags,s->identity,s->sequence,s->generation,(unsigned long long)(s->now_us-s->sample_us));
+   }
    if(rc==STEER_ERR_BUSY)++duplicate_reads;
    if(rc==STEER_ERR_BUSY||rc==STEER_ERR_NOT_READY||rc==STEER_ERR_IO){
     if(now-last_good>(have_sample?100000000u:2000000000u)){

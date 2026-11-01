@@ -1,0 +1,6 @@
+{
+  "passed": false,
+  "error": "No credible steering movement after both contacts; check motor/remote power, pairing, mode or obstruction; zero remains unconfirmed",
+  "session": 4032995387,
+  "restored_controller_pid": 4498
+}

@@ -1,0 +1,57 @@
+{
+  "axis": [
+    0.0,
+    0.0,
+    1.0
+  ],
+  "bias": [
+    -0.6785495675000001,
+    -2.16076338,
+    0.5764121825
+  ],
+  "gyro_std": [
+    0.04041328478294994,
+    0.051901115592248095,
+    0.04635296618501957
+  ],
+  "accel_norm_mean": 9.84980548737846,
+  "samples": 400,
+  "duration_s": 3.991734,
+  "temperature_c": 28.422151500000002,
+  "physical_center_established": false,
+  "chassis_compensated": false,
+  "note": "Stationary declaration and mounting direction need independent physical verification",
+  "schema": "IMU_STARTUP_BIAS_V1",
+  "old_bias": [
+    -0.639026697,
+    -2.10700382,
+    0.586507583
+  ],
+  "old_residual_norm_dps": 0.06748381061564898,
+  "holdout_bias_separation_dps": 0.02288414355989951,
+  "accel_axis_std": [
+    0.010181608484881864,
+    0.010289755525955655,
+    0.015793933530188754
+  ],
+  "fit_samples": 400,
+  "holdout_samples": 600,
+  "total_samples": 1200,
+  "startup_stationary_required": true,
+  "axis_changed": false,
+  "holdout_replay": {
+    "samples": 600.0,
+    "seconds": 5.992,
+    "hold_fraction": 0.653333,
+    "post5_hold_fraction": 1.0,
+    "transitions": 1.0,
+    "angle_change": 0.006529,
+    "post5_range_deg": 0.0,
+    "initial_deg": 0.0,
+    "final_deg": 0.006529
+  },
+  "raw_sha256": "14af1c76e73e93a920604a26f0971caf7b388d7145db7fbc79b1001bbdf5a6b6",
+  "base_calibration_sha256": "543548d3e1c810ddfb2fcc4978b39c92ac96a7cc4b7ac1ffa35168b0ec79963f",
+  "calibration_sha256": "2e21d03fd68e3750c1ca74dee0a5fdc3b090a82fb512c638eb6c06e1719cd27a",
+  "status": "VALIDATED_NO_MECHANICAL_ZERO"
+}

@@ -1,0 +1,9 @@
+[REAL FPGA] axis=[0.00000 0.00000 1.00000] bias=[0.00000 0.00000 0.00000] ZERO_VALID=0; relative motion only, chassis uncompensated
+REAL seq=1 t_ns=338952972419 dt_ms=0.000 gap=0 age_ms=3 accel=[7.2610 0.6303 6.6062] gyro=[-0.5038 -1.7252 0.4809] temp_c=26.933 relative_deg=nan rate_dps=nan ZERO_VALID=0 static_hold=0 hold_changes=0 residual_bias=[0.00000 0.00000 0.00000]
+REAL seq=401 t_ns=342949988419 dt_ms=10.565 gap=0 age_ms=3 accel=[7.2592 0.6381 6.6463] gyro=[-0.5954 -2.0916 0.5878] temp_c=28.347 relative_deg=nan rate_dps=nan ZERO_VALID=0 static_hold=0 hold_changes=0 residual_bias=[0.00000 0.00000 0.00000]
+REAL seq=801 t_ns=346950526419 dt_ms=8.804 gap=0 age_ms=3 accel=[7.2490 0.6422 6.6463] gyro=[-0.7328 -2.1145 0.5420] temp_c=28.353 relative_deg=nan rate_dps=nan ZERO_VALID=0 static_hold=0 hold_changes=0 residual_bias=[0.00000 0.00000 0.00000]
+REAL seq=1201 t_ns=350952824419 dt_ms=10.565 gap=0 age_ms=3 accel=[7.2514 0.6315 6.6583] gyro=[-0.6031 -2.0076 0.5573] temp_c=28.356 relative_deg=nan rate_dps=nan ZERO_VALID=0 static_hold=0 hold_changes=0 residual_bias=[0.00000 0.00000 0.00000]
+REAL seq=1601 t_ns=354955123419 dt_ms=10.565 gap=0 age_ms=2 accel=[7.2538 0.6225 6.6325] gyro=[-0.6641 -2.0534 0.5573] temp_c=28.362 relative_deg=nan rate_dps=nan ZERO_VALID=0 static_hold=0 hold_changes=0 residual_bias=[0.00000 0.00000 0.00000]
+REAL seq=2001 t_ns=358955660419 dt_ms=8.804 gap=0 age_ms=2 accel=[7.2544 0.6333 6.6361] gyro=[-0.7023 -2.0992 0.6031] temp_c=28.377 relative_deg=nan rate_dps=nan ZERO_VALID=0 static_hold=0 hold_changes=0 residual_bias=[0.00000 0.00000 0.00000]
+REAL seq=2400 t_ns=362947394419 dt_ms=8.804 gap=0 age_ms=3 accel=[7.2341 0.6135 6.6547] gyro=[-0.6412 -2.0992 0.6031] temp_c=28.383 relative_deg=nan rate_dps=nan ZERO_VALID=0 static_hold=0 hold_changes=0 residual_bias=[0.00000 0.00000 0.00000]
+LINK accepted=2400 duplicate_reads=8560 transfers=22110 io_errors=0 crc_errors=0 stale_captures=0 i2c_errors=0

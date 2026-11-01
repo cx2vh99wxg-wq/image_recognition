@@ -1,0 +1,6 @@
+{
+  "passed": false,
+  "error": "Measured rotation opposes homing contact",
+  "session": 3954980155,
+  "restored_controller_pid": 2280
+}

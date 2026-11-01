@@ -25,6 +25,7 @@ steer_result_t imu_source_read(imu_source_t *source, steering_imu_sample_t *samp
         fpga_imu_snapshot_t raw;uint64_t host=0;
         steer_result_t rc=mpu9250_fpga_snapshot(&source->bus,&raw,&host);
         if(rc!=STEER_OK)return rc;
+        source->last_snapshot=raw;
         if(raw.error||raw.identity!=0x71||(raw.flags&7)!=7||!raw.sample_us)
             return STEER_ERR_NOT_READY;
         if(raw.now_us-raw.sample_us>50000)return STEER_ERR_STALE;

@@ -22,3 +22,15 @@
 
 新增只读健康检查：`python3 tools/feedback_health.py --seconds 3`，检查常驻进程和样本是否持续推进；
 不重启采集、不访问SPI、不设置零位。它是低频诊断，不替代S闭环100ms的新鲜度检查。
+
+2026-11-01本模块的旧零偏基准与本次冷启动实测存在约0.56°/s三轴偏差，触发原0.5°/s
+基准差异检查；另一次启动采样含运动扰动。经操作员确认静止采集2400个真实样本，
+拟合、首段留出验证及独立后1200点C算法回放通过后，保存为
+`calibration/stationary_bias_20261101.cal`，并同步配置模板及板端`/etc/default/m-steering-imu`。
+旧基准、原始数据及验证报告保留；检查阈值、安装轴、ZERO_VALID及控制逻辑未改变。
+此文件是当前这块MPU的实测基准，不代替换传感器或换安装轴后的重新标定。
+
+若启动时移动导致连续拒绝、出现`Start request repeated too quickly`，先保持完全静止，
+然后执行`sudo systemctl reset-failed m-steering-imu`和`sudo systemctl start m-steering-imu`。
+开机初始约15秒仍需静止，不能仅清除systemd失败状态而忽略实际校准拒绝原因。
+恢复服务会产生新M会话；自动转向前须先把方向盘摆在机械中位，再按S端既有流程确认。

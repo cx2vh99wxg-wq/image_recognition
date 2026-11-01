@@ -1,0 +1,14 @@
+{
+  "schema": "STEER_HOMING_PROFILE_V1",
+  "enabled": true,
+  "qualified": true,
+  "mechanical_endstops_verified": true,
+  "min_span_deg": 31.762666666666668,
+  "max_span_deg": 37.76266666666667,
+  "center_tolerance_deg": 3,
+  "note": "Operator confirmed both stops and approximate straight midpoint. Repeat homes must match commissioned full stroke within 3 degrees.",
+  "operator_observed_both_endpoints": true,
+  "commissioned_span_deg": 34.76266666666667,
+  "commissioning_result": "/home/linaro/S/steering/logs/auto_home_1793508943391097117/result.json",
+  "qualified_at_ns": 1793509035010517536
+}

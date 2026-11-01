@@ -1,0 +1,2 @@
+AUTO_CENTER_WAIT keep steering physically centered and stationary until confirmation completes
+AUTO_CENTER_CHECK new_M_session=2298424043 reference_session=4003770268 would_confirm=1 no_actuation=1

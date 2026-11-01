@@ -1,4 +1,4 @@
 # Install as /etc/default/m-steering-imu after confirming the mounting axis.
 # Keep the chassis and IMU stationary for the first ~15 seconds after startup.
 # This sets rate calibration only; it never declares the mechanical center.
-IMU_CALIBRATION_ARGS="--calibration /home/linaro/M/imu/calibration/stationary_bias_20261031.cal --stationary-hold"
+IMU_CALIBRATION_ARGS="--calibration /home/linaro/M/imu/calibration/stationary_bias_20261101.cal --stationary-hold"

@@ -1,0 +1,39 @@
+{
+  "schema": "MANUAL_STEERING_NO_RIGHT_DIAGNOSIS_V1",
+  "recorded_at": "2026-11-01T00:37:31.676639+08:00",
+  "inspection_only": true,
+  "center_reconfirmed_by_this_inspection": false,
+  "test_pulses_sent": false,
+  "current_reference": {
+    "session": 3597015493,
+    "zero_raw_deg": -0.099,
+    "session_matches_live": true,
+    "automatic_terminal_confirmation_succeeded": true
+  },
+  "fault_evidence": {
+    "last_below_limit_deg": 17.892,
+    "first_fault_deg": 18.037,
+    "later_manual_angle_deg": 20.901,
+    "allowed_envelope_deg": [
+      -18,
+      18
+    ],
+    "fault": "UNEXPECTED_DEVICE",
+    "subsequent_recognized_right_requests_rejected": true
+  },
+  "later_snapshot": {
+    "angle_deg": -12.672,
+    "right_target_deg": -10,
+    "tolerance_deg": 3,
+    "curve_confidence": 0,
+    "feedback_valid": true,
+    "last_state": "CANCELLED"
+  },
+  "interpretation": [
+    "Manual forcing beyond the configured angular envelope triggered the observed fault; missing zero confirmation was not the cause in this run.",
+    "The later negative-angle snapshot is not evidence that the earlier manual-left motion had reversed sign.",
+    "Current zero-confidence input is not a valid straight or right command."
+  ],
+  "recovery": "Return mechanism within the existing envelope, preferably mechanical center; press and release S/R to clear any retained controller fault, then provide a new valid road result.",
+  "product_code_and_HMI_changes": []
+}

@@ -1,0 +1,277 @@
+{
+  "status": "M_FLASH_VERIFIED_FINAL_STARTUP_HOME_PASSED",
+  "target": "M only / PG2L100H",
+  "protocol_and_sensor_range_unchanged": true,
+  "simulations": [
+    "PASS original wire/CRC/SPI compatibility",
+    "PASS transient and persistent NACK policy"
+  ],
+  "timing": {
+    "Setup_Slow": {
+      "row_count": 25,
+      "failed_pairs": [
+        [
+          "cmos6_pclk",
+          "ddrphy_sysclk",
+          -6.805
+        ],
+        [
+          "cmos2_pclk",
+          "ddrphy_sysclk",
+          -6.594
+        ],
+        [
+          "cmos5_pclk",
+          "ddrphy_sysclk",
+          -6.884
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos2_pclk",
+          -2.98
+        ],
+        [
+          "ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred",
+          "cmos2_pclk",
+          -4.758
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos5_pclk",
+          -4.532
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos6_pclk",
+          -9.456
+        ]
+      ],
+      "new_failed_pairs": [],
+      "passed": true
+    },
+    "Hold_Slow": {
+      "row_count": 25,
+      "failed_pairs": [],
+      "new_failed_pairs": [],
+      "passed": true
+    },
+    "Setup_Fast": {
+      "row_count": 25,
+      "failed_pairs": [
+        [
+          "cmos6_pclk",
+          "ddrphy_sysclk",
+          -3.563
+        ],
+        [
+          "cmos2_pclk",
+          "ddrphy_sysclk",
+          -3.702
+        ],
+        [
+          "cmos5_pclk",
+          "ddrphy_sysclk",
+          -3.655
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos2_pclk",
+          -2.491
+        ],
+        [
+          "ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred",
+          "cmos2_pclk",
+          -2.891
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos5_pclk",
+          -3.583
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos6_pclk",
+          -6.592
+        ]
+      ],
+      "new_failed_pairs": [],
+      "passed": true
+    },
+    "Hold_Fast": {
+      "row_count": 25,
+      "failed_pairs": [],
+      "new_failed_pairs": [],
+      "passed": true
+    },
+    "passed": true,
+    "unchanged_original_asynchronous_camera_pairs_only": true,
+    "imu_spi_clock_ns": 10.0
+  },
+  "artifacts": {
+    "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project\\generate_bitstream\\image_pcie_capture_m_imu_nack_retry_20261101.sbit": {
+      "size": 3553840,
+      "sha256": "919429211cead084aefa363a646ea7d7afbfd14a002b49c5f8477b5cb0757014"
+    },
+    "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project\\generate_bitstream\\image_pcie_capture_m_imu_nack_retry_20261101.sfc": {
+      "size": 3553840,
+      "sha256": "29d7c017adb277187de4eaec547cd4edfaec7dbd9ec03c3c6160ef603aa872d8"
+    }
+  },
+  "S_software_fixes_installed": true,
+  "three_trial_validation": "passed three real raised-wheel repeats on the new firmware",
+  "canonical_previous_M_firmware_preserved": true,
+  "M_FPGA_programmed": true,
+  "HMI_changes": false,
+  "M_Flash_programmed": true,
+  "user_authorized_load_and_conditional_flash": true,
+  "observed_NACK_recoveries_without_restart": 2,
+  "IMU_restarts_after_update": 0,
+  "three_repeat_errors_deg": [
+    -1.1710833333333341,
+    -0.7710833333333338,
+    -1.5248333333333335
+  ],
+  "same_session_midpoint_range_deg": 0.9747500000000002,
+  "repeat_summary_on_S": "/home/linaro/S/steering/logs/home_reliability_repeat_1793513357506334971/summary.json",
+  "M_capture_fps_observed": 28.6,
+  "S_network_fps_observed": 28.99,
+  "physical_straight_confirmed_after_three_repeats": true,
+  "M_Flash_verified": true,
+  "final_after_flash_home": {
+    "schema": "STEER_ENDPOINT_HOME_V1",
+    "start_raw_deg": 16.132,
+    "left_raw_deg": 16.2255,
+    "right_raw_deg": -18.441499999999998,
+    "span_deg": 34.667,
+    "midpoint_raw_deg": -1.1079999999999988,
+    "final_raw_deg": -0.246,
+    "error_deg": 0.8619999999999988,
+    "pulse_records": [
+      {
+        "phase": "seek_left",
+        "direction": 1,
+        "requested_us": 30000,
+        "before_raw_deg": 16.132,
+        "after_raw_deg": 16.279,
+        "delta_deg": 0.14699999999999847,
+        "verified_full_stroke_rebound": false
+      },
+      {
+        "phase": "seek_left",
+        "direction": 1,
+        "requested_us": 30000,
+        "before_raw_deg": 16.279,
+        "after_raw_deg": 16.396,
+        "delta_deg": 0.11700000000000088,
+        "verified_full_stroke_rebound": false
+      },
+      {
+        "phase": "seek_left",
+        "direction": 1,
+        "requested_us": 30000,
+        "before_raw_deg": 16.396,
+        "after_raw_deg": 16.0015,
+        "delta_deg": -0.39450000000000074,
+        "verified_full_stroke_rebound": false
+      },
+      {
+        "phase": "seek_right",
+        "direction": -1,
+        "requested_us": 30000,
+        "before_raw_deg": 16.0015,
+        "after_raw_deg": 8.683,
+        "delta_deg": -7.3185,
+        "verified_full_stroke_rebound": false
+      },
+      {
+        "phase": "seek_right",
+        "direction": -1,
+        "requested_us": 30000,
+        "before_raw_deg": 8.683,
+        "after_raw_deg": 0.3745,
+        "delta_deg": -8.3085,
+        "verified_full_stroke_rebound": false
+      },
+      {
+        "phase": "seek_right",
+        "direction": -1,
+        "requested_us": 30000,
+        "before_raw_deg": 0.3745,
+        "after_raw_deg": -8.246,
+        "delta_deg": -8.6205,
+        "verified_full_stroke_rebound": false
+      },
+      {
+        "phase": "seek_right",
+        "direction": -1,
+        "requested_us": 30000,
+        "before_raw_deg": -8.246,
+        "after_raw_deg": -15.348,
+        "delta_deg": -7.102,
+        "verified_full_stroke_rebound": false
+      },
+      {
+        "phase": "seek_right",
+        "direction": -1,
+        "requested_us": 30000,
+        "before_raw_deg": -15.348,
+        "after_raw_deg": -17.894,
+        "delta_deg": -2.5459999999999976,
+        "verified_full_stroke_rebound": false
+      },
+      {
+        "phase": "seek_right",
+        "direction": -1,
+        "requested_us": 30000,
+        "before_raw_deg": -17.894,
+        "after_raw_deg": -18.441499999999998,
+        "delta_deg": -0.5474999999999994,
+        "verified_full_stroke_rebound": false
+      },
+      {
+        "phase": "seek_right",
+        "direction": -1,
+        "requested_us": 30000,
+        "before_raw_deg": -18.441499999999998,
+        "after_raw_deg": -18.810499999999998,
+        "delta_deg": -0.3689999999999998,
+        "verified_full_stroke_rebound": false
+      },
+      {
+        "phase": "seek_right",
+        "direction": -1,
+        "requested_us": 30000,
+        "before_raw_deg": -18.810499999999998,
+        "after_raw_deg": -18.051,
+        "delta_deg": 0.7594999999999992,
+        "verified_full_stroke_rebound": true
+      },
+      {
+        "phase": "inward_to_calibrated_region",
+        "direction": 1,
+        "requested_us": 30000,
+        "before_raw_deg": -18.051,
+        "after_raw_deg": -6.951,
+        "delta_deg": 11.099999999999998,
+        "verified_full_stroke_rebound": false
+      }
+    ],
+    "fine_requests_us": [
+      30000
+    ],
+    "total_requested_us": 390000,
+    "center_source": "verified_mechanical_endpoint_midpoint",
+    "passed": true,
+    "session": 4032995387,
+    "S_boot_id": "f9a0b5a0-efb3-4c62-9f3c-ec3777668f82",
+    "commissioning": false,
+    "physical_straight_visually_confirmed": true,
+    "source": "real_M_telemetry_and_real_FSPI_no_perception_injection",
+    "reference_file": "/home/linaro/S/steering/logs/auto_home_1793514668216122054/center.reference",
+    "restored_controller_pid": 4626
+  },
+  "same_session_duplicate_terminal": "AUTO_HOME_SKIP; normal controller PID 4626 unchanged",
+  "cold_power_cycle_after_flash_tested": false,
+  "M_restored": true,
+  "S_restored": true
+}

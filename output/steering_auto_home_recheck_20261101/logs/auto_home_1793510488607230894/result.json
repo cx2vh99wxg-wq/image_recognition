@@ -1,0 +1,6 @@
+{
+  "passed": false,
+  "error": "Endpoint stroke 0.000 outside qualified 31.763..37.763 degrees",
+  "session": 3954980155,
+  "restored_controller_pid": 2661
+}

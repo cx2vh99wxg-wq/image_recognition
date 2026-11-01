@@ -92,7 +92,7 @@ def check_s() -> None:
     run(cli, ["--backend", "fspi", "--direction", "left", "--duration-us", "20001",
               "--max-pulse-ms", "20"], 2)
     print("PASS CLI: microsecond input, fractional output, exclusive units and pre-open bound")
-    for name in ["test_bench.py", "test_response_model.py", "test_partition_response.py", "test_target.py", "test_auto_calibration.py", "test_confirm_center.py"]:
+    for name in ["test_bench.py", "test_response_model.py", "test_partition_response.py", "test_target.py", "test_auto_calibration.py", "test_confirm_center.py", "test_terminal_center.py", "test_homing.py"]:
         result = subprocess.run([sys.executable, str(ROOT / "tests" / "feedback" / name)],
                                 text=True, capture_output=True, timeout=30)
         if result.returncode:
@@ -137,6 +137,31 @@ def check_s() -> None:
             if process.poll() is None:
                 process.kill(); process.wait()
         print("PASS native CLI: SIGTERM interrupts deadline sleep and releases both contacts")
+        # The old full-deadline sleep fails the unchanged +2ms timing window
+        # under injected wake delay. The guarded sleep must still release on
+        # time. Both versions use mock contacts; neither opens a device.
+        import csv
+        import tempfile
+        with tempfile.TemporaryDirectory(prefix='release_wake_',dir=tests) as folder:
+            folder=Path(folder)
+            source=(ROOT/'tools/actuator/steering_step.c').read_text()
+            old=folder/'baseline_step.c'
+            marker='const uint64_t guard = UINT64_C(3000000);'
+            if source.count(marker)!=1:raise AssertionError('Wake guard fixture missing')
+            old.write_text(source.replace(marker,'const uint64_t guard = UINT64_C(0);'))
+            support=[ROOT/'actuator'/n for n in ['steering_actuator.c','backend_dry_run.c','backend_fspi.c']]
+            support += [ROOT/'tests/actuator/fspi_trace_stub.c',ROOT/'tests/actuator/wakeup_delay_stub.c']
+            extra=['-DSTEERING_WITH_FSPI',f'-I{ROOT.parent / "fspi/include"}',f'-I{ROOT.parent / "include"}']
+            for label,step in [('baseline',old),('guarded',ROOT/'tools/actuator/steering_step.c')]:
+                binary=compile_program(folder/label,[*support,step],INCLUDES,extra)
+                for trial in range(3):
+                    path=folder/('%s_%d.csv'%(label,trial))
+                    run(binary,['--backend','fspi','--direction','left','--duration-us','30000','--csv',str(path)])
+                    with path.open() as f:row=next(csv.DictReader(f))
+                    elapsed=(int(row['release_end_ns'])-int(row['enable_end_ns']))/1e6
+                    if (label=='baseline' and elapsed<=32) or (label=='guarded' and not 29.95<=elapsed<=32):
+                        raise AssertionError('Unexpected wake regression %s %.6fms'%(label,elapsed))
+        print('PASS native CLI: injected 2ms late wake reproduced; original timing tolerance retained')
 
 
 def main() -> int:
