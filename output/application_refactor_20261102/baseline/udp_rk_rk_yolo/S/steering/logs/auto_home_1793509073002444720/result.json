@@ -1,0 +1,17 @@
+{
+  "schema": "STEER_HOME_BUS_DIAGNOSTIC_V1",
+  "passed": true,
+  "direction": "left",
+  "before_raw_deg": -2.858,
+  "after_raw_deg": 3.1020000000000003,
+  "delta_deg": 5.960000000000001,
+  "requested_us": 30000,
+  "automatic_homing_qualified": false,
+  "session": 895282005,
+  "S_boot_id": "b4902563-3613-4162-89ce-ee3b9b39f8e4",
+  "commissioning": true,
+  "physical_straight_visually_confirmed": false,
+  "source": "real_M_telemetry_and_real_FSPI_no_perception_injection",
+  "pending_visual_check": false,
+  "restored_controller_pid": 2901
+}

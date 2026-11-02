@@ -77,7 +77,7 @@ wire [7:0] max_data2;
 wire [7:0] mid_data2;
 wire [7:0] min_data2;
 
-//第2行
+// 对应矩阵的第二行。
 sort u2
 (
     .clk                    (clk                    ),
@@ -94,7 +94,7 @@ wire [7:0] max_data3;
 wire [7:0] mid_data3;
 wire [7:0] min_data3;
 
-//第3行
+// 对应矩阵的第三行。
 sort u3
 (
     .clk                    (clk                    ),
@@ -107,11 +107,11 @@ sort u3
     .min_data               (min_data3              )
 );
 
-//三行的最小值取最大值
-//三行的中间值取中间值
-//三行的最大值取最小值，clk2
-//---------------------------------------------------
-//min-max
+// 图像流水线：三行的最小值取最大值
+// 图像流水线：三行的中间值取中间值
+// 图像流水线：三行的最大值取最小值，clk2
+// ── 图像流水线 ──
+// 图像流水线：min-max
 wire [7:0] min_max_data;
 wire [7:0] mid_mid_data;
 wire [7:0] max_min_data;
@@ -131,7 +131,7 @@ sort u4
     .min_data               (                       )
 );
 
-//mid-mid
+// 图像流水线：mid-mid
 sort u5
 (
     .clk                    (clk                    ),
@@ -144,7 +144,7 @@ sort u5
     .min_data               (                       )
 );
 
-//max-min
+// 图像流水线：max-min
 sort u6
 (
     .clk                    (clk                    ),
@@ -157,8 +157,8 @@ sort u6
     .min_data               (max_min_data           )
 );
 
-//前面的三个值再取中间值，clk3
-//---------------------------------------------------
+// 图像流水线：前面的三个值再取中间值，clk3
+// ── 图像流水线 ──
 sort u7
 (
     .clk                    (clk                    ),

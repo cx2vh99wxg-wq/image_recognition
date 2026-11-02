@@ -29,7 +29,7 @@ SHARED_OBJECTS = $(patsubst $(SHARED_SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SHARED_CSRC
 
 # 编译标志
 INCFLAGS = -I$(SHARED_INC_DIR)
-CFLAGS = $(INCFLAGS) -std=c99 -O3 -march=native -funroll-loops -pthread -fPIC
+CFLAGS = $(INCFLAGS) -std=c99 -O3 -march=native -funroll-loops -pthread -fPIC -MMD -MP
 ARFLAGS = rcs
 
 # 获取系统信息用于调试
@@ -562,3 +562,6 @@ tune-network:
 		done; \
 	fi
 
+
+# Shared headers are authoritative; rebuild their consumers when they change.
+-include $(SHARED_OBJECTS:.o=.d)

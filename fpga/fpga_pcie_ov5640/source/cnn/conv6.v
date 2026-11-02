@@ -2,7 +2,7 @@
 
 module conv6
 #(
-    parameter   [10:0]  IMG_HDISP   = 11'd640,                      //  640*480
+    parameter   [10:0]  IMG_HDISP   = 11'd640,                      // 参数记录为 640*480。
     parameter   [10:0]  IMG_VDISP   = 11'd480,
     parameter                           core_witdh                = 4'd8  
 )
@@ -18,10 +18,10 @@ module conv6
     output             [   7: 0]        post_img_b                 ,
     input              [   7: 0]        per_img_Y                  ,
     output             [   7: 0]        post_img_Y                 ,
-    //  Image data prepared to be processed
-    input  wire                         per_img_vsync              ,//  Prepared Image data vsync valid signal
-    input  wire                         per_img_href               ,//  Prepared Image data href vaild  signal
-    input  wire        [   7: 0]        conv6_1_Data_in            ,//  Prepared Image brightness input
+    // 卷积流水线：Image data prepared to be processed
+    input  wire                         per_img_vsync              ,// 卷积流水线：Prepared Image data vsync valid signal
+    input  wire                         per_img_href               ,// 卷积流水线：Prepared Image data href vaild signal
+    input  wire        [   7: 0]        conv6_1_Data_in            ,// 卷积流水线：Prepared Image brightness input
     input  wire        [   7: 0]        conv6_2_Data_in            ,
     input  wire        [   7: 0]        conv6_3_Data_in            ,
     input  wire        [   7: 0]        conv6_4_Data_in            ,
@@ -31,29 +31,29 @@ module conv6
     input  wire        [   7: 0]        conv6_8_Data_in            ,
 
 
-    //  Image data has been processed
-    output wire                         post_img_vsync             ,//  processed Image data vsync valid signal
-    output wire                         post_img_href              ,//  processed Image data href vaild  signal
-    output wire        [   7: 0]        conv6_1_Data_out           ,//  processed Image brightness output
-    output wire        [   7: 0]        conv6_2_Data_out           ,//  processed Image brightness output
-    output wire        [   7: 0]        conv6_3_Data_out           ,//  processed Image brightness output
-    output wire        [   7: 0]        conv6_4_Data_out            //  processed Image brightness output
+    // 卷积流水线：Image data has been processed
+    output wire                         post_img_vsync             ,// 卷积流水线：processed Image data vsync valid signal
+    output wire                         post_img_href              ,// 卷积流水线：processed Image data href vaild signal
+    output wire        [   7: 0]        conv6_1_Data_out           ,// 卷积流水线：processed Image brightness output
+    output wire        [   7: 0]        conv6_2_Data_out           ,// 卷积流水线：processed Image brightness output
+    output wire        [   7: 0]        conv6_3_Data_out           ,// 卷积流水线：processed Image brightness output
+    output wire        [   7: 0]        conv6_4_Data_out            // 卷积流水线：processed Image brightness output
     
 );
-//----------------------------------------------------------------------
-//wire [7:0] conv6_1_Data;
-//wire [7:0] conv6_2_Data;
-//wire [7:0] conv6_3_Data;
-//wire [7:0] conv6_4_Data;
-//wire [7:0] conv6_5_Data;
-//wire [7:0] conv6_6_Data;
-//wire [7:0] conv6_7_Data;
-//wire [7:0] conv6_8_Data;
-//
-//assign conv6_1_Data_out=conv6_1_Data+conv6_2_Data;
-//assign conv6_2_Data_out=conv6_3_Data+conv6_4_Data;
-//assign conv6_3_Data_out=conv6_5_Data+conv6_6_Data;
-//assign conv6_4_Data_out=conv6_7_Data+conv6_8_Data;
+// ── 卷积流水线 ──
+// 停用示例，仅供对照：wire [7:0] conv6_1_Data;
+// 停用示例，仅供对照：wire [7:0] conv6_2_Data;
+// 停用示例，仅供对照：wire [7:0] conv6_3_Data;
+// 停用示例，仅供对照：wire [7:0] conv6_4_Data;
+// 停用示例，仅供对照：wire [7:0] conv6_5_Data;
+// 停用示例，仅供对照：wire [7:0] conv6_6_Data;
+// 停用示例，仅供对照：wire [7:0] conv6_7_Data;
+// 停用示例，仅供对照：wire [7:0] conv6_8_Data;
+// ── 卷积流水线 ──
+// 停用示例，仅供对照：assign conv6_1_Data_out=conv6_1_Data+conv6_2_Data;
+// 停用示例，仅供对照：assign conv6_2_Data_out=conv6_3_Data+conv6_4_Data;
+// 停用示例，仅供对照：assign conv6_3_Data_out=conv6_5_Data+conv6_6_Data;
+// 停用示例，仅供对照：assign conv6_4_Data_out=conv6_7_Data+conv6_8_Data;
 
 conv_2channel
 #(  .IMG_HDISP (IMG_HDISP ),
@@ -70,7 +70,7 @@ conv1_1      (
     .conv_Data_out                      (conv6_1_Data_out          ),
     .post_img_vsync                     (post_img_vsync            ),
     .post_img_href                      (post_img_href             ),
-//卷积核参数1
+// 第一组卷积核的系数。
     .conv_coef_1_1                        (0                         ),
     .conv_coef_2_1                        (0                         ),
     .conv_coef_3_1                        (0                         ),
@@ -80,7 +80,7 @@ conv1_1      (
     .conv_coef_7_1                        (0                         ),
     .conv_coef_8_1                        (0                         ),
     .conv_coef_9_1                        (0                         ),
-//卷积核参数2
+// 第二组卷积核的系数。
     .conv_coef_1_2                        (0                         ),
     .conv_coef_2_2                        (0                         ),
     .conv_coef_3_2                        (0                         ),
@@ -90,7 +90,7 @@ conv1_1      (
     .conv_coef_7_2                        (0                         ),
     .conv_coef_8_2                        (0                         ),
     .conv_coef_9_2                        (0                         ),
-//偏置参数
+// 本节给出运算所用的偏置系数。
     .conv_bias_0                        (0                         ) 
 );
 
@@ -109,7 +109,7 @@ conv1_2      (
     .conv_Data_out                      (conv6_2_Data_out          ),
     .post_img_vsync                     (            ),
     .post_img_href                      (            ),
-//卷积核参数1
+// 第一组卷积核的系数。
     .conv_coef_1_1                        (0                         ),
     .conv_coef_2_1                        (0                         ),
     .conv_coef_3_1                        (0                         ),
@@ -119,7 +119,7 @@ conv1_2      (
     .conv_coef_7_1                        (0                         ),
     .conv_coef_8_1                        (0                         ),
     .conv_coef_9_1                        (0                         ),
-//卷积核参数2
+// 第二组卷积核的系数。
     .conv_coef_1_2                        (0                         ),
     .conv_coef_2_2                        (0                         ),
     .conv_coef_3_2                        (0                         ),
@@ -129,7 +129,7 @@ conv1_2      (
     .conv_coef_7_2                        (0                         ),
     .conv_coef_8_2                        (0                         ),
     .conv_coef_9_2                        (0                         ),
-//偏置参数
+// 本节给出运算所用的偏置系数。
     .conv_bias_0                        (0                         ) 
 );
 
@@ -148,7 +148,7 @@ conv1_3      (
     .conv_Data_out                      (conv6_3_Data_out          ),
     .post_img_vsync                     (            ),
     .post_img_href                      (            ),
-//卷积核参数1
+// 第一组卷积核的系数。
     .conv_coef_1_1                      (0                       ),
     .conv_coef_2_1                      (0                       ),
     .conv_coef_3_1                      (0                       ),
@@ -158,7 +158,7 @@ conv1_3      (
     .conv_coef_7_1                      (0                       ),
     .conv_coef_8_1                      (0                       ),
     .conv_coef_9_1                      (0                       ),
-//卷积核参数2
+// 第二组卷积核的系数。
     .conv_coef_1_2                      (0                         ),
     .conv_coef_2_2                      (0                         ),
     .conv_coef_3_2                      (0                         ),
@@ -168,7 +168,7 @@ conv1_3      (
     .conv_coef_7_2                      (0                         ),
     .conv_coef_8_2                      (0                         ),
     .conv_coef_9_2                      (0                         ),
-//偏置参数
+// 本节给出运算所用的偏置系数。
     .conv_bias_0                        (0                    ) 
 );
 
@@ -187,7 +187,7 @@ conv1_4      (
     .conv_Data_out                      (conv6_4_Data_out          ),
     .post_img_vsync                     (            ),
     .post_img_href                      (            ),
-//卷积核参数1
+// 第一组卷积核的系数。
     .conv_coef_1_1                        (103                            ),
     .conv_coef_2_1                        (40                             ),
     .conv_coef_3_1                        (205                            ),
@@ -197,7 +197,7 @@ conv1_4      (
     .conv_coef_7_1                        (197                            ),
     .conv_coef_8_1                        (   140                         ),
     .conv_coef_9_1                        (  137                          ),
-//卷积核参数2
+// 第二组卷积核的系数。
     .conv_coef_1_2                        (0                         ),
     .conv_coef_2_2                        (0                         ),
     .conv_coef_3_2                        (0                         ),
@@ -207,231 +207,231 @@ conv1_4      (
     .conv_coef_7_2                        (0                         ),
     .conv_coef_8_2                        (0                         ),
     .conv_coef_9_2                        (0                         ),
-//偏置参数
+// 本节给出运算所用的偏置系数。
     .conv_bias_0                        (75061                         ) 
 );
 
-//conv_example
-//#(  .IMG_HDISP (IMG_HDISP ),
-//    .IMG_VDISP                          (IMG_VDISP                 ),
-//    .core_witdh                         (core_witdh                ) 
-//)
-//conv1_1      (
-//    .clk                                (clk                       ),
-//    .rst_n                              (rst_n                     ),
-//    .per_img_vsync                      (per_img_vsync             ),
-//    .per_img_href                       (per_img_href              ),
-//    .conv_Data_in                       (conv6_1_Data_in           ),
-//    .conv_Data_out                      (conv6_1_Data          ),
-//    .post_img_vsync                     (post_img_vsync            ),
-//    .post_img_href                      (post_img_href             ),
-////卷积核参数
-//    .conv_coef_1                        (0                       ),
-//    .conv_coef_2                        (0                       ),
-//    .conv_coef_3                        (0                       ),
-//    .conv_coef_4                        (0                       ),
-//    .conv_coef_5                        (0                       ),
-//    .conv_coef_6                        (0                       ),
-//    .conv_coef_7                        (0                       ),
-//    .conv_coef_8                        (0                       ),
-//    .conv_coef_9                        (0                       ),
-////偏置参数
-//    .conv_bias_0                        (0                         ) 
-//);
-//
-//conv_example
-//#(  .IMG_HDISP (IMG_HDISP ),
-//    .IMG_VDISP                          (IMG_VDISP                 ),
-//    .core_witdh                         (core_witdh                ) 
-//)
-//conv1_2      (
-//    .clk                                (clk                       ),
-//    .rst_n                              (rst_n                     ),
-//    .per_img_vsync                      (per_img_vsync             ),
-//    .per_img_href                       (per_img_href              ),
-//    .conv_Data_in                       (conv6_2_Data_in           ),
-//    .conv_Data_out                      (conv6_2_Data          ),
-//    .post_img_vsync                     (                          ),
-//    .post_img_href                      (                          ),
-////卷积核参数
-//    .conv_coef_1                        (0                      ),
-//    .conv_coef_2                        (0                      ),
-//    .conv_coef_3                        (0                      ),
-//    .conv_coef_4                        (0                      ),
-//    .conv_coef_5                        (0                      ),
-//    .conv_coef_6                        (0                      ),
-//    .conv_coef_7                        (0                      ),
-//    .conv_coef_8                        (0                      ),
-//    .conv_coef_9                        (0                      ),
-////偏置参数
-//    .conv_bias_0                        (0                         ) 
-//);
-//
-//conv_example
-//#(  .IMG_HDISP (IMG_HDISP ),
-//    .IMG_VDISP                          (IMG_VDISP                 ),
-//    .core_witdh                         (core_witdh                ) 
-//)
-//conv1_3      (
-//    .clk                                (clk                       ),
-//    .rst_n                              (rst_n                     ),
-//    .per_img_vsync                      (per_img_vsync             ),
-//    .per_img_href                       (per_img_href              ),
-//    .conv_Data_in                       (conv6_3_Data_in           ),
-//    .conv_Data_out                      (conv6_3_Data          ),
-//    .post_img_vsync                     (                          ),
-//    .post_img_href                      (                          ),
-////卷积核参数
-//    .conv_coef_1                        (0                       ),
-//    .conv_coef_2                        (0                       ),
-//    .conv_coef_3                        (0                       ),
-//    .conv_coef_4                        (0                       ),
-//    .conv_coef_5                        (0                       ),
-//    .conv_coef_6                        (0                       ),
-//    .conv_coef_7                        (0                       ),
-//    .conv_coef_8                        (0                       ),
-//    .conv_coef_9                        (0                       ),
-////偏置参数
-//    .conv_bias_0                        (0                         ) 
-//);
-//
-//conv_example
-//#(  .IMG_HDISP (IMG_HDISP ),
-//    .IMG_VDISP                          (IMG_VDISP                 ),
-//    .core_witdh                         (core_witdh                ) 
-//)
-//conv1_4      (
-//    .clk                                (clk                       ),
-//    .rst_n                              (rst_n                     ),
-//    .per_img_vsync                      (per_img_vsync             ),
-//    .per_img_href                       (per_img_href              ),
-//    .conv_Data_in                       (conv6_4_Data_in           ),
-//    .conv_Data_out                      (conv6_4_Data          ),
-//    .post_img_vsync                     (                          ),
-//    .post_img_href                      (                          ),
-////卷积核参数
-//    .conv_coef_1                        (0                       ),
-//    .conv_coef_2                        (0                       ),
-//    .conv_coef_3                        (0                       ),
-//    .conv_coef_4                        (0                       ),
-//    .conv_coef_5                        (0                       ),
-//    .conv_coef_6                        (0                       ),
-//    .conv_coef_7                        (0                       ),
-//    .conv_coef_8                        (0                       ),
-//    .conv_coef_9                        (0                       ),
-////偏置参数
-//    .conv_bias_0                        (0                         ) 
-//);
-//conv_example
-//#(  .IMG_HDISP (IMG_HDISP ),
-//    .IMG_VDISP                          (IMG_VDISP                 ),
-//    .core_witdh                         (core_witdh                ) 
-//)
-//conv1_5      (
-//    .clk                                (clk                       ),
-//    .rst_n                              (rst_n                     ),
-//    .per_img_vsync                      (per_img_vsync             ),
-//    .per_img_href                       (per_img_href              ),
-//    .conv_Data_in                       (conv6_5_Data_in           ),
-//    .conv_Data_out                      (conv6_5_Data          ),
-//    .post_img_vsync                     (                          ),
-//    .post_img_href                      (                          ),
-////卷积核参数
-//    .conv_coef_1                        (0                      ),
-//    .conv_coef_2                        (0                      ),
-//    .conv_coef_3                        (0                      ),
-//    .conv_coef_4                        (0                      ),
-//    .conv_coef_5                        (0                      ),
-//    .conv_coef_6                        (0                      ),
-//    .conv_coef_7                        (0                      ),
-//    .conv_coef_8                        (0                      ),
-//    .conv_coef_9                        (0                      ),
-////偏置参数
-//    .conv_bias_0                        (0                         ) 
-//);
-//conv_example
-//#(  .IMG_HDISP (IMG_HDISP ),
-//    .IMG_VDISP                          (IMG_VDISP                 ),
-//    .core_witdh                         (core_witdh                ) 
-//)
-//conv1_6      (
-//    .clk                                (clk                       ),
-//    .rst_n                              (rst_n                     ),
-//    .per_img_vsync                      (per_img_vsync             ),
-//    .per_img_href                       (per_img_href              ),
-//    .conv_Data_in                       (conv6_6_Data_in           ),
-//    .conv_Data_out                      (conv6_6_Data          ),
-//    .post_img_vsync                     (                          ),
-//    .post_img_href                      (                          ),
-////卷积核参数
-//    .conv_coef_1                        (0                       ),
-//    .conv_coef_2                        (0                       ),
-//    .conv_coef_3                        (0                       ),
-//    .conv_coef_4                        (0                       ),
-//    .conv_coef_5                        (0                       ),
-//    .conv_coef_6                        (0                       ),
-//    .conv_coef_7                        (0                       ),
-//    .conv_coef_8                        (0                       ),
-//    .conv_coef_9                        (0                       ),
-////偏置参数
-//    .conv_bias_0                        (0                         ) 
-//);
-//conv_example
-//#(  .IMG_HDISP (IMG_HDISP ),
-//    .IMG_VDISP                          (IMG_VDISP                 ),
-//    .core_witdh                         (core_witdh                ) 
-//)
-//conv1_7      (
-//    .clk                                (clk                       ),
-//    .rst_n                              (rst_n                     ),
-//    .per_img_vsync                      (per_img_vsync             ),
-//    .per_img_href                       (per_img_href              ),
-//    .conv_Data_in                       (conv6_7_Data_in           ),
-//    .conv_Data_out                      (conv6_7_Data          ),
-//    .post_img_vsync                     (                          ),
-//    .post_img_href                      (                          ),
-////卷积核参数    
-//    .conv_coef_1                        (103                       ),
-//    .conv_coef_2                        (40                       ),
-//    .conv_coef_3                        (205                       ),
-//    .conv_coef_4                        (197                       ),
-//    .conv_coef_5                        (180                       ),
-//    .conv_coef_6                        (130                       ),
-//    .conv_coef_7                        (197                       ),
-//    .conv_coef_8                        (   140                    ),
-//    .conv_coef_9                        (  137                     ),
-////偏置参数
-//    .conv_bias_0                        (    -2350                     ) 
-//);
-//conv_example
-//#(  .IMG_HDISP (IMG_HDISP ),
-//    .IMG_VDISP                          (IMG_VDISP                 ),
-//    .core_witdh                         (core_witdh                ) 
-//)
-//conv1_8      (
-//    .clk                                (clk                       ),
-//    .rst_n                              (rst_n                     ),
-//    .per_img_vsync                      (per_img_vsync             ),
-//    .per_img_href                       (per_img_href              ),
-//    .conv_Data_in                       (conv6_8_Data_in           ),
-//    .conv_Data_out                      (conv6_8_Data          ),
-//    .post_img_vsync                     (                          ),
-//    .post_img_href                      (                          ),
-////卷积核参数
-//    .conv_coef_1                        (0                      ),
-//    .conv_coef_2                        (0                      ),
-//    .conv_coef_3                        (0                      ),
-//    .conv_coef_4                        (0                      ),
-//    .conv_coef_5                        (0                      ),
-//    .conv_coef_6                        (0                      ),
-//    .conv_coef_7                        (0                      ),
-//    .conv_coef_8                        (0                      ),
-//    .conv_coef_9                        (0                      ),
-////偏置参数
-//    .conv_bias_0                        (75098                        ) 
-//);
+// conv_example：本节对应的标识或作用域。
+// 停用示例，仅供对照：#( .IMG_HDISP (IMG_HDISP ),
+// 停用示例，仅供对照：.IMG_VDISP (IMG_VDISP ),
+// 卷积流水线：.core_witdh (core_witdh )
+// 卷积流水线：)
+// 参数记录为 conv1_1 (。
+// 停用示例，仅供对照：.clk (clk ),
+// 停用示例，仅供对照：.rst_n (rst_n ),
+// 停用示例，仅供对照：.per_img_vsync (per_img_vsync ),
+// 停用示例，仅供对照：.per_img_href (per_img_href ),
+// 停用示例，仅供对照：.conv_Data_in (conv6_1_Data_in ),
+// 停用示例，仅供对照：.conv_Data_out (conv6_1_Data ),
+// 停用示例，仅供对照：.post_img_vsync (post_img_vsync ),
+// 停用示例，仅供对照：.post_img_href (post_img_href ),
+// //卷积核所使用的配置参数。
+// 停用示例，仅供对照：.conv_coef_1 (0 ),
+// 停用示例，仅供对照：.conv_coef_2 (0 ),
+// 停用示例，仅供对照：.conv_coef_3 (0 ),
+// 停用示例，仅供对照：.conv_coef_4 (0 ),
+// 停用示例，仅供对照：.conv_coef_5 (0 ),
+// 停用示例，仅供对照：.conv_coef_6 (0 ),
+// 停用示例，仅供对照：.conv_coef_7 (0 ),
+// 停用示例，仅供对照：.conv_coef_8 (0 ),
+// 停用示例，仅供对照：.conv_coef_9 (0 ),
+// //偏置所使用的配置参数。
+// 参数记录为 .conv_bias_0 (0 )。
+// 卷积流水线：);
+// ── 卷积流水线 ──
+// conv_example：本节对应的标识或作用域。
+// 停用示例，仅供对照：#( .IMG_HDISP (IMG_HDISP ),
+// 停用示例，仅供对照：.IMG_VDISP (IMG_VDISP ),
+// 卷积流水线：.core_witdh (core_witdh )
+// 卷积流水线：)
+// 参数记录为 conv1_2 (。
+// 停用示例，仅供对照：.clk (clk ),
+// 停用示例，仅供对照：.rst_n (rst_n ),
+// 停用示例，仅供对照：.per_img_vsync (per_img_vsync ),
+// 停用示例，仅供对照：.per_img_href (per_img_href ),
+// 停用示例，仅供对照：.conv_Data_in (conv6_2_Data_in ),
+// 停用示例，仅供对照：.conv_Data_out (conv6_2_Data ),
+// 停用示例，仅供对照：.post_img_vsync ( ),
+// 停用示例，仅供对照：.post_img_href ( ),
+// //卷积核所使用的配置参数。
+// 停用示例，仅供对照：.conv_coef_1 (0 ),
+// 停用示例，仅供对照：.conv_coef_2 (0 ),
+// 停用示例，仅供对照：.conv_coef_3 (0 ),
+// 停用示例，仅供对照：.conv_coef_4 (0 ),
+// 停用示例，仅供对照：.conv_coef_5 (0 ),
+// 停用示例，仅供对照：.conv_coef_6 (0 ),
+// 停用示例，仅供对照：.conv_coef_7 (0 ),
+// 停用示例，仅供对照：.conv_coef_8 (0 ),
+// 停用示例，仅供对照：.conv_coef_9 (0 ),
+// //偏置所使用的配置参数。
+// 参数记录为 .conv_bias_0 (0 )。
+// 卷积流水线：);
+// ── 卷积流水线 ──
+// conv_example：本节对应的标识或作用域。
+// 停用示例，仅供对照：#( .IMG_HDISP (IMG_HDISP ),
+// 停用示例，仅供对照：.IMG_VDISP (IMG_VDISP ),
+// 卷积流水线：.core_witdh (core_witdh )
+// 卷积流水线：)
+// 参数记录为 conv1_3 (。
+// 停用示例，仅供对照：.clk (clk ),
+// 停用示例，仅供对照：.rst_n (rst_n ),
+// 停用示例，仅供对照：.per_img_vsync (per_img_vsync ),
+// 停用示例，仅供对照：.per_img_href (per_img_href ),
+// 停用示例，仅供对照：.conv_Data_in (conv6_3_Data_in ),
+// 停用示例，仅供对照：.conv_Data_out (conv6_3_Data ),
+// 停用示例，仅供对照：.post_img_vsync ( ),
+// 停用示例，仅供对照：.post_img_href ( ),
+// //卷积核所使用的配置参数。
+// 停用示例，仅供对照：.conv_coef_1 (0 ),
+// 停用示例，仅供对照：.conv_coef_2 (0 ),
+// 停用示例，仅供对照：.conv_coef_3 (0 ),
+// 停用示例，仅供对照：.conv_coef_4 (0 ),
+// 停用示例，仅供对照：.conv_coef_5 (0 ),
+// 停用示例，仅供对照：.conv_coef_6 (0 ),
+// 停用示例，仅供对照：.conv_coef_7 (0 ),
+// 停用示例，仅供对照：.conv_coef_8 (0 ),
+// 停用示例，仅供对照：.conv_coef_9 (0 ),
+// //偏置所使用的配置参数。
+// 参数记录为 .conv_bias_0 (0 )。
+// 卷积流水线：);
+// ── 卷积流水线 ──
+// conv_example：本节对应的标识或作用域。
+// 停用示例，仅供对照：#( .IMG_HDISP (IMG_HDISP ),
+// 停用示例，仅供对照：.IMG_VDISP (IMG_VDISP ),
+// 卷积流水线：.core_witdh (core_witdh )
+// 卷积流水线：)
+// 参数记录为 conv1_4 (。
+// 停用示例，仅供对照：.clk (clk ),
+// 停用示例，仅供对照：.rst_n (rst_n ),
+// 停用示例，仅供对照：.per_img_vsync (per_img_vsync ),
+// 停用示例，仅供对照：.per_img_href (per_img_href ),
+// 停用示例，仅供对照：.conv_Data_in (conv6_4_Data_in ),
+// 停用示例，仅供对照：.conv_Data_out (conv6_4_Data ),
+// 停用示例，仅供对照：.post_img_vsync ( ),
+// 停用示例，仅供对照：.post_img_href ( ),
+// //卷积核所使用的配置参数。
+// 停用示例，仅供对照：.conv_coef_1 (0 ),
+// 停用示例，仅供对照：.conv_coef_2 (0 ),
+// 停用示例，仅供对照：.conv_coef_3 (0 ),
+// 停用示例，仅供对照：.conv_coef_4 (0 ),
+// 停用示例，仅供对照：.conv_coef_5 (0 ),
+// 停用示例，仅供对照：.conv_coef_6 (0 ),
+// 停用示例，仅供对照：.conv_coef_7 (0 ),
+// 停用示例，仅供对照：.conv_coef_8 (0 ),
+// 停用示例，仅供对照：.conv_coef_9 (0 ),
+// //偏置所使用的配置参数。
+// 参数记录为 .conv_bias_0 (0 )。
+// 卷积流水线：);
+// conv_example：本节对应的标识或作用域。
+// 停用示例，仅供对照：#( .IMG_HDISP (IMG_HDISP ),
+// 停用示例，仅供对照：.IMG_VDISP (IMG_VDISP ),
+// 卷积流水线：.core_witdh (core_witdh )
+// 卷积流水线：)
+// 参数记录为 conv1_5 (。
+// 停用示例，仅供对照：.clk (clk ),
+// 停用示例，仅供对照：.rst_n (rst_n ),
+// 停用示例，仅供对照：.per_img_vsync (per_img_vsync ),
+// 停用示例，仅供对照：.per_img_href (per_img_href ),
+// 停用示例，仅供对照：.conv_Data_in (conv6_5_Data_in ),
+// 停用示例，仅供对照：.conv_Data_out (conv6_5_Data ),
+// 停用示例，仅供对照：.post_img_vsync ( ),
+// 停用示例，仅供对照：.post_img_href ( ),
+// //卷积核所使用的配置参数。
+// 停用示例，仅供对照：.conv_coef_1 (0 ),
+// 停用示例，仅供对照：.conv_coef_2 (0 ),
+// 停用示例，仅供对照：.conv_coef_3 (0 ),
+// 停用示例，仅供对照：.conv_coef_4 (0 ),
+// 停用示例，仅供对照：.conv_coef_5 (0 ),
+// 停用示例，仅供对照：.conv_coef_6 (0 ),
+// 停用示例，仅供对照：.conv_coef_7 (0 ),
+// 停用示例，仅供对照：.conv_coef_8 (0 ),
+// 停用示例，仅供对照：.conv_coef_9 (0 ),
+// //偏置所使用的配置参数。
+// 参数记录为 .conv_bias_0 (0 )。
+// 卷积流水线：);
+// conv_example：本节对应的标识或作用域。
+// 停用示例，仅供对照：#( .IMG_HDISP (IMG_HDISP ),
+// 停用示例，仅供对照：.IMG_VDISP (IMG_VDISP ),
+// 卷积流水线：.core_witdh (core_witdh )
+// 卷积流水线：)
+// 参数记录为 conv1_6 (。
+// 停用示例，仅供对照：.clk (clk ),
+// 停用示例，仅供对照：.rst_n (rst_n ),
+// 停用示例，仅供对照：.per_img_vsync (per_img_vsync ),
+// 停用示例，仅供对照：.per_img_href (per_img_href ),
+// 停用示例，仅供对照：.conv_Data_in (conv6_6_Data_in ),
+// 停用示例，仅供对照：.conv_Data_out (conv6_6_Data ),
+// 停用示例，仅供对照：.post_img_vsync ( ),
+// 停用示例，仅供对照：.post_img_href ( ),
+// //卷积核所使用的配置参数。
+// 停用示例，仅供对照：.conv_coef_1 (0 ),
+// 停用示例，仅供对照：.conv_coef_2 (0 ),
+// 停用示例，仅供对照：.conv_coef_3 (0 ),
+// 停用示例，仅供对照：.conv_coef_4 (0 ),
+// 停用示例，仅供对照：.conv_coef_5 (0 ),
+// 停用示例，仅供对照：.conv_coef_6 (0 ),
+// 停用示例，仅供对照：.conv_coef_7 (0 ),
+// 停用示例，仅供对照：.conv_coef_8 (0 ),
+// 停用示例，仅供对照：.conv_coef_9 (0 ),
+// //偏置所使用的配置参数。
+// 参数记录为 .conv_bias_0 (0 )。
+// 卷积流水线：);
+// conv_example：本节对应的标识或作用域。
+// 停用示例，仅供对照：#( .IMG_HDISP (IMG_HDISP ),
+// 停用示例，仅供对照：.IMG_VDISP (IMG_VDISP ),
+// 卷积流水线：.core_witdh (core_witdh )
+// 卷积流水线：)
+// 参数记录为 conv1_7 (。
+// 停用示例，仅供对照：.clk (clk ),
+// 停用示例，仅供对照：.rst_n (rst_n ),
+// 停用示例，仅供对照：.per_img_vsync (per_img_vsync ),
+// 停用示例，仅供对照：.per_img_href (per_img_href ),
+// 停用示例，仅供对照：.conv_Data_in (conv6_7_Data_in ),
+// 停用示例，仅供对照：.conv_Data_out (conv6_7_Data ),
+// 停用示例，仅供对照：.post_img_vsync ( ),
+// 停用示例，仅供对照：.post_img_href ( ),
+// //卷积核所使用的配置参数。
+// 停用示例，仅供对照：.conv_coef_1 (103 ),
+// 停用示例，仅供对照：.conv_coef_2 (40 ),
+// 停用示例，仅供对照：.conv_coef_3 (205 ),
+// 停用示例，仅供对照：.conv_coef_4 (197 ),
+// 停用示例，仅供对照：.conv_coef_5 (180 ),
+// 停用示例，仅供对照：.conv_coef_6 (130 ),
+// 停用示例，仅供对照：.conv_coef_7 (197 ),
+// 停用示例，仅供对照：.conv_coef_8 ( 140 ),
+// 停用示例，仅供对照：.conv_coef_9 ( 137 ),
+// //偏置所使用的配置参数。
+// 参数记录为 .conv_bias_0 ( -2350 )。
+// 卷积流水线：);
+// conv_example：本节对应的标识或作用域。
+// 停用示例，仅供对照：#( .IMG_HDISP (IMG_HDISP ),
+// 停用示例，仅供对照：.IMG_VDISP (IMG_VDISP ),
+// 卷积流水线：.core_witdh (core_witdh )
+// 卷积流水线：)
+// 参数记录为 conv1_8 (。
+// 停用示例，仅供对照：.clk (clk ),
+// 停用示例，仅供对照：.rst_n (rst_n ),
+// 停用示例，仅供对照：.per_img_vsync (per_img_vsync ),
+// 停用示例，仅供对照：.per_img_href (per_img_href ),
+// 停用示例，仅供对照：.conv_Data_in (conv6_8_Data_in ),
+// 停用示例，仅供对照：.conv_Data_out (conv6_8_Data ),
+// 停用示例，仅供对照：.post_img_vsync ( ),
+// 停用示例，仅供对照：.post_img_href ( ),
+// //卷积核所使用的配置参数。
+// 停用示例，仅供对照：.conv_coef_1 (0 ),
+// 停用示例，仅供对照：.conv_coef_2 (0 ),
+// 停用示例，仅供对照：.conv_coef_3 (0 ),
+// 停用示例，仅供对照：.conv_coef_4 (0 ),
+// 停用示例，仅供对照：.conv_coef_5 (0 ),
+// 停用示例，仅供对照：.conv_coef_6 (0 ),
+// 停用示例，仅供对照：.conv_coef_7 (0 ),
+// 停用示例，仅供对照：.conv_coef_8 (0 ),
+// 停用示例，仅供对照：.conv_coef_9 (0 ),
+// //偏置所使用的配置参数。
+// 参数记录为 .conv_bias_0 (75098 )。
+// 卷积流水线：);
 
-///////////////rgb Y ，延迟/////////////////
+// rgb Y ，延迟。
 conv_example_rgb_delay
 #(
     .IMG_HDISP                          (IMG_HDISP                 ),

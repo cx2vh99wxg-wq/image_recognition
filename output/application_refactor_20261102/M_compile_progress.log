@@ -1,0 +1,60 @@
+tail -n 16 /tmp/compile_application_candidate_M_20261102.log; test ! -f /home/linaro/refactor_candidate_20261102/compile_result.json || cat /home/linaro/refactor_candidate_20261102/compile_result.json; printf '\nSIX_CMD_DONE\n'
+[?2004lCompiling C++: csrc/traffic_service.cpp
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/refactor_candidate_20261102/M/include -I/usr/include/X11 -c csrc/traffic_service.cpp -o build/traffic_service.o
+Compiling C++: csrc/yolop_opencv_integration.cpp
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/home/linaro/refactor_candidate_20261102/M/include -I/usr/include/X11 -c csrc/yolop_opencv_integration.cpp -o build/yolop_opencv_integration.o
+Linking: build/pcie_capture
+g++  build/fspi_module.o  build/preprocess.o  build/yolo_integration.o  build/main.o  build/postprocess.o  build/traffic_detector.o  build/traffic_service.o  build/yolop_opencv_integration.o /home/linaro/refactor_candidate_20261102/M/build/shared_memory.o -o build/pcie_capture -Llib -L../lib -lrknnrt -pthread -lm -ldl -lX11 -lXext
+Build successful: build/pcie_capture
+make[1]: Leaving directory '/home/linaro/refactor_candidate_20261102/M/pcie'
+PCIe module build complete
+COMPILE_ONLY M /usr/bin/python3 imu/tools/build.py
+BUILT refactor_candidate_20261102/M/imu/build/imu_dump
+BUILT refactor_candidate_20261102/M/imu/build/angle_monitor
+BUILT refactor_candidate_20261102/M/imu/build/feedback_inspect
+BUILT refactor_candidate_20261102/M/imu/build/imu_probe
+BUILT refactor_candidate_20261102/M/imu/build/replay_stationary
+CANDIDATE_COMPILE_RESULT {"board": "M", "root": "/home/linaro/refactor_candidate_20261102", "compiled": true, "runtime_tests_run": false, "production_files_replaced": false, "processes_started_or_stopped": false, "archive_sha256": "d6d62790cd2ad03b0b64ce44e0e106d92c6e8a5694476069a4951fe1ed6f61f4", "commands": [{"command": ["make", "-j2", "all"], "returncode": 0}, {"command": ["/usr/bin/python3", "imu/tools/build.py"], "returncode": 0}], "binaries": {"pcie/build/pcie_capture": {"size": 3071856, "sha256": "942c66a329a4534a632e2dd2c05afe46122eb08cd9ddee9622d8d16bddab04bd"}, "udp/build/udp_sender": {"size": 74080, "sha256": "fbd289c8191d1524f584c973b8d8dd20daec2032192d85b31498975e61b16a1c"}, "imu/build/angle_monitor": {"size": 74264, "sha256": "d7b8952fc336fe7824bdb745efbb4d7ab4dfc429674f415029366df67d54ea0f"}}}
+[1]+  Done                    nohup python3 -u /tmp/compile_application_candidate_20261102.py --board M > /tmp/compile_application_candidate_M_20261102.log 2>&1 < /dev/null
+{
+  "board": "M",
+  "root": "/home/linaro/refactor_candidate_20261102",
+  "compiled": true,
+  "runtime_tests_run": false,
+  "production_files_replaced": false,
+  "processes_started_or_stopped": false,
+  "archive_sha256": "d6d62790cd2ad03b0b64ce44e0e106d92c6e8a5694476069a4951fe1ed6f61f4",
+  "commands": [
+    {
+      "command": [
+        "make",
+        "-j2",
+        "all"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "imu/tools/build.py"
+      ],
+      "returncode": 0
+    }
+  ],
+  "binaries": {
+    "pcie/build/pcie_capture": {
+      "size": 3071856,
+      "sha256": "942c66a329a4534a632e2dd2c05afe46122eb08cd9ddee9622d8d16bddab04bd"
+    },
+    "udp/build/udp_sender": {
+      "size": 74080,
+      "sha256": "fbd289c8191d1524f584c973b8d8dd20daec2032192d85b31498975e61b16a1c"
+    },
+    "imu/build/angle_monitor": {
+      "size": 74264,
+      "sha256": "d7b8952fc336fe7824bdb745efbb4d7ab4dfc429674f415029366df67d54ea0f"
+    }
+  }
+}
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

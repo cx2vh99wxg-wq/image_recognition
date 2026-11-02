@@ -25,8 +25,8 @@ def timing_valid(requested_us, actual_ms):
 
 
 def pulse_elapsed_ms(record):
-    # Printed milliseconds are rounded to 1us. Prefer original timestamp
-    # fields, particularly at the +/- timing acceptance boundary.
+    # 打印的毫秒数已舍入到 1us，优先采用原时间戳字段，
+    # 尤其在正负时序验收边界附近。
     if 'enable_end_ns' in record or 'release_end_ns' in record:
         try:start=int(record['enable_end_ns']);end=int(record['release_end_ns'])
         except (KeyError,TypeError,ValueError):return math.nan
@@ -85,8 +85,8 @@ def baseline_of(samples, zero):
 
 
 def settled_after_pulse(monitor, zero, timeout_s=8):
-    # Preserve the original observation minimum: a delayed RF/servo response
-    # must not be mistaken for an already settled zero response.
+    # 保留最小观测时长，不能把射频或伺服延迟响应
+    # 误认为已经稳定的零响应。
     start=time.monotonic();monitor.collect(2.3)
     while True:
         try:return baseline_of(monitor.samples[-60:],zero),time.monotonic()-start
@@ -94,8 +94,8 @@ def settled_after_pulse(monitor, zero, timeout_s=8):
             if str(exc) not in ('Insufficient continuous stationary baseline','Steering is not settled'):raise
         remaining=timeout_s-(time.monotonic()-start)
         if remaining<=0:raise RuntimeError('Steering did not settle before observation timeout')
-        # Freshness, session, CRC/status and envelope failures propagate from
-        # collect immediately; this only waits longer for genuine settling.
+        # 新鲜度、会话、CRC/状态及包络故障从 collect
+        # 立即向上传递；此处只延长等待真实稳定的时间。
         monitor.collect(min(.2,remaining))
 
 
@@ -122,8 +122,8 @@ def status():
 
 
 def status_while_receiving(monitor):
-    # SPI status initialization can take >100ms. Keep draining the receiver;
-    # never relabel old pipe contents as fresh or relax the feedback deadline.
+    # SPI 状态初始化可能超过 100ms，等待期间继续排空接收器；
+    # 既不能把旧管道内容重新标新鲜，也不放宽反馈截止时间。
     with ThreadPoolExecutor(max_workers=1) as executor:
         check = executor.submit(status)
         while not check.done():
@@ -230,7 +230,7 @@ def main():
                   actuator_realtime_priority=args.realtime_priority,
                   mechanical_zero_valid_granted=False, absolute_network_delay_measured=False,
                   pulse_launch_attempted=False, result='RESERVED')
-    # A reservation survives errors/timeouts. Reusing its ID can NEVER launch again.
+    # 即使出错或超时，已预留的试验编号仍保留；复用编号绝不能再触发一次。
     with open(str(prefix)+'.reservation.json', 'x') as f:
         json.dump(report, f, indent=2)
     monitor, actuator, pulse_log = None, None, None

@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-30",
+  "phase": "mounted_mpu_read_only_preflight",
+  "user_reports": {
+    "mounted_on_mechanically_linked_steering_part": true,
+    "manual_rotation_produces_angle": true,
+    "current_marked_position_deg": 0,
+    "left_positive_right_negative": true,
+    "mechanical_stop_reading_abs_approx_deg": 20
+  },
+  "s_board": {
+    "debug_port": "COM13",
+    "legacy_controller_found_pid": 2169,
+    "legacy_controller_stopped_with_sigterm": true,
+    "bench_marker_restored": true,
+    "control_snapshot_contacts_hex": "5F",
+    "control_snapshot_gates_hex": "E0",
+    "go_back_left_right_released": true,
+    "interface": "end1",
+    "address": "192.168.100.20/24",
+    "carrier": 1
+  },
+  "feedback_observation": {
+    "source_filter": "192.168.100.10",
+    "port": 54321,
+    "duration_ms": 10000,
+    "accepted": 0,
+    "rejected": 0,
+    "foreign": 0,
+    "status": "NO_SAMPLE",
+    "board_csv": "/home/linaro/S/steering/logs/imu_mounted_20261030_001.csv",
+    "csv_has_measurements": false,
+    "ping_replies_out_of_3": 0,
+    "m_neighbor_state": "INCOMPLETE"
+  },
+  "interpretation": {
+    "current_m_address_or_l2_link_needs_confirmation": true,
+    "m_sampling_service_fault_demonstrated": false,
+    "independent_angle_accuracy_accepted": false,
+    "mechanical_center_or_zero_valid_granted": false,
+    "steering_pulses_issued": 0,
+    "next_step": "Obtain M interface addresses and service status, restore feedback before any pulse."
+  }
+}

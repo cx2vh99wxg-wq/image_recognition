@@ -1,0 +1,6 @@
+uname -n; pgrep -af "vehicle_control|pcie/build|video_receiver|camera_renderer"; cat /proc/sys/kernel/random/boot_id; printf '\nSIX_CMD_DONE\n'
+[?2004llinaro-alip
+07cf8a10-3af0-4afc-8c75-e4e7921901dc
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

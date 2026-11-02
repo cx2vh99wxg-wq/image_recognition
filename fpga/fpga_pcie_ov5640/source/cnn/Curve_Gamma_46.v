@@ -1,4 +1,4 @@
-//Curve of Gamma = 0.46
+// 参数记录为 Curve of Gamma = 0.46。
 module Curve_Gamma_46
 (
    input		[0:0]	clk,

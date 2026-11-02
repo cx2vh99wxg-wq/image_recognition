@@ -73,10 +73,10 @@ def main():
     streams = {}
     try:
         for name, key in (("pcie", 0x12345679), ("udp", 0x1234567A)):
-            sid = lib.shmget(key, 1, 0)  # Never create or alter a segment.
+            sid = lib.shmget(key, 1, 0)  # 只读取已有共享段，不创建也不改写。
             if sid < 0:
                 continue
-            ptr = lib.shmat(sid, None, 0o10000)  # SHM_RDONLY
+            ptr = lib.shmat(sid, None, 0o10000)  # SHM_RDONLY：本节对应的标识或作用域。
             if ptr and ptr != ctypes.c_void_p(-1).value:
                 streams[name] = (ptr, Control.from_address(ptr))
         start = time.monotonic()

@@ -1,4 +1,4 @@
-/* Production steering/brake code with a deterministic clock and SPI device. */
+/* 正式转向/刹停代码接入确定性时钟与模拟 SPI 设备。 */
 #define ioctl lane_test_ioctl
 #define perror lane_test_perror
 #define usleep lane_test_sleep
@@ -70,7 +70,7 @@ int lane_test_ioctl(int fd, unsigned long request, ...) {
     }
     if(tx && tr->len==3 && tx[0]==0 && tx[1]==5) {
         assert((tx[2]&0x7c)==0x40);
-        return 3; // Independent permissions never count as motion/STOP writes.
+        return 3; // 独立权限更新不能被统计成运动或 STOP 写入。
     }
     assert(tr->len == 3 && tx && tx[0] == 0 && tx[1] < 5);
     const int address = tx[1], value = tx[2];
@@ -137,7 +137,7 @@ static void reset_fixture(void) {
 
 int main(void) {
     reset_fixture();
-    registers[0] = 0; // An existing forward request must survive idle heartbeats.
+    registers[0] = 0; // 空闲心跳刷新不能撤销已有前进请求。
     assert(monitor_emergency_brake() == 0 && stop_writes == 1);
     assert(direction_writes == 0 && registers[0] == 0);
     expected_duration = TIME_NEUTRAL_TO_LEFT;
@@ -146,7 +146,7 @@ int main(void) {
     assert(registers[2] == 1 && registers[3] == 1 && registers[0] == 0);
     unsigned int before = direction_writes;
     turn_to_left();
-    assert(direction_writes == before); // Preserve one pulse per target position.
+    assert(direction_writes == before); // 维持每个目标位置只启动一次脉冲的约定。
     expected_duration = TIME_LEFT_TO_RIGHT;
     turn_to_right();
     assert(wheel_position == WHEEL_RIGHT && traction_writes == 0);
@@ -185,7 +185,7 @@ int main(void) {
     detector.person_detected = 1;
     detector.brake_enable = 0;
     assert(monitor_emergency_brake() == 0 && registers[3] == 1);
-    assert(!direction_release_failed); // Retry releases even with a raw brake request.
+    assert(!direction_release_failed); // 即使原始刹停请求有效，也继续重试释放。
     detector.person_detected = 0;
     detector.brake_enable = 1;
     assert(monitor_emergency_brake() == 0 && registers[3] == 1);

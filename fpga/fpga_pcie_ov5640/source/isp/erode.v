@@ -42,7 +42,7 @@ reg erode_2;
 reg erode_3;
 reg erode;
 
-matrix_3x3_1bit //delay 1 clk
+matrix_3x3_1bit // 参数记录为 delay 1 clk。
 #(
     .COL                    (U_COL),
     .ROW                    (U_ROW)

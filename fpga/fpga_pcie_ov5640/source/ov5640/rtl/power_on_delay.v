@@ -1,24 +1,24 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company:Meyesemi 
-// Engineer: Will
-// 
-// Create Date: 2023-03-17  
-// Design Name:  
-// Module Name: 
-// Project Name: 
-// Target Devices: Pango
-// Tool Versions: 
-// Description: 
-//      
-// Dependencies: 
-// 
-// Revision:
-// Revision 1.0 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-//camera power on timing requirement
+// ── 摄像头时序 ──
+// 摄像头时序：Company:Meyesemi
+// 摄像头时序：Engineer: Will
+// ── 摄像头时序 ──
+// 参数记录为 Create Date: 2023-03-17。
+// 摄像头时序：Design Name:
+// 摄像头时序：Module Name:
+// 摄像头时序：Project Name:
+// 摄像头时序：Target Devices: Pango
+// 摄像头时序：Tool Versions:
+// 摄像头时序：Description:
+// ── 摄像头时序 ──
+// 摄像头时序：Dependencies:
+// ── 摄像头时序 ──
+// 摄像头时序：Revision:
+// 摄像头时序：Revision 1.0 - File Created
+// 摄像头时序：Additional Comments:
+// ── 摄像头时序 ──
+// ── 摄像头时序 ──
+// 摄像头时序：camera power on timing requirement
 module power_on_delay(                  
     input  clk_50M        ,
     input  reset_n        ,
@@ -38,11 +38,11 @@ assign camera1_rstn=camera_rstn_reg;
 assign camera2_rstn=camera_rstn_reg;
 assign camera_pwnd=camera_pwnd_reg;
 
-//5ms, delay from sensor power up stable to Pwdn pull down
+// 参数记录为 5ms, delay from sensor power up stable to Pwdn pull down。
 always@(posedge clk_50M)begin
   if(reset_n==1'b0) begin
 	    cnt1<=0;
-		camera_pwnd_reg<=1'b1;// 1'b1 
+		camera_pwnd_reg<=1'b1;// 参数记录为 1'b1。
   end
   else if(cnt1<19'h40000) begin
        cnt1<=cnt1+1'b1;
@@ -52,7 +52,7 @@ always@(posedge clk_50M)begin
      camera_pwnd_reg<=1'b0;         
 end
 
-//1.3ms, delay from pwdn low to resetb pull up
+// 参数记录为 1.3ms, delay from pwdn low to resetb pull up。
 always@(posedge clk_50M)begin
   if(camera_pwnd_reg==1)  begin
 	 cnt2<=0;
@@ -66,7 +66,7 @@ always@(posedge clk_50M)begin
      camera_rstn_reg<=1'b1;         
 end
 
-//21ms, delay from resetb pul high to SCCB initialization
+// 摄像头时序：21ms, delay from resetb pul high to SCCB initialization
 always@(posedge clk_50M)begin
   if(camera_rstn_reg==0) begin
          cnt3<=0;

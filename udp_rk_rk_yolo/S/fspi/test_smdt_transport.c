@@ -1,4 +1,4 @@
-/* Verify the host side of the SMDT auto-opcode transport without hardware. */
+/* 无硬件检查 SMDT 自动插入操作码的主机侧封包。 */
 #define ioctl transport_ioctl
 #define perror transport_perror
 #define usleep transport_sleep
@@ -32,7 +32,7 @@ int transport_ioctl(int fd, unsigned long request, ...) {
     if (request == SPI_IOC_WR_MAX_SPEED_HZ) {
         assert(*(uint32_t *)argument == 24000000); return 0;
     }
-    // HMI reads must not issue a manual TX opcode or a MESSAGE(2).
+    // 参数记录为 HMI reads must not issue a manual TX opcode or a MESSAGE(2).。
     assert(request == SPI_IOC_MESSAGE(1));
     struct spi_ioc_transfer *tr = argument;
     assert(tr->speed_hz == 24000000 && tr->bits_per_word == 8);
@@ -83,7 +83,7 @@ int main(void) {
         uint8_t value = 0x5a;
         assert(fspi_read_data(0, &value) == 0 && value == hmi_reply);
     }
-    assert(writes == previous); // Reading HMI can never issue a write packet.
+    assert(writes == previous); // 读取 HMI 状态不能产生写数据包。
     unsigned previous_reads = reads;
     short_read = 1;
     uint8_t value = 0x5a;

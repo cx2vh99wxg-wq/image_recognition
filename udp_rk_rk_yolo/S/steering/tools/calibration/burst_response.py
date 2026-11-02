@@ -47,7 +47,7 @@ def fit(paths,width=8):
         except (ValueError,KeyError,TypeError,AttributeError) as e:rejected.append(dict(file=str(p),reason=str(e)))
     groups={}
     for r in observations:
-        if r['stop_reason']:continue # fixed-time lookup uses only full nominal pulses
+        if r['stop_reason']:continue # 固定时长查表只使用完整标称脉冲。
         zone=math.floor((r['before_deg']+width/2)/width)
         groups.setdefault((zone,r['direction'],r['first_us'],r['priority']),[]).append(r)
     cells=[]

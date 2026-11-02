@@ -3,12 +3,12 @@
 
 module conv_top
 #(
-    parameter   [10:0]  IMG_HDISP   = 11'd640,                      //  640*480
+    parameter   [10:0]  IMG_HDISP   = 11'd640,                      // 参数记录为 640*480。
     parameter   [10:0]  IMG_VDISP   = 11'd480,
     parameter                           core_witdh                = 4'd8  
 )
 (
-//////////////////////测试用/////////////////////////////////////////
+// 测试用。
 output [7:0] conv7_1_Data,
 output [7:0] conv7_2_Data,
 output [7:0] conv7_3_Data,
@@ -33,7 +33,7 @@ output [7:0] conv7_4_Data,
     output                              post_img_href              ,
     output             [   7: 0]        post_img_Y                  
 );
-////////第一层卷积/////////////////
+// 第一层卷积。
     wire               [   7: 0]        conv1_post_img_Y           ;
     wire               [   7: 0]        conv1_post_img_r           ;
     wire               [   7: 0]        conv1_post_img_g           ;
@@ -75,7 +75,7 @@ conv1
     .conv1_4_Data_out                   (conv1_4_Data_out          ) 
 );
 
-////////第二层卷积/////////////////
+// 第二层卷积。
     wire               [   7: 0]        conv2_post_img_Y           ;
     wire               [   7: 0]        conv2_post_img_r           ;
     wire               [   7: 0]        conv2_post_img_g           ;
@@ -121,7 +121,7 @@ conv2
     .conv2_4_Data_out                   (conv2_4_Data_out          ) 
 );
 
-////////第三层卷积/////////////////
+// 第三层卷积。
     wire               [   7: 0]        conv3_post_img_Y           ;
     wire               [   7: 0]        conv3_post_img_r           ;
     wire               [   7: 0]        conv3_post_img_g           ;
@@ -167,7 +167,7 @@ conv3
     .conv3_4_Data_out                   (conv3_4_Data_out          ) 
 );
 
-////////第四层卷积/////////////////
+// 第四层卷积。
     wire               [   7: 0]        conv4_post_img_Y           ;
     wire               [   7: 0]        conv4_post_img_r           ;
     wire               [   7: 0]        conv4_post_img_g           ;
@@ -212,9 +212,9 @@ conv4
     .conv4_3_Data_out                   (conv4_3_Data_out          ),
     .conv4_4_Data_out                   (conv4_4_Data_out          ) 
 );
-//////////////////////////////////////////////////////////////////////
-//第五层8通道需要第四层和第三层同时输入，故对第三层延迟
-////////////////////////////////////////////////////////////////////////
+// ── 卷积流水线 ──
+// 卷积流水线：第五层8通道需要第四层和第三层同时输入，故对第三层延迟
+// ── 卷积流水线 ──
 wire [7:0] conv3_1_Data_out_delay;
 wire [7:0] conv3_2_Data_out_delay;
 wire [7:0] conv3_3_Data_out_delay;
@@ -241,8 +241,8 @@ conv_4channel_delay
     .per_img_href                       (conv3_post_img_href       )
 );
 
-///////////////////////////////////////////////////////////////
-/////////////////////第五层/////////////////////////////////////
+// ── 卷积流水线 ──
+// 第五层。
     wire               [   7: 0]        conv5_post_img_Y           ;
     wire               [   7: 0]        conv5_post_img_r           ;
     wire               [   7: 0]        conv5_post_img_g           ;
@@ -292,13 +292,13 @@ conv5
     .conv5_4_Data_out                   (conv5_4_Data_out          ) 
 );
 
-/////////////////////////////////////////////////////////////
-/////////////////////第六层需要第五层和第二层同时输入，故对第二层延迟//////////
+// ── 卷积流水线 ──
+// 第六层需要第五层和第二层同时输入，故对第二层延迟。
 wire [7:0] conv2_1_Data_out_delay_1;
 wire [7:0] conv2_2_Data_out_delay_1;
 wire [7:0] conv2_3_Data_out_delay_1;
 wire [7:0] conv2_4_Data_out_delay_1;
-//////第3///////////////////////
+// 第3。
 conv_4channel_delay
 #(
     .IMG_HDISP                          (IMG_HDISP                 ),
@@ -324,7 +324,7 @@ wire [7:0] conv2_1_Data_out_delay_2;
 wire [7:0] conv2_2_Data_out_delay_2;
 wire [7:0] conv2_3_Data_out_delay_2;
 wire [7:0] conv2_4_Data_out_delay_2;
-//////第4///////////////////////
+// 第4。
 conv_4channel_delay
 #(
     .IMG_HDISP                          (IMG_HDISP                 ),
@@ -350,7 +350,7 @@ wire [7:0] conv2_1_Data_out_delay_3;
 wire [7:0] conv2_2_Data_out_delay_3;
 wire [7:0] conv2_3_Data_out_delay_3;
 wire [7:0] conv2_4_Data_out_delay_3;
-//////第5层///////////////////////
+// 第5层。
 conv_4channel_delay
 #(
     .IMG_HDISP                          (IMG_HDISP                 ),
@@ -373,8 +373,8 @@ conv_4channel_delay
     .per_img_href                       (conv4_post_img_href       )
 );
 
-/////////////////////////////////////////////////////////////////////////
-/////////////////////第六层//////////////////////////////////////
+// ── 卷积流水线 ──
+// 第六层。
     wire               [   7: 0]        conv6_post_img_Y           ;
     wire               [   7: 0]        conv6_post_img_r           ;
     wire               [   7: 0]        conv6_post_img_g           ;
@@ -424,13 +424,13 @@ conv6
     .conv6_4_Data_out                   (conv6_4_Data_out          ) 
 );
 
-////////////////////////////////////////////////////////////////////////////
-/////////////////////第七层需要第六层和第一层同时输入，故对第一层延迟//////////
+// ── 卷积流水线 ──
+// 第七层需要第六层和第一层同时输入，故对第一层延迟。
 wire [7:0] conv1_1_Data_out_delay_1;
 wire [7:0] conv1_2_Data_out_delay_1;
 wire [7:0] conv1_3_Data_out_delay_1;
 wire [7:0] conv1_4_Data_out_delay_1;
-//////第2///////////////////////
+// 第2。
 conv_4channel_delay
 #(
     .IMG_HDISP                          (IMG_HDISP                 ),
@@ -456,7 +456,7 @@ wire [7:0] conv1_1_Data_out_delay_2;
 wire [7:0] conv1_2_Data_out_delay_2;
 wire [7:0] conv1_3_Data_out_delay_2;
 wire [7:0] conv1_4_Data_out_delay_2;
-//////第3///////////////////////
+// 第3。
 conv_4channel_delay
 #(
     .IMG_HDISP                          (IMG_HDISP                 ),
@@ -482,7 +482,7 @@ wire [7:0] conv1_1_Data_out_delay_3;
 wire [7:0] conv1_2_Data_out_delay_3;
 wire [7:0] conv1_3_Data_out_delay_3;
 wire [7:0] conv1_4_Data_out_delay_3;
-//////第4层///////////////////////
+// 第4层。
 conv_4channel_delay
 #(
     .IMG_HDISP                          (IMG_HDISP                 ),
@@ -509,7 +509,7 @@ wire [7:0] conv1_1_Data_out_delay_4;
 wire [7:0] conv1_2_Data_out_delay_4;
 wire [7:0] conv1_3_Data_out_delay_4;
 wire [7:0] conv1_4_Data_out_delay_4;
-//////第5层///////////////////////
+// 第5层。
 conv_4channel_delay
 #(
     .IMG_HDISP                          (IMG_HDISP                 ),
@@ -536,7 +536,7 @@ wire [7:0] conv1_1_Data_out_delay_5;
 wire [7:0] conv1_2_Data_out_delay_5;
 wire [7:0] conv1_3_Data_out_delay_5;
 wire [7:0] conv1_4_Data_out_delay_5;
-//////第6层///////////////////////
+// 第6层。
 conv_4channel_delay
 #(
     .IMG_HDISP                          (IMG_HDISP                 ),
@@ -559,8 +559,8 @@ conv_4channel_delay
     .per_img_href                       (conv5_post_img_href       )
 );
 
-/////////////////////////////////////////////////////////////////////////
-/////////////////////第七层//////////////////////////////////////
+// ── 卷积流水线 ──
+// 第七层。
     wire               [   7: 0]        conv7_post_img_Y           ;
     wire               [   7: 0]        conv7_post_img_r           ;
     wire               [   7: 0]        conv7_post_img_g           ;
@@ -612,7 +612,7 @@ conv7
 
 
 
-//测试用
+// 仅供调试观察使用。
     assign                              post_img_r                = conv7_post_img_r;
     assign                              post_img_g                = conv7_post_img_g;
     assign                              post_img_b                = conv7_post_img_b;

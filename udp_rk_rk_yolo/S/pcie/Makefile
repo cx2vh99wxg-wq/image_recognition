@@ -11,8 +11,8 @@ MODEL_PATH_COMPILE = "model/RK3566_RK3568/yolov5s-640-640.rknn"
 LABELS_PATH_COMPILE = "model/coco_80_labels_list.txt"
 
 # 编译选项 (高性能优化)
-CFLAGS = -Wall -O3 -march=native -std=c11 -DYOLO_MODEL_PATH=\"$(MODEL_PATH_COMPILE)\" -DYOLO_LABELS_PATH=\"$(LABELS_PATH_COMPILE)\"
-CXXFLAGS = -Wall -O3 -march=native -std=c++11 -DYOLO_MODEL_PATH=\"$(MODEL_PATH_COMPILE)\" -DYOLO_LABELS_PATH=\"$(LABELS_PATH_COMPILE)\"
+CFLAGS = -Wall -O3 -march=native -std=c11 -DYOLO_MODEL_PATH=\"$(MODEL_PATH_COMPILE)\" -DYOLO_LABELS_PATH=\"$(LABELS_PATH_COMPILE)\" -MMD -MP
+CXXFLAGS = -Wall -O3 -march=native -std=c++11 -DYOLO_MODEL_PATH=\"$(MODEL_PATH_COMPILE)\" -DYOLO_LABELS_PATH=\"$(LABELS_PATH_COMPILE)\" -MMD -MP
 
 # 项目目录
 SRCDIR = csrc
@@ -162,3 +162,6 @@ info:
 	@echo "  包含路径: $(INCLUDES)"
 	@echo "  库路径: $(LIBDIRS)"
 	@echo "  链接库: $(LIBS)"
+
+# Shared headers are authoritative; rebuild their consumers when they change.
+-include $(OBJECTS:.o=.d)

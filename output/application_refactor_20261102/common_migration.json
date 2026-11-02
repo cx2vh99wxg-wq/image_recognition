@@ -1,0 +1,58 @@
+[
+  {
+    "shared": "udp_rk_rk_yolo/common/perception/include/line_style.h",
+    "original_paths": [
+      "udp_rk_rk_yolo/M/include/line_style.h",
+      "udp_rk_rk_yolo/S/include/line_style.h"
+    ],
+    "original_sha256": "916ab07b3a7e06068549575d6fe0eb385f199ce3ae3dd2ee14147155e0eb3e95"
+  },
+  {
+    "shared": "udp_rk_rk_yolo/common/perception/include/line_style_wire.h",
+    "original_paths": [
+      "udp_rk_rk_yolo/M/include/line_style_wire.h",
+      "udp_rk_rk_yolo/S/include/line_style_wire.h"
+    ],
+    "original_sha256": "2216948c0cc82a3b689ca6beb501e9614ad26c09b4d4baeca5a259a3cd5a4942"
+  },
+  {
+    "shared": "udp_rk_rk_yolo/common/perception/include/line_style_ipc.h",
+    "original_paths": [
+      "udp_rk_rk_yolo/M/include/line_style_ipc.h",
+      "udp_rk_rk_yolo/S/include/line_style_ipc.h"
+    ],
+    "original_sha256": "25e26e1f94172aed9ad20b21a45aee8a8568bc1238454e8d8078e3a191017db5"
+  },
+  {
+    "shared": "udp_rk_rk_yolo/common/perception/include/traffic_light.h",
+    "original_paths": [
+      "udp_rk_rk_yolo/M/include/traffic_light.h",
+      "udp_rk_rk_yolo/S/include/traffic_light.h"
+    ],
+    "original_sha256": "915cd708d1dfce6648957ae66701c196cc86c22b3d76fa472d41c400565f6f3a"
+  },
+  {
+    "shared": "udp_rk_rk_yolo/common/perception/include/traffic_light_wire.h",
+    "original_paths": [
+      "udp_rk_rk_yolo/M/include/traffic_light_wire.h",
+      "udp_rk_rk_yolo/S/include/traffic_light_wire.h"
+    ],
+    "original_sha256": "342ce8fa149ce721d5305c2c638cfc518a587ba2470fef8890202def47c54f67"
+  },
+  {
+    "shared": "udp_rk_rk_yolo/common/perception/include/traffic_light_ipc.h",
+    "original_paths": [
+      "udp_rk_rk_yolo/M/include/traffic_light_ipc.h",
+      "udp_rk_rk_yolo/S/include/traffic_light_ipc.h"
+    ],
+    "original_sha256": "8ef1fe1dbaf45ac4735518ec73f82f6fc3390ae1d3f37307d8f6411cb484623e"
+  },
+  {
+    "shared": "udp_rk_rk_yolo/common/transport/include/video_transport_v2.h",
+    "original_paths": [
+      "udp_rk_rk_yolo/M/udp/include/video_transport_v2.h",
+      "udp_rk_rk_yolo/S/udp/include/video_transport_v2.h"
+    ],
+    "original_sha256": "da2a27ed1af356cd127435488d03ca4ab2ac7f0955c542ae2a6d00f249f7300e"
+  }
+]

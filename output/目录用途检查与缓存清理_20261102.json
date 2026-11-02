@@ -1,0 +1,74 @@
+{
+  "Date": "2026-11-02",
+  "Scope": [
+    "fspi",
+    "output",
+    "tmp",
+    "pds_work"
+  ],
+  "Branch": "prelim_code",
+  "HEAD": "108bfe6b8dcfa39c58757bb3f688bafdd4f93b63",
+  "RemovedDirectories": [
+    "fspi\\build",
+    "tmp\\curve_opt_20261030\\generated_build_cache"
+  ],
+  "RemovedFiles": [
+    {
+      "Path": "fspi\\build\\fspi_module.o",
+      "Bytes": 9760,
+      "SHA256": "b4623dc67ab65e84fc9fc35480b147e59a89d7d095020852c1fa90cd88e93e99"
+    },
+    {
+      "Path": "fspi\\build\\main.o",
+      "Bytes": 6848,
+      "SHA256": "85a6cf96f1b63bdd74d410b749f1bfd3f921092b5213c3a3b94fd21269362051"
+    },
+    {
+      "Path": "fspi\\build\\vehicle_control",
+      "Bytes": 71840,
+      "SHA256": "4fdcc34bd60c0456099cf3825836c79d8b6592fa768747099fe3b278fbde4915"
+    },
+    {
+      "Path": "tmp\\curve_opt_20261030\\generated_build_cache\\a-traffic_detector.d",
+      "Bytes": 249,
+      "SHA256": "371eefa491a73c070d970a9b19b78ec5581144a2d22b8a08a9d72f0027e0c006"
+    },
+    {
+      "Path": "tmp\\curve_opt_20261030\\generated_build_cache\\a-traffic_service.d",
+      "Bytes": 385,
+      "SHA256": "d78c4da07929f4ae873cf3c7e0db335919b3cb3a9cebc3b7af0b06d5d124574a"
+    },
+    {
+      "Path": "tmp\\curve_opt_20261030\\generated_build_cache\\a-yolo_integration.d",
+      "Bytes": 299,
+      "SHA256": "56be5f727c9fe77b61b4fe2afe7fd5151b81ec6cc644b2e385816db1acd6000d"
+    },
+    {
+      "Path": "tmp\\curve_opt_20261030\\generated_build_cache\\build\\curve_geometry_replay",
+      "Bytes": 113344,
+      "SHA256": "f7b403a9e7a2339cfea9195cc939d23d59946978a16dba02f95590e3e7d17bb0"
+    },
+    {
+      "Path": "tmp\\curve_opt_20261030\\generated_build_cache\\build\\test_curve_geometry",
+      "Bytes": 29432,
+      "SHA256": "b7f903986fa06525d9603306b5375a3295efea2e1ad900810265c8577c50d5dd"
+    },
+    {
+      "Path": "tmp\\curve_opt_20261030\\generated_build_cache\\build\\traffic_detector.d",
+      "Bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "Path": "tmp\\curve_opt_20261030\\generated_build_cache\\build\\traffic_service.d",
+      "Bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "RemovedFileCount": 10,
+  "RemovedBytes": 232157.0,
+  "RetainedFilesMetadataChecked": 8636,
+  "UnexpectedRetainedChanges": [],
+  "BranchAndHeadUnchanged": true,
+  "Preserved": "Independent FSPI sources, deployment backups, handoff text, calibration, samples, unique documents, PDS projects/constraints and bitstreams",
+  "Verification": "Retained-file size/mtime equality, explicit target containment and reparse-point checks; no board changes"
+}

@@ -1,4 +1,0 @@
-source=19153 capture_ns=811898355809
-L=UNKNOWN raw=DASHED reason=WAIT 3 Q=0 duty=50 spans=2 gaps=1
-R=DASHED raw=DASHED reason=OK Q=80 duty=45 spans=2 gaps=2
-ego_reference=107.50 road_area=9370 objects=5 evidence_ns=0/811898355809

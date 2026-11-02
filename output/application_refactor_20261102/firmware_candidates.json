@@ -1,0 +1,34 @@
+[
+  {
+    "board": "S",
+    "project": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project_s_application_refactor_20261102\\project_s_refactor.pds",
+    "directory": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project_s_application_refactor_20261102",
+    "top_module": "image_pcie_capture",
+    "returncode": 0,
+    "elapsed_seconds": 578.1186728477478,
+    "compiled": true,
+    "programmed": false,
+    "hardware_tested": false,
+    "sbit": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project\\generate_bitstream\\image_pcie_capture_s_application_refactor_20261102.sbit",
+    "sbit_sha256": "528ea1604d057ee3ff582c5290887abe6bc5906b813dd726468bf2807474029b",
+    "conversion_returncode": 0,
+    "sfc": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project\\generate_bitstream\\image_pcie_capture_s_application_refactor_20261102.sfc",
+    "sfc_sha256": "092c88db14358121ce4cd5fbfc35c140f08703d307f3f8326695f710418498de"
+  },
+  {
+    "board": "M",
+    "project": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project_m_application_refactor_20261102\\project_m_refactor.pds",
+    "directory": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project_m_application_refactor_20261102",
+    "top_module": "image_pcie_capture_m_imu",
+    "returncode": 0,
+    "elapsed_seconds": 595.6646099090576,
+    "compiled": true,
+    "programmed": false,
+    "hardware_tested": false,
+    "sbit": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project\\generate_bitstream\\image_pcie_capture_m_application_refactor_20261102.sbit",
+    "sbit_sha256": "1d8b4f1a429d511b0b10b056aaff478718f74b7edecccc7d61d7dffee4b50d3e",
+    "conversion_returncode": 0,
+    "sfc": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project\\generate_bitstream\\image_pcie_capture_m_application_refactor_20261102.sfc",
+    "sfc_sha256": "6776af7ad6c59ce671641c73542cab3d257a8462a692604766c412dbec6db695"
+  }
+]

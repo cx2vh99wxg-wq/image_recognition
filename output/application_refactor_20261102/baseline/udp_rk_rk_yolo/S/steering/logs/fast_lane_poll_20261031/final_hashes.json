@@ -1,0 +1,38 @@
+[
+  {
+    "path": "S/fspi/csrc/main.c",
+    "sha256": "4ec49997139c45edc40edf8a88588f1d0cf3e8faf787395d569645b5bef2d06e"
+  },
+  {
+    "path": "S/steering/controller/steering_runtime.c",
+    "sha256": "c83508e6ed3ed13a99b14703e45e0170b35f7edbc5a8ace23e30260eb2fc2fb1"
+  },
+  {
+    "path": "S/steering/controller/steering_runtime.h",
+    "sha256": "821c49fd3622815f91fbc570cecc6bd1b0e9a1266ed89986119525ef6cfa7267"
+  },
+  {
+    "path": "S/steering/tests/controller/test_runtime_integration.c",
+    "sha256": "d8c91ad16ad6d02d3530036b5dbe0149d24d66ebfad03edaa9a7f80edb41ddc8"
+  },
+  {
+    "path": "S/fspi/build/vehicle_control",
+    "sha256": "91326d9538b66a29d6dc02fb92718fd6214f4d4bd20e152f5576895bb2194ab9"
+  },
+  {
+    "path": "S/steering/controller/README.md",
+    "sha256": "de3e59e49ff3630a26c59b6fa2da58da3f65d2bdc1a77dd3bc37893e61595f0c"
+  },
+  {
+    "path": "S/steering/tools/build.py",
+    "sha256": "35a7a50602a3d4ca88e8ed236047811e552c9c8a85608286c95933d92fb5d467"
+  },
+  {
+    "path": "S/steering/tests/feedback/test_confirm_center.py",
+    "sha256": "f3ee95b68e3c0f51bc3c272702efbf42e344d17fb5bb4afa2bc236440732e505"
+  },
+  {
+    "path": "S/steering/tools/calibration/confirm_center.py",
+    "sha256": "23fb3361395045225a41797b844170309d4f230a76a5f8df65c13745813d8a08"
+  }
+]

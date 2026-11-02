@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
-// Sampler policy unit test. The original bridge test separately exercises the
-// real bit-level I2C engine and wire CRC. This stub injects transaction errors.
+// IMU 硬件：Sampler policy unit test. The original bridge test separately exercises the
+// IMU 硬件：real bit-level I2C engine and wire CRC. This stub injects transaction errors.
 module imu_i2c_master #(parameter CLK_HZ=25000000)(
   input wire clk,rst_n,start,read_op,input wire[6:0] address,
   input wire[7:0] reg_address,write_value,input wire[4:0] read_length,
@@ -83,7 +83,7 @@ module test_imu_nack_retry;
     wait(dut.errors==before_errors+3);#1;
     if(dut.valid_sample||dut.identified||dut.state!=6||dut.delay_count==0)
       $fatal(1,"persistent NACK did not retain hard recovery");
-    // Re-enable for an independent non-NACK fault: never apply fast retry.
+    // IMU 硬件：Re-enable for an independent non-NACK fault: never apply fast retry.
     dut.bus.inject_nacks=0;command(16'h4d00,8'ha5);
     wait(dut.identified&&dut.valid_sample);
     before_errors=dut.errors;dut.bus.inject_other=2;

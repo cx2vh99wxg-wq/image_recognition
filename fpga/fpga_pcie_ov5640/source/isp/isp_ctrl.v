@@ -1,22 +1,22 @@
 `timescale 1 ps/ 1 ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company:
-// Engineer:
-//
-// Create Date: 04-14-2025 22:33:41
-// Design Name:
-// Module Name: isp_ctrl
-// Project Name:
-// Target Devices:
-// Tool Versions:
-// Description:
-//
-// Dependencies:
-//
-// Revision:
-// Additional Comments:
-//
-//////////////////////////////////////////////////////////////////////////////////
+// ── 图像流水线 ──
+// 图像流水线：Company:
+// 图像流水线：Engineer:
+// ── 图像流水线 ──
+// 参数记录为 Create Date: 04-14-2025 22:33:41。
+// 图像流水线：Design Name:
+// 图像流水线：Module Name: isp_ctrl
+// 图像流水线：Project Name:
+// 图像流水线：Target Devices:
+// 图像流水线：Tool Versions:
+// 图像流水线：Description:
+// ── 图像流水线 ──
+// 图像流水线：Dependencies:
+// ── 图像流水线 ──
+// 图像流水线：Revision:
+// 图像流水线：Additional Comments:
+// ── 图像流水线 ──
+// ── 图像流水线 ──
 
 module isp_ctrl #(
     parameter H_PIXEL = 640,
@@ -36,7 +36,7 @@ module isp_ctrl #(
     output           VGA_de	  
 );
 
-//--------------- digitial_recognition ---------------//
+// digitial_recognition。
 wire [15:0] i_vip_rgb;
 assign i_vip_rgb = ((x <= 100 || x>=540) || (y <= 40 || y >= 400))?16'b11111_000000_00000:i_rgb;
 
@@ -45,32 +45,32 @@ wire [15:0] vip_rgb;
 wire [7:0]  digit;
 
 vip u_vip(
-    //module clock
-    .clk              (clk        ),// ʱ���ź�
-    .rst_n            (rst_n      ),// ��λ�źţ�����Ч��
-    //ͼ����ǰ�����ݽӿ�
+    // 图像流水线：module clock
+    .clk              (clk        ),// 旧说明含编码损坏，原记录为：ʱ���ź�
+    .rst_n            (rst_n      ),// 旧说明含编码损坏，原记录为：��λ�źţ�����Ч��
+    // 旧说明含编码损坏，原记录为：ͼ����ǰ�����ݽӿ�
     .pre_frame_vsync  (i_vsync    ),
     .pre_frame_hsync  (),
     .pre_frame_de     (i_de       ),
     .pre_rgb          (i_vip_rgb  ),
     .xpos             (x          ),
     .ypos             (y          ),
-    //ͼ����������ݽӿ�
+    // 旧说明含编码损坏，原记录为：ͼ����������ݽӿ�
     .h_total_pexel    (H_PIXEL    ),
     .v_total_pexel    (V_PIXEL    ),    
-    .post_frame_vsync (vip_vs     ),// ������ĳ��ź�
+    .post_frame_vsync (vip_vs     ),// 旧说明含编码损坏，原记录为：������ĳ��ź�
     .post_frame_hsync (),
-    .post_frame_de    (vip_de     ),// �������������Чʹ�� 
-	.post_rgb         (vip_rgb    ),// �������ͼ������
-	.digit            (digit      ) // ʶ�𵽵�����
+    .post_frame_de    (vip_de     ),// 旧说明含编码损坏，原记录为：�������������Чʹ��
+	.post_rgb         (vip_rgb    ),// 旧说明含编码损坏，原记录为：�������ͼ������
+	.digit            (digit      ) // 旧说明含编码损坏，原记录为：ʶ�𵽵�����
 );   
 
-//assign VGA_de = vip_de;
-//assign VGA_hsync = vip_hs;
-//assign VGA_vsync = vip_vs;
-//assign VGA_rgb = vip_rgb;
+// 停用示例，仅供对照：assign VGA_de = vip_de;
+// 停用示例，仅供对照：assign VGA_hsync = vip_hs;
+// 停用示例，仅供对照：assign VGA_vsync = vip_vs;
+// 停用示例，仅供对照：assign VGA_rgb = vip_rgb;
 
-//--------------- color_recognition ---------------//
+// color_recognition。
 wire [23:0] rgb888;
 assign rgb888 = {i_rgb[15:11], 3'b0, i_rgb[10:5], 2'b0, i_rgb[4:0],3'b0};
 
@@ -114,7 +114,7 @@ assign VGA_de = vga_de;
 assign VGA_vsync = vga_vs;
 assign VGA_rgb = {vga_rgb[23:19], vga_rgb[15:10], vga_rgb[7:3]};
 
-////////////////shape_recognition//////////////
+// shape_recognition。
 wire shape_vs, shape_de;
 wire [7:0]shape_binary;
 wire [15:0]shape_en;
@@ -141,11 +141,11 @@ shape #(
 	.shape			(shape_en  )
 );
 
-//assign VGA_de = shape_de;
-//assign VGA_vsync = shape_vs;
-//assign VGA_rgb = {16{shape_binary[7]}};
+// 停用示例，仅供对照：assign VGA_de = shape_de;
+// 停用示例，仅供对照：assign VGA_vsync = shape_vs;
+// 停用示例，仅供对照：assign VGA_rgb = {16{shape_binary[7]}};
 
-/*
+/* 停用示例，仅供对照：
 //////////////////Classifier//////////////////
 wire [15:0] char_en;
 Classifier Classifier(

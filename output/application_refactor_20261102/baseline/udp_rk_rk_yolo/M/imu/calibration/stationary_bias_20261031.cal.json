@@ -1,0 +1,54 @@
+{
+  "axis": [
+    0.0,
+    0.0,
+    1.0
+  ],
+  "bias": [
+    -0.932941466,
+    -2.496351156,
+    0.693984708
+  ],
+  "gyro_std": [
+    0.0414792252064331,
+    0.049315562386295926,
+    0.04418163727854002
+  ],
+  "accel_norm_mean": 9.826878283320791,
+  "samples": 1500,
+  "duration_s": 14.996734,
+  "temperature_c": 29.385432933333334,
+  "physical_center_established": false,
+  "chassis_compensated": false,
+  "note": "Stationary declaration and mounting direction need independent physical verification",
+  "old_bias": [
+    -0.678412192,
+    -2.38418704,
+    0.299603082
+  ],
+  "axis_preserved": [
+    0.0,
+    0.0,
+    1.0
+  ],
+  "accel_axis_std": [
+    0.01114927625749117,
+    0.009791400228817755,
+    0.01564576167066301
+  ],
+  "holdout": {
+    "samples": 1000.0,
+    "seconds": 9.994,
+    "hold_fraction": 0.792,
+    "post5_hold_fraction": 1.0,
+    "transitions": 1.0,
+    "angle_change": 0.011049,
+    "post5_range_deg": 0.0,
+    "initial_deg": 0.0,
+    "final_deg": 0.011049
+  },
+  "raw_csv_sha256": "d5b30ccc525ff8c7f666f94dcdf762ec3aa73d48837d1bde0c1845690bba7462",
+  "input_stationary_declaration": "User reports stationary sensor; no steering output performed",
+  "calibration_sha256": "0da37405e5ea6b44ed20595de2f5bc0ebbe1e276cd9093045a6dd4c89ece8fe9",
+  "status": "STATIONARY_BIAS_AND_RAW_HOLDOUT_PASS"
+}

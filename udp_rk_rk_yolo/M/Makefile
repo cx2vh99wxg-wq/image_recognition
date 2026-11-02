@@ -37,8 +37,8 @@ SHARED_MEMORY_OBJ = $(BUILDDIR)/shared_memory.o
 # 编译器设置
 CC = gcc
 CXX = g++
-CFLAGS = -Wall -Wextra -std=c99 -O3 -march=native -pthread -fPIC
-CXXFLAGS = -Wall -Wextra -std=c++11 -O3 -march=native -pthread -fPIC
+CFLAGS = -Wall -Wextra -std=c99 -O3 -march=native -pthread -fPIC -MMD -MP
+CXXFLAGS = -Wall -Wextra -std=c++11 -O3 -march=native -pthread -fPIC -MMD -MP
 INCLUDES = -I$(INCDIR)
 
 #############################################################################
@@ -467,3 +467,6 @@ tune-network:
 		done; \
 	fi
 
+
+# Shared headers are authoritative; rebuild their consumers when they change.
+-include $(SHARED_MEMORY_OBJ:.o=.d)

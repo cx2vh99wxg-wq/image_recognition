@@ -87,15 +87,15 @@ def run_homing(io,limits=None):
                 and max(recent)-min(recent)<=c.full_stroke_rebound_deg
                 and direction*(recent[-1]-recent[0])<=c.stall_deg)
         for _ in range(c.max_seek_pulses):
-            # Cumulative reverse travel is capped too, including a boot that
-            # starts against a stop. Repeated opposite movement cannot build
-            # an endpoint just by taking many individually small steps.
+            # 反向累计行程同样受限，开机即顶在止挡的情形也包括在内；
+            # 不能反复朝相反方向小步移动，
+            # 仅靠多次局部小响应就认定已经构成一个完整端点。
             pulse(direction,phase,rebound_floor=best-c.endpoint_rebound_deg,verified_rebound=qualified_window)
             best=max(best,direction*current);positions.append(current)
             recent=positions[-c.stall_count:]
-            # A complete, already verified stroke distinguishes an elastic
-            # stop rebound from a wrong direction. End the seek immediately;
-            # do not keep striking the stop to obtain near-identical samples.
+            # 已验证的完整行程可将弹性止挡回弹
+            # 与方向错误区别开。判到止挡后立刻结束寻边，
+            # 不为得到近似重复样本继续撞击止挡。
             if qualified_window():return statistics.median(recent)
             if (len(recent)==c.stall_count and max(recent)-min(recent)<=max(c.stall_deg,c.endpoint_rebound_deg)
                 and direction*(recent[-1]-recent[0])<=c.stall_deg):
@@ -110,8 +110,8 @@ def run_homing(io,limits=None):
         if not c.min_span_deg<=span<=c.max_span_deg:
             raise HomeError('Endpoint stroke %.3f outside qualified %.3f..%.3f degrees'%(span,c.min_span_deg,c.max_span_deg))
         midpoint=(left+right)/2
-        # Normal calibrated control remains inside +/-18deg. Only homing's
-        # inward coarse step is used before the mechanism reaches that region.
+        # 普通标定控制仍限于 +/-18deg；只有归中的
+        # 向内粗调允许在机构尚未进入该区间前使用。
         for _ in range(6):
             if abs(current-midpoint)<=c.inner_deg:break
             before_error=abs(current-midpoint)

@@ -51,8 +51,8 @@ def main():
         try:receipt=json.loads((ROOT/'auto_home.current.json').read_text())
         except (OSError,ValueError):receipt={}
         original_reference=Path(config['environment']['STEERING_REFERENCE_FILE'])
-        # S may have rebooted while M retained its session. Invalidate that old
-        # boot's reference before foreground make run can enable auto steering.
+        # S 可能重启而 M 会话仍保留；前台 make run 可使能自动转向前，
+        # 先使上一轮 S 启动的参考零点失效。
         blocked=False
         def block_reference(session):
             nonlocal blocked
@@ -85,7 +85,7 @@ def main():
                 if len(ids)>1:raise ValueError('Multiple normal FSPI owners')
                 pid=ids[0] if ids else None
                 if pid!=last_pid:last_pid=pid;stable_since=now
-                # Keep foreground make run's three-second PID check intact.
+                # 保留前台 make run 三秒后的 PID 检查。
                 if pid and now-stable_since>=4:break
             else:
                 print('AUTO_HOME_DEFER no fresh IMU/controller; automatic steering remains unconfirmed',flush=True);return 3

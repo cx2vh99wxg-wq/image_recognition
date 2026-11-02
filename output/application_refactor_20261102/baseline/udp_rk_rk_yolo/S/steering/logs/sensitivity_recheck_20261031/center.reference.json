@@ -1,0 +1,13 @@
+{
+  "schema": "STEER_REFERENCE_REBIND_V1",
+  "session": 4194177452,
+  "zero_raw_deg": 0.119,
+  "user_physical_center_confirmed": true,
+  "user_fixed_chassis_confirmed": true,
+  "user_mount_unchanged": true,
+  "baseline_samples": 60,
+  "baseline_span_deg": 0.0,
+  "previous_reference": "/home/linaro/S/steering/logs/road_recheck_20261031/center.reference",
+  "mapping_cells_unchanged": true,
+  "mechanical_ZERO_VALID_granted": false
+}

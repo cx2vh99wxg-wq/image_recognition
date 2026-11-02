@@ -71,15 +71,15 @@ def choose(model,current,target,tolerance=1.,limit=18.,priority=10,minimum_sampl
     candidates=[]
     for c in model['cells']:
         if c['priority']!=priority or c['n']<minimum_samples:continue
-        # Both the named partition and actual observed starts must support use.
+        # 指定分区及实际观测的起点范围必须同时支持本次调用。
         if not c['zone_low_deg']<=current<c['zone_high_deg']:continue
         if not c['start_min_deg']-.75<=current<=c['start_max_deg']+.75:continue
         low=min(0,c['peak_low_deg'])*1.2-.3;high=max(0,c['peak_high_deg'])*1.2+.3
         if current+low< -limit or current+high>limit:continue
         outcomes=c['responses_deg'];worst=max(abs(error-v) for v in outcomes)
         expected=statistics.mean(abs(error-v) for v in outcomes)
-        # No interpolation through dead zones, hidden removal of zero moves or
-        # accepting a fine correction that can worsen the remaining error.
+        # 禁止跨死区插值、暗中剔除零响应，或
+        # 接受可能使剩余误差更大的精调候选。
         if worst>abs(error)+.15 or expected>=abs(error)-.15:continue
         family=[f for f in model['cells'] if f['direction']==c['direction'] and f['first_us']==c['first_us'] and
                 f['brake_us']==c['brake_us'] and f['gap_us']==c['gap_us'] and f['priority']==priority]

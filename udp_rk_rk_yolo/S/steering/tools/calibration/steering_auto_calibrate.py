@@ -32,7 +32,7 @@ class Batch:
         if continuation:
             if args.simulate:raise ValueError('Measured continuation cannot run in simulation')
             previous=json.loads(Path(continuation).read_text())
-            export(previous) # validate measured distribution, counts and bounds
+            export(previous) # 核对实测分布、样本数量以及上下界。
             if not reference_matches(previous,args.reference_session,args.zero_raw_deg):
                 raise ValueError('Continuation requires the same explicitly confirmed physical reference/session')
             for record in previous['records']:
@@ -65,7 +65,7 @@ class Batch:
         return code
     def measured_position(self):
         if self.a.simulate:return self.current
-        # Receiver is a fresh process, never reuses an old buffered angle.
+        # 接收器每次新建进程，不能复用缓冲中的旧角度。
         from steering_bench import Telemetry,baseline_of
         self.position_index+=1
         prefix=self.dest/('position_%03d'%self.position_index)
@@ -74,7 +74,7 @@ class Batch:
         finally:monitor.close()
     def write_model(self):
         if self.a.simulate:
-            # Same aggregation contract; explicitly not a measured plant model.
+            # 沿用相同聚合契约，但这不表示得到真实被控对象模型。
             self.model=fit(self.paths,allow_simulated=True);self.model['simulation_only']=True
         else:self.model=fit(self.paths)
         self.model['reference_binding']=dict(schema='STEER_BENCH_REFERENCE_V1',active_session=self.a.reference_session,
@@ -90,7 +90,7 @@ class Batch:
         if exact:return max(self.a.seed_guard_deg,max(c['max_deg'] for c in exact)*1.5+.75)
         known=[c for c in self.model['cells'] if c['direction']==direction and c['max_deg']>.15]
         if not known:return self.a.seed_guard_deg
-        # Conservative exploration bound, not a claimed time/angle function.
+        # 这里只提供保守探索界限，不声称存在确定的时间到角度函数。
         rate=max(c['max_deg']/c['duration_us'] for c in known)
         return max(self.a.seed_guard_deg,(rate*us+.5)*1.5)
     def prepare_start(self,direction,us,guard):
@@ -233,7 +233,7 @@ def main():
         print('AUTO_CALIBRATION_STOPPED',str(e),flush=True);exit_code=1
     finally:
         if not a.simulate and batch:
-            # Normal failure/cancellation always tries both direction releases.
+            # 正常失败或取消都会尝试释放左、右两个方向。
             if not release_outputs(batch):exit_code=1
         if lock:lock.close()
     return exit_code

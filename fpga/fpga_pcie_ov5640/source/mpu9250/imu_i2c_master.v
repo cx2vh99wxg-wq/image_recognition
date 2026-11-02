@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-// Independent open-drain register transaction engine. No camera bus is reused.
+// IMU 硬件：Independent open-drain register transaction engine. No camera bus is reused.
 module imu_i2c_master #(
     parameter CLK_HZ=25000000, parameter I2C_HZ=100000,
     parameter TIMEOUT_CYCLES=1250000
@@ -49,7 +49,7 @@ module imu_i2c_master #(
             scl_low<=0;sda_low<=0;state<=FREE;recovery_count<=0;
           end
         end else if(timeout_count>=TIMEOUT_CYCLES) begin
-          // Releasing the pins is always possible, even if a slave holds SCL.
+          // IMU 硬件：Releasing the pins is always possible, even if a slave holds SCL.
           busy<=0;done<=1;error<=2;state<=IDLE;scl_low<=0;sda_low<=0;
         end else begin
           timeout_count<=timeout_count+1'b1;

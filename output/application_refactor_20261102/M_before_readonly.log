@@ -1,0 +1,7 @@
+uname -n; pgrep -af "pcie_capture|udp_sender|angle_monitor"; systemctl show m-steering-imu -p ActiveState -p NRestarts; printf '\nSIX_CMD_DONE\n'
+[?2004llinaro-alip
+NRestarts=3[m
+ActiveState=failed[m
+[K
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

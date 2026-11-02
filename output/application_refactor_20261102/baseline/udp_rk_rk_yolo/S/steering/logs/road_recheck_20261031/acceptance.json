@@ -1,0 +1,50 @@
+{
+  "schema": "STEER_ROAD_ACCEPTANCE_V1",
+  "state": "PASSED_BENCH_SAMPLE_CHECKS",
+  "cases": [
+    {
+      "case": "left",
+      "target_deg": 6.25,
+      "measured_deg": 4.138,
+      "error_deg": 2.112,
+      "input_source": "live_camera",
+      "pulse_count": 1,
+      "pulse_end_records": [
+        "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30408.292 early_release=0"
+      ],
+      "passed": true
+    },
+    {
+      "case": "right",
+      "target_deg": -6.25,
+      "measured_deg": -8.878,
+      "error_deg": 2.628,
+      "input_source": "live_camera",
+      "pulse_count": 1,
+      "pulse_end_records": [
+        "[STEER_PULSE_END] pulse=1 direction=2 requested_us=30000 actual_us=30148.708 early_release=0"
+      ],
+      "passed": true
+    },
+    {
+      "case": "straight",
+      "target_deg": 0,
+      "measured_deg": 0.703,
+      "error_deg": 0.703,
+      "input_source": "recorded_raw_camera_frame_through_RKNN_UDP_and_control",
+      "pulse_count": 2,
+      "pulse_end_records": [
+        "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30261.583 early_release=0",
+        "[STEER_PULSE_END] pulse=1 direction=1 requested_us=30000 actual_us=30429.292 early_release=0"
+      ],
+      "passed": true
+    }
+  ],
+  "tolerance_deg": 3,
+  "reference_session": 4033203686,
+  "zero_raw_deg": 0.059,
+  "independent_goals_passed": 4,
+  "limitation": "Straight was recorded pixel replay, not live-camera acceptance. Fixed chassis, IMU-relative angle; no on-road accuracy claim.",
+  "S_binary_sha256": "b79474280918b6e2f0be3a078198e3214352856c1f3019c6028fa40ce39a63cb",
+  "no_HMI_or_FPGA_changes": true
+}

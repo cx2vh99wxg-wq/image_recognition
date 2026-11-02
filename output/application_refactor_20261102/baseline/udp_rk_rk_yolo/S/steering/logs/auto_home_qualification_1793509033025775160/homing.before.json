@@ -1,0 +1,11 @@
+{
+  "schema": "STEER_HOMING_PROFILE_V1",
+  "enabled": false,
+  "qualified": false,
+  "mechanical_endstops_verified": true,
+  "min_span_deg": 30,
+  "max_span_deg": 44,
+  "center_tolerance_deg": 3,
+  "note": "Both mechanical stops observed by operator during commissioning; measured span about 34deg rather than assumed 40. Final qualified band will use the measured complete stroke. Startup remains disabled until center verification.",
+  "operator_observed_both_endpoints": true
+}

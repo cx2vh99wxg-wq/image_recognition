@@ -1,13 +1,13 @@
 
-/* 解析串口屏送来的 0x30、0x90 帧头、功能编号和一个配置字节。
+/* 本模块：解析串口屏送来的 0x30、0x90 帧头、功能编号和一个配置字节。
  * 寄存器在 uart_rx_valid 有效时更新，输出直接反映已保存的配置值。 */
 module uart_lcd #(
-    // Four bytes at 115200 baud take about 0.35 ms. Discard an incomplete
-    // frame after 10 ms so a later touch release cannot complete old data.
+    // 本模块：Four bytes at 115200 baud take about 0.35 ms. Discard an incomplete
+    // 本模块：frame after 10 ms so a later touch release cannot complete old data.
     parameter integer FRAME_GAP_CYCLES = 500_000,
-    // page0 sends one press and one release frame, without a held-key
-    // heartbeat. Zero disables the optional lease so GO/BACK remain pressed
-    // until release, just like LEFT/RIGHT. A nonzero value enables a timeout.
+    // 参数记录为 page0 sends one press and one release frame, without a held-key。
+    // 本模块：heartbeat. Zero disables the optional lease so GO/BACK remain pressed
+    // 本模块：until release, just like LEFT/RIGHT. A nonzero value enables a timeout.
     parameter integer TRACTION_LEASE_CYCLES = 0
 ) (
     input             clk,
@@ -43,14 +43,14 @@ module uart_lcd #(
     reg       awb_en_reg = 1'b1;
     reg [7:0] binarization_reg = 127;
     reg [3:0] cnn_level_reg = 0;
-    // Independent persistent switch: 30 90 0F FF enables, EE disables.
-    // The existing 04 direction/REARM selector is not part of this state.
+    // 本模块：Independent persistent switch: 30 90 0F FF enables, EE disables.
+    // 本模块：The existing 04 direction/REARM selector is not part of this state.
     reg       auto_brake_enable_reg = 1'b0;
     reg [7:0] sobel_reg = 40;
     reg [7:0] cb_min_reg, cb_max_reg, cr_min_reg, cr_max_reg;
     reg [0:0] isp_judge_reg;
 
-    /* 各输出端口与配置寄存器一一对应。 */
+    /* 本模块：各输出端口与配置寄存器一一对应。 */
     assign mode = mode_reg;
     assign blc = blc_reg;
     assign awb = awb_reg;
@@ -67,9 +67,9 @@ module uart_lcd #(
     assign cr_max = cr_max_reg;
     assign auto_brake_enable = auto_brake_enable_reg;
 
-    // Match the complete 30 90 <function> <value> sequence using a sliding
-    // window. A stray 30, 30 90, or partial command cannot consume the next
-    // complete release frame as it did in the old state machine.
+    // 本模块：Match the complete 30 90 <function> <value> sequence using a sliding
+    // 参数记录为 window. A stray 30, 30 90, or partial command cannot consume the next。
+    // 本模块：complete release frame as it did in the old state machine.
     reg [7:0] previous_3, previous_2, previous_1;
     reg [1:0] bytes_seen;
     reg [19:0] frame_gap_count;
@@ -101,9 +101,9 @@ module uart_lcd #(
     wire traction_active = (cnn_level_reg == 4'ha) || (cnn_level_reg == 4'hb);
     reg [26:0] traction_lease_count;
 
-    // Only complete frames update configuration. A received release 00
-    // releases the remote contacts. The default has no GO/BACK-only timeout:
-    // holding either key follows the same press/release protocol as steering.
+    // 本模块：Only complete frames update configuration. A received release 00
+    // 本模块：releases the remote contacts. The default has no GO/BACK-only timeout:
+    // 本模块：holding either key follows the same press/release protocol as steering.
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             mode_reg        <= 8'd8;
@@ -149,18 +149,18 @@ module uart_lcd #(
                         else if (uart_rx == 8'hee)
                             auto_brake_enable_reg <= 1'b0;
                     end
-                    // Direct momentary contact: held 01 stays pressed until
-                    // explicit 00. Duplicate press frames are not shifts.
+                    // 本模块：Direct momentary contact: held 01 stays pressed until
+                    // 本模块：explicit 00. Duplicate press frames are not shifts.
                     8'h10: begin
                         if (uart_rx == 8'h01) begin
                             speed_request_level <= 1'b1;
                         end else if (uart_rx == 8'h00)
                             speed_request_level <= 1'b0;
                     end
-                    // Slider selects an absolute gear, never touches 04.
+                    // 本模块：Slider selects an absolute gear, never touches 04.
                     8'h11: begin
-                        // 00 advertises the new slider without shifting.
-                        // Old TFTs never send it and receive legacy text only.
+                        // 本模块：00 advertises the new slider without shifting.
+                        // 本模块：Old TFTs never send it and receive legacy text only.
                         if (uart_rx == 0 || (uart_rx >= 1 && uart_rx <= 3))
                             speed_slider_present <= 1'b1;
                         else if (uart_rx == 8'hee)

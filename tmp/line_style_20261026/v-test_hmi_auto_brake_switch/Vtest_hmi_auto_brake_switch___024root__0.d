@@ -1,3 +1,0 @@
-Vtest_hmi_auto_brake_switch___024root__0.o: \
- Vtest_hmi_auto_brake_switch___024root__0.cpp \
- Vtest_hmi_auto_brake_switch__pch.h

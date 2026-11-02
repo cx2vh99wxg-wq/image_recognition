@@ -1,0 +1,1057 @@
+{
+  "date": "2026-11-02",
+  "current_project": "D:\\Study_Object\\image_recognition\\image_recognition",
+  "branch": "prelim_code",
+  "scope": "Shared-module consolidation, RTL organization and consistent application code layout; not a claim of new authorship",
+  "modified_existing_files": [
+    "udp_rk_rk_yolo/common/steering/contracts/steering_feedback_wire.c",
+    "udp_rk_rk_yolo/common/steering/contracts/steering_feedback_wire.h",
+    "udp_rk_rk_yolo/common/steering/contracts/steering_platform.h",
+    "udp_rk_rk_yolo/common/steering/contracts/steering_types.h",
+    "udp_rk_rk_yolo/M/Makefile",
+    "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+    "udp_rk_rk_yolo/M/imu/csrc/fpga_imu_snapshot.c",
+    "udp_rk_rk_yolo/M/imu/csrc/imu_source.c",
+    "udp_rk_rk_yolo/M/imu/csrc/imu_stationary.c",
+    "udp_rk_rk_yolo/M/imu/csrc/mpu9250_transport.c",
+    "udp_rk_rk_yolo/M/imu/csrc/steering_angle.c",
+    "udp_rk_rk_yolo/M/imu/include/fpga_imu_snapshot.h",
+    "udp_rk_rk_yolo/M/imu/include/imu_source.h",
+    "udp_rk_rk_yolo/M/imu/include/imu_stationary.h",
+    "udp_rk_rk_yolo/M/imu/include/mpu9250_transport.h",
+    "udp_rk_rk_yolo/M/imu/include/steering_angle.h",
+    "udp_rk_rk_yolo/M/imu/tools/angle_monitor.c",
+    "udp_rk_rk_yolo/M/imu/tools/feedback_inspect.c",
+    "udp_rk_rk_yolo/M/imu/tools/imu_dump.c",
+    "udp_rk_rk_yolo/M/imu/tools/imu_probe.c",
+    "udp_rk_rk_yolo/M/imu/tools/imu_tool.c",
+    "udp_rk_rk_yolo/M/imu/tools/replay_stationary.c",
+    "udp_rk_rk_yolo/M/include/line_style.h",
+    "udp_rk_rk_yolo/M/include/line_style_ipc.h",
+    "udp_rk_rk_yolo/M/include/line_style_wire.h",
+    "udp_rk_rk_yolo/M/include/shared_memory.h",
+    "udp_rk_rk_yolo/M/include/traffic_light.h",
+    "udp_rk_rk_yolo/M/include/traffic_light_ipc.h",
+    "udp_rk_rk_yolo/M/include/traffic_light_wire.h",
+    "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+    "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+    "udp_rk_rk_yolo/M/pcie/csrc/postprocess.cpp",
+    "udp_rk_rk_yolo/M/pcie/csrc/preprocess.c",
+    "udp_rk_rk_yolo/M/pcie/csrc/traffic_detector.cpp",
+    "udp_rk_rk_yolo/M/pcie/csrc/traffic_service.cpp",
+    "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+    "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+    "udp_rk_rk_yolo/M/pcie/include/ego_lane_selector.h",
+    "udp_rk_rk_yolo/M/pcie/include/fspi_module.h",
+    "udp_rk_rk_yolo/M/pcie/include/lane_curve_geometry.h",
+    "udp_rk_rk_yolo/M/pcie/include/latest_lane_worker.h",
+    "udp_rk_rk_yolo/M/pcie/include/line_style_analyzer.h",
+    "udp_rk_rk_yolo/M/pcie/include/line_style_snapshot.h",
+    "udp_rk_rk_yolo/M/pcie/include/line_style_trace.h",
+    "udp_rk_rk_yolo/M/pcie/include/pcie_capture.h",
+    "udp_rk_rk_yolo/M/pcie/include/pcie_dma_read_test.h",
+    "udp_rk_rk_yolo/M/pcie/include/postprocess.h",
+    "udp_rk_rk_yolo/M/pcie/include/preprocess.h",
+    "udp_rk_rk_yolo/M/pcie/include/traffic_detector.h",
+    "udp_rk_rk_yolo/M/pcie/include/traffic_offline_guard.h",
+    "udp_rk_rk_yolo/M/pcie/include/traffic_service.h",
+    "udp_rk_rk_yolo/M/pcie/include/traffic_vision.h",
+    "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+    "udp_rk_rk_yolo/M/pcie/include/yolo_integration.h",
+    "udp_rk_rk_yolo/M/pcie/tools/curve_frame_replay.cpp",
+    "udp_rk_rk_yolo/M/pcie/tools/curve_saved_input_check.cpp",
+    "udp_rk_rk_yolo/M/pcie/tools/line_style_model_probe.cpp",
+    "udp_rk_rk_yolo/M/pcie/tools/line_style_replay.cpp",
+    "udp_rk_rk_yolo/M/pcie/tools/traffic_color_probe.cpp",
+    "udp_rk_rk_yolo/M/pcie/tools/traffic_probe.cpp",
+    "udp_rk_rk_yolo/M/pcie/tools/traffic_replay.cpp",
+    "udp_rk_rk_yolo/M/udp/csrc/main.cpp",
+    "udp_rk_rk_yolo/M/udp/include/udp_network.h",
+    "udp_rk_rk_yolo/M/udp/include/video_transport_v2.h",
+    "udp_rk_rk_yolo/S/Makefile",
+    "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+    "udp_rk_rk_yolo/S/fspi/Makefile",
+    "udp_rk_rk_yolo/S/fspi/csrc/control_link_status.c",
+    "udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c",
+    "udp_rk_rk_yolo/S/fspi/csrc/main.c",
+    "udp_rk_rk_yolo/S/fspi/csrc/speed_gear_status.c",
+    "udp_rk_rk_yolo/S/fspi/include/brake_policy.h",
+    "udp_rk_rk_yolo/S/fspi/include/fspi_module.h",
+    "udp_rk_rk_yolo/S/include/brake_release_policy.h",
+    "udp_rk_rk_yolo/S/include/camera_views.h",
+    "udp_rk_rk_yolo/S/include/control_status.h",
+    "udp_rk_rk_yolo/S/include/lane_rule.h",
+    "udp_rk_rk_yolo/S/include/line_style.h",
+    "udp_rk_rk_yolo/S/include/line_style_ipc.h",
+    "udp_rk_rk_yolo/S/include/line_style_wire.h",
+    "udp_rk_rk_yolo/S/include/person_brake_trigger.h",
+    "udp_rk_rk_yolo/S/include/shared_memory.h",
+    "udp_rk_rk_yolo/S/include/speed_status.h",
+    "udp_rk_rk_yolo/S/include/traffic_go_rule.h",
+    "udp_rk_rk_yolo/S/include/traffic_light.h",
+    "udp_rk_rk_yolo/S/include/traffic_light_ipc.h",
+    "udp_rk_rk_yolo/S/include/traffic_light_wire.h",
+    "udp_rk_rk_yolo/S/pcie/Makefile",
+    "udp_rk_rk_yolo/S/pcie/csrc/fspi_module.c",
+    "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+    "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+    "udp_rk_rk_yolo/S/pcie/csrc/postprocess.cpp",
+    "udp_rk_rk_yolo/S/pcie/csrc/preprocess.c",
+    "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+    "udp_rk_rk_yolo/S/pcie/include/camera_orientation.h",
+    "udp_rk_rk_yolo/S/pcie/include/fspi_module.h",
+    "udp_rk_rk_yolo/S/pcie/include/pcie_dma_read_test.h",
+    "udp_rk_rk_yolo/S/pcie/include/person_alert_effects.h",
+    "udp_rk_rk_yolo/S/pcie/include/postprocess.h",
+    "udp_rk_rk_yolo/S/pcie/include/preprocess.h",
+    "udp_rk_rk_yolo/S/pcie/include/yolo_integration.h",
+    "udp_rk_rk_yolo/S/steering/actuator/backend_dry_run.c",
+    "udp_rk_rk_yolo/S/steering/actuator/backend_fspi.c",
+    "udp_rk_rk_yolo/S/steering/actuator/steering_actuator.c",
+    "udp_rk_rk_yolo/S/steering/actuator/steering_actuator.h",
+    "udp_rk_rk_yolo/S/steering/actuator/steering_backends.h",
+    "udp_rk_rk_yolo/S/steering/actuator/steering_predictive_stop.h",
+    "udp_rk_rk_yolo/S/steering/actuator/steering_sequence.c",
+    "udp_rk_rk_yolo/S/steering/actuator/steering_sequence.h",
+    "udp_rk_rk_yolo/S/steering/controller/steering_api.h",
+    "udp_rk_rk_yolo/S/steering/controller/steering_controller.c",
+    "udp_rk_rk_yolo/S/steering/controller/steering_keepalive.c",
+    "udp_rk_rk_yolo/S/steering/controller/steering_keepalive.h",
+    "udp_rk_rk_yolo/S/steering/controller/steering_response.c",
+    "udp_rk_rk_yolo/S/steering/controller/steering_response.h",
+    "udp_rk_rk_yolo/S/steering/controller/steering_runtime.c",
+    "udp_rk_rk_yolo/S/steering/controller/steering_runtime.h",
+    "udp_rk_rk_yolo/S/steering/feedback/feedback_tracker.c",
+    "udp_rk_rk_yolo/S/steering/feedback/feedback_tracker.h",
+    "udp_rk_rk_yolo/S/steering/feedback/steering_feedback.c",
+    "udp_rk_rk_yolo/S/steering/feedback/steering_feedback.h",
+    "udp_rk_rk_yolo/S/steering/tools/actuator/steering_action.c",
+    "udp_rk_rk_yolo/S/steering/tools/actuator/steering_goal.c",
+    "udp_rk_rk_yolo/S/steering/tools/actuator/steering_lane_goal.c",
+    "udp_rk_rk_yolo/S/steering/tools/actuator/steering_status.c",
+    "udp_rk_rk_yolo/S/steering/tools/actuator/steering_step.c",
+    "udp_rk_rk_yolo/S/steering/tools/feedback/steering_feedback_monitor.c",
+    "udp_rk_rk_yolo/S/udp/csrc/main.cpp",
+    "udp_rk_rk_yolo/S/udp/csrc/main_old.cpp",
+    "udp_rk_rk_yolo/S/udp/include/pcie_dma_read_test.h",
+    "udp_rk_rk_yolo/S/udp/include/video_transport_v2.h",
+    "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+    "udp_rk_rk_yolo/S/x11/csrc/include/dashboard_ui.h",
+    "udp_rk_rk_yolo/S/x11/csrc/include/gles_presenter.h",
+    "udp_rk_rk_yolo/S/x11/csrc/include/six_camera_render.h",
+    "udp_rk_rk_yolo/S/x11/csrc/include/speed_warning_glyphs.h",
+    "udp_rk_rk_yolo/S/x11/csrc/include/video_input_fps.h",
+    "fpga/fpga_pcie_ov5640/source/image_pcie_capture.v",
+    "fpga/fpga_pcie_ov5640/source/fspi/fspi_slave_top.v",
+    "fpga/fpga_pcie_ov5640/source/isp/fps/fps_calculation.v",
+    "fpga/fpga_pcie_ov5640/source/martix/Line_Shift_RAM.v",
+    "fpga/fpga_pcie_ov5640/source/martix/line_shift_ram_8bit_new.v",
+    "fpga/fpga_pcie_ov5640/source/martix/RAMshift_taps.v",
+    "fpga/fpga_pcie_ov5640/source/mpu9250/fspi_slave_top_m_imu.v",
+    "fpga/fpga_pcie_ov5640/project/project.pds",
+    "fpga/fpga_pcie_ov5640/project_m_imu/project_m_imu.pds",
+    "fpga/fpga_pcie_ov5640/project_m_imu_nack_20261101/project_m_imu.pds"
+  ],
+  "shared_implementations": 7,
+  "compatible_include_paths": 14,
+  "relocated_RTL_modules": 7,
+  "formatted_application_files": 132,
+  "body_token_inspection": {
+    "scope": "Static source/token and file-integrity inspection only; no application or test executed",
+    "shared_implementations": [
+      {
+        "path": "udp_rk_rk_yolo/common/perception/include/line_style.h",
+        "implementation_tokens_preserved": true,
+        "compatible_paths": [
+          "udp_rk_rk_yolo/M/include/line_style.h",
+          "udp_rk_rk_yolo/S/include/line_style.h"
+        ]
+      },
+      {
+        "path": "udp_rk_rk_yolo/common/perception/include/line_style_wire.h",
+        "implementation_tokens_preserved": true,
+        "compatible_paths": [
+          "udp_rk_rk_yolo/M/include/line_style_wire.h",
+          "udp_rk_rk_yolo/S/include/line_style_wire.h"
+        ]
+      },
+      {
+        "path": "udp_rk_rk_yolo/common/perception/include/line_style_ipc.h",
+        "implementation_tokens_preserved": true,
+        "compatible_paths": [
+          "udp_rk_rk_yolo/M/include/line_style_ipc.h",
+          "udp_rk_rk_yolo/S/include/line_style_ipc.h"
+        ]
+      },
+      {
+        "path": "udp_rk_rk_yolo/common/perception/include/traffic_light.h",
+        "implementation_tokens_preserved": true,
+        "compatible_paths": [
+          "udp_rk_rk_yolo/M/include/traffic_light.h",
+          "udp_rk_rk_yolo/S/include/traffic_light.h"
+        ]
+      },
+      {
+        "path": "udp_rk_rk_yolo/common/perception/include/traffic_light_wire.h",
+        "implementation_tokens_preserved": true,
+        "compatible_paths": [
+          "udp_rk_rk_yolo/M/include/traffic_light_wire.h",
+          "udp_rk_rk_yolo/S/include/traffic_light_wire.h"
+        ]
+      },
+      {
+        "path": "udp_rk_rk_yolo/common/perception/include/traffic_light_ipc.h",
+        "implementation_tokens_preserved": true,
+        "compatible_paths": [
+          "udp_rk_rk_yolo/M/include/traffic_light_ipc.h",
+          "udp_rk_rk_yolo/S/include/traffic_light_ipc.h"
+        ]
+      },
+      {
+        "path": "udp_rk_rk_yolo/common/transport/include/video_transport_v2.h",
+        "implementation_tokens_preserved": true,
+        "compatible_paths": [
+          "udp_rk_rk_yolo/M/udp/include/video_transport_v2.h",
+          "udp_rk_rk_yolo/S/udp/include/video_transport_v2.h"
+        ]
+      }
+    ],
+    "RTL_module_tokens_preserved": true,
+    "original_body_modules": 7,
+    "protected_files_unchanged": [
+      "udp_rk_rk_yolo/M/imu/calibration/bias_unverified_z_axis.cal",
+      "udp_rk_rk_yolo/M/imu/calibration/drift_bias_20261030.cal",
+      "udp_rk_rk_yolo/M/imu/calibration/startup_bias.current.cal",
+      "udp_rk_rk_yolo/M/imu/calibration/stationary_bias_20261031.cal",
+      "udp_rk_rk_yolo/M/imu/calibration/stationary_bias_20261101.cal",
+      "udp_rk_rk_yolo/M/pcie/model/traffic_yolov5n_rk3568.rknn",
+      "udp_rk_rk_yolo/M/pcie/model/yolopv2_Nx3x480x640_rk3568.rknn",
+      "udp_rk_rk_yolo/M/pcie/model/yolop_int8.rknn",
+      "udp_rk_rk_yolo/S/pcie/model/RK3566_RK3568/yolov5s-640-640.rknn",
+      "udp_rk_rk_yolo/S/steering/auto_home.current.json",
+      "udp_rk_rk_yolo/S/steering/homing.json",
+      "udp_rk_rk_yolo/S/steering/runtime.json",
+      "udp_rk_rk_yolo/S/steering/logs/rigid_fast_20261031/response_model.table",
+      "udp_rk_rk_yolo/S/steering/logs/road_recheck_20261031/response_model.fine_only.table",
+      "udp_rk_rk_yolo/S/steering/logs/road_recheck_20261031/response_model.table",
+      "HMI/26年fpga_six_camera_20261029.HMI",
+      "HMI/26年fpga_six_camera_20261029.tft",
+      "HMI/26年fpga_speed_right_la14p_20261029.HMI",
+      "HMI/26年fpga_speed_right_la14p_20261029.tft",
+      "HMI/26年fpga_speed_warning_20261028 - 副本.HMI",
+      "HMI/26年fpga_speed_warning_20261028.HMI",
+      "HMI/26年fpga_speed_warning_20261028.tft",
+      "HMI/26年fpga_speed_warning_20261028_pre.tft",
+      "HMI/26年fpga_suc.HMI",
+      "HMI/26年fpga_suc.tft",
+      "HMI/26年fpga_suc_stop_rearm_20261022.HMI",
+      "HMI/26年fpga_suc_stop_rearm_20261022.tft",
+      "fpga/fpga_pcie_ov5640/project/project.fdc",
+      "fpga/fpga_pcie_ov5640/project_m_imu/mpu9250_m.fdc",
+      "fpga/fpga_pcie_ov5640/project_m_imu_nack_20261101/mpu9250_m.fdc"
+    ],
+    "formatted_files_with_unchanged_tokens": 132,
+    "formatting_rejections_or_skips": [
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/image_pcie_capture.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/remote_vehicle_control.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/cnn_top.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/conv1.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/conv2.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/conv3.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/conv4.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/conv5.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/conv6.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/conv7.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_2channel.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_2channel_7.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_4channel_delay.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_top.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_18.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_19.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_20.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_21.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_22.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_23.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_24.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_25.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_26.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_27.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_28.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_29.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_30.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_31.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_32.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_33.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_34.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_35.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_36.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_37.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_38.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_39.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_40.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_41.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_42.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_43.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_44.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_45.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_46.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_47.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_48.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_49.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_50.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_51.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_52.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_53.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_54.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_55.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_56.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_57.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_58.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_59.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_60.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_61.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_62.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_63.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_64.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_65.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_66.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_67.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_68.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_69.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_70.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_71.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_72.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_73.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_74.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_75.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_76.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_77.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_78.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_79.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_80.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_81.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_82.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_83.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_84.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_85.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_86.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_87.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_88.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_89.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_90.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/RGB888_YCbCr_cnn.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/cnn/rgb_end.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/fspi/fspi_slave.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/fspi/spi_ram_crtl.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/HDMI/lcd_para.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/isp/dialate.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/isp/erode.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/isp/isp_ctrl.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/isp/middle_filter.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/isp/sort.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/martix/Matrix_Generate_3X3_Buf.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/mpu9250/fspi_slave_m_imu.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/mpu9250/image_pcie_capture_m_imu.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/mpu9250/imu_i2c_master.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/mpu9250/mpu9250_sampler.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/cmos_capture_data.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/i2c_com.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/ov5640_top.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/power_on_delay.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/isp/ISP/color_dt.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/isp/ISP/matrix_3x3_1bit.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/isp/ISP/rgb2hsv.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/isp/ISP/rgb2ycbcr.v",
+        "reason": "Token or function-macro change rejected"
+      },
+      {
+        "path": "fpga/fpga_pcie_ov5640/source/isp/shape/image_rgb2hsv.v",
+        "reason": "Token or function-macro change rejected"
+      }
+    ],
+    "runtime_tests_run": false,
+    "hardware_programmed": false,
+    "origin_modified": false
+  },
+  "ARM_compile_results": {
+    "S": {
+      "board": "S",
+      "root": "/home/linaro/refactor_candidate_20261102",
+      "compiled": true,
+      "runtime_tests_run": false,
+      "production_files_replaced": false,
+      "processes_started_or_stopped": false,
+      "archive_sha256": "d6d62790cd2ad03b0b64ce44e0e106d92c6e8a5694476069a4951fe1ed6f61f4",
+      "commands": [
+        {
+          "command": [
+            "make",
+            "-j2",
+            "all"
+          ],
+          "returncode": 0
+        },
+        {
+          "command": [
+            "/usr/bin/python3",
+            "steering/tools/build.py",
+            "--hardware"
+          ],
+          "returncode": 0
+        }
+      ],
+      "binaries": {
+        "pcie/build/app": {
+          "size": 79592,
+          "sha256": "898b99e90a37f431aae4e6e21b44095a2c3da3e34b35661c5f7fd0949d5f55d1"
+        },
+        "udp/build/video_receiver": {
+          "size": 75392,
+          "sha256": "c30143a5ac9627d34ac5ab2baa7b81c0eb18ecd1a92fb9e730a7041a70ff2879"
+        },
+        "x11/csrc/build/eight_camera_renderer": {
+          "size": 362080,
+          "sha256": "0da0dd33815bc0991be2a82e6d496d4b8fd27cc8c2e33dfeb1df26a811efa218"
+        },
+        "fspi/build/vehicle_control": {
+          "size": 150088,
+          "sha256": "91326d9538b66a29d6dc02fb92718fd6214f4d4bd20e152f5576895bb2194ab9"
+        },
+        "steering/actuator/build/steering_step_fspi": {
+          "size": 74240,
+          "sha256": "477fd6c06f2b1669027a4b840f3fa6c00b4fd3b3ef2d4d2fcb35ad9a998608c5"
+        },
+        "steering/actuator/build/steering_goal_fspi": {
+          "size": 79752,
+          "sha256": "17e43fdf7a79536ec0da648fc699aa800ed190b9a8becd911511d310891d4644"
+        }
+      }
+    },
+    "M": {
+      "board": "M",
+      "root": "/home/linaro/refactor_candidate_20261102",
+      "compiled": true,
+      "runtime_tests_run": false,
+      "production_files_replaced": false,
+      "processes_started_or_stopped": false,
+      "archive_sha256": "d6d62790cd2ad03b0b64ce44e0e106d92c6e8a5694476069a4951fe1ed6f61f4",
+      "commands": [
+        {
+          "command": [
+            "make",
+            "-j2",
+            "all"
+          ],
+          "returncode": 0
+        },
+        {
+          "command": [
+            "/usr/bin/python3",
+            "imu/tools/build.py"
+          ],
+          "returncode": 0
+        }
+      ],
+      "binaries": {
+        "pcie/build/pcie_capture": {
+          "size": 3071856,
+          "sha256": "942c66a329a4534a632e2dd2c05afe46122eb08cd9ddee9622d8d16bddab04bd"
+        },
+        "udp/build/udp_sender": {
+          "size": 74080,
+          "sha256": "fbd289c8191d1524f584c973b8d8dd20daec2032192d85b31498975e61b16a1c"
+        },
+        "imu/build/angle_monitor": {
+          "size": 74264,
+          "sha256": "d7b8952fc336fe7824bdb745efbb4d7ab4dfc429674f415029366df67d54ea0f"
+        }
+      }
+    }
+  },
+  "firmware": [
+    {
+      "board": "S",
+      "project": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project_s_application_refactor_20261102\\project_s_refactor.pds",
+      "directory": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project_s_application_refactor_20261102",
+      "top_module": "image_pcie_capture",
+      "returncode": 0,
+      "elapsed_seconds": 578.1186728477478,
+      "compiled": true,
+      "programmed": false,
+      "hardware_tested": false,
+      "sbit": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project\\generate_bitstream\\image_pcie_capture_s_application_refactor_20261102.sbit",
+      "sbit_sha256": "528ea1604d057ee3ff582c5290887abe6bc5906b813dd726468bf2807474029b",
+      "conversion_returncode": 0,
+      "sfc": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project\\generate_bitstream\\image_pcie_capture_s_application_refactor_20261102.sfc",
+      "sfc_sha256": "092c88db14358121ce4cd5fbfc35c140f08703d307f3f8326695f710418498de"
+    },
+    {
+      "board": "M",
+      "project": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project_m_application_refactor_20261102\\project_m_refactor.pds",
+      "directory": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project_m_application_refactor_20261102",
+      "top_module": "image_pcie_capture_m_imu",
+      "returncode": 0,
+      "elapsed_seconds": 595.6646099090576,
+      "compiled": true,
+      "programmed": false,
+      "hardware_tested": false,
+      "sbit": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project\\generate_bitstream\\image_pcie_capture_m_application_refactor_20261102.sbit",
+      "sbit_sha256": "1d8b4f1a429d511b0b10b056aaff478718f74b7edecccc7d61d7dffee4b50d3e",
+      "conversion_returncode": 0,
+      "sfc": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project\\generate_bitstream\\image_pcie_capture_m_application_refactor_20261102.sfc",
+      "sfc_sha256": "6776af7ad6c59ce671641c73542cab3d257a8462a692604766c412dbec6db695"
+    }
+  ],
+  "compiler_timing": {
+    "S": {
+      "Setup_Slow": {
+        "clock_pair_rows": 25,
+        "failed_pairs": [
+          [
+            "cmos2_pclk",
+            "ddrphy_sysclk",
+            -6.921
+          ],
+          [
+            "cmos5_pclk",
+            "ddrphy_sysclk",
+            -6.89
+          ],
+          [
+            "cmos6_pclk",
+            "ddrphy_sysclk",
+            -6.91
+          ],
+          [
+            "ddrphy_sysclk",
+            "cmos2_pclk",
+            -2.955
+          ],
+          [
+            "ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred",
+            "cmos2_pclk",
+            -3.613
+          ],
+          [
+            "ddrphy_sysclk",
+            "cmos5_pclk",
+            -8.093
+          ],
+          [
+            "ddrphy_sysclk",
+            "cmos6_pclk",
+            -7.742
+          ]
+        ],
+        "new_failed_pairs": []
+      },
+      "Hold_Slow": {
+        "clock_pair_rows": 25,
+        "failed_pairs": [],
+        "new_failed_pairs": []
+      },
+      "Setup_Fast": {
+        "clock_pair_rows": 25,
+        "failed_pairs": [
+          [
+            "cmos2_pclk",
+            "ddrphy_sysclk",
+            -3.821
+          ],
+          [
+            "cmos5_pclk",
+            "ddrphy_sysclk",
+            -3.631
+          ],
+          [
+            "cmos6_pclk",
+            "ddrphy_sysclk",
+            -3.706
+          ],
+          [
+            "ddrphy_sysclk",
+            "cmos2_pclk",
+            -2.473
+          ],
+          [
+            "ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred",
+            "cmos2_pclk",
+            -2.146
+          ],
+          [
+            "ddrphy_sysclk",
+            "cmos5_pclk",
+            -5.864
+          ],
+          [
+            "ddrphy_sysclk",
+            "cmos6_pclk",
+            -5.522
+          ]
+        ],
+        "new_failed_pairs": []
+      },
+      "Hold_Fast": {
+        "clock_pair_rows": 25,
+        "failed_pairs": [],
+        "new_failed_pairs": []
+      },
+      "no_new_failing_clock_pair": true,
+      "all_hold_pairs_clean": true,
+      "full_design_timing_clean": false,
+      "note": "Existing asynchronous camera/DDR setup failing pairs remain; generation success is not an all-timing-pass claim."
+    },
+    "M": {
+      "Setup_Slow": {
+        "clock_pair_rows": 25,
+        "failed_pairs": [
+          [
+            "cmos6_pclk",
+            "ddrphy_sysclk",
+            -6.805
+          ],
+          [
+            "cmos2_pclk",
+            "ddrphy_sysclk",
+            -6.594
+          ],
+          [
+            "cmos5_pclk",
+            "ddrphy_sysclk",
+            -6.884
+          ],
+          [
+            "ddrphy_sysclk",
+            "cmos2_pclk",
+            -2.98
+          ],
+          [
+            "ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred",
+            "cmos2_pclk",
+            -4.758
+          ],
+          [
+            "ddrphy_sysclk",
+            "cmos5_pclk",
+            -4.532
+          ],
+          [
+            "ddrphy_sysclk",
+            "cmos6_pclk",
+            -9.456
+          ]
+        ],
+        "new_failed_pairs": []
+      },
+      "Hold_Slow": {
+        "clock_pair_rows": 25,
+        "failed_pairs": [],
+        "new_failed_pairs": []
+      },
+      "Setup_Fast": {
+        "clock_pair_rows": 25,
+        "failed_pairs": [
+          [
+            "cmos6_pclk",
+            "ddrphy_sysclk",
+            -3.563
+          ],
+          [
+            "cmos2_pclk",
+            "ddrphy_sysclk",
+            -3.702
+          ],
+          [
+            "cmos5_pclk",
+            "ddrphy_sysclk",
+            -3.655
+          ],
+          [
+            "ddrphy_sysclk",
+            "cmos2_pclk",
+            -2.491
+          ],
+          [
+            "ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred",
+            "cmos2_pclk",
+            -2.891
+          ],
+          [
+            "ddrphy_sysclk",
+            "cmos5_pclk",
+            -3.583
+          ],
+          [
+            "ddrphy_sysclk",
+            "cmos6_pclk",
+            -6.592
+          ]
+        ],
+        "new_failed_pairs": []
+      },
+      "Hold_Fast": {
+        "clock_pair_rows": 25,
+        "failed_pairs": [],
+        "new_failed_pairs": []
+      },
+      "no_new_failing_clock_pair": true,
+      "all_hold_pairs_clean": true,
+      "full_design_timing_clean": false,
+      "note": "Existing asynchronous camera/DDR setup failing pairs remain; generation success is not an all-timing-pass claim."
+    }
+  },
+  "candidate_sources_on_boards": "/home/linaro/refactor_candidate_20261102/{S|M}, with adjacent common/",
+  "production_source_or_executables_replaced": false,
+  "processes_started_or_stopped": false,
+  "runtime_tests_run": false,
+  "simulations_run": false,
+  "FPGA_programmed": false,
+  "test_omission": "User explicitly requested no testing; compiled/static-inspected candidates only",
+  "origin_directory_modified": false,
+  "copyright_or_attribution_removed": false,
+  "preexisting_board_state": "Both normal applications stopped; M m-steering-imu was failed with NRestarts=3 before refactor; not repaired or restarted here"
+}

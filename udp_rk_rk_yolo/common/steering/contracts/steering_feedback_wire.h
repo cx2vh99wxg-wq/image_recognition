@@ -6,11 +6,11 @@
 #define STEERING_FEEDBACK_WIRE_VERSION 1u
 #define STEERING_FEEDBACK_WIRE_SIZE 48u
 
-/* STF1, big-endian integers, IEEE CRC32 over bytes 0..43.
- * Decoding validates framing/integrity only, NOT freshness, zero, or simulation.
- * On failure, destination is unchanged. See contracts/README.md. */
+/* STF1 线格式使用大端整数；IEEE CRC32 覆盖字节
+ * 0..43。解码只验证帧格式与完整性，不认证时效、零点或模拟标记。
+ * 失败不改目标对象，完整契约见 contracts/README.md。 */
 steer_result_t steering_feedback_encode(uint8_t *output, size_t capacity,
-                                      const steering_feedback_t *feedback);
-steer_result_t steering_feedback_decode(steering_feedback_t *feedback,
-                                      const uint8_t *packet, size_t size);
+                                        const steering_feedback_t *feedback);
+steer_result_t steering_feedback_decode(steering_feedback_t *feedback, const uint8_t *packet,
+                                        size_t size);
 #endif

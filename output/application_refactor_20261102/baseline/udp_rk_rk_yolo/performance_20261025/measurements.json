@@ -1,0 +1,393 @@
+{
+  "date": "2026-10-25",
+  "units": {
+    "publication_fps": "Shared-memory publications/s; not a hardware exposure counter",
+    "display_fps": "Render submissions completed through XSync; shown_fps counts changed source IDs",
+    "cpu_pct": "Percent of one CPU core"
+  },
+  "S": {
+    "baseline": {
+      "elapsed_s": 10.082785713000021,
+      "fps": {
+        "pcie": 14.281767370532998,
+        "udp": 4.958947003657292
+      },
+      "network_delta": {
+        "rx_bytes": 32519020,
+        "tx_bytes": 42,
+        "rx_dropped": 0,
+        "tx_dropped": 0,
+        "rx_errors": 0,
+        "tx_errors": 0,
+        "udp_InDatagrams": 47138,
+        "udp_NoPorts": 4,
+        "udp_InErrors": 0,
+        "udp_OutDatagrams": 12,
+        "udp_RcvbufErrors": 0,
+        "udp_SndbufErrors": 0,
+        "udp_InCsumErrors": 0,
+        "udp_IgnoredMulti": 0,
+        "udp_MemErrors": 0
+      },
+      "cpu_pct": {
+        "2097": {
+          "name": "app",
+          "cpu": 74.78092081515196
+        },
+        "2102": {
+          "name": "video_receiver",
+          "cpu": 7.735957325705375
+        },
+        "2116": {
+          "name": "vehicle_control",
+          "cpu": 1.090968340804604
+        },
+        "2267": {
+          "name": "eight_camera_re",
+          "cpu": 52.56483823876729
+        }
+      }
+    },
+    "phase_a": {
+      "elapsed_s": 10.093648838000263,
+      "fps": {
+        "pcie": 19.8144400711709,
+        "udp": 8.024848228824215
+      },
+      "network_delta": {
+        "rx_bytes": 52661490,
+        "tx_bytes": 42,
+        "rx_dropped": 0,
+        "tx_dropped": 0,
+        "rx_errors": 0,
+        "tx_errors": 0,
+        "udp_InDatagrams": 38509,
+        "udp_NoPorts": 4,
+        "udp_InErrors": 0,
+        "udp_OutDatagrams": 12,
+        "udp_RcvbufErrors": 0,
+        "udp_SndbufErrors": 0,
+        "udp_InCsumErrors": 0,
+        "udp_IgnoredMulti": 0,
+        "udp_MemErrors": 0
+      },
+      "cpu_pct": {
+        "2885": {
+          "name": "app",
+          "cpu": 56.1739376017695
+        },
+        "2887": {
+          "name": "video_receiver",
+          "cpu": 9.709075634873741
+        },
+        "2889": {
+          "name": "vehicle_control",
+          "cpu": 1.783299606405381
+        },
+        "2894": {
+          "name": "eight_camera_re",
+          "cpu": 59.14610361244514
+        }
+      }
+    },
+    "final": {
+      "elapsed_s": 30.00030426400008,
+      "publication_fps": {
+        "pcie": 16.666497632825433,
+        "udp": 29.999695739085777
+      },
+      "interrupted": {
+        "pcie": false,
+        "udp": false
+      },
+      "network_delta": {
+        "rx_bytes": 598612134,
+        "tx_bytes": 84,
+        "rx_dropped": 0,
+        "tx_dropped": 0,
+        "rx_errors": 0,
+        "tx_errors": 0,
+        "udp_InDatagrams": 431884,
+        "udp_NoPorts": 10,
+        "udp_InErrors": 0,
+        "udp_OutDatagrams": 28,
+        "udp_RcvbufErrors": 0,
+        "udp_SndbufErrors": 0,
+        "udp_InCsumErrors": 0,
+        "udp_IgnoredMulti": 0,
+        "udp_MemErrors": 0
+      },
+      "cpu_pct_one_core": {
+        "2380": {
+          "name": "app",
+          "cpu": 59.8993924923746
+        },
+        "2389": {
+          "name": "video_receiver",
+          "cpu": 34.63298208101125
+        },
+        "2391": {
+          "name": "vehicle_control",
+          "cpu": 2.166644692267306
+        },
+        "2819": {
+          "name": "eight_camera_re",
+          "cpu": 59.49939654918679
+        }
+      }
+    }
+  },
+  "M": {
+    "baseline": {
+      "elapsed_s": 10.028962627999135,
+      "fps": {
+        "pcie": 7.179207129458076
+      },
+      "network_delta": {
+        "rx_bytes": 60,
+        "tx_bytes": 31710186,
+        "rx_dropped": 0,
+        "tx_dropped": 0,
+        "rx_errors": 0,
+        "tx_errors": 0,
+        "udp_InDatagrams": 0,
+        "udp_NoPorts": 24,
+        "udp_InErrors": 0,
+        "udp_OutDatagrams": 46200,
+        "udp_RcvbufErrors": 0,
+        "udp_SndbufErrors": 0,
+        "udp_InCsumErrors": 0,
+        "udp_IgnoredMulti": 0,
+        "udp_MemErrors": 0
+      },
+      "cpu_pct": {
+        "14314": {
+          "name": "pcie_capture",
+          "cpu": 30.013074249540015
+        },
+        "14320": {
+          "name": "udp_sender",
+          "cpu": 16.45234967167476
+        }
+      }
+    },
+    "phase_a": {
+      "elapsed_s": 10.03614482500052,
+      "fps": {
+        "pcie": 8.070828132952515
+      },
+      "network_delta": {
+        "rx_bytes": 60,
+        "tx_bytes": 53265642,
+        "rx_dropped": 0,
+        "tx_dropped": 0,
+        "rx_errors": 0,
+        "tx_errors": 0,
+        "udp_InDatagrams": 0,
+        "udp_NoPorts": 20,
+        "udp_InErrors": 0,
+        "udp_OutDatagrams": 38900,
+        "udp_RcvbufErrors": 0,
+        "udp_SndbufErrors": 0,
+        "udp_InCsumErrors": 0,
+        "udp_IgnoredMulti": 0,
+        "udp_MemErrors": 0
+      },
+      "cpu_pct": {
+        "15872": {
+          "name": "pcie_capture",
+          "cpu": 21.522208354540044
+        },
+        "15876": {
+          "name": "udp_sender",
+          "cpu": 9.366146228364649
+        }
+      }
+    },
+    "final": {
+      "elapsed_s": 30.000369475999833,
+      "publication_fps": {
+        "pcie": 29.96629760574103
+      },
+      "interrupted": {
+        "pcie": false
+      },
+      "network_delta": {
+        "rx_bytes": 60,
+        "tx_bytes": 598605126,
+        "rx_dropped": 0,
+        "tx_dropped": 0,
+        "rx_errors": 0,
+        "tx_errors": 0,
+        "udp_InDatagrams": 0,
+        "udp_NoPorts": 60,
+        "udp_InErrors": 0,
+        "udp_OutDatagrams": 431961,
+        "udp_RcvbufErrors": 0,
+        "udp_SndbufErrors": 0,
+        "udp_InCsumErrors": 0,
+        "udp_IgnoredMulti": 0,
+        "udp_MemErrors": 0
+      },
+      "cpu_pct_one_core": {
+        "2202": {
+          "name": "pcie_capture",
+          "cpu": 72.66577172471128
+        },
+        "2219": {
+          "name": "udp_sender",
+          "cpu": 26.69967117040997
+        }
+      }
+    }
+  },
+  "display_final": {
+    "backend": "xrender/shm",
+    "synchronization": "sync",
+    "fast_composition": false,
+    "partial_upload": false,
+    "windows": [
+      {
+        "render_fps": 12,
+        "S_input_fps": 17.7,
+        "M_input_fps": 29.89,
+        "S_shown_fps": 9.83,
+        "M_shown_fps": 11.8,
+        "compose_ms": 32.4,
+        "legacy_ms": 4.06,
+        "car_ms": 5.35,
+        "dashboard_ms": 27.04,
+        "car_redraw_pct": 65.6,
+        "scale_ms": 8.91,
+        "present_ms": 33.9,
+        "reuse_wait_ms": 0,
+        "upload_done_fps": 12,
+        "upload_MB": 5.76,
+        "upload_rects": 1,
+        "partial": 0
+      },
+      {
+        "render_fps": 12.07,
+        "S_input_fps": 17.02,
+        "M_input_fps": 29.89,
+        "S_shown_fps": 9.9,
+        "M_shown_fps": 11.28,
+        "compose_ms": 34.49,
+        "legacy_ms": 4.12,
+        "car_ms": 7.77,
+        "dashboard_ms": 26.72,
+        "car_redraw_pct": 77,
+        "scale_ms": 8.57,
+        "present_ms": 31.72,
+        "reuse_wait_ms": 0,
+        "upload_done_fps": 12.07,
+        "upload_MB": 5.76,
+        "upload_rects": 1,
+        "partial": 0
+      },
+      {
+        "render_fps": 12.39,
+        "S_input_fps": 16.12,
+        "M_input_fps": 30.08,
+        "S_shown_fps": 10.22,
+        "M_shown_fps": 11.99,
+        "compose_ms": 35.55,
+        "legacy_ms": 4.07,
+        "car_ms": 7.55,
+        "dashboard_ms": 27.99,
+        "car_redraw_pct": 74.6,
+        "scale_ms": 8.07,
+        "present_ms": 28.98,
+        "reuse_wait_ms": 0,
+        "upload_done_fps": 12.39,
+        "upload_MB": 5.76,
+        "upload_rects": 1,
+        "partial": 0
+      },
+      {
+        "render_fps": 11.85,
+        "S_input_fps": 18.16,
+        "M_input_fps": 29.81,
+        "S_shown_fps": 9.87,
+        "M_shown_fps": 11.65,
+        "compose_ms": 33.23,
+        "legacy_ms": 4.27,
+        "car_ms": 5.54,
+        "dashboard_ms": 27.69,
+        "car_redraw_pct": 68.3,
+        "scale_ms": 8.97,
+        "present_ms": 33.93,
+        "reuse_wait_ms": 0,
+        "upload_done_fps": 11.85,
+        "upload_MB": 5.76,
+        "upload_rects": 1,
+        "partial": 0
+      },
+      {
+        "render_fps": 11.93,
+        "S_input_fps": 17.7,
+        "M_input_fps": 30.23,
+        "S_shown_fps": 9.15,
+        "M_shown_fps": 11.74,
+        "compose_ms": 32.66,
+        "legacy_ms": 4.15,
+        "car_ms": 5.25,
+        "dashboard_ms": 27.41,
+        "car_redraw_pct": 65,
+        "scale_ms": 9.47,
+        "present_ms": 33.6,
+        "reuse_wait_ms": 0,
+        "upload_done_fps": 11.93,
+        "upload_MB": 5.76,
+        "upload_rects": 1,
+        "partial": 0
+      },
+      {
+        "render_fps": 11.86,
+        "S_input_fps": 16.8,
+        "M_input_fps": 29.64,
+        "S_shown_fps": 9.88,
+        "M_shown_fps": 11.86,
+        "compose_ms": 35.71,
+        "legacy_ms": 4.12,
+        "car_ms": 7.74,
+        "dashboard_ms": 27.97,
+        "car_redraw_pct": 76.7,
+        "scale_ms": 8.29,
+        "present_ms": 32.19,
+        "reuse_wait_ms": 0,
+        "upload_done_fps": 11.86,
+        "upload_MB": 5.76,
+        "upload_rects": 1,
+        "partial": 0
+      }
+    ],
+    "mean_render_fps": 12.016666666666666,
+    "mean_m_shown_fps": 11.719999999999999,
+    "mean_s_shown_fps": 9.808333333333334,
+    "raw_logs": [
+      "[PERF DISPLAY] render_fps=12.00 S_input_fps=17.70 M_input_fps=29.89 S_shown_fps=9.83 M_shown_fps=11.80 compose_ms=32.40 legacy_ms=4.06 car_ms=5.35 dashboard_ms=27.04 car_redraw_pct=65.6 scale_ms=8.91 present_ms=33.90 reuse_wait_ms=0.00 upload_done_fps=12.00 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DISPLAY] render_fps=12.07 S_input_fps=17.02 M_input_fps=29.89 S_shown_fps=9.90 M_shown_fps=11.28 compose_ms=34.49 legacy_ms=4.12 car_ms=7.77 dashboard_ms=26.72 car_redraw_pct=77.0 scale_ms=8.57 present_ms=31.72 reuse_wait_ms=0.00 upload_done_fps=12.07 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DISPLAY] render_fps=12.39 S_input_fps=16.12 M_input_fps=30.08 S_shown_fps=10.22 M_shown_fps=11.99 compose_ms=35.55 legacy_ms=4.07 car_ms=7.55 dashboard_ms=27.99 car_redraw_pct=74.6 scale_ms=8.07 present_ms=28.98 reuse_wait_ms=0.00 upload_done_fps=12.39 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DISPLAY] render_fps=11.85 S_input_fps=18.16 M_input_fps=29.81 S_shown_fps=9.87 M_shown_fps=11.65 compose_ms=33.23 legacy_ms=4.27 car_ms=5.54 dashboard_ms=27.69 car_redraw_pct=68.3 scale_ms=8.97 present_ms=33.93 reuse_wait_ms=0.00 upload_done_fps=11.85 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DISPLAY] render_fps=11.93 S_input_fps=17.70 M_input_fps=30.23 S_shown_fps=9.15 M_shown_fps=11.74 compose_ms=32.66 legacy_ms=4.15 car_ms=5.25 dashboard_ms=27.41 car_redraw_pct=65.0 scale_ms=9.47 present_ms=33.60 reuse_wait_ms=0.00 upload_done_fps=11.93 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync",
+      "[PERF DISPLAY] render_fps=11.86 S_input_fps=16.80 M_input_fps=29.64 S_shown_fps=9.88 M_shown_fps=11.86 compose_ms=35.71 legacy_ms=4.12 car_ms=7.74 dashboard_ms=27.97 car_redraw_pct=76.7 scale_ms=8.29 present_ms=32.19 reuse_wait_ms=0.00 upload_done_fps=11.86 upload_MB=5.76 upload_rects=1.0 partial=0 backend=xrender/shm sync=sync"
+    ]
+  },
+  "s_capture_profile": "[PERF S-PCIE] capture_loop_fps=17.68 raw_changed_fps=17.68 infer_fps=5.89 dma_ms=22.07 orient_ms=1.45 color_ms=0.92 infer_job_ms=83.20 draw_ms=1.69 publish_ms=2.63 rows=1 ioctls_per_frame=960",
+  "validation": {
+    "source_sha256_both_boards": "PASS",
+    "native_protocol_tests": "PASS",
+    "native_capture_only_restart_sender_pid_unchanged": "PASS",
+    "gui_image_and_metadata_late_start_restart": "PASS",
+    "user_confirmed_realtime_and_no_vertical_shaking": true
+  },
+  "notes": [
+    "Final publication/network sample is 30 seconds on both real boards.",
+    "Display figures are six recent 5-second profiling windows; scene/workload dependent.",
+    "Raw changed FPS is a sampled image fingerprint, not a hardware sensor exposure counter.",
+    "The user manually rebooted both boards and stopped S processes during validation; final measurements followed complete recovery.",
+    "GLES, completion and partial-upload experiments were not selected as defaults. Final default is stable full-frame XRender/MIT-SHM with XSync.",
+    "Original sources and binaries were retained on each board under /home/linaro/vision-perf-backup-20261025."
+  ]
+}

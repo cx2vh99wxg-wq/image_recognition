@@ -1,0 +1,32 @@
+{
+  "source": "https://github.com/airockchip/rknn_model_zoo/tree/main/examples/yolov5",
+  "onnx_sha256": "b3237d0f59a5d90ff6ecec3dca220e0ada8abd929f8a158b08b12e1a3bad7232",
+  "rknn_sha256": "38b08fb0875a00de86928f1591634fd6b209d9739fdcc8399b75fe151d6752da",
+  "target": "rk3568",
+  "input_size": 320,
+  "toolkit": "2.3.2",
+  "quantization": "INT8",
+  "classes": 80,
+  "selected_class": 9,
+  "locator_score_gate": 0.07,
+  "max_locator_rate_hz": 1,
+  "max_color_rate_hz": 10,
+  "soft_gap_budget_ms": 60,
+  "views": [
+    1,
+    0.5,
+    0.25
+  ],
+  "selected_camera": "M physical middle / S overview upper-middle (0x88)",
+  "control_output": "none",
+  "unknown_policy": "no box / ambiguous color / tracking lost / expired => UNKNOWN",
+  "source_rect": [
+    320,
+    240,
+    320,
+    240
+  ],
+  "source_byte_order": "BGR",
+  "detector_byte_order": "RGB",
+  "invalid_horizontal_border_pixels": 8
+}

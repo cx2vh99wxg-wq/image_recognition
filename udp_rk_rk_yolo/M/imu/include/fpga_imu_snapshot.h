@@ -4,7 +4,8 @@
 #include <stddef.h>
 #define FPGA_IMU_PACKET_SIZE 64u
 #define FPGA_IMU_SPI_PREFIX 8u
-typedef struct {
+typedef struct
+{
     uint8_t flags, error, identity, address;
     uint32_t sequence, errors, generation;
     uint64_t sample_us, now_us;

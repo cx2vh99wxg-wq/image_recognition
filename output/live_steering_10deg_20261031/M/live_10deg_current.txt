@@ -1,4 +1,0 @@
-source=65860 capture_ns=2316293180911
-L=UNKNOWN raw=UNKNOWN reason=NO MASK Q=0 duty=0 spans=0 gaps=0
-R=UNKNOWN raw=UNKNOWN reason=NO MASK Q=0 duty=0 spans=0 gaps=0
-ego_reference=0.00 road_area=0 objects=0 evidence_ns=0/0

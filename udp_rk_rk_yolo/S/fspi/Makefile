@@ -9,7 +9,7 @@ CC = gcc
 
 
 # 编译选项
-CFLAGS = -Wall -O2 -std=c11
+CFLAGS = -Wall -O2 -std=c11 -MMD -MP
 
 # 项目目录
 SRCDIR = csrc
@@ -218,3 +218,6 @@ info:
 	@echo "包含路径: $(INCLUDES)"
 	@echo "编译选项: $(CFLAGS)"
 	@echo "链接库:   $(LIBS)"
+
+# Shared headers are authoritative; rebuild their consumers when they change.
+-include $(ALL_OBJECTS:.o=.d)

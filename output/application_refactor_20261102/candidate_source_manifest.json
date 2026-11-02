@@ -1,0 +1,766 @@
+[
+  {
+    "path": "M/check_system.sh",
+    "sha256": "a448f733eb52641b6646aa9b52065567c0216c2a1ecff984b05da7ada9427f07"
+  },
+  {
+    "path": "M/Makefile",
+    "sha256": "fa355219152f106568551bcaf631caa3aafbde573762bf629925d61c8c489cf5"
+  },
+  {
+    "path": "M/setup_network.sh",
+    "sha256": "d3534c4a2bbcf10997df4f77a6dbfef34d8cb7985f163cbcf46a0591ba90811f"
+  },
+  {
+    "path": "M/csrc/shared_memory.c",
+    "sha256": "8c910db4563412a153a959f52522fa25eeb5c58e5dd3a4fa6ef000484c5760a6"
+  },
+  {
+    "path": "M/imu/Makefile",
+    "sha256": "64f7c9d5472238e21c1f82ad6b14868065a6fe98f011c93151442634fb944e95"
+  },
+  {
+    "path": "M/imu/csrc/fpga_imu_snapshot.c",
+    "sha256": "b7c8c625b71775072630449c2142e6699c38234a8af0fddd3487592318dabae0"
+  },
+  {
+    "path": "M/imu/csrc/imu_source.c",
+    "sha256": "19aa1dd3236b74b4c6de408b70faa6119e630bbc77a19c67282136cbede14e11"
+  },
+  {
+    "path": "M/imu/csrc/imu_stationary.c",
+    "sha256": "2b20a2180c7442eab32eed62481b50c029b7b6d6b7e40a9fd7e0e74cfcd5eae3"
+  },
+  {
+    "path": "M/imu/csrc/mpu9250_transport.c",
+    "sha256": "08fdfdf701b8c4fd29817f18f22aa007e95c5c69af77b1b2a2770c68155514a2"
+  },
+  {
+    "path": "M/imu/csrc/steering_angle.c",
+    "sha256": "c26b7e87c4533d24fcebacb232cb21a3670713ffab04f203166b98669231a297"
+  },
+  {
+    "path": "M/imu/include/fpga_imu_snapshot.h",
+    "sha256": "fdbd17e03155ca44152bac038ee6cbbd47738fccb40f766a2aeae94728761306"
+  },
+  {
+    "path": "M/imu/include/imu_source.h",
+    "sha256": "8508690dea9b415479bc4bce4855dc8ed12cf6f0276c48fa1355234408d8edd9"
+  },
+  {
+    "path": "M/imu/include/imu_stationary.h",
+    "sha256": "c9bd81ab8d4f37ad776a6dc8d37831b9c32f0f7a97cea30dbcfc7a36e924ffd9"
+  },
+  {
+    "path": "M/imu/include/mpu9250_transport.h",
+    "sha256": "e8d2cd967b10fdbf9b4daf4595318a175513efc4b05940a0e6e37715106c0564"
+  },
+  {
+    "path": "M/imu/include/steering_angle.h",
+    "sha256": "bcd4c2d927b5223f0592f3f774e10de45466917a8a3f079acf1504f2bf2e13c0"
+  },
+  {
+    "path": "M/imu/tools/analyze_recording.py",
+    "sha256": "80e33a86af4de676ef78e2c6dfbe7000e3c5f1c6d7671be85209a561146a725f"
+  },
+  {
+    "path": "M/imu/tools/angle_monitor.c",
+    "sha256": "f3338410fb58e454192e0a699a1eecc89ef8c28a172eec0267d4c5de68e2f7bd"
+  },
+  {
+    "path": "M/imu/tools/build.py",
+    "sha256": "3455a93d728e9fd877e32c2f9d925337b19d168d6012c028951b5367e5b61445"
+  },
+  {
+    "path": "M/imu/tools/calibrate.py",
+    "sha256": "da8e2eeb794162f06c2b1ad5f48c1207f36cb8ddda86e5fcde1fc4f12ff1fe04"
+  },
+  {
+    "path": "M/imu/tools/feedback_health.py",
+    "sha256": "b7bafaf6a347dfcba79cc2c2dc887be3b7496621e3119bf0cd92f778de51df77"
+  },
+  {
+    "path": "M/imu/tools/feedback_inspect.c",
+    "sha256": "3bab685b4d8a0b9c028a3330c397b571d4cb3c9912507a0db046780bae86142d"
+  },
+  {
+    "path": "M/imu/tools/imu_dump.c",
+    "sha256": "4ca7025928d5491ebab1d79d607c43391a1b63fbe4b1575598fb05214b31cda4"
+  },
+  {
+    "path": "M/imu/tools/imu_probe.c",
+    "sha256": "57d925af9c1c2a29a92450ea2ca5afb2acadbf87395ff340062d4a29f917be73"
+  },
+  {
+    "path": "M/imu/tools/imu_tool.c",
+    "sha256": "74feb26c76b3753978e6508aa2e1f405b8883cb1b3d90c46ca227f298c51e954"
+  },
+  {
+    "path": "M/imu/tools/imu_tool.h",
+    "sha256": "5e574616dee84fd0a56fc09ccaae166a2489022567b7a0db6ab8323202429f25"
+  },
+  {
+    "path": "M/imu/tools/imu_zero.sh",
+    "sha256": "b6db82fdd6c2d9d7fe78b915d70e3bd60af2d739a2d884927fa4a84e54b426cf"
+  },
+  {
+    "path": "M/imu/tools/replay_stationary.c",
+    "sha256": "199583b38464d7071bf68c3992ebe80b164efbdf8a324fdf5ac085b9c30950a0"
+  },
+  {
+    "path": "M/imu/tools/start_angle_monitor.py",
+    "sha256": "0fdae68bff40b09303c159eec6b2a5e04afc63527673979c8029929b0856e458"
+  },
+  {
+    "path": "M/include/line_style.h",
+    "sha256": "c961abda4631ab91cb8a3d2756a2607e7f041e6a7412aab20cd8d8030f621cd2"
+  },
+  {
+    "path": "M/include/line_style_ipc.h",
+    "sha256": "b209c5dafd95c77b239e24d57f10cc84bd92cc793af8914a9221513f13a59dc5"
+  },
+  {
+    "path": "M/include/line_style_wire.h",
+    "sha256": "c10ce1148a04cf4d7b29f0e3018b41e67e8a2be01d250fef8dd79825c3292152"
+  },
+  {
+    "path": "M/include/shared_memory.h",
+    "sha256": "806b0e997bf38b57291e618afec43d70dcf2deb1d1592d7d4cd0373a9f3af479"
+  },
+  {
+    "path": "M/include/traffic_light.h",
+    "sha256": "554d999250e0b4bf630d18df60a74a9255e0b2bb3ef52645ab9b06147cc3f9c7"
+  },
+  {
+    "path": "M/include/traffic_light_ipc.h",
+    "sha256": "909c432faa18bf36f6e5c02563dad63c9d2e5b72a3049ab5380555f2acbcdf09"
+  },
+  {
+    "path": "M/include/traffic_light_wire.h",
+    "sha256": "f5465c7e74af356b05e87794093dc2a24038cc329f630fb7fc88c779be42e230"
+  },
+  {
+    "path": "M/pcie/Makefile",
+    "sha256": "803bc1b0dad7b7945e440f21ac84eaa60c07a37e7df7221f7e4d5c20dac35c63"
+  },
+  {
+    "path": "M/pcie/csrc/fspi_module.c",
+    "sha256": "bb72707d30d30aa7649473ca5f98914c64d2c7e894ad58c68e493856f119edb9"
+  },
+  {
+    "path": "M/pcie/csrc/main.cpp",
+    "sha256": "3f89376229e72b0a88a7bfe436b3e9a8d3c2a2142cbed18e0d53d2670b457261"
+  },
+  {
+    "path": "M/pcie/csrc/postprocess.cpp",
+    "sha256": "8340ec3895ccd423fd54dee06bd91076f736a63e5175e633673358f9f85594ad"
+  },
+  {
+    "path": "M/pcie/csrc/preprocess.c",
+    "sha256": "caf0805cd8fae0a31593d27ae9847567e4c1b0a32b934a910e9e3daf86909699"
+  },
+  {
+    "path": "M/pcie/csrc/traffic_detector.cpp",
+    "sha256": "5613449967e5b3be31987ba22eda396597c009b11acbdae030f09c1f292f9e96"
+  },
+  {
+    "path": "M/pcie/csrc/traffic_service.cpp",
+    "sha256": "2b531c9e79cfede2c33e687bc8dd6c370fa5cfd2a2278ceb5e7e545a23b20bd8"
+  },
+  {
+    "path": "M/pcie/csrc/yolop_opencv_integration.cpp",
+    "sha256": "8073639a9fbfb8e5ad853c0261055a47b58ec3eb3bfc4f598865705cb6a1236d"
+  },
+  {
+    "path": "M/pcie/csrc/yolo_integration.c",
+    "sha256": "12294b955da4b718e8cf3a949ab7a713e458745ad7ae44607378d7d9d3b78162"
+  },
+  {
+    "path": "M/pcie/include/ego_lane_selector.h",
+    "sha256": "1f7ecfe113b115bc9daeba1f621689f2239a79794a52f1265eba014c14f30013"
+  },
+  {
+    "path": "M/pcie/include/fspi_module.h",
+    "sha256": "3edcf5e19f6f19836d952aacca3633c45e7052af7a404fdc61cb6da616d88671"
+  },
+  {
+    "path": "M/pcie/include/lane_curve_geometry.h",
+    "sha256": "abc6470e9dbac9af6675a4a06bd9bcae4b69845fd8dd8a61933561b40b8da9c4"
+  },
+  {
+    "path": "M/pcie/include/latest_lane_worker.h",
+    "sha256": "b7c55684553c8f2f09628bfd817ce76631a150434ee1508ae65a15b3b1238ebe"
+  },
+  {
+    "path": "M/pcie/include/line_style_analyzer.h",
+    "sha256": "15ead4e29b48f6345e0e8cfa96ed243e78e15cb0003c1b9cc9bfd11d7753121a"
+  },
+  {
+    "path": "M/pcie/include/line_style_snapshot.h",
+    "sha256": "118b10d7861a96429bcc2d91750085abf48acd09d67f071224cbcf9f8781c766"
+  },
+  {
+    "path": "M/pcie/include/line_style_trace.h",
+    "sha256": "9655af5f07f5fe460adb32e1127e6e84abdfa869e9df4e77281468c9aef0815e"
+  },
+  {
+    "path": "M/pcie/include/pcie_capture.h",
+    "sha256": "c18cea08b9872eb33c70a7b6596714d97038e00bf322af2bb01683f1588dab28"
+  },
+  {
+    "path": "M/pcie/include/pcie_dma_read_test.h",
+    "sha256": "1a8cf62dac8aacb6006c7edc72432643a7571d36355d469d574ba1650c28565f"
+  },
+  {
+    "path": "M/pcie/include/postprocess.h",
+    "sha256": "106ce8b3200f62fb0f1cd77995536c3ce9feebf1bf2e7385cdafc44775ba2fe7"
+  },
+  {
+    "path": "M/pcie/include/preprocess.h",
+    "sha256": "d2e0dd6483c28ad7ed2359ef135c5ef7beb0297bdd72e781a0c3a6f05af51a21"
+  },
+  {
+    "path": "M/pcie/include/rknn_api.h",
+    "sha256": "75ca59f78182c0250f1aa5b07593a6dbec61c6ccd6e5b6a588419fdbcc332060"
+  },
+  {
+    "path": "M/pcie/include/traffic_detector.h",
+    "sha256": "aee0f3dc4081f6fe0eea1a2afb000ec86de8c66ceb5c50dc71a7ac95c08d2a40"
+  },
+  {
+    "path": "M/pcie/include/traffic_offline_guard.h",
+    "sha256": "2f8135590a383b5acdc7c5644d4c5dc9b2ba01f566c9c614287f96b01ee728b3"
+  },
+  {
+    "path": "M/pcie/include/traffic_service.h",
+    "sha256": "3bb7cac9f4a6a632b8a6a47ddfd5db6dbe2b60bd64ea4dcf52f92656756b8ec3"
+  },
+  {
+    "path": "M/pcie/include/traffic_vision.h",
+    "sha256": "b839a142b1e9d4b277d986e9d765bf7257c1cc272e23f54a96af6abe526127f9"
+  },
+  {
+    "path": "M/pcie/include/yolop_opencv_integration.h",
+    "sha256": "7ecc47663c55df509810bc79985270c80fceaf5e925df481e0ef8701ff4c8add"
+  },
+  {
+    "path": "M/pcie/include/yolo_integration.h",
+    "sha256": "6b0536ae881ceb85af95190cacc3834fe6f8e8d1ce842c479df5b6883afb290d"
+  },
+  {
+    "path": "M/pcie/tools/curve_frame_replay.cpp",
+    "sha256": "8c5e26e5fb17fb4c838793ab4679b288111a9b5aca23d193b4ce3fad81b3c471"
+  },
+  {
+    "path": "M/pcie/tools/curve_saved_input_check.cpp",
+    "sha256": "093e1ff17e4ead4dcbc6d2bc3846e7f726df0dcfe7922cb662d584eef4e0dbbd"
+  },
+  {
+    "path": "M/pcie/tools/line_style_model_probe.cpp",
+    "sha256": "569831c4b32de7131f0d55dba80b8686dd740873c19a01832744fa6736cf14af"
+  },
+  {
+    "path": "M/pcie/tools/line_style_replay.cpp",
+    "sha256": "2d0c66f51f84a31aa645debe1dbbe2937450e048e87152d0fc2082a184de09f6"
+  },
+  {
+    "path": "M/pcie/tools/traffic_color_probe.cpp",
+    "sha256": "474040f344faca000192d1b77789d20ab9233e9e7ecb2dc6b7f54da073352356"
+  },
+  {
+    "path": "M/pcie/tools/traffic_probe.cpp",
+    "sha256": "25b7a553891b7d2f363a01248048a45a275176c9169a9730bfbad24cc54eba5a"
+  },
+  {
+    "path": "M/pcie/tools/traffic_replay.cpp",
+    "sha256": "0ca25e728c9865dac9e9972c4b96f2972e4af280548147ff2ff30574112157d4"
+  },
+  {
+    "path": "M/udp/Makefile",
+    "sha256": "a59fcb400dcc7d66e9cc9e0f15de37623a88e2bc3c40b68f3611d52dca75951f"
+  },
+  {
+    "path": "M/udp/csrc/main.cpp",
+    "sha256": "560097418477b106e7471abca6cedc6935f1e19b90293f0ab62dd0cbdfd62538"
+  },
+  {
+    "path": "M/udp/include/udp_network.h",
+    "sha256": "9f774f3fb225da4ebc0249a71af43b9c79a7fb33312c5f1a30601d350f0df456"
+  },
+  {
+    "path": "M/udp/include/video_transport_v2.h",
+    "sha256": "c0ffb73cf573e41b131f34d0eff184f31594fecd18a93f70739c3f72863063de"
+  },
+  {
+    "path": "S/Makefile",
+    "sha256": "682c1c34b6f4727c1f0a40f9c40be01994195f4fb87237eed4086dd43176ed0f"
+  },
+  {
+    "path": "S/setup_network.sh",
+    "sha256": "08e2daec1e7f6f385aa8fb833558ae70e263aca83fa912147e618756d0a70451"
+  },
+  {
+    "path": "S/SPEED_RIGHT同路实现与接线_20261029.txt",
+    "sha256": "8efe963c80fe97f847e97475ffb421e22ab6e22b508741c75f4b9d189e033647"
+  },
+  {
+    "path": "S/SPEED_调速修复与联调_20261028.txt",
+    "sha256": "70aa8d26fed73a107642ad1e210751120a6487ac8304a1ad9be6c5c9cd6669ff"
+  },
+  {
+    "path": "S/test_brake_release_policy.c",
+    "sha256": "81b3a510a6908ca8ea94f24e54d03edef4ecf82e9a088f3e93863db4dd4343e9"
+  },
+  {
+    "path": "S/test_person_brake_trigger.cpp",
+    "sha256": "7209fb568559e7ea6a87ddf33fe5eca78129d66c60f79d32334aecbcda891fc8"
+  },
+  {
+    "path": "S/自动刹停实现与部署说明_20261024.txt",
+    "sha256": "6d1477368387d96991358f8b3b40881e7d648e38167874a04a97154e7a9809e3"
+  },
+  {
+    "path": "S/csrc/shared_memory.c",
+    "sha256": "155ef545cf3389fbca2e11118e7c9817b9096e51753c5456824e74360befcc03"
+  },
+  {
+    "path": "S/fspi/Makefile",
+    "sha256": "5fba5efee76cc626f868cb2d0cb26e1abf72476b3746e0dbc518f2038bdc6198"
+  },
+  {
+    "path": "S/fspi/SMDT协议修复说明_20261026.txt",
+    "sha256": "eff2ad86e987904b56da91c7164769cb1ff9c3d4f0e803700546059274ac9c7a"
+  },
+  {
+    "path": "S/fspi/test_auto_brake_switch.c",
+    "sha256": "e2c1708cd881d19f84f8b91c8cc961e8bdfece9e80f6f9c4138fc93c6613b624"
+  },
+  {
+    "path": "S/fspi/test_brake_control.c",
+    "sha256": "56364796070f2e5d28a714815db754f09bc362ae0e08b0bd9af6f35d914b5b38"
+  },
+  {
+    "path": "S/fspi/test_control_status.c",
+    "sha256": "3365de5ec8f5ec5cf5ee5ac449fc2079cfa65f369405d42f0421627161ed5bd2"
+  },
+  {
+    "path": "S/fspi/test_lane_rule.c",
+    "sha256": "a163c0003ae43f0cdb3e340fb1767d5446d1713d3e045da6c1a1b7b76cc4c120"
+  },
+  {
+    "path": "S/fspi/test_lane_steering.c",
+    "sha256": "88489fa4c4a1502525c8c949f891efef9856990b3b9192acaa38264ae6d84d91"
+  },
+  {
+    "path": "S/fspi/test_smdt_transport.c",
+    "sha256": "ce0a1cb1d9a28c9e70f1d78d13310232a23eec44db0703a5257672475785e9b1"
+  },
+  {
+    "path": "S/fspi/test_speed_transport.c",
+    "sha256": "7e28c3796312ed16304e08862b432bf4723bdf6a363c9403fabe6c67ed500781"
+  },
+  {
+    "path": "S/fspi/test_spi_owner.c",
+    "sha256": "e29a5a05a89fc434ce90e3f571be28b305ae82833b4344e4ba10ec91910a9e9f"
+  },
+  {
+    "path": "S/fspi/test_traffic_go.c",
+    "sha256": "04cccccf9c496ac440ea6f8dd344b8131036eec32a43249e0a4e34aa2650c91e"
+  },
+  {
+    "path": "S/fspi/test_traffic_go_monitor.c",
+    "sha256": "16ad706bc541cabb344b3c5b6f20bedbf9c75fdc76ecc3acf5478d1391027562"
+  },
+  {
+    "path": "S/fspi/转向链路修复说明_20261026.txt",
+    "sha256": "118ff1a2a34f2dc8cb1fa2dbe755b942ff9b6de6965767bab0e9df91f7cc6876"
+  },
+  {
+    "path": "S/fspi/csrc/control_link_status.c",
+    "sha256": "78ef44abd5a103fd7a083fd7c7a4ef481781dcb47ad5fabfb98d0cae2817a50d"
+  },
+  {
+    "path": "S/fspi/csrc/fspi_module.c",
+    "sha256": "af9c4b9eb0d987013f2e0e3ae668194d3c8c009fbfd7cf2b01eead2f98fe49e5"
+  },
+  {
+    "path": "S/fspi/csrc/main.c",
+    "sha256": "bbc62672f1dd616edf18ada39b508879ba5cd4b787d5c1110ed57739fd0ce40c"
+  },
+  {
+    "path": "S/fspi/csrc/speed_gear_status.c",
+    "sha256": "92b83e8ce28c304c8ef09630d0df04e15b6d13718b1515ba124fb2323a43cb2a"
+  },
+  {
+    "path": "S/fspi/include/brake_policy.h",
+    "sha256": "1e3f332bc40c1fdc71b32505b600bd672fe67ff00c90ce8324192e75ebf87a53"
+  },
+  {
+    "path": "S/fspi/include/fspi_module.h",
+    "sha256": "301a821a0ef3cd243f08292ec64d1f5b674c57c0e306304acdc018146bd09bb6"
+  },
+  {
+    "path": "S/include/brake_release_policy.h",
+    "sha256": "656de21c9ca902e805a826b71a1135bbbe64a7bad55d7b81ed2815eb292cae11"
+  },
+  {
+    "path": "S/include/camera_views.h",
+    "sha256": "1a3cf69937a7b4f2bc423f1cc11b3f46c3d55840e6c101e131eedd6822296044"
+  },
+  {
+    "path": "S/include/control_status.h",
+    "sha256": "8c6588725ffc5c019a1822bd40bc9cefd5013ed4e60c9f0a275f874687c543fc"
+  },
+  {
+    "path": "S/include/lane_rule.h",
+    "sha256": "4093930cda9024edee7733fa52dd1478238e8e50cf71402ef8b810cee5ff984d"
+  },
+  {
+    "path": "S/include/line_style.h",
+    "sha256": "5e2eb71a8964c2d9a1cede5e899040299c1d83b5aa4ad56f85ce7c8d55352320"
+  },
+  {
+    "path": "S/include/line_style_ipc.h",
+    "sha256": "6af24ed1e1a7f46502c3d3afa3c55a2b67b61234b5ae6ef96ef02d4b66e49061"
+  },
+  {
+    "path": "S/include/line_style_wire.h",
+    "sha256": "6e17bd053576c5670e8709d18a7e510696361a57ac7d2dc42750d7a01448bb4f"
+  },
+  {
+    "path": "S/include/person_brake_trigger.h",
+    "sha256": "affe5535559d024e6177b261505e6babb6131a7d4be250d0b2ff72160326090f"
+  },
+  {
+    "path": "S/include/shared_memory.h",
+    "sha256": "911d014948e98213bda88e7fd3e3dcd228c99502c23575ecdb052fb5316d2136"
+  },
+  {
+    "path": "S/include/speed_status.h",
+    "sha256": "ab155da743c5908727751cb9327d9ebe58836a81a203e25d70400fe901a4a057"
+  },
+  {
+    "path": "S/include/traffic_go_rule.h",
+    "sha256": "0b571725ebe5e7f221bc0804964252e739f790d624f50b7c7ebb6822d88eb294"
+  },
+  {
+    "path": "S/include/traffic_light.h",
+    "sha256": "cf93c579d70297099c40b1b5e5aba80e517c514af2f8543c9e866b4fa8643410"
+  },
+  {
+    "path": "S/include/traffic_light_ipc.h",
+    "sha256": "33b7c83d77dda118452e4394dcf8646a9d40ac397f2bf5cb84629139731cf83e"
+  },
+  {
+    "path": "S/include/traffic_light_wire.h",
+    "sha256": "3c9d1db9ef8db34887e61656f7c18cc1c9cc7f15510f323b71ccd6b05bd5d2a2"
+  },
+  {
+    "path": "S/pcie/Makefile",
+    "sha256": "f1ac7877a02c59570055ae0d1e08cc04ab6ab3e2f1808949fd7caaa174412234"
+  },
+  {
+    "path": "S/pcie/csrc/fspi_module.c",
+    "sha256": "9615aacafbe3c48514e21fec46d0d7e7e9a819a42576b5011635b24d734b1fa9"
+  },
+  {
+    "path": "S/pcie/csrc/main.cpp",
+    "sha256": "f2b0dc19b0adec9cb10f33276a6f2163380b163402b8271bedbe400076f944a0"
+  },
+  {
+    "path": "S/pcie/csrc/person_alert_effects.c",
+    "sha256": "ac775024e99bfc2c704dab3ea101f7224ffbb96a9abeab94e8b4f3bb51d88ef2"
+  },
+  {
+    "path": "S/pcie/csrc/postprocess.cpp",
+    "sha256": "27bfeaa24fdb4da71ed378ed5224588734c26858841cf5f592bd034d20530259"
+  },
+  {
+    "path": "S/pcie/csrc/preprocess.c",
+    "sha256": "8f1675f040bf9bdcca37a0a2e127c9a1df4b6695c4e9ddda0db5fff7ce1df130"
+  },
+  {
+    "path": "S/pcie/csrc/yolo_integration.c",
+    "sha256": "22a72971bf46e0266c9d17d104eedecf2b89187dbfc5c364fde32935c79b6e01"
+  },
+  {
+    "path": "S/pcie/include/camera_orientation.h",
+    "sha256": "f4d5cbe624a370002c8beba135a19a101e003e708cdd087bffca40f112f7bdd3"
+  },
+  {
+    "path": "S/pcie/include/fspi_module.h",
+    "sha256": "0c75cf5f0c2591ea871c3874a621c1819166858ca3239db517da48be6dcaa550"
+  },
+  {
+    "path": "S/pcie/include/pcie_dma_read_test.h",
+    "sha256": "25f13206a1f91c1fdb7d1f2c63cb074c8ba3164620202ae37a06d536a0b07438"
+  },
+  {
+    "path": "S/pcie/include/person_alert_effects.h",
+    "sha256": "d828e61f12fb30411462b378672b4b636ebc9c17cd9e287567e93ca09918a002"
+  },
+  {
+    "path": "S/pcie/include/postprocess.h",
+    "sha256": "4d68ece73e5b52f5b24c7a53436d828c09247a981fdbc9c7c8ebe9bacd4ab801"
+  },
+  {
+    "path": "S/pcie/include/preprocess.h",
+    "sha256": "d2e0dd6483c28ad7ed2359ef135c5ef7beb0297bdd72e781a0c3a6f05af51a21"
+  },
+  {
+    "path": "S/pcie/include/rknn_api.h",
+    "sha256": "75ca59f78182c0250f1aa5b07593a6dbec61c6ccd6e5b6a588419fdbcc332060"
+  },
+  {
+    "path": "S/pcie/include/yolo_integration.h",
+    "sha256": "dff3f36e4c1dd81698ba579791c78371d5b8778c64bb1626bda94feb38de0929"
+  },
+  {
+    "path": "S/steering/Makefile",
+    "sha256": "f2bd29cabc6bf620e135b5bfb635a002048a797785655c3ce8c4d4190b0384dd"
+  },
+  {
+    "path": "S/steering/actuator/backend_dry_run.c",
+    "sha256": "670f22f6dc73b85067379f3b26a86cce9e0fbfd67c52ce7248107cf23fde9aa1"
+  },
+  {
+    "path": "S/steering/actuator/backend_fspi.c",
+    "sha256": "e31a303b3b1296ba2e46ed0b66797e91bb27ddf6f6b2df7c451c19fee40b7048"
+  },
+  {
+    "path": "S/steering/actuator/Makefile",
+    "sha256": "69b732a26ad735ca060e95c5b41732e06a85c358760ac086925274721ceb229d"
+  },
+  {
+    "path": "S/steering/actuator/steering_actuator.c",
+    "sha256": "d69420d338739aa51a8bcfc279f7d0d29e3848f92ef9c9284917229ed790e389"
+  },
+  {
+    "path": "S/steering/actuator/steering_actuator.h",
+    "sha256": "d8b2543744568e7938219981abb8236ff341d503cba19e82435d45ad88b62bc9"
+  },
+  {
+    "path": "S/steering/actuator/steering_backends.h",
+    "sha256": "daf05a6fd30da7114094eec02c4d854b6b14883a400dd175d3374e23b15b6c1c"
+  },
+  {
+    "path": "S/steering/actuator/steering_predictive_stop.h",
+    "sha256": "511e5bd1a8bdfb2c148d8874d4814c16a3c5e9a5d607b1e9ff9aeb9fff0e4a74"
+  },
+  {
+    "path": "S/steering/actuator/steering_sequence.c",
+    "sha256": "64e3732d16acc1009c770c38a2a70ab65c9b0c122700ad9fbc4c72db3a2ff5f1"
+  },
+  {
+    "path": "S/steering/actuator/steering_sequence.h",
+    "sha256": "4e95237b018877ae07e95f8a251d97ce6ef4074966000d6ee3ae174eca757763"
+  },
+  {
+    "path": "S/steering/controller/steering_api.h",
+    "sha256": "0fa373d28485c8ab8adfe21a45ce8b18bc702ee9eb39c25ed228380821d8323b"
+  },
+  {
+    "path": "S/steering/controller/steering_controller.c",
+    "sha256": "b161cf5820ca82b7d47354c9f8cde3ba461b1ab51fc6feef1530c70d759a5ca2"
+  },
+  {
+    "path": "S/steering/controller/steering_keepalive.c",
+    "sha256": "d47e3774ebb45b0a7d65446e03be950d0d4fb73ad4f7a379491da2de3cbe34f0"
+  },
+  {
+    "path": "S/steering/controller/steering_keepalive.h",
+    "sha256": "f07a0144721af65711f7ccb89ec1c42611272cf47abd5d776eab08a095af53df"
+  },
+  {
+    "path": "S/steering/controller/steering_response.c",
+    "sha256": "9d4effbbfe577d1375f6e11bcb470e7a288314392399c132f07bff8207a70391"
+  },
+  {
+    "path": "S/steering/controller/steering_response.h",
+    "sha256": "f406dbf61f0639d2a29c60773a27a635ef4d28e6164d62a9f366a124ad3b26fb"
+  },
+  {
+    "path": "S/steering/controller/steering_runtime.c",
+    "sha256": "46d4de5f07a160b5b34dd4ef8c6ae45f3cce94225ba26fae614e76a15e68ca87"
+  },
+  {
+    "path": "S/steering/controller/steering_runtime.h",
+    "sha256": "bf6b8cf1fa43f48b33a4c2ffae98075ab647431d1c209765b55cf1039aaffe3a"
+  },
+  {
+    "path": "S/steering/feedback/feedback_tracker.c",
+    "sha256": "4da44c094c581d9f2abbe168bcfebc253c46a28ba4c10c55cbbc02aaba8989dc"
+  },
+  {
+    "path": "S/steering/feedback/feedback_tracker.h",
+    "sha256": "35cbcc69b29dad30f6fbab41a3c85048155731dde441064778b50a988032340d"
+  },
+  {
+    "path": "S/steering/feedback/steering_feedback.c",
+    "sha256": "d5707a4855f6c0f95e3a48ee4720529018f88ccfddbf9015ee41a39bb50e963b"
+  },
+  {
+    "path": "S/steering/feedback/steering_feedback.h",
+    "sha256": "807399aff80bb148890762982e21627e6ec5f9e2d5a188ccbef7733493b29177"
+  },
+  {
+    "path": "S/steering/startup/terminal_center.bash",
+    "sha256": "97ea47ed3a10e5d0dd02b9cb9ee1ff963a76a381c03c29ce2c35d0a73236cd82"
+  },
+  {
+    "path": "S/steering/tools/build.py",
+    "sha256": "7f9b51702b0628ae809d783298e578a0f213122e7b5fbb17acfe0b11771128b7"
+  },
+  {
+    "path": "S/steering/tools/launch_vehicle_control.py",
+    "sha256": "d3f63554bf16c1ee1f52c347947913c8e4b36417b5facb1a8586d3fc3daa67ec"
+  },
+  {
+    "path": "S/steering/tools/actuator/angle_from_line.py",
+    "sha256": "602f48b9e8d97c4fd13225a3c5252f44fb160181cf71eb05563b6c32c97f6fec"
+  },
+  {
+    "path": "S/steering/tools/actuator/steering_action.c",
+    "sha256": "11d9df148061f95c61afff0f614d89b7f5ada74eace8fca3444a63e3fe681001"
+  },
+  {
+    "path": "S/steering/tools/actuator/steering_goal.c",
+    "sha256": "94f77e87eaae98dd1cd624743947064edc8d908fe5359f264636df55ab2ec3c0"
+  },
+  {
+    "path": "S/steering/tools/actuator/steering_lane_goal.c",
+    "sha256": "dbb77444fffeb3b4cccc974a703c58118bea79e595c1727ebbf290f3b0525e75"
+  },
+  {
+    "path": "S/steering/tools/actuator/steering_status.c",
+    "sha256": "cfe71b80612847d6e2b56b8a321f8ad3049b559191d5e7dac8be92906359e970"
+  },
+  {
+    "path": "S/steering/tools/actuator/steering_step.c",
+    "sha256": "1f8797b80c98476238e16de45b424b8229a33cb9cc2b624fd11cc92c5d9d8d77"
+  },
+  {
+    "path": "S/steering/tools/feedback/steering_feedback_monitor.c",
+    "sha256": "64eb2aca56c64c397c6556ca70d39c6140bea9636306177e9245f69f68f7cdb9"
+  },
+  {
+    "path": "S/udp/Makefile",
+    "sha256": "d935e7168db15f3aae18b81bbb5e491dd66c1bf42b0893f2ef361d6497a3dde0"
+  },
+  {
+    "path": "S/udp/csrc/main.cpp",
+    "sha256": "9123134b2cd6a2984493236f497291f5e3a2b3e0f5b2402b92c54e8958cb938c"
+  },
+  {
+    "path": "S/udp/csrc/main_old.cpp",
+    "sha256": "0c1656c36765014d1296499365356823256842c24e10da9d70ce020654df6847"
+  },
+  {
+    "path": "S/udp/include/pcie_dma_read_test.h",
+    "sha256": "c8d3b57994f0e738d4b5e5e3fbf26f7a90d196256645df259972399a87fa427e"
+  },
+  {
+    "path": "S/udp/include/video_transport_v2.h",
+    "sha256": "485b315b763301262973ce73fe7a6f0fd87a1e0c48ba2a76bce5d024d506f109"
+  },
+  {
+    "path": "S/x11/dashboard_font.LICENSE.txt",
+    "sha256": "baa2e5e5cdb29e9052bbe4e171b2feb4b3314116ef9032fe11bd874c803cc815"
+  },
+  {
+    "path": "S/x11/csrc/FPS说明.txt",
+    "sha256": "94cb5b43605318c569bc6b03bf75f58d35dd834935b6439504bac3115bc0c7d6"
+  },
+  {
+    "path": "S/x11/csrc/main.cpp",
+    "sha256": "6cf830a17f2546edd572c4c4236e88dd74aa2fd126aeab617801e15d1197042f"
+  },
+  {
+    "path": "S/x11/csrc/Makefile",
+    "sha256": "b18edecf62a064f270401b5c4950d19e42ec452aebe71c4bd1d1dd16d1bb3ede"
+  },
+  {
+    "path": "S/x11/csrc/include/dashboard_ui.h",
+    "sha256": "1587d0099ba8b8d73e64925c2cabe47f47a04311f8ba0de67040c836e7c89c30"
+  },
+  {
+    "path": "S/x11/csrc/include/gles_presenter.h",
+    "sha256": "30db68403b94e41cda0396324be2b35edccec3b3eb40e8f1075afa57da8e7f12"
+  },
+  {
+    "path": "S/x11/csrc/include/six_camera_render.h",
+    "sha256": "1213aaadc7e9034b7b01014b0d2a317a7804ad53b5156093bf420077f66c3ea6"
+  },
+  {
+    "path": "S/x11/csrc/include/speed_warning_glyphs.h",
+    "sha256": "41775db7025df6d7ca60a9da07d6b959e15ee63f26ebe86062106fd80d24e7cc"
+  },
+  {
+    "path": "S/x11/csrc/include/stb_image.h",
+    "sha256": "1f8c1b6b408f26e3b20cbfbbd4758afb3dc9b837ff1e17c258928f406148a87c"
+  },
+  {
+    "path": "S/x11/csrc/include/video_input_fps.h",
+    "sha256": "c3ca018b99ef4459728fc48cb63b60576a761ffdcdee65278de6e8a51a18fc72"
+  },
+  {
+    "path": "S/x11/tools/generate_dashboard_font.py",
+    "sha256": "2e382b619c40f8f3bbbaf15987ded2d66d0d66db3fd67f0f9f39c21cd3edc756"
+  },
+  {
+    "path": "common/perception/include/line_style.h",
+    "sha256": "75896ff60ec986866025bf621ffa0325174c541c4beb5556a3a1de0af0e1e227"
+  },
+  {
+    "path": "common/perception/include/line_style_ipc.h",
+    "sha256": "687abd926c25b3c8a19baf95e3cc9ebe0807e9aa970805db9b80b2702db0edde"
+  },
+  {
+    "path": "common/perception/include/line_style_wire.h",
+    "sha256": "d006cb72efd40373ff4273d1d6b1b97721b863715a456eb1570fbabc68bf2fcf"
+  },
+  {
+    "path": "common/perception/include/traffic_light.h",
+    "sha256": "4a9e0ad3f467fe71067f89ce9bbbccd61a34f80c8441413d2c9d46a5aa37228c"
+  },
+  {
+    "path": "common/perception/include/traffic_light_ipc.h",
+    "sha256": "23098bd1d6647e3f52d9b30f5a5501744c50136ce1fd3280e17451f9de75d729"
+  },
+  {
+    "path": "common/perception/include/traffic_light_wire.h",
+    "sha256": "73cbf6c86820b9105f98a3c899351f15d8813fb2a880cf01b4d1a8a1103ccb7d"
+  },
+  {
+    "path": "common/steering/build_support.py",
+    "sha256": "bfb0b83e9a845536dbeb565c63dc98102754b3096760d3534ff6312aab4c3cdc"
+  },
+  {
+    "path": "common/steering/Makefile",
+    "sha256": "3ad06b09b83a293538e725a255ea34a786ffe94bcc73df41e1e389ce6f3f9a31"
+  },
+  {
+    "path": "common/steering/contracts/steering_feedback_wire.c",
+    "sha256": "b701f055c28dc23eb406c06896eece2de18f3d11cdbee073e35aa6590087b6a1"
+  },
+  {
+    "path": "common/steering/contracts/steering_feedback_wire.h",
+    "sha256": "0509b01e636aa43420a3b5f03a356b17637a5c311a676ba81f7b67b1304efbac"
+  },
+  {
+    "path": "common/steering/contracts/steering_platform.h",
+    "sha256": "0e6cbb25bb3c8fb43d1980527eedb147baa114ecf1f4c3ff9d0d8d704af3f860"
+  },
+  {
+    "path": "common/steering/contracts/steering_types.h",
+    "sha256": "73ef037c2da7ed18bb93764581d307b1488564f579e6ce04def193b0844fc900"
+  },
+  {
+    "path": "common/steering/tools/check_scaffold.py",
+    "sha256": "2d1ff8f2f87c9413915518d0e4841c1cdfb7fa0376fe8bcbeb795dbe7dda5371"
+  },
+  {
+    "path": "common/transport/include/video_transport_v2.h",
+    "sha256": "cc76807b610b5952291fa49dcd37736fbc2caee1e61fbfb57632b837124d89cf"
+  }
+]

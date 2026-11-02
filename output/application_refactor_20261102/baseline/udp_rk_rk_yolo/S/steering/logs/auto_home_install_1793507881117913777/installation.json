@@ -1,0 +1,12 @@
+{
+  "installed": true,
+  "automatic_homing_enabled": false,
+  "M_session": 2067451632,
+  "controller_pid": "2195",
+  "no_actuation": true,
+  "old_manual_zero_hook_replaced": true,
+  "source_hashes": {
+    "tools/calibration/terminal_home.py": "9e2681628c2bddfbc05532ccd3626178b2f1b5571535c792a329c0ee65e5c22a",
+    "tools/calibration/auto_home.py": "a72c8293a2b3e5ecac34d6324cd29a016d988dc5e16fd3522b16b5d9f44c1429"
+  }
+}

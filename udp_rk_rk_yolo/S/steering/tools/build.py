@@ -137,9 +137,9 @@ def check_s() -> None:
             if process.poll() is None:
                 process.kill(); process.wait()
         print("PASS native CLI: SIGTERM interrupts deadline sleep and releases both contacts")
-        # The old full-deadline sleep fails the unchanged +2ms timing window
-        # under injected wake delay. The guarded sleep must still release on
-        # time. Both versions use mock contacts; neither opens a device.
+        # 注入迟醒时，旧的完整截止休眠会超出原有 +2ms 验收窗；
+        # 受保护的休眠方式仍须按时释放。
+        # 两套实现都使用模拟触点，不打开真实设备。
         import csv
         import tempfile
         with tempfile.TemporaryDirectory(prefix='release_wake_',dir=tests) as folder:

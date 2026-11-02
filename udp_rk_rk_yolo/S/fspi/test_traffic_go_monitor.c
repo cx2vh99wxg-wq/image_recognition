@@ -1,5 +1,5 @@
-/* Run the production monitor with in-process IPC and SPI doubles. No device
- * or real SysV segment is touched, so this also runs on a live S board. */
+/* 使用进程内 IPC 和 SPI 替身运行正式监视器，
+ * 不访问设备或真实 SysV 段，因此可在运行中的 S 板作软件检查。 */
 #define shmget test_shmget
 #define shmat test_shmat
 #define shmdt test_shmdt
@@ -51,7 +51,7 @@ int test_spi_ioctl(int fd,unsigned long request,...) {
         assert(t->len==1);*(uint8_t*)(uintptr_t)t->rx_buf=(uint8_t)hmi_reply;return 1;
     }
     const uint8_t* b=(const uint8_t*)(uintptr_t)t->tx_buf;
-    assert(t->len==3&&b[0]==0&&b[1]==5); // no write to motion/STOP
+    assert(t->len==3&&b[0]==0&&b[1]==5); // 寄存器访问：no write to motion/STOP
     ++writes;last_permission=b[2];return write_failed?-1:3;
 }
 static void publish(unsigned color,int fresh,int confirmed) {
@@ -85,8 +85,8 @@ int main(void) {
     traffic_policy.blocked=0;traffic_policy_initialized=0;
     publish(TRAFFIC_UNKNOWN,0,0);s=poll();assert(s.blocked&&(last_permission&4));
     assert((last_permission&0x40)&&warning.blocked==2&&writes>8);
-    // Gear warnings publish status without any motion/STOP writes. The
-    // ioctl double above rejects every write outside the existing reg5.
+    // 档位告警只发布状态，不写运动或 STOP；
+    // 上方 ioctl 替身会拒绝既有 reg5 以外的全部写入。
     for(unsigned gear=1;gear<=3;++gear){
         speed_reply=0xc0|gear;poll();SpeedWarningData status={0};
         assert(!speed_ipc_read(&speed_warning,&status));

@@ -1,31 +1,31 @@
-//////////////////////////////////////////////////////////////////////////////////
-// Company:Meyesemi 
-// Engineer: Will
-// 
-// Create Date: 2023-03-17  
-// Design Name:  
-// Module Name: 
-// Project Name: 
-// Target Devices: Pango
-// Tool Versions: 
-// Description: 
-//      
-// Dependencies: 
-// 
-// Revision:
-// Revision 1.0 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-//sclk，sdin数据传输时序代码（i2c写控制代码）
-module i2c_com(clock_i2c        ,  //i2c控制接口传输所需时钟，0-400khz，此处为20khz
+// ── 摄像头时序 ──
+// 摄像头时序：Company:Meyesemi
+// 摄像头时序：Engineer: Will
+// ── 摄像头时序 ──
+// 参数记录为 Create Date: 2023-03-17。
+// 摄像头时序：Design Name:
+// 摄像头时序：Module Name:
+// 摄像头时序：Project Name:
+// 摄像头时序：Target Devices: Pango
+// 摄像头时序：Tool Versions:
+// 摄像头时序：Description:
+// ── 摄像头时序 ──
+// 摄像头时序：Dependencies:
+// ── 摄像头时序 ──
+// 摄像头时序：Revision:
+// 摄像头时序：Revision 1.0 - File Created
+// 摄像头时序：Additional Comments:
+// ── 摄像头时序 ──
+// ── 摄像头时序 ──
+// 摄像头时序：sclk，sdin数据传输时序代码（i2c写控制代码）
+module i2c_com(clock_i2c        ,  // 摄像头时序：i2c控制接口传输所需时钟，0-400khz，此处为20khz
                camera_rstn      ,     
-               ack              ,  //应答信号
-               i2c_data         ,  //sdin接口传输的32位数据
-               start            ,  //开始传输标志
-               tr_end           ,  //传输结束标志
-               i2c_sclk         ,  //FPGA与camera iic时钟接口
-               i2c_sdat            //FPGA与camera iic数据接口
+               ack              ,  // 当前事务的应答状态。
+               i2c_data         ,  // sdin接口传输的32位数据：本节对应的标识或作用域。
+               start            ,  // 用于启动当前传输的使能。
+               tr_end           ,  // 置位表示当前事务传输结束。
+               i2c_sclk         ,  // 用于连接FPGA与camera iic时钟的端口。
+               i2c_sdat            // 用于连接FPGA与camera iic数据的端口。
 );        
     input [31:0]i2c_data;
     input camera_rstn;
@@ -78,7 +78,7 @@ module i2c_com(clock_i2c        ,  //i2c控制接口传输所需时钟，0-400kh
        else
           case(cyc_count)
           0:begin ack1<=1;ack2<=1;ack3<=1;tr_end<=0;sclk<=1;reg_sdat<=1;end
-          1:reg_sdat<=0;                 //开始传输
+          1:reg_sdat<=0;                 // 进入数据传输阶段。
           2:sclk<=0;
           3:reg_sdat<=i2c_data[31];
           4:reg_sdat<=i2c_data[30];
@@ -88,7 +88,7 @@ module i2c_com(clock_i2c        ,  //i2c控制接口传输所需时钟，0-400kh
           8:reg_sdat<=i2c_data[26];
           9:reg_sdat<=i2c_data[25];
           10:reg_sdat<=i2c_data[24];
-          11:reg_sdat<=1;                //应答信号
+          11:reg_sdat<=1;                // 当前事务的应答状态。
           12:begin reg_sdat<=i2c_data[23];ack1<=i2c_sdat;end
           13:reg_sdat<=i2c_data[22];
           14:reg_sdat<=i2c_data[21];
@@ -97,7 +97,7 @@ module i2c_com(clock_i2c        ,  //i2c控制接口传输所需时钟，0-400kh
           17:reg_sdat<=i2c_data[18];
           18:reg_sdat<=i2c_data[17];
           19:reg_sdat<=i2c_data[16];
-          20:reg_sdat<=1;                //应答信号       
+          20:reg_sdat<=1;                // 当前事务的应答状态。
           21:begin reg_sdat<=i2c_data[15];ack1<=i2c_sdat;end
           22:reg_sdat<=i2c_data[14];
           23:reg_sdat<=i2c_data[13];
@@ -106,7 +106,7 @@ module i2c_com(clock_i2c        ,  //i2c控制接口传输所需时钟，0-400kh
           26:reg_sdat<=i2c_data[10];
           27:reg_sdat<=i2c_data[9];
           28:reg_sdat<=i2c_data[8];
-          29:reg_sdat<=1;                //应答信号       
+          29:reg_sdat<=1;                // 当前事务的应答状态。
           30:begin reg_sdat<=i2c_data[7];ack2<=i2c_sdat;end
           31:reg_sdat<=i2c_data[6];
           32:reg_sdat<=i2c_data[5];
@@ -115,7 +115,7 @@ module i2c_com(clock_i2c        ,  //i2c控制接口传输所需时钟，0-400kh
           35:reg_sdat<=i2c_data[2];
           36:reg_sdat<=i2c_data[1];
           37:reg_sdat<=i2c_data[0];
-          38:reg_sdat<=1;                //应答信号       
+          38:reg_sdat<=1;                // 当前事务的应答状态。
           39:begin ack3<=i2c_sdat;sclk<=0;reg_sdat<=0;end
           40:sclk<=1;
           41:begin reg_sdat<=1;tr_end<=1;end

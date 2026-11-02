@@ -34,38 +34,38 @@ typedef struct _detect_result_group_t
     int id;
     int count;
     detect_result_t results[OBJ_NUMB_MAX_SIZE];
-    /* All decoded proposals contribute, including those beyond the display cap.
-     * The representative box is the highest-confidence qualifying person. */
+    /* 所有解码候选都参与统计，不受显示框数量上限限制；
+     * 代表框选择满足条件且置信度最高的 person。 */
     int person_brake_count;
     detect_result_t person_brake_result;
 } detect_result_group_t;
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* 从文本文件顺序读取最多 80 个类别名；成功返回 0，文件不可用返回 -1。 */
-int initPostProcess(const char* label_file_path);
+    /* 图像处理：从文本文件顺序读取最多 80 个类别名；成功返回 0，文件不可用返回 -1。 */
+    int initPostProcess(const char *label_file_path);
 
-/* C 接口：解码三个量化输出层，按原扫描顺序返回最多 64 个显示候选框，
- * 同时统计全部候选框中置信度不低于 15% 的 person 制动结果；
- * 制动候选扫描门限独立降低，显示筛选仍使用 conf_threshold。
- * nms_threshold 当前仅保留在接口中，现有实现不执行非极大值抑制。 */
-int post_process_simple(int8_t *input0, int8_t *input1, int8_t *input2, 
-                       int model_in_h, int model_in_w,
-                       float conf_threshold, float nms_threshold, 
-                       BOX_RECT pads, float scale_w, float scale_h,
-                       detect_result_group_t *group);
+    /* C 接口按旧扫描顺序解码三层量化输出，最多保留 64 个显示框，
+ * 同时遍历全部候选汇总置信度至少 15% 的 person。
+ * 仅制动候选门限独立降低，显示仍由 conf_threshold 筛选；
+ * nms_threshold 只保留在签名中，本实现不运行 NMS。 */
+    int post_process_simple(int8_t *input0, int8_t *input1, int8_t *input2, int model_in_h,
+                            int model_in_w, float conf_threshold, float nms_threshold,
+                            BOX_RECT pads, float scale_w, float scale_h,
+                            detect_result_group_t *group);
 
-void deinitPostProcess();
+    void deinitPostProcess();
 
 #ifdef __cplusplus
 }
 
-/* C++ 接口保持旧签名，并委托 C 接口处理；qnt_zps 与 qnt_scales 当前未使用。 */
+/* C++ 接口继续保留旧签名并委托 C 接口完成处理；qnt_zps 和 qnt_scales 暂不参与运算。 */
 int post_process(int8_t *input0, int8_t *input1, int8_t *input2, int model_in_h, int model_in_w,
-                 float conf_threshold, float nms_threshold, BOX_RECT pads, float scale_w, float scale_h,
-                 std::vector<int32_t> &qnt_zps, std::vector<float> &qnt_scales,
+                 float conf_threshold, float nms_threshold, BOX_RECT pads, float scale_w,
+                 float scale_h, std::vector<int32_t> &qnt_zps, std::vector<float> &qnt_scales,
                  detect_result_group_t *group);
 #endif
-#endif /* _RKNN_YOLOV5_DEMO_POSTPROCESS_H_ */
+#endif /* _RKNN_YOLOV5_DEMO_POSTPROCESS_H_：本节对应的标识或作用域。 */

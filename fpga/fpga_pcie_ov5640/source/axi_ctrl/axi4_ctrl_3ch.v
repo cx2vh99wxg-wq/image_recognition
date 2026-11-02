@@ -11,12 +11,12 @@ module axi4_ctrl_3ch #(
     parameter C_W_WIDTH     = 16,
     parameter C_R_WIDTH     = 128,
     
-    // 设置右移像素数（仅第一行填黑，全图延迟）
-    parameter C_START_MASK  = 623//623是最完美的  
+    // 配置右移像素数（仅第一行填黑，全图延迟）。
+    parameter C_START_MASK  = 623// 存储接口：623是最完美的
 ) (
     input wire axi_clk,
     input wire axi_reset,
-    // ... (接口保持不变)
+    // ... (接口保持原样)
     output      [C_ID_LEN-1:0] axi_awid,
     output      [        27:0] axi_awaddr,
     output      [         3:0] axi_awlen,
@@ -68,7 +68,7 @@ module axi4_ctrl_3ch #(
     output [31:0] tp_o
 );
 
-  // ... Parameters & Fixed Assignments (UNCHANGED) ...
+  // 存储接口：... Parameters & Fixed Assignments (UNCHANGED) ...
   localparam FRAME_SIZE_BYTES = 640 * 480 * 2; 
   localparam LINE_STRIDE = 640 * 2;
 
@@ -91,9 +91,9 @@ module axi4_ctrl_3ch #(
   assign axi_arqos   = 4'b0;
   assign axi_rready  = 1;
 
-  // =========================================================================
-  // [FIXED SECTION START]: Reset & VSYNC Synchronization (UNCHANGED)
-  // =========================================================================
+  // ── 存储接口 ──
+  // 存储接口：[FIXED SECTION START]: Reset & VSYNC Synchronization (UNCHANGED)
+  // ── 存储接口 ──
   wire [3:0] vsync_pulse_axi;
   reg [2:0] vsync_sync_r[3:0];
   wire [3:0] raw_vsync_in;
@@ -141,7 +141,7 @@ module axi4_ctrl_3ch #(
     end
   endgenerate
 
-  // ... Input Processing ...
+  // 存储接口：... Input Processing ...
   reg [9:0] pix_h[2:0], pix_v[2:0];
   reg  [1:0] r_vsync_d[2:0];
   wire [2:0] wr_en_ds;
@@ -171,15 +171,15 @@ module axi4_ctrl_3ch #(
       
       assign wr_en_ds[gi] = wframe_data_en[gi] && (pix_h[gi][0] == 0) && (pix_v[gi][0] == 0) && !fifo_wr_rst_out[gi];
 
-      // =====================================================================
-      // [修改后]: 移位寄存器 + 仅第一行Mask逻辑
-      // =====================================================================
+      // ── 存储接口 ──
+      // 存储接口：[修改后]: 移位寄存器 + 仅第一行Mask逻辑
+      // ── 存储接口 ──
       if (C_START_MASK > 0) begin : gen_shift
           
           reg [C_W_WIDTH-1:0] pipe_r [C_START_MASK-1:0];
           integer k;
 
-          // 移位逻辑：每一帧、每一行都在移位，保证所有像素都延迟 N 拍
+          // 存储接口：移位逻辑：每一帧、每一行都在移位，保证所有像素都延迟 N 拍
           always @(posedge wframe_pclk[gi]) begin
               if (wframe_data_en[gi]) begin
                   pipe_r[0] <= raw_data_in[gi];
@@ -191,22 +191,22 @@ module axi4_ctrl_3ch #(
           
           wire [C_W_WIDTH-1:0] delayed_pixel = pipe_r[C_START_MASK-1];
           
-          // 屏蔽逻辑：
-          // 仅在 第0行 (pix_v == 0) 且 前 N 个像素时，强制输出 0 (黑)。
-          // 其他行、以及第0行 N 像素之后，都输出 delayed_pixel (即右移后的真实图像)。
+          // 下面给出输入屏蔽的条件。
+          // 存储接口：仅在 第0行 (pix_v == 0) 且 前 N 个像素时，强制输出 0 (黑)。
+          // 其他行、以及第0行 N 像素以后，都输出 delayed_pixel (即右移后的真实图像)。
           assign final_fifo_data[gi] = (pix_v[gi] == 0 && pix_h[gi] < C_START_MASK) ? {C_W_WIDTH{1'b0}} : delayed_pixel;
 
       end else begin : gen_no_shift
           assign final_fifo_data[gi] = raw_data_in[gi];
       end
-      // =====================================================================
+      // ── 存储接口 ──
 
     end
   endgenerate
 
-  // =========================================================================
-  // 4. FIFO Instantiation (使用 final_fifo_data)
-  // =========================================================================
+  // ── 存储接口 ──
+  // 存储接口：4. FIFO Instantiation (使用 final_fifo_data)
+  // ── 存储接口 ──
 
   wire [3:0] w_fifo_empty, w_fifo_prog_empty;
   wire [3:0] w_fifo_ren;
@@ -264,8 +264,8 @@ module axi4_ctrl_3ch #(
       .almost_empty(w_fifo_prog_empty[3])
   );
 
-  // ... 后续逻辑保持完全不变 ...
-  // 5. AXI Write Logic
+  // 存储接口：... 后续逻辑保持完全不变 ...
+  // 参数记录为 5. AXI Write Logic。
   reg [ 1:0] wr_idx       [3:0];
   reg [63:0] abs_frame_cnt[3:0];
   reg [ 9:0] col_burst_cnt[3:0];
@@ -361,7 +361,7 @@ module axi4_ctrl_3ch #(
     end
   end
 
-  // ... Address Calculation Logic (UNCHANGED) ...
+  // 存储接口：... Address Calculation Logic (UNCHANGED) ...
   reg [31:0] addr_offset_ch, row_base_addr, col_offset_addr;
   always @(*) begin
     addr_offset_ch = wr_idx[cur_ch] * FRAME_SIZE_BYTES;
@@ -381,7 +381,7 @@ module axi4_ctrl_3ch #(
   assign w_fifo_ren[2] = (cur_ch == 2) && (ws_state == S_DATA) && axi_wready;
   assign w_fifo_ren[3] = (cur_ch == 3) && (ws_state == S_DATA) && axi_wready;
 
-  // ... Read Logic (UNCHANGED) ...
+  // 存储接口：... Read Logic (UNCHANGED) ...
   reg [ 1:0] rc_rframe_index;
   reg [63:0] min_abs_cnt;
   always @(*) begin

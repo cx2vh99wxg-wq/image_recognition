@@ -5,8 +5,8 @@ module reg_config (
     input             initial_en,
     input      [12:0] cmos_h_pixel,
     input      [12:0] cmos_v_pixel,
-    input      [12:0] total_h_pixel,  //水平总像素大小
-    input      [12:0] total_v_pixel,  //垂直总像素大小
+    input      [12:0] total_h_pixel,  // 一行水平方向的总计数尺寸。
+    input      [12:0] total_v_pixel,  // 一帧垂直方向的总计数尺寸。
     input      [ 7:0] rate,
     input      [12:0] y_addr_st,
     input      [12:0] y_addr_end,
@@ -36,7 +36,7 @@ module reg_config (
   );
 
   assign reg_conf_done = reg_conf_done_reg;
-  //����i2c����ʱ��-20khz    
+  // 旧说明含编码损坏，原记录为：����i2c����ʱ��-20khz
   always @(posedge clk_25M) begin
     if (!camera_rstn) begin
       clock_20k <= 0;
@@ -49,7 +49,7 @@ module reg_config (
   end
 
 
-  ////iic�Ĵ������ù��̿���    
+  // 旧说明含编码损坏，原记录为：//iic�Ĵ������ù��̿���
   always @(posedge clock_20k) begin
     if (!camera_rstn) begin
       config_step <= 0;
@@ -57,30 +57,30 @@ module reg_config (
       reg_index <= 0;
       reg_conf_done_reg <= 0;
     end else begin
-      if (reg_conf_done_reg == 1'b0) begin  //���camera��ʼ��δ���
-        if (reg_index < 251) begin  //���üĴ���
+      if (reg_conf_done_reg == 1'b0) begin  // 旧说明含编码损坏，原记录为：���camera��ʼ��δ���
+        if (reg_index < 251) begin  // 旧说明含编码损坏，原记录为：���üĴ���
           case (config_step)
             0: begin
-              i2c_data    <= {8'h78, reg_data};  //OV5640 IIC Device address is 0x78   
-              start       <= 1;  //i2cд��ʼ
+              i2c_data    <= {8'h78, reg_data};  // 参数记录为 OV5640 IIC Device address is 0x78。
+              start       <= 1;  // 旧说明含编码损坏，原记录为：i2cд��ʼ
               config_step <= 1;
             end
             1: begin
-              if (tr_end) begin  //i2cд����               					
+              if (tr_end) begin  // 旧说明含编码损坏，原记录为：i2cд����
                 start <= 0;
                 config_step <= 2;
               end
             end
             2: begin
-              reg_index   <= reg_index + 1'b1;  //������һ���Ĵ���
+              reg_index   <= reg_index + 1'b1;  // 旧说明含编码损坏，原记录为：������һ���Ĵ���
               config_step <= 0;
             end
           endcase
-        end else reg_conf_done_reg <= 1'b1;  //OV5640�Ĵ�����ʼ�����
+        end else reg_conf_done_reg <= 1'b1;  // 旧说明含编码损坏，原记录为：OV5640�Ĵ�����ʼ�����
       end
     end
   end
-/*
+/* 停用示例，仅供对照：
   ////iic��Ҫ���õļĴ���ֵ  			
   always @(reg_index) begin
     case (reg_index)
@@ -420,7 +420,7 @@ always @(reg_index) begin
         051: reg_data <= {16'h4005,8'h1a};
         052: reg_data <= {16'h3000,8'h00};
         053: reg_data <= {16'h3004,8'hff};
-        054: reg_data <= {16'h4300,8'h60};//输出显示
+        054: reg_data <= {16'h4300,8'h60};// 将结果送至显示路径。
         055: reg_data <= {16'h501f,8'h01};
         056: reg_data <= {16'h440e,8'h00};
         057: reg_data <= {16'h5000,8'ha7};
@@ -571,9 +571,9 @@ always @(reg_index) begin
         202: reg_data <= {16'h530b,8'h04};
         203: reg_data <= {16'h530c,8'h06};
         204: reg_data <= {16'h5025,8'h00};
-        205: reg_data <= {16'h3035,8'h11};//帧率
+        205: reg_data <= {16'h3035,8'h11};// 这里记录帧速率。
         206: reg_data <= {16'h3036,8'h46};
-        207: reg_data <= {16'h3c07,8'h08};//08
+        207: reg_data <= {16'h3c07,8'h08};// 参数记录为 08。
         208: reg_data <= {16'h3820,8'h40};
         209: reg_data <= {16'h3821,8'h07};
         210: reg_data <= {16'h3814,8'h31};

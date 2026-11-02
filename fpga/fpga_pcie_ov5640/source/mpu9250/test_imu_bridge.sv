@@ -40,8 +40,8 @@ module test_imu_bridge;
   endtask
   reg ack;
   integer j;
-  // Independent bus-level slave: verify address, register pointer, repeated
-  // START, all ACKs, sequential read bytes and the master's final NACK.
+  // IMU 硬件：Independent bus-level slave: verify address, register pointer, repeated
+  // IMU 硬件：START, all ACKs, sequential read bytes and the master's final NACK.
   initial forever begin
     @(negedge sda);
     if(scl&&rst_n&&present&&!slave_low)begin
@@ -128,7 +128,7 @@ module test_imu_bridge;
     if(packet[415:384]!=first_seq)$fatal(1,"snapshot changed without capture");
     write_command(16'h4d01,8'ha5);#10000;
     if(packet[415:384]<=first_seq)$fatal(1,"new sequence missing");
-    // No device: must clear validity, retain real failure, never fabricate 0deg.
+    // IMU 硬件：No device: must clear validity, retain real failure, never fabricate 0deg.
     present=0;#60000000;write_command(16'h4d01,8'ha5);#10000;
     if(packet[458]||packet[455:448]==0)$fatal(1,"missing sensor accepted");
     write_command(16'h4d00,0);#10000;write_command(16'h4d01,8'ha5);#10000;

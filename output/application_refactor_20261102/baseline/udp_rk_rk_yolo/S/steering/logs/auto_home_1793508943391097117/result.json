@@ -1,0 +1,169 @@
+{
+  "schema": "STEER_ENDPOINT_HOME_V1",
+  "start_raw_deg": -19.023,
+  "left_raw_deg": 15.15616666666667,
+  "right_raw_deg": -19.6065,
+  "span_deg": 34.76266666666667,
+  "midpoint_raw_deg": -2.2251666666666656,
+  "final_raw_deg": -2.8594999999999997,
+  "error_deg": -0.6343333333333341,
+  "pulse_records": [
+    {
+      "phase": "seek_left",
+      "direction": 1,
+      "requested_us": 30000,
+      "before_raw_deg": -19.023,
+      "after_raw_deg": -8.411,
+      "delta_deg": 10.612
+    },
+    {
+      "phase": "seek_left",
+      "direction": 1,
+      "requested_us": 30000,
+      "before_raw_deg": -8.411,
+      "after_raw_deg": 7.548500000000001,
+      "delta_deg": 15.9595
+    },
+    {
+      "phase": "seek_left",
+      "direction": 1,
+      "requested_us": 30000,
+      "before_raw_deg": 7.548500000000001,
+      "after_raw_deg": 11.93,
+      "delta_deg": 4.381499999999999
+    },
+    {
+      "phase": "seek_left",
+      "direction": 1,
+      "requested_us": 30000,
+      "before_raw_deg": 11.93,
+      "after_raw_deg": 14.398499999999999,
+      "delta_deg": 2.468499999999999
+    },
+    {
+      "phase": "seek_left",
+      "direction": 1,
+      "requested_us": 30000,
+      "before_raw_deg": 14.398499999999999,
+      "after_raw_deg": 14.753499999999999,
+      "delta_deg": 0.3550000000000004
+    },
+    {
+      "phase": "seek_left",
+      "direction": 1,
+      "requested_us": 30000,
+      "before_raw_deg": 14.753499999999999,
+      "after_raw_deg": 15.0485,
+      "delta_deg": 0.2950000000000017
+    },
+    {
+      "phase": "seek_left",
+      "direction": 1,
+      "requested_us": 30000,
+      "before_raw_deg": 15.0485,
+      "after_raw_deg": 15.2375,
+      "delta_deg": 0.18900000000000006
+    },
+    {
+      "phase": "seek_left",
+      "direction": 1,
+      "requested_us": 30000,
+      "before_raw_deg": 15.2375,
+      "after_raw_deg": 15.182500000000001,
+      "delta_deg": -0.054999999999999716
+    },
+    {
+      "phase": "seek_right",
+      "direction": -1,
+      "requested_us": 30000,
+      "before_raw_deg": 15.182500000000001,
+      "after_raw_deg": 9.728,
+      "delta_deg": -5.454500000000001
+    },
+    {
+      "phase": "seek_right",
+      "direction": -1,
+      "requested_us": 30000,
+      "before_raw_deg": 9.728,
+      "after_raw_deg": 1.34,
+      "delta_deg": -8.388
+    },
+    {
+      "phase": "seek_right",
+      "direction": -1,
+      "requested_us": 30000,
+      "before_raw_deg": 1.34,
+      "after_raw_deg": -5.512,
+      "delta_deg": -6.851999999999999
+    },
+    {
+      "phase": "seek_right",
+      "direction": -1,
+      "requested_us": 30000,
+      "before_raw_deg": -5.512,
+      "after_raw_deg": -14.289,
+      "delta_deg": -8.777000000000001
+    },
+    {
+      "phase": "seek_right",
+      "direction": -1,
+      "requested_us": 30000,
+      "before_raw_deg": -14.289,
+      "after_raw_deg": -18.946,
+      "delta_deg": -4.657000000000002
+    },
+    {
+      "phase": "seek_right",
+      "direction": -1,
+      "requested_us": 30000,
+      "before_raw_deg": -18.946,
+      "after_raw_deg": -18.428,
+      "delta_deg": 0.5180000000000007
+    },
+    {
+      "phase": "seek_right",
+      "direction": -1,
+      "requested_us": 30000,
+      "before_raw_deg": -18.428,
+      "after_raw_deg": -19.637,
+      "delta_deg": -1.2089999999999996
+    },
+    {
+      "phase": "seek_right",
+      "direction": -1,
+      "requested_us": 30000,
+      "before_raw_deg": -19.637,
+      "after_raw_deg": -19.7915,
+      "delta_deg": -0.15449999999999875
+    },
+    {
+      "phase": "seek_right",
+      "direction": -1,
+      "requested_us": 30000,
+      "before_raw_deg": -19.7915,
+      "after_raw_deg": -19.391,
+      "delta_deg": 0.40050000000000097
+    },
+    {
+      "phase": "inward_to_calibrated_region",
+      "direction": 1,
+      "requested_us": 30000,
+      "before_raw_deg": -19.391,
+      "after_raw_deg": -10.038,
+      "delta_deg": 9.352999999999998
+    }
+  ],
+  "fine_requests_us": [
+    30000
+  ],
+  "total_requested_us": 570000,
+  "center_source": "verified_mechanical_endpoint_midpoint",
+  "passed": true,
+  "session": 895282005,
+  "S_boot_id": "b4902563-3613-4162-89ce-ee3b9b39f8e4",
+  "commissioning": true,
+  "physical_straight_visually_confirmed": false,
+  "source": "real_M_telemetry_and_real_FSPI_no_perception_injection",
+  "pending_visual_check": true,
+  "restored_controller_pid": 2862
+}

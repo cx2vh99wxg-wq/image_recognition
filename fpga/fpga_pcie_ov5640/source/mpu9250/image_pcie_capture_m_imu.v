@@ -19,33 +19,33 @@ module image_pcie_capture_m_imu #(
     input free_clk,
     input board_rst_n,
 
-    //OV5640 CMOS interface
-    //coms2
-    inout        cmos2_scl,    //cmos2 i2c 
-    inout        cmos2_sda,    //cmos2 i2c 
-    input        cmos2_vsync,  //cmos2 vsync
-    input        cmos2_href,   //cmos2 hsync refrence,data valid
-    input        cmos2_pclk,   //cmos2 pxiel clock
-    input  [7:0] cmos2_data,   //cmos2 data
-    output       cmos2_reset,  //cmos2 reset
-    //coms5
-    inout        cmos5_scl,    //cmos5 i2c 
-    inout        cmos5_sda,    //cmos5 i2c 
-    input        cmos5_vsync,  //cmos5 vsync
-    input        cmos5_href,   //cmos5 hsync refrence,data valid
-    input        cmos5_pclk,   //cmos5 pxiel clock
-    input  [7:0] cmos5_data,   //cmos5 data
-    output       cmos5_reset,  //cmos5 reset
-    //coms6
-    inout        cmos6_scl,    //cmos6 i2c 
-    inout        cmos6_sda,    //cmos6 i2c 
-    input        cmos6_vsync,  //cmos6 vsync
-    input        cmos6_href,   //cmos6 hsync refrence,data valid
-    input        cmos6_pclk,   //cmos6 pxiel clock
-    input  [7:0] cmos6_data,   //cmos6 data
-    output       cmos6_reset,  //cmos6 reset
+    // IMU 硬件：OV5640 CMOS interface
+    // 参数记录为 coms2。
+    inout        cmos2_scl,    // 参数记录为 cmos2 i2c。
+    inout        cmos2_sda,    // 参数记录为 cmos2 i2c。
+    input        cmos2_vsync,  // 参数记录为 cmos2 vsync。
+    input        cmos2_href,   // IMU 硬件：cmos2 hsync refrence,data valid
+    input        cmos2_pclk,   // 参数记录为 cmos2 pxiel clock。
+    input  [7:0] cmos2_data,   // 参数记录为 cmos2 data。
+    output       cmos2_reset,  // 参数记录为 cmos2 reset。
+    // 参数记录为 coms5。
+    inout        cmos5_scl,    // 参数记录为 cmos5 i2c。
+    inout        cmos5_sda,    // 参数记录为 cmos5 i2c。
+    input        cmos5_vsync,  // 参数记录为 cmos5 vsync。
+    input        cmos5_href,   // IMU 硬件：cmos5 hsync refrence,data valid
+    input        cmos5_pclk,   // 参数记录为 cmos5 pxiel clock。
+    input  [7:0] cmos5_data,   // 参数记录为 cmos5 data。
+    output       cmos5_reset,  // 参数记录为 cmos5 reset。
+    // 参数记录为 coms6。
+    inout        cmos6_scl,    // 参数记录为 cmos6 i2c。
+    inout        cmos6_sda,    // 参数记录为 cmos6 i2c。
+    input        cmos6_vsync,  // 参数记录为 cmos6 vsync。
+    input        cmos6_href,   // IMU 硬件：cmos6 hsync refrence,data valid
+    input        cmos6_pclk,   // 参数记录为 cmos6 pxiel clock。
+    input  [7:0] cmos6_data,   // 参数记录为 cmos6 data。
+    output       cmos6_reset,  // 参数记录为 cmos6 reset。
 
-    //DDR3 interface
+    // IMU 硬件：DDR3 interface
     output                      mem_cs_n,
     output                      mem_rst_n,
     output                      mem_ck,
@@ -62,20 +62,20 @@ module image_pcie_capture_m_imu #(
     inout  [  MEM_DQ_WIDTH-1:0] mem_dq,
     output [MEM_DQ_WIDTH/8-1:0] mem_dm,
 
-    // PCIe interface
-    input             ref_clk_p,  // 输入参考时钟 
-    input             ref_clk_n,  // 
-    input             perst_n,    //pcie复位
-    input       [1:0] rxn,        //pcie接收
-    input       [1:0] rxp,        //
-    output wire [1:0] txn,        //pcie发送
-    output wire [1:0] txp,        // 
+    // IMU 硬件：PCIe interface
+    input             ref_clk_p,  // 供本模块定时使用的参考时钟。
+    input             ref_clk_n,  // ── IMU 硬件 ──
+    input             perst_n,    // pcie复位：本节对应的标识或作用域。
+    input       [1:0] rxn,        // pcie接收：本节对应的标识或作用域。
+    input       [1:0] rxp,        // ── IMU 硬件 ──
+    output wire [1:0] txn,        // pcie发送：本节对应的标识或作用域。
+    output wire [1:0] txp,        // ── IMU 硬件 ──
 
-    //LED signals
+    // IMU 硬件：LED signals
     output reg        heart_beat_led,
     output reg        pclk_led,
     output reg        ref_led,
-    //fspi
+    // fspi：本节对应的标识或作用域。
     input  wire       spi_clk,
     input  wire       spi_cs,
     inout  wire [3:0] spi_data,
@@ -84,46 +84,46 @@ module image_pcie_capture_m_imu #(
     inout  wire       left,
     inout  wire       right,
     output wire       stop,
-    inout  wire       speed_key_n, // A18 / FMC LA14_P / J3-34: same 0/Z contact as RIGHT
-    //test
-    //output wire test,
+    inout  wire       speed_key_n, // 参数记录为 A18 / FMC LA14_P / J3-34: same 0/Z contact as RIGHT。
+    // test：本节对应的标识或作用域。
+    // 停用示例，仅供对照：output wire test,
 
-    //UART interface
-    input RXD,  //UART receive data
-    output wire hmi_status_txd // B22 / FMC LA20_N -> HMI RX, 115200 8N1
+    // IMU 硬件：UART interface
+    input RXD,  // IMU 硬件：UART receive data
+    output wire hmi_status_txd // 参数记录为 B22 / FMC LA20_N -> HMI RX, 115200 8N1。
 
-    //Debug signals for waveform capture
-    //output  wire    [7:0]   debug_mode,     //Mode signal for debug
-    //output  wire    [5:0]   debug_cnn_data  //CNN data signal for debug
-    // 频率计数器输出 - 用于测量pclk频率
-    // output wire [31:0] cmos2_pclk_count,  // CMOS2 像素时钟计数值
-    // output wire [31:0] cmos5_pclk_count,  // CMOS5 像素时钟计数值  
-    // output wire [31:0] cmos6_pclk_count   // CMOS6 像素时钟计数值
+    // IMU 硬件：Debug signals for waveform capture
+    // 停用示例，仅供对照：output wire [7:0] debug_mode, //Mode signal for debug
+    // 停用示例，仅供对照：output wire [5:0] debug_cnn_data //CNN data signal for debug
+    // 频率计数器输出 - 用来测量pclk频率
+    // 停用示例，仅供对照：output wire [31:0] cmos2_pclk_count, // CMOS2 像素时钟计数值
+    // 停用示例，仅供对照：output wire [31:0] cmos5_pclk_count, // CMOS5 像素时钟计数值
+    // 停用示例，仅供对照：output wire [31:0] cmos6_pclk_count // CMOS6 像素时钟计数值
 );
-  //assign test = 0;
+  // 停用示例，仅供对照：assign test = 0;
 
-  wire [31:0] cmos2_pclk_count;  // CMOS2 像素时钟计数值
-  wire [31:0] cmos5_pclk_count;  // CMOS5 像素时钟计数值  
-  wire [31:0] cmos6_pclk_count;  // CMOS6 像素时钟计数值
+  wire [31:0] cmos2_pclk_count;  // IMU 硬件：CMOS2 像素时钟计数值
+  wire [31:0] cmos5_pclk_count;  // IMU 硬件：CMOS5 像素时钟计数值
+  wire [31:0] cmos6_pclk_count;  // IMU 硬件：CMOS6 像素时钟计数值
   parameter CTRL_ADDR_WIDTH = MEM_ROW_WIDTH + MEM_BANK_WIDTH + MEM_COLUMN_WIDTH;
   parameter TH_1S = 27'd33000000;
   parameter REM_DQS_WIDTH = 9 - MEM_DQS_WIDTH;
 
-  // OV5640 配置参数
-  //   parameter V_CMOS_DISP = 13'd720;  //CMOS垂直分辨率
-  //   parameter V_CMOS_DISP = 13'd768;  //CMOS垂直分辨率
-  parameter V_CMOS_DISP = 13'd480;  //CMOS垂直分辨率
-  //   parameter H_CMOS_DISP = 13'd1280;  //CMOS水平分辨率
-  //   parameter H_CMOS_DISP = 13'd1024;  //CMOS水平分辨率
-  parameter H_CMOS_DISP = 13'd640;  //CMOS水平分辨率
-  // localparam  TOTAL_H_PIXEL = 13'ha3f;  //水平总像素
-  //   parameter TOTAL_H_PIXEL = H_CMOS_DISP + 13'd1216;//CMOS水平总像素
-  parameter TOTAL_H_PIXEL = 13'h768;  //CMOS水平总像素
-  //   localparam TOTAL_V_PIXEL = 13'h790;  //垂直总像素
-  //   parameter TOTAL_V_PIXEL = V_CMOS_DISP + 13'd504;
+  // OV5640 配置所使用的配置参数。
+  // IMU 硬件：parameter V_CMOS_DISP = 13'd720; //CMOS垂直分辨率
+  // IMU 硬件：parameter V_CMOS_DISP = 13'd768; //CMOS垂直分辨率
+  parameter V_CMOS_DISP = 13'd480;  // CMOS垂直分辨率：本节对应的标识或作用域。
+  // IMU 硬件：parameter H_CMOS_DISP = 13'd1280; //CMOS水平分辨率
+  // IMU 硬件：parameter H_CMOS_DISP = 13'd1024; //CMOS水平分辨率
+  parameter H_CMOS_DISP = 13'd640;  // CMOS水平分辨率：本节对应的标识或作用域。
+  // IMU 硬件：localparam TOTAL_H_PIXEL = 13'ha3f; //水平总像素
+  // IMU 硬件：parameter TOTAL_H_PIXEL = H_CMOS_DISP + 13'd1216;//CMOS水平总像素
+  parameter TOTAL_H_PIXEL = 13'h768;  // CMOS水平总像素：本节对应的标识或作用域。
+  // IMU 硬件：localparam TOTAL_V_PIXEL = 13'h790; //垂直总像素
+  // IMU 硬件：parameter TOTAL_V_PIXEL = V_CMOS_DISP + 13'd504;
   parameter TOTAL_V_PIXEL = 13'h3d8;
 
-  parameter RATE = 8'h41;  //41:15fps, 21:30Fps, 11:60Fps
+  parameter RATE = 8'h41;  // 参数记录为 41:15fps, 21:30Fps, 11:60Fps。
   parameter Y_ADDR_END = 13'd1947;
   parameter Y_ADDR_ST = 13'd4;
 
@@ -158,13 +158,13 @@ module image_pcie_capture_m_imu #(
   wire                        free_clk_g;
 
 
-  //pcie 相关信号定义
-  localparam DEVICE_TYPE = 3'b000;  // @IPC enum 3'b000, 3'b001, 3'b100
-  localparam AXIS_SLAVE_NUM = 3;  // @IPC enum 1 2 3
+  // 本节给出pcie 相关信号的定义。
+  localparam DEVICE_TYPE = 3'b000;  // IMU 硬件：@IPC enum 3'b000, 3'b001, 3'b100
+  localparam AXIS_SLAVE_NUM = 3;  // IMU 硬件：@IPC enum 1 2 3
 
-  //reg             ref_led;
+  // 停用示例，仅供对照：reg ref_led;
 
-  // Test unit mode signals
+  // IMU 硬件：Test unit mode signals
   wire pcie_cfg_ctrl_en;
   wire axis_master_tready_cfg;
 
@@ -173,7 +173,7 @@ module image_pcie_capture_m_imu #(
   wire cfg_axis_slave0_tlast;
   wire cfg_axis_slave0_tuser;
 
-  // For mux
+  // 供多路选择逻辑使用。
   wire axis_master_tready_mem;
   wire axis_master_tvalid_mem;
   wire [127:0] axis_master_tdata_mem;
@@ -189,15 +189,15 @@ module image_pcie_capture_m_imu #(
   wire dma_axis_slave0_tlast;
   wire dma_axis_slave0_tuser;
 
-  // Reset debounce and sync
+  // IMU 硬件：Reset debounce and sync
   wire sync_button_rst_n;
   wire ref_core_rst_n;
   wire sync_perst_n;
   wire s_pclk_rstn;
 
-  // Internal signal
-  wire			pclk_div2/*synthesis PAP_MARK_DEBUG="1"*/;  	// 用户时钟，x2 5gt/s时，为125MHZ 2.5gt/s时为62.5
-  wire			pclk/*synthesis PAP_MARK_DEBUG="1"*/;			// 用户时钟，x2 5gt/s时，为125MHZ 2.5gt/s时为62.5			
+  // IMU 硬件：Internal signal
+  wire			pclk_div2/*synthesis PAP_MARK_DEBUG="1"*/;  	// IMU 硬件：用户时钟，x2 5gt/s时，为125MHZ 2.5gt/s时为62.5
+  wire			pclk/*synthesis PAP_MARK_DEBUG="1"*/;			// IMU 硬件：用户时钟，x2 5gt/s时，为125MHZ 2.5gt/s时为62.5
   wire ref_clk;
   wire core_rst_n;
 
@@ -208,19 +208,19 @@ module image_pcie_capture_m_imu #(
   wire axis_master_tlast;
   wire [7:0] axis_master_tuser;
 
-  // AXI4-Stream slave 0 interface
+  // IMU 硬件：AXI4-Stream slave 0 interface
   wire axis_slave0_tready;
   wire axis_slave0_tvalid;
   wire [127:0] axis_slave0_tdata;
   wire axis_slave0_tlast;
   wire axis_slave0_tuser;
-  // AXI4-Stream slave 1 interface
+  // IMU 硬件：AXI4-Stream slave 1 interface
   wire axis_slave1_tready;
   wire axis_slave1_tvalid;
   wire [127:0] axis_slave1_tdata;
   wire axis_slave1_tlast;
   wire axis_slave1_tuser;
-  // AXI4-Stream slave 2 interface
+  // IMU 硬件：AXI4-Stream slave 2 interface
   wire axis_slave2_tready;
   wire axis_slave2_tvalid;
   wire [127:0] axis_slave2_tdata;
@@ -242,15 +242,15 @@ module image_pcie_capture_m_imu #(
   wire [7:0] xadm_cplh_cdts;
   wire [11:0] xadm_cpld_cdts;
 
-  wire [4:0] smlh_ltssm_state  /*synthesis PAP_MARK_DEBUG="1"*/;  //link状态机
+  wire [4:0] smlh_ltssm_state  /*synthesis PAP_MARK_DEBUG="1"*/;  // link状态机：本节对应的标识或作用域。
 
-  // Led lights up signal
+  // IMU 硬件：Led lights up signal
   reg [22:0] ref_led_cnt;
   reg [26:0] pclk_led_cnt;
   wire smlh_link_up;
   wire rdlh_link_up  /*synthesis PAP_MARK_DEBUG="1"*/;
 
-  // Uart to APB 32bits
+  // 参数记录为 Uart to APB 32bits。
   wire uart_p_sel;
   wire [3:0] uart_p_strb;
   wire [15:0] uart_p_addr;
@@ -260,17 +260,17 @@ module image_pcie_capture_m_imu #(
   wire uart_p_rdy;
   wire [31:0] uart_p_rdata;
 
-  // APB signal
+  // IMU 硬件：APB signal
   wire [3:0] p_strb;
   wire [15:0] p_addr;
   wire [31:0] p_wdata;
   wire p_ce;
   wire p_we;
 
-  // APB MUX signal
-  // 0~5: HSSTLP 6: Reserved 7: PCIe
-  // 8: config
-  // 9: DMA
+  // IMU 硬件：APB MUX signal
+  // IMU 硬件：0~5: HSSTLP 6: Reserved 7: PCIe
+  // 参数记录为 8: config。
+  // 参数记录为 9: DMA。
   wire p_sel_pcie;
   wire p_sel_cfg;
   wire p_sel_dma;
@@ -283,17 +283,17 @@ module image_pcie_capture_m_imu #(
   wire p_rdy_cfg;
   wire p_rdy_dma;
 
-  // UART signals
+  // IMU 硬件：UART signals
   wire [7:0] uart_rx_data;
   wire uart_rx_valid;
   wire [7:0] mode;
   wire [3:0] select_rearview;
   wire hmi_auto_brake_enable;
-  //wire [5:0] cnn_data;
+  // 停用示例，仅供对照：wire [5:0] cnn_data;
 
-  // Debug signal assignments for waveform capture
-  //assign debug_mode     = mode;
-  //assign debug_cnn_data = cnn_data;
+  // IMU 硬件：Debug signal assignments for waveform capture
+  // 停用示例，仅供对照：assign debug_mode = mode;
+  // 停用示例，仅供对照：assign debug_cnn_data = cnn_data;
 
   assign cfg_ido_req_en = 1'b0;
   assign cfg_ido_cpl_en = 1'b0;
@@ -304,32 +304,32 @@ module image_pcie_capture_m_imu #(
   assign xadm_cplh_cdts = 8'b0;
   assign xadm_cpld_cdts = 12'b0;
 
-  //axi
+  // axi：本节对应的标识或作用域。
   reg          ch0_rframe_req;
   wire         ch0_rframe_req_ack;
   wire         ch0_rframe_data_en;
   wire [127:0] ch0_rframe_data;
   wire         ch0_rframe_data_valid;
 
-  //dma
-  // DMA CTRL      BASE ADDR = 0x8000
+  // dma：本节对应的标识或作用域。
+  // 参数记录为 DMA CTRL BASE ADDR = 0x8000。
   wire         o_dma_write_data_req;
   wire [ 11:0] o_dma_write_addr;
   wire [127:0] i_dma_write_data;
 
-  // 数据拼接相关信号
+  // 本信号用于数据拼接相关。
   wire         axi_dma_write_data_req;
   wire [127:0] axi_dma_write_data;
   reg  [127:0] concatenated_data;
   reg          concatenated_data_valid;
-  reg  [  4:0] black_sent_counter;  // 已发送的黑色块计数(0-14)
-  reg          is_sending_black;  // 标志是否正在发送黑色像素
-  reg          line_start_flag;  // 行开始标志寄存
-  reg          waiting_for_line;  // 等待新行标志
-  reg  [  6:0] pixel_block_counter;  // 当前行已传输的128位块计数(0-94)
-  //===================================================================================================================
-  //fspi
-  //===================================================================================================================
+  reg  [  4:0] black_sent_counter;  // IMU 硬件：已发送的黑色块计数(0-14)
+  reg          is_sending_black;  // IMU 硬件：标志是否正在发送黑色像素
+  reg          line_start_flag;  // 寄存新行起始状态供后级使用。
+  reg          waiting_for_line;  // 等到下一行起始标志到达。
+  reg  [  6:0] pixel_block_counter;  // IMU 硬件：当前行已传输的128位块计数(0-94)
+  // ── IMU 硬件 ──
+  // fspi：本节对应的标识或作用域。
+  // ── IMU 硬件 ──
   wire [  7:0] mem0_out;
   wire [  7:0] mem1_out;
   wire [  7:0] mem2_out;
@@ -343,8 +343,8 @@ module image_pcie_capture_m_imu #(
   wire [2:0] speed_phase_gray;
   wire speed_ready, speed_pressed, speed_drive;
   wire [3:0] hmi_select_sync;
-  // New SPEED uses the same 04 selector and stable CDC path as RIGHT.
-  // Keep 10 01/00 compatibility until the matching TFT has been installed.
+  // IMU 硬件：New SPEED uses the same 04 selector and stable CDC path as RIGHT.
+  // IMU 硬件：Keep 10 01/00 compatibility until the matching TFT has been installed.
   wire hmi_speed_manual = (hmi_select_sync == 4'hf) | hmi_speed_level;
   remote_speed_controller u_remote_speed_controller (
       .clk(free_clk), .rst_n(board_rst_n), .key_n(speed_key_n),
@@ -353,9 +353,9 @@ module image_pcie_capture_m_imu #(
       .phase_gray(speed_phase_gray), .ready(speed_ready),
       .pressed(speed_pressed), .drive_active(speed_drive)
   );
-  // Exactly match LEFT/RIGHT electrically: sink the shared remote contact
-  // while pressed, otherwise release it to the remote's own pull-up.
-  // Input sense remains available for physical-key debounce and gear feedback.
+  // IMU 硬件：Exactly match LEFT/RIGHT electrically: sink the shared remote contact
+  // IMU 硬件：while pressed, otherwise release it to the remote's own pull-up.
+  // IMU 硬件：Input sense remains available for physical-key debounce and gear feedback.
   assign speed_key_n = speed_drive ? 1'b0 : 1'bz;
   wire hmi_left_denied, hmi_right_denied, traffic_go_denied;
   lane_permission_guard u_lane_permission_guard (
@@ -364,9 +364,9 @@ module image_pcie_capture_m_imu #(
       .traffic_go_denied(traffic_go_denied)
   );
 
-  // FSPI registers are written on its faster wr_clk. Their button levels
-  // are held for many free_clk periods, so two flip-flops safely transfer
-  // them into the 25 MHz pad-control domain before any decision is made.
+  // IMU 硬件：FSPI registers are written on its faster wr_clk. Their button levels
+  // IMU 硬件：are held for many free_clk periods, so two flip-flops safely transfer
+  // IMU 硬件：them into the 25 MHz pad-control domain before any decision is made.
   reg [4:0] fspi_button_meta;
   reg [4:0] fspi_button_sync;   always @(posedge free_clk or negedge board_rst_n) begin
     if (!board_rst_n) begin
@@ -378,8 +378,8 @@ module image_pcie_capture_m_imu #(
     end
   end
 
-  // UART commands originate on true_50M. A stable-value filter prevents a
-  // multi-bit direction change from looking like a momentary E request.
+  // IMU 硬件：UART commands originate on true_50M. A stable-value filter prevents a
+  // IMU 硬件：multi-bit direction change from looking like a momentary E request.
   wire hmi_rearm;
   hmi_control_synchronizer u_hmi_control_synchronizer (
       .clk          (free_clk),
@@ -389,8 +389,8 @@ module image_pcie_capture_m_imu #(
       .rearm_command(hmi_rearm)
   );
 
-  // A pedestrian request latches STOP and all direction contacts until E.
-  // HMI E remains a momentary manual STOP and can force-clear that latch.
+  // IMU 硬件：A pedestrian request latches STOP and all direction contacts until E.
+  // IMU 硬件：HMI E remains a momentary manual STOP and can force-clear that latch.
   wire stop_pressed;
   wire movement_blocked;
   wire fspi_direction_armed;
@@ -415,8 +415,8 @@ module image_pcie_capture_m_imu #(
       .fspi_direction_armed (fspi_direction_armed)
   );
 
-  // HMI overrides its own axis only: GO/BACK may coexist with lane steering.
-  // Release of an HMI axis cannot expose a stale FSPI command on that axis.
+  // IMU 硬件：HMI overrides its own axis only: GO/BACK may coexist with lane steering.
+  // IMU 硬件：Release of an HMI axis cannot expose a stale FSPI command on that axis.
   wire go_released;
   wire back_released;
   wire left_released;
@@ -436,10 +436,10 @@ module image_pcie_capture_m_imu #(
       .right_released      (right_released)
   );
 
-  // GO/BACK/STOP actively drive the requested idle-high/pressed-low levels.
-  // LEFT/RIGHT retain their existing open-drain contact wiring.
-  // Traffic permission masks only the final GO contact. Keep the HMI traction
-  // latch intact so a confirmed green restores the operator's stored intent.
+  // IMU 硬件：GO/BACK/STOP actively drive the requested idle-high/pressed-low levels.
+  // IMU 硬件：LEFT/RIGHT retain their existing open-drain contact wiring.
+  // IMU 硬件：Traffic permission masks only the final GO contact. Keep the HMI traction
+  // IMU 硬件：latch intact so a confirmed green restores the operator's stored intent.
   assign go    = go_released | traffic_go_denied;
   assign back  = back_released;
   assign left  = left_released  ? 1'bz : 1'b0;
@@ -458,7 +458,7 @@ module image_pcie_capture_m_imu #(
       .spi_clk        (spi_clk),
       .spi_cs         (spi_cs),
       .spi_data       (spi_data),
-      .select_rearview(select_rearview),             // 传递select_rearview信号
+      .select_rearview(select_rearview),             // 本信号用于传递select_rearview。
       .auto_brake_enable(auto_brake_enabled),
       .speed_status_async({speed_ready,speed_pressed,speed_drive,speed_phase_gray}),
       .control_status_async({board_rst_n,speed_ready,fspi_direction_armed,traffic_go_denied,
@@ -474,23 +474,23 @@ module image_pcie_capture_m_imu #(
       .mem6_out       (mem6_out)
   );
 
-  //===================================================================================================================
-  //UART 通信控制
-  //===================================================================================================================
+  // ── IMU 硬件 ──
+  // IMU 硬件：UART 通信控制
+  // ── IMU 硬件 ──
 
   wire true_50M;
   pllaaa the_instance_name (
-      .clkout0(true_50M),  // output
-      .lock   (),          // output
-      .clkin1 (free_clk)   // input
+      .clkout0(true_50M),  // 停用示例，仅供对照：output
+      .lock   (),          // 停用示例，仅供对照：output
+      .clkin1 (free_clk)   // 停用示例，仅供对照：input
   );
 
 
 
 
-  //////////////////////UART通信控制///////////////////////////
-  // Status uses its own transmitter. The existing receive/command path is
-  // unchanged; never echo arbitrary HMI command bytes into the screen.
+  // UART通信控制。
+  // IMU 硬件：Status uses its own transmitter. The existing receive/command path is
+  // IMU 硬件：unchanged; never echo arbitrary HMI command bytes into the screen.
   hmi_gear_feedback u_hmi_gear_feedback (
       .clk(true_50M), .rst_n(board_rst_n),
       .gear_async({speed_ready,speed_phase_gray}),
@@ -500,12 +500,12 @@ module image_pcie_capture_m_imu #(
       .sys_clk     (true_50M),
       .sys_rst_n   (board_rst_n),
       .uart_rxd    (RXD),
-      .uart_txd    (),               // 不连接外部引脚
+      .uart_txd    (),               // 仅用于内部逻辑，不映射到外部端口。
       .uart_rx_done(uart_rx_valid),
       .uart_rx_data(uart_rx_data)
   );
 
-  ////////////////////////UART屏幕控制///////////////////////////
+  // UART屏幕控制。
   uart_lcd u_uart_lcd (
       .clk          (true_50M),
       .rst_n        (board_rst_n),
@@ -532,9 +532,9 @@ module image_pcie_capture_m_imu #(
                           (mode == 8'd16) ? 6'd8 :
                           6'd0;
 
-  //=================================================================================================================
-  // OV5640 video stream
-  //=================================================================================================================
+  // ── IMU 硬件 ──
+  // 参数记录为 OV5640 video stream。
+  // ── IMU 硬件 ──
   wire        clk_25M;
   wire        clk_50M;
 
@@ -563,77 +563,77 @@ module image_pcie_capture_m_imu #(
   wire [15:0] video6_data;
 
 
-  // OV5640 top module instantiation
+  // IMU 硬件：OV5640 top module instantiation
   ov5640_top u_ov5640_top (
-      .sys_clk      (free_clk),       //50Mhz
-      .cmos_h_pixel (H_CMOS_DISP),    //水平方向分辨率
-      .cmos_v_pixel (V_CMOS_DISP),    //垂直方向分辨率
-      .total_h_pixel(TOTAL_H_PIXEL),  //水平总像素大小
-      .total_v_pixel(TOTAL_V_PIXEL),  //垂直总像素大小
+      .sys_clk      (free_clk),       // 参数记录为 50Mhz。
+      .cmos_h_pixel (H_CMOS_DISP),    // 有效图像的水平像素数。
+      .cmos_v_pixel (V_CMOS_DISP),    // 有效图像的垂直像素数。
+      .total_h_pixel(TOTAL_H_PIXEL),  // 一行水平方向的总计数尺寸。
+      .total_v_pixel(TOTAL_V_PIXEL),  // 一帧垂直方向的总计数尺寸。
       .y_addr_st    (Y_ADDR_ST),
       .y_addr_end   (Y_ADDR_END),
-      .rate         (RATE),           //帧率配置
+      .rate         (RATE),           // 本项配置采集帧速率。
       .clk_25M      (clk_25M),
       .clk_50M      (clk_50M),
-      //coms2
-      .cmos2_scl    (cmos2_scl),      //cmos2 i2c 
-      .cmos2_sda    (cmos2_sda),      //cmos2 i2c 
-      .cmos2_vsync  (cmos2_vsync),    //cmos2 vsync
-      .cmos2_href   (cmos2_href),     //cmos2 hsync refrence,data valid
-      .cmos2_pclk   (cmos2_pclk),     //cmos2 pxiel clock
-      .cmos2_data   (cmos2_data),     //cmos2 data
-      .cmos2_reset  (cmos2_reset),    //cmos2 reset
-      //coms5
-      .cmos5_scl    (cmos5_scl),      //cmos5 i2c 
-      .cmos5_sda    (cmos5_sda),      //cmos5 i2c 
-      .cmos5_vsync  (cmos5_vsync),    //cmos5 vsync
-      .cmos5_href   (cmos5_href),     //cmos5 hsync refrence,data valid
-      .cmos5_pclk   (cmos5_pclk),     //cmos5 pxiel clock
-      .cmos5_data   (cmos5_data),     //cmos5 data
-      .cmos5_reset  (cmos5_reset),    //cmos5 reset
-      //coms6
-      .cmos6_scl    (cmos6_scl),      //cmos6 i2c 
-      .cmos6_sda    (cmos6_sda),      //cmos6 i2c 
-      .cmos6_vsync  (cmos6_vsync),    //cmos6 vsync
-      .cmos6_href   (cmos6_href),     //cmos6 hsync refrence,data valid
-      .cmos6_pclk   (cmos6_pclk),     //cmos6 pxiel clock
-      .cmos6_data   (cmos6_data),     //cmos6 data
-      .cmos6_reset  (cmos6_reset),    //cmos6 reset
-      //output video stream
-      .video2_clk   (video2_clk),     //video pixel clock
+      // 参数记录为 coms2。
+      .cmos2_scl    (cmos2_scl),      // 参数记录为 cmos2 i2c。
+      .cmos2_sda    (cmos2_sda),      // 参数记录为 cmos2 i2c。
+      .cmos2_vsync  (cmos2_vsync),    // 参数记录为 cmos2 vsync。
+      .cmos2_href   (cmos2_href),     // IMU 硬件：cmos2 hsync refrence,data valid
+      .cmos2_pclk   (cmos2_pclk),     // 参数记录为 cmos2 pxiel clock。
+      .cmos2_data   (cmos2_data),     // 参数记录为 cmos2 data。
+      .cmos2_reset  (cmos2_reset),    // 参数记录为 cmos2 reset。
+      // 参数记录为 coms5。
+      .cmos5_scl    (cmos5_scl),      // 参数记录为 cmos5 i2c。
+      .cmos5_sda    (cmos5_sda),      // 参数记录为 cmos5 i2c。
+      .cmos5_vsync  (cmos5_vsync),    // 参数记录为 cmos5 vsync。
+      .cmos5_href   (cmos5_href),     // IMU 硬件：cmos5 hsync refrence,data valid
+      .cmos5_pclk   (cmos5_pclk),     // 参数记录为 cmos5 pxiel clock。
+      .cmos5_data   (cmos5_data),     // 参数记录为 cmos5 data。
+      .cmos5_reset  (cmos5_reset),    // 参数记录为 cmos5 reset。
+      // 参数记录为 coms6。
+      .cmos6_scl    (cmos6_scl),      // 参数记录为 cmos6 i2c。
+      .cmos6_sda    (cmos6_sda),      // 参数记录为 cmos6 i2c。
+      .cmos6_vsync  (cmos6_vsync),    // 参数记录为 cmos6 vsync。
+      .cmos6_href   (cmos6_href),     // IMU 硬件：cmos6 hsync refrence,data valid
+      .cmos6_pclk   (cmos6_pclk),     // 参数记录为 cmos6 pxiel clock。
+      .cmos6_data   (cmos6_data),     // 参数记录为 cmos6 data。
+      .cmos6_reset  (cmos6_reset),    // 参数记录为 cmos6 reset。
+      // 停用示例，仅供对照：output video stream
+      .video2_clk   (video2_clk),     // IMU 硬件：video pixel clock
       .video2_x     (video2_x),
       .video2_y     (video2_y),
-      .video2_vs    (video2_vs),      //video vsync  
-      .video2_href  (video2_href),    //video href
-      .cmos2_frame_valid    (video2_de),      //video data enable
-      .cmos2_frame_data  (video2_data),    //video data RGB565
+      .video2_vs    (video2_vs),      // IMU 硬件：video vsync
+      .video2_href  (video2_href),    // IMU 硬件：video href
+      .cmos2_frame_valid    (video2_de),      // IMU 硬件：video data enable
+      .cmos2_frame_data  (video2_data),    // 参数记录为 video data RGB565。
 
-      .video5_clk (video5_clk),   //video pixel clock
+      .video5_clk (video5_clk),   // IMU 硬件：video pixel clock
       .video5_x   (video5_x),
       .video5_y   (video5_y),
-      .video5_vs  (video5_vs),    //video vsync  
-      .video5_href(video5_href),  //video href
-      .cmos5_frame_valid  (video5_de),    //video data enable
-      .cmos5_frame_data(video5_data),  //video data RGB565
+      .video5_vs  (video5_vs),    // IMU 硬件：video vsync
+      .video5_href(video5_href),  // IMU 硬件：video href
+      .cmos5_frame_valid  (video5_de),    // IMU 硬件：video data enable
+      .cmos5_frame_data(video5_data),  // 参数记录为 video data RGB565。
 
-      .video6_clk (video6_clk),   //video pixel clock
+      .video6_clk (video6_clk),   // IMU 硬件：video pixel clock
       .video6_x   (video6_x),
       .video6_y   (video6_y),
-      .video6_vs  (video6_vs),    //video vsync  
-      .video6_href(video6_href),  //video href
-      .cmos6_frame_valid  (video6_de),    //video data enable
-      .cmos6_frame_data(video6_data),  //video data RGB565
+      .video6_vs  (video6_vs),    // IMU 硬件：video vsync
+      .video6_href(video6_href),  // IMU 硬件：video href
+      .cmos6_frame_valid  (video6_de),    // IMU 硬件：video data enable
+      .cmos6_frame_data(video6_data),  // 参数记录为 video data RGB565。
 
-      // 频率计数器连接
-      .cmos2_pclk_count(cmos2_pclk_count),  // CMOS2 像素时钟计数值
-      .cmos5_pclk_count(cmos5_pclk_count),  // CMOS5 像素时钟计数值  
-      .cmos6_pclk_count(cmos6_pclk_count)   // CMOS6 像素时钟计数值
+      // 把计频模块接入当前信号。
+      .cmos2_pclk_count(cmos2_pclk_count),  // IMU 硬件：CMOS2 像素时钟计数值
+      .cmos5_pclk_count(cmos5_pclk_count),  // IMU 硬件：CMOS5 像素时钟计数值
+      .cmos6_pclk_count(cmos6_pclk_count)   // IMU 硬件：CMOS6 像素时钟计数值
   );
 
-  //===================================================================================================================
-  //CNN 神经网络夜视算法处理
-  //===================================================================================================================
-  // CNN 相关信号定义
+  // ── IMU 硬件 ──
+  // IMU 硬件：CNN 神经网络夜视算法处理
+  // ── IMU 硬件 ──
+  // 本节给出CNN 相关信号的定义。
   wire        cnn_frame_vsync;
   wire        cnn_frame_de;
   wire [23:0] cnn_rgb_24bit;
@@ -642,14 +642,14 @@ module image_pcie_capture_m_imu #(
   wire        image_process_vsync;
   wire        image_process_de;
 
-  // 将RGB565转换为RGB888用于CNN处理
+  // 把RGB565转为RGB888用于CNN处理。
   assign image_process_rgb_24bit = {
     video2_data[15:11], 3'b0, video2_data[10:5], 2'b0, video2_data[4:0], 3'b0
   };
   assign image_process_vsync = video2_vs;
   assign image_process_de = video2_de;
 
-  // CNN夜视算法模块实例化
+  // CNN夜视算法模块实例化：本节对应的标识或作用域。
   cnn_top u_cnn_top (
       .clk(video2_clk),
       .rst_n(board_rst_n),
@@ -663,12 +663,12 @@ module image_pcie_capture_m_imu #(
       .per_img_href_1(image_process_de),
       .post_img_vsync(cnn_frame_vsync),
       .post_img_href(cnn_frame_de),
-      .level(level)  // 来自UART的控制信号
+      .level(level)  // 本信号用于来自UART的控制。
   );
 
-  // 将CNN输出的RGB888转换回RGB565
+  // IMU 硬件：将CNN输出的RGB888转换回RGB565
   assign cnn_rgb_16bit = {cnn_rgb_24bit[23:19], cnn_rgb_24bit[15:10], cnn_rgb_24bit[7:3]};
-  /*
+  /* 停用示例，仅供对照：
 wire rdreq;
 wire vga_hs, vga_vs, vga_de;
 wire [15:0] vga_rgb;
@@ -687,36 +687,36 @@ vga_ctrl u_vga_ctrl
 );
 */
 
-  //------------- image_recognition -------------
+  // image_recognition。
 
-  // wire [15:0] vga_data;
-  //    assign vga_data = {video_data[4:0],video_data[10:5],video_data[15:11]};
-  // 使用CNN处理后的图像数据
+  // 停用示例，仅供对照：wire [15:0] vga_data;
+  // 停用示例，仅供对照：assign vga_data = {video_data[4:0],video_data[10:5],video_data[15:11]};
+  // IMU 硬件：使用CNN处理后的图像数据
 
-  // wire isp_de, isp_vs;
-  // wire [15:0] isp_rgb;
+  // 停用示例，仅供对照：wire isp_de, isp_vs;
+  // 停用示例，仅供对照：wire [15:0] isp_rgb;
 
-  // isp_ctrl #(
-  //     .H_PIXEL(640),
-  //     .V_PIXEL(480)
-  // ) isp_ctrl (
-  //     .clk    (video2_clk),
-  //     .sys_clk(clk_50M),
-  //     .rst_n  (board_rst_n),
-  //     .i_rgb  (vga_data),
-  //     .i_vsync(a_vs),
-  //     .i_de   (a_de),
-  //     .x      (video2_x),
-  //     .y      (video2_y),
+  // IMU 硬件：isp_ctrl #(
+  // 停用示例，仅供对照：.H_PIXEL(640),
+  // 参数记录为 .V_PIXEL(480)。
+  // IMU 硬件：) isp_ctrl (
+  // 停用示例，仅供对照：.clk (video2_clk),
+  // 停用示例，仅供对照：.sys_clk(clk_50M),
+  // 停用示例，仅供对照：.rst_n (board_rst_n),
+  // 停用示例，仅供对照：.i_rgb (vga_data),
+  // 停用示例，仅供对照：.i_vsync(a_vs),
+  // 停用示例，仅供对照：.i_de (a_de),
+  // 停用示例，仅供对照：.x (video2_x),
+  // 停用示例，仅供对照：.y (video2_y),
 
-  //     .VGA_rgb(isp_rgb),
-  //     .VGA_vsync(isp_vs),
-  //     .VGA_de(isp_de)
-  // );
+  // 停用示例，仅供对照：.VGA_rgb(isp_rgb),
+  // 停用示例，仅供对照：.VGA_vsync(isp_vs),
+  // IMU 硬件：.VGA_de(isp_de)
+  // IMU 硬件：);
 
-  //*==============================================================================
-  //ddr3 IP例化
-  //*==============================================================================
+  // ── IMU 硬件 ──
+  // 把ddr3 IP连接到本模块。
+  // ── IMU 硬件 ──
   always @(posedge core_clk or negedge ddr_init_done) begin
     if (!ddr_init_done) cnt <= 27'd0;
     else if (cnt >= TH_1S) cnt <= 27'd0;
@@ -800,7 +800,7 @@ vga_ctrl u_vga_ctrl
       .mem_dq   (mem_dq),
       .mem_dm   (mem_dm),
 
-      //debug
+      // debug：本节对应的标识或作用域。
       .dbg_gate_start   (1'b0),
       .dbg_cpd_start    (1'b0),
       .dbg_ddrphy_rst_n (1'b1),
@@ -844,9 +844,9 @@ vga_ctrl u_vga_ctrl
 
   );
 
-  //*==============================================================================
-  //axi控制器例化
-  //*==============================================================================
+  // ── IMU 硬件 ──
+  // axi控制器例化：本节对应的标识或作用域。
+  // ── IMU 硬件 ──
   axi4_ctrl_3ch #(
       .C_RD_END_ADDR(640 * 480 * 2),
       .C_W_WIDTH(16),
@@ -900,10 +900,10 @@ vga_ctrl u_vga_ctrl
       .tp_o()
   );
 
-  //*==============================================================================
-  // pcie
-  //*==============================================================================
-  // Rst debounce
+  // ── IMU 硬件 ──
+  // pcie：本节对应的标识或作用域。
+  // ── IMU 硬件 ──
+  // IMU 硬件：Rst debounce
   hsst_rst_cross_sync_v1_0 #(
 `ifdef IPS2L_PCIE_SPEEDUP_SIM
       .RST_CNTR_VALUE(16'h10)
@@ -962,10 +962,10 @@ vga_ctrl u_vga_ctrl
     end
   end
 
-  //===========================================================================
-  //pcie dma
-  //===========================================================================
-  // DMA CTRL      BASE ADDR = 0x8000
+  // ── IMU 硬件 ──
+  // IMU 硬件：pcie dma
+  // ── IMU 硬件 ──
+  // 参数记录为 DMA CTRL BASE ADDR = 0x8000。
   ips2l_pcie_dma #(
       .DEVICE_TYPE   (DEVICE_TYPE),
       .AXIS_SLAVE_NUM   (AXIS_SLAVE_NUM)
@@ -973,13 +973,13 @@ vga_ctrl u_vga_ctrl
       .clk  (pclk_div2),
       .rst_n(core_rst_n),
 
-      // Num
+      // Num：本节对应的标识或作用域。
       .i_cfg_pbus_num   (cfg_pbus_num),
       .i_cfg_pbus_dev_num  (cfg_pbus_dev_num),
       .i_cfg_max_rd_req_size (cfg_max_rd_req_size),
       .i_cfg_max_payload_size (cfg_max_payload_size),
 
-      // AXI4-Stream master interface
+      // IMU 硬件：AXI4-Stream master interface
       .i_axis_master_tvld (axis_master_tvalid_mem),
       .o_axis_master_trdy (axis_master_tready_mem),
       .i_axis_master_tdata(axis_master_tdata_mem),
@@ -988,28 +988,28 @@ vga_ctrl u_vga_ctrl
       .i_axis_master_tlast(axis_master_tlast_mem),
       .i_axis_master_tuser(axis_master_tuser_mem),
 
-      // AXI4-Stream slave0 interface
+      // IMU 硬件：AXI4-Stream slave0 interface
       .i_axis_slave0_trdy (axis_slave0_tready),
       .o_axis_slave0_tvld (dma_axis_slave0_tvalid),
       .o_axis_slave0_tdata(dma_axis_slave0_tdata),
       .o_axis_slave0_tlast(dma_axis_slave0_tlast),
       .o_axis_slave0_tuser(dma_axis_slave0_tuser),
 
-      // AXI4-Stream slave1 interface
+      // IMU 硬件：AXI4-Stream slave1 interface
       .i_axis_slave1_trdy (axis_slave1_tready),
       .o_axis_slave1_tvld (axis_slave1_tvalid),
       .o_axis_slave1_tdata(axis_slave1_tdata),
       .o_axis_slave1_tlast(axis_slave1_tlast),
       .o_axis_slave1_tuser(axis_slave1_tuser),
 
-      // AXI4-Stream slave2 interface
+      // IMU 硬件：AXI4-Stream slave2 interface
       .i_axis_slave2_trdy (axis_slave2_tready),
       .o_axis_slave2_tvld (axis_slave2_tvalid),
       .o_axis_slave2_tdata(axis_slave2_tdata),
       .o_axis_slave2_tlast(axis_slave2_tlast),
       .o_axis_slave2_tuser(axis_slave2_tuser),
 
-      // From pcie
+      // IMU 硬件：From pcie
       .i_cfg_ido_req_en(cfg_ido_req_en),
       .i_cfg_ido_cpl_en(cfg_ido_cpl_en),
       .i_xadm_ph_cdts  (xadm_ph_cdts),
@@ -1019,7 +1019,7 @@ vga_ctrl u_vga_ctrl
       .i_xadm_cplh_cdts(xadm_cplh_cdts),
       .i_xadm_cpld_cdts(xadm_cpld_cdts),
 
-      // APB interface
+      // IMU 硬件：APB interface
       .i_apb_psel          (p_sel_dma),
       .i_apb_paddr         (p_addr[8:0]),
       .i_apb_pwdata        (p_wdata),
@@ -1028,9 +1028,9 @@ vga_ctrl u_vga_ctrl
       .i_apb_penable       (p_ce),
       .o_apb_prdy          (p_rdy_dma),
       .o_apb_prdata        (p_rdata_dma),
-      .o_cross_4kb_boundary(cross_4kb_boundary),    //4k边界
-      //**********************************************************************
-      // dma write interface
+      .o_cross_4kb_boundary(cross_4kb_boundary),    // IMU 硬件：4k边界
+      // ── IMU 硬件 ──
+      // IMU 硬件：dma write interface
       .o_dma_write_data_req(o_dma_write_data_req),
       .o_dma_write_addr    (o_dma_write_addr),
       .i_dma_write_data    (i_dma_write_data)
@@ -1052,13 +1052,13 @@ vga_ctrl u_vga_ctrl
 
   assign axis_master_tready     = axis_master_tready_mem;
 
-  // PCIe IP TOP : HSSTLP : 0x0000~6000 PCIe BASE ADDR : 0x7000
+  // IMU 硬件：PCIe IP TOP : HSSTLP : 0x0000~6000 PCIe BASE ADDR : 0x7000
   pcie_test u_ips2l_pcie_wrap (
       .button_rst_n  (1'b1),
       .power_up_rst_n(1'b1),
       .perst_n       (1'b1),
 
-      // The clock and reset signals
+      // IMU 硬件：The clock and reset signals
       .pclk      (pclk),
       .pclk_div2 (pclk_div2),
       .ref_clk   (ref_clk),
@@ -1066,7 +1066,7 @@ vga_ctrl u_vga_ctrl
       .ref_clk_p (ref_clk_p),
       .core_rst_n(core_rst_n),
 
-      // APB interface to DBI config
+      // IMU 硬件：APB interface to DBI config
       .p_sel  (p_sel_pcie),
       .p_strb (uart_p_strb),
       .p_addr (uart_p_addr),
@@ -1076,7 +1076,7 @@ vga_ctrl u_vga_ctrl
       .p_rdy  (p_rdy_pcie),
       .p_rdata(p_rdata_pcie),
 
-      // PHY diff signals
+      // IMU 硬件：PHY diff signals
       .rxn              (rxn),
       .rxp              (rxp),
       .txn              (txn),
@@ -1085,7 +1085,7 @@ vga_ctrl u_vga_ctrl
       .pma_nearend_ploop({4{1'b0}}),
       .pma_nearend_sloop({4{1'b0}}),
 
-      // AXI4-Stream master interface
+      // IMU 硬件：AXI4-Stream master interface
       .axis_master_tvalid(axis_master_tvalid),
       .axis_master_tready(axis_master_tready),
       .axis_master_tdata (axis_master_tdata),
@@ -1094,21 +1094,21 @@ vga_ctrl u_vga_ctrl
       .axis_master_tlast(axis_master_tlast),
       .axis_master_tuser(axis_master_tuser),
 
-      // AXI4-Stream slave 0 interface
+      // IMU 硬件：AXI4-Stream slave 0 interface
       .axis_slave0_tready(axis_slave0_tready),
       .axis_slave0_tvalid(axis_slave0_tvalid),
       .axis_slave0_tdata (axis_slave0_tdata),
       .axis_slave0_tlast (axis_slave0_tlast),
       .axis_slave0_tuser (axis_slave0_tuser),
 
-      // AXI4-Stream slave 1 interface
+      // IMU 硬件：AXI4-Stream slave 1 interface
       .axis_slave1_tready(axis_slave1_tready),
       .axis_slave1_tvalid(axis_slave1_tvalid),
       .axis_slave1_tdata (axis_slave1_tdata),
       .axis_slave1_tlast (axis_slave1_tlast),
       .axis_slave1_tuser (axis_slave1_tuser),
 
-      // AXI4-Stream slave 2 interface
+      // IMU 硬件：AXI4-Stream slave 2 interface
       .axis_slave2_tready(axis_slave2_tready),
       .axis_slave2_tvalid(axis_slave2_tvalid),
       .axis_slave2_tdata (axis_slave2_tdata),
@@ -1123,10 +1123,10 @@ vga_ctrl u_vga_ctrl
       .cfg_sys_err_rc      (),
       .cfg_aer_rc_err_mux  (),
 
-      // The radm timeout
+      // IMU 硬件：The radm timeout
       .radm_cpl_timeout(),
 
-      // Configuration signals
+      // IMU 硬件：Configuration signals
       .cfg_max_rd_req_size (cfg_max_rd_req_size),
       .cfg_bus_master_en   (),
       .cfg_max_payload_size(cfg_max_payload_size),
@@ -1145,7 +1145,7 @@ vga_ctrl u_vga_ctrl
       .cfg_pbus_num    (cfg_pbus_num),
       .cfg_pbus_dev_num(cfg_pbus_dev_num),
 
-      // Debug signals
+      // IMU 硬件：Debug signals
       .radm_idle                (),
       .radm_q_not_empty         (),
       .radm_qoverflow           (),
@@ -1159,18 +1159,18 @@ vga_ctrl u_vga_ctrl
       .dyn_debug_info_sel(4'b0),
       .debug_info_mux    (),
 
-      // System signal
-      .smlh_link_up    (smlh_link_up),     //link状态
-      .rdlh_link_up    (rdlh_link_up),     //link状态
+      // IMU 硬件：System signal
+      .smlh_link_up    (smlh_link_up),     // link状态：本节对应的标识或作用域。
+      .rdlh_link_up    (rdlh_link_up),     // link状态：本节对应的标识或作用域。
       .smlh_ltssm_state(smlh_ltssm_state)
   );
 
 
 
-  //=======================
+  // ── IMU 硬件 ──
   reg [11:0] o_dma_write_addr_dly1;
   reg [11:0] o_dma_write_addr_dly2;
-  reg [11:0] dma_write_cnt;  // 计数dma_write的次数
+  reg [11:0] dma_write_cnt;  // IMU 硬件：计数dma_write的次数
 
   always @(posedge pclk_div2) begin
     if (!ddr_init_done) begin
@@ -1204,15 +1204,15 @@ vga_ctrl u_vga_ctrl
     end
   end
 
-  //=======================
-  // 数据拼接模块: 在每行前面添加120个黑色像素(15个128位数据块)
-  // 图像尺寸: 760×480 (原640×480 + 120黑色像素)
-  // DMA地址范围: 0x000~0x5E (95个128位传输 = 1520字节)
-  //=======================
+  // ── IMU 硬件 ──
+  // IMU 硬件：数据拼接模块: 在每行前面添加120个黑色像素(15个128位数据块)
+  // IMU 硬件：图像尺寸: 760×480 (原640×480 + 120黑色像素)
+  // IMU 硬件：DMA地址范围: 0x000~0x5E (95个128位传输 = 1520字节)
+  // ── IMU 硬件 ──
   reg  [11:0] o_dma_write_addr_last;
   wire        line_start;
 
-  // 记录上一个地址,用于检测行开始
+  // 记录上一个地址,用来检测行开始
   always @(posedge pclk_div2) begin
     if (!ddr_init_done) begin
       o_dma_write_addr_last <= 12'd0;
@@ -1221,67 +1221,67 @@ vga_ctrl u_vga_ctrl
     end
   end
 
-  // 检测行开始:地址从0x5E或其他值跳转到0x000
+  // IMU 硬件：检测行开始:地址从0x5E或其他值跳转到0x000
   assign line_start = (o_dma_write_addr == 12'd0) && 
                     (o_dma_write_addr_last != 12'd0) && 
                     o_dma_write_data_req;
 
-  // 状态机控制
+  // 按状态转移条件推进控制流程。
   always @(posedge pclk_div2) begin
     if (!ddr_init_done) begin
       black_sent_counter <= 5'd0;
       is_sending_black <= 1'b0;
       line_start_flag <= 1'b0;
-      waiting_for_line <= 1'b1;  // 初始等待第一行
+      waiting_for_line <= 1'b1;  // 进入运行后先等待首行到达。
       pixel_block_counter <= 7'd0;
     end else begin
-      // 检测到行开始
+      // 识别到新图像行的起始沿。
       if (line_start || (waiting_for_line && o_dma_write_addr == 12'd0 && o_dma_write_data_req)) begin
         line_start_flag <= 1'b1;
         is_sending_black <= 1'b1;
         black_sent_counter <= 5'd0;
         waiting_for_line <= 1'b0;
-        pixel_block_counter <= 7'd0;  // 重置块计数器
-      end  // 正在发送黑色像素
+        pixel_block_counter <= 7'd0;  // 新一轮开始时清零块计数。
+      end  // IMU 硬件：正在发送黑色像素
       else if (is_sending_black && o_dma_write_data_req) begin
         if (black_sent_counter < 5'd14) begin
           black_sent_counter  <= black_sent_counter + 1'b1;
-          pixel_block_counter <= pixel_block_counter + 7'd1;  // 增加块计数
+          pixel_block_counter <= pixel_block_counter + 7'd1;  // 当前块完成后推进块编号。
         end else begin
-          // 发送完15个黑色块
+          // IMU 硬件：发送完15个黑色块
           black_sent_counter <= 5'd0;
           is_sending_black <= 1'b0;
           line_start_flag <= 1'b0;
-          pixel_block_counter <= pixel_block_counter + 7'd1;  // 最后一个黑色块
+          pixel_block_counter <= pixel_block_counter + 7'd1;  // 末尾一个黑色块
         end
-      end  // 发送实际数据时增加块计数
+      end  // IMU 硬件：发送实际数据时增加块计数
       else if (!is_sending_black && o_dma_write_data_req) begin
         pixel_block_counter <= pixel_block_counter + 7'd1;
       end
-      // 检测当前行结束,准备下一行 - 确保发送完所有95个块(15黑+80实际数据)
-      // 由于640像素÷8像素/块=80块,所以实际数据是80块,加上15个黑色块=95块
+      // 检测当前行结束,准备下一行 - 保证发送完所有95个块(15黑+80实际数据)
+      // IMU 硬件：由于640像素÷8像素/块=80块,所以实际数据是80块,加上15个黑色块=95块
       if (!is_sending_black && pixel_block_counter >= 7'd94 && o_dma_write_data_req) begin
         waiting_for_line <= 1'b1;
       end
     end
   end
 
-  // AXI数据请求控制:只有在发送实际数据时才请求AXI
-  // 添加额外的保护,确保黑色像素发送期间不会提前读取数据
+  // IMU 硬件：AXI数据请求控制:只有在发送实际数据时才请求AXI
+  // 添加额外的保护,保证黑色像素发送期间不会提前读取数据
   assign axi_dma_write_data_req = o_dma_write_data_req && (!is_sending_black) && (!line_start_flag);
 
-  // 数据选择和输出
+  // 选择当前有效数据并传向输出。
   always @(posedge pclk_div2) begin
     if (!ddr_init_done) begin
       concatenated_data <= 128'd0;
       concatenated_data_valid <= 1'b0;
     end else if (o_dma_write_data_req) begin
       if (is_sending_black || line_start_flag) begin
-        // 发送白色像素(RGB565格式:0xFFFF表示白色)
+        // IMU 硬件：发送白色像素(RGB565格式:0xFFFF表示白色)
         concatenated_data <= 128'hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
         concatenated_data_valid <= 1'b1;
       end else begin
-        // 发送实际AXI读取的数据
+        // IMU 硬件：发送实际AXI读取的数据
         concatenated_data <= axi_dma_write_data;
         concatenated_data_valid <= 1'b1;
       end
@@ -1290,7 +1290,7 @@ vga_ctrl u_vga_ctrl
     end
   end
 
-  // 输出拼接后的数据
+  // 向下一级提供拼接后的数据。
   assign i_dma_write_data = concatenated_data;
 
 endmodule

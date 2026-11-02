@@ -2,7 +2,7 @@
 
 module conv_4channel_delay
 #(
-    parameter   [10:0]  IMG_HDISP   = 11'd640,                      //  640*480
+    parameter   [10:0]  IMG_HDISP   = 11'd640,                      // 参数记录为 640*480。
     parameter   [10:0]  IMG_VDISP   = 11'd480,
     parameter                           core_witdh                = 4'd8  
 )
@@ -18,15 +18,15 @@ module conv_4channel_delay
     output             [   7: 0]        post_img_b                 ,
     input              [   7: 0]        per_img_Y                  ,
     output             [   7: 0]        post_img_Y                 ,
-    //  Image data prepared to be processed
-    input  wire                         per_img_vsync              ,//  Prepared Image data vsync valid signal
-    input  wire                         per_img_href               //  Prepared Image data href vaild  signal
+    // 卷积流水线：Image data prepared to be processed
+    input  wire                         per_img_vsync              ,// 卷积流水线：Prepared Image data vsync valid signal
+    input  wire                         per_img_href               // 卷积流水线：Prepared Image data href vaild signal
 
     
 );
 
 
-///////////////rgb Y ，延迟/////////////////
+// rgb Y ，延迟。
 conv_example_rgb_delay
 #(
     .IMG_HDISP                          (IMG_HDISP                 ),

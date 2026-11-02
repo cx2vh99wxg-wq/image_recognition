@@ -21,7 +21,7 @@ int main(void) {
     assert(!traffic_go_color(&d,now+TRAFFIC_TTL_NS));
     assert(!traffic_go_color(&d,now-1));
     cmd=traffic_go_prepare(&p,traffic_go_color(&d,now));assert(cmd==8&&p.blocked);
-    traffic_go_commit(&p,cmd,0);assert(p.blocked); // failed clear retries, warning stays
+    traffic_go_commit(&p,cmd,0);assert(p.blocked); // 清除写失败后重试，告警仍保持。
     traffic_go_commit(&p,cmd,1);assert(!p.blocked);
     assert(traffic_go_prepare(&p,TRAFFIC_UNKNOWN)==0);
     TrafficGoSegment seg={0};TrafficGoIPC ipc={0,&seg};TrafficGoData a={0},b={0};
@@ -30,7 +30,7 @@ int main(void) {
     traffic_go_set_deadline(&a,now+400000000ULL);traffic_go_write(&ipc,&a);
     assert(!traffic_go_read(&ipc,&b)&&b.blocked&&b.source_id==123);
     assert(traffic_go_fresh(&b,now)&&!traffic_go_fresh(&b,now+400000000ULL));
-    // A restarted controller can recover the previous warning even after TTL.
+    // 控制器重启后仍可恢复旧告警，即使原显示 TTL 已过。
     TrafficGoPolicy restarted={b.blocked};assert(traffic_go_prepare(&restarted,TRAFFIC_UNKNOWN)==4);
     seg.sequence|=1;assert(traffic_go_read(&ipc,&b));
     puts("traffic GO: confirmed colors, stale/missing data, green-only release, failed SPI, restart telemetry PASS");

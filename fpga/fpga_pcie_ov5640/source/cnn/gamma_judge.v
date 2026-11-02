@@ -1,27 +1,27 @@
-//****************************************VSCODE PLUG-IN**********************************//
-//----------------------------------------------------------------------------------------
-// IDE :                   VSCODE     
-// VSCODE plug-in version: Verilog-Hdl-Format-2.8.20240817
+// VSCODE PLUG-IN。
+// ── 卷积流水线 ──
+// 卷积流水线：IDE : VSCODE
+// 参数记录为 VSCODE plug-in version: Verilog-Hdl-Format-2.8.20240817。
 // VSCODE plug-in author : Jiang Percy
-//----------------------------------------------------------------------------------------
+// ── 卷积流水线 ──
 //****************************************Copyright (c)***********************************//
 // Copyright(C)            company
 // All rights reserved     
-// File name:              
-// Last modified Date:     2024/10/29 10:08:47
-// Last Version:           V1.0
-// Descriptions:           
-//----------------------------------------------------------------------------------------
-// Created by:             黄煜宏
-// Created date:           2024/10/29 10:08:47
-// mail      :             1807092357@qq.com
-// Version:                V1.0
-// TEXT NAME:              gamma_judge.v
-// PATH:                   C:\Users\huangyuhong\Desktop\cnn_juanji\user\src\gamma_judge.v
-// Descriptions:           
-//                         
-//----------------------------------------------------------------------------------------
-//****************************************************************************************//
+// 卷积流水线：File name:
+// 卷积流水线：Last modified Date: 2024/10/29 10:08:47
+// 参数记录为 Last Version: V1.0。
+// 卷积流水线：Descriptions:
+// ── 卷积流水线 ──
+// 卷积流水线：Created by: 黄煜宏
+// 参数记录为 Created date: 2024/10/29 10:08:47。
+// 卷积流水线：mail : 1807092357@qq.com
+// 参数记录为 Version: V1.0。
+// 卷积流水线：TEXT NAME: gamma_judge.v
+// 卷积流水线：PATH: C:\Users\huangyuhong\Desktop\cnn_juanji\user\src\gamma_judge.v
+// 卷积流水线：Descriptions:
+// ── 卷积流水线 ──
+// ── 卷积流水线 ──
+// ── 卷积流水线 ──
 
 module gamma_judge
 (
@@ -40,8 +40,8 @@ module gamma_judge
 
     output reg                          post_img_vsync             ,
     output reg                          post_img_href              ,
-    output reg         [   7: 0]        post_img_Y                 , //处理完的
-    output reg         [   7: 0]        post_img_Y_dalay           ,  //延迟的
+    output reg         [   7: 0]        post_img_Y                 , // 该值来自前级已完成的处理。
+    output reg         [   7: 0]        post_img_Y_dalay           ,  // 此信号已经过延迟寄存。
 
     input              [   9: 0]        per_data                    
 
@@ -129,7 +129,7 @@ wire [7:0] gamma_90;
     reg                                 post_img_href_1            ;
     reg                [7:0]                 post_img_Y_dalay_1         ;
     reg [   9: 0]        per_data_1               ;
-////////////延时打排,1拍//////////////////////
+// 延时打排,1拍。
 always@(posedge clk)
 begin
 post_img_r_1        <=per_img_r;
@@ -141,7 +141,7 @@ post_img_Y_dalay_1  <=per_img_Y;
 per_data_1        <=per_data;
 end
 
-////////////延时打排,2拍//////////////////////
+// 延时打排,2拍。
 always@(posedge clk)
 begin
 post_img_r        <=post_img_r_1      ;
@@ -156,16 +156,16 @@ end
 
 
 
-///////判断////////////////////////////
+// 判断。
     always @(posedge clk or negedge rst_n)
         begin
             if(!rst_n)
                 post_img_Y<=0;
             else if(post_img_href_1)
                    begin
-                    if     (per_data_1<=570)   post_img_Y<=per_img_Y;  //不变
-                    else if(per_data_1<=586)   post_img_Y<=gamma_90; //2.3
-                    else if(per_data_1<=593)   post_img_Y<=gamma_89; //2.325
+                    if     (per_data_1<=570)   post_img_Y<=per_img_Y;  // 该值沿用原有设置。
+                    else if(per_data_1<=586)   post_img_Y<=gamma_90; // 参数记录为 2.3。
+                    else if(per_data_1<=593)   post_img_Y<=gamma_89; // 参数记录为 2.325。
                     else if(per_data_1<=599)   post_img_Y<=gamma_87;
                     else if(per_data_1<=606)   post_img_Y<=gamma_85;
                     else if(per_data_1<=612)   post_img_Y<=gamma_83;       
@@ -192,7 +192,7 @@ end
                     else if(per_data_1<=745)   post_img_Y<=gamma_51;
                     else if(per_data_1<=752)   post_img_Y<=gamma_50;
                     else if(per_data_1<=758)   post_img_Y<=gamma_49;
-                    else if(per_data_1<=765)   post_img_Y<=gamma_47;//////////////准的
+                    else if(per_data_1<=765)   post_img_Y<=gamma_47;// 准的。
                     else if(per_data_1<=771)   post_img_Y<=gamma_46;
                     else if(per_data_1<=777)   post_img_Y<=gamma_45;
                     else if(per_data_1<=784)   post_img_Y<=gamma_44;

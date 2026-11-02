@@ -1,33 +1,33 @@
 
 `timescale 1ns/1ps
 
-//-----------------------------------------------------------------------
-//Define the color parameter RGB--8|8|8
-//define colors RGB--8|8|8
-`define RED		24'hFF0000   /*11111111,00000000,00000000	*/
-`define GREEN	24'h00FF00   /*00000000,11111111,00000000	*/
-`define BLUE  	24'h0000FF   /*00000000,00000000,11111111	*/
-`define WHITE 	24'hFFFFFF   /*11111111,11111111,11111111	*/
-`define BLACK 	24'h000000   /*00000000,00000000,00000000	*/
-`define YELLOW	24'hFFFF00   /*11111111,11111111,00000000	*/
-`define CYAN  	24'hFF00FF   /*11111111,00000000,11111111	*/
-`define ROYAL 	24'h00FFFF   /*00000000,11111111,11111111	*/ 
+// ── 屏幕时序 ──
+// 屏幕时序：Define the color parameter RGB--8|8|8
+// 屏幕时序：define colors RGB--8|8|8
+`define RED		24'hFF0000   /* 参数记录为 11111111,00000000,00000000。 */
+`define GREEN	24'h00FF00   /* 参数记录为 00000000,11111111,00000000。 */
+`define BLUE  	24'h0000FF   /* 参数记录为 00000000,00000000,11111111。 */
+`define WHITE 	24'hFFFFFF   /* 参数记录为 11111111,11111111,11111111。 */
+`define BLACK 	24'h000000   /* 参数记录为 00000000,00000000,00000000。 */
+`define YELLOW	24'hFFFF00   /* 参数记录为 11111111,11111111,00000000。 */
+`define CYAN  	24'hFF00FF   /* 参数记录为 11111111,00000000,11111111。 */
+`define ROYAL 	24'h00FFFF   /* 参数记录为 00000000,11111111,11111111。 */ 
 
-//---------------------------------
+// ── 屏幕时序 ──
 `define	SYNC_POLARITY 1'b0
 
-//------------------------------------
-//vga parameter define
-//`define VGA_854_480_60FPS_30MHz
-//`define	VGA_640_480_60FPS_25MHz
-//`define	VGA_800_600_60FPS_40MHz
+// ── 屏幕时序 ──
+// 屏幕时序：vga parameter define
+// 屏幕时序：`define VGA_854_480_60FPS_30MHz
+// 屏幕时序：`define VGA_640_480_60FPS_25MHz
+// 屏幕时序：`define VGA_800_600_60FPS_40MHz
 `define	GA_1280_720_60FPS_74_25MHz
-// `define	VGA_1920_1080_60FPS_148_5MHz
-//`define   VGA_1024_600_60FPS_50MHz
-//`define	DSI_1024_600_60FPS_50MHz
+// 屏幕时序：`define VGA_1920_1080_60FPS_148_5MHz
+// 屏幕时序：`define VGA_1024_600_60FPS_50MHz
+// 屏幕时序：`define DSI_1024_600_60FPS_50MHz
 
-//---------------------------------
-//	854 * 480
+// ── 屏幕时序 ──
+// 参数记录为 854 * 480。
 `ifdef	VGA_854_480_60FPS_30MHz
 `define	H_FRONT	10'd50
 `define	H_SYNC 	10'd16  
@@ -43,8 +43,8 @@
 `endif
 
 
-//---------------------------------
-//	640 * 480
+// ── 屏幕时序 ──
+// 参数记录为 640 * 480。
 `ifdef	VGA_640_480_60FPS_25MHz
 `define	H_FRONT	12'd16
 `define	H_SYNC 	12'd96  
@@ -59,8 +59,8 @@
 `define	V_TOTAL	12'd525
 `endif
 
-//---------------------------------
-//	800 * 600
+// ── 屏幕时序 ──
+// 参数记录为 800 * 600。
 `ifdef VGA_800_600_60FPS_40MHz 
 `define	H_FRONT	12'd40
 `define	H_SYNC 	12'd128  
@@ -76,8 +76,8 @@
 `endif
 
 
-//---------------------------------
-//	1024*600 DSI (Dual Output)
+// ── 屏幕时序 ──
+// 参数记录为 1024*600 DSI (Dual Output)。
 `ifdef	DSI_1024_600_60FPS_50MHz
 `define	H_FRONT	151
 `define	H_SYNC 	1
@@ -93,8 +93,8 @@
 `endif
 
 
-//---------------------------------
-//	1280 * 720
+// ── 屏幕时序 ──
+// 参数记录为 1280 * 720。
 `ifdef	VGA_1280_720_60FPS_74_25MHz
 `define	H_FRONT	12'd110
 `define	H_SYNC 	12'd40
@@ -112,8 +112,8 @@
 `endif
 
 
-//---------------------------------
-//	1920 * 1080
+// ── 屏幕时序 ──
+// 参数记录为 1920 * 1080。
 `ifdef	VGA_1920_1080_60FPS_148_5MHz
 `define	H_FRONT	12'd88
 `define	H_SYNC 	12'd44
@@ -124,17 +124,17 @@
 `define	V_FRONT	12'd4
 `define	V_SYNC 	12'd5   
 `define	V_BACK 	12'd36
-//`define	V_FRONT	12'd3
-//`define	V_SYNC 	12'd2
-//`define	V_BACK 	12'd3
+// 屏幕时序：`define V_FRONT 12'd3
+// 屏幕时序：`define V_SYNC 12'd2
+// 屏幕时序：`define V_BACK 12'd3
 `define	V_DISP 	12'd1080 
 `define	V_TOTAL	12'd1125
-//`define	V_TOTAL	12'd1088
+// 屏幕时序：`define V_TOTAL 12'd1088
 `endif
 
 
-//---------------------------------
-//	1024 * 600
+// ── 屏幕时序 ──
+// 参数记录为 1024 * 600。
 `ifdef	VGA_1024_600_60FPS_50MHz
 `define	H_FRONT	11'd160
 `define	H_SYNC 	11'd40

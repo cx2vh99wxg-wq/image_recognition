@@ -1,0 +1,5 @@
+nohup python3 -u /tmp/compile_letterbox_candidate_20261102.py --board S > /tmp/compile_letterbox_candidate_S_20261102.log 2>&1 < /dev/null & true; printf '\nSIX_CMD_DONE\n'
+[?2004l[1] 3254
+
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

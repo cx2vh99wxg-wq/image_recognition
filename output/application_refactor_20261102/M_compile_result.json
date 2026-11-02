@@ -1,0 +1,40 @@
+{
+  "board": "M",
+  "root": "/home/linaro/refactor_candidate_20261102",
+  "compiled": true,
+  "runtime_tests_run": false,
+  "production_files_replaced": false,
+  "processes_started_or_stopped": false,
+  "archive_sha256": "d6d62790cd2ad03b0b64ce44e0e106d92c6e8a5694476069a4951fe1ed6f61f4",
+  "commands": [
+    {
+      "command": [
+        "make",
+        "-j2",
+        "all"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "imu/tools/build.py"
+      ],
+      "returncode": 0
+    }
+  ],
+  "binaries": {
+    "pcie/build/pcie_capture": {
+      "size": 3071856,
+      "sha256": "942c66a329a4534a632e2dd2c05afe46122eb08cd9ddee9622d8d16bddab04bd"
+    },
+    "udp/build/udp_sender": {
+      "size": 74080,
+      "sha256": "fbd289c8191d1524f584c973b8d8dd20daec2032192d85b31498975e61b16a1c"
+    },
+    "imu/build/angle_monitor": {
+      "size": 74264,
+      "sha256": "d7b8952fc336fe7824bdb745efbb4d7ab4dfc429674f415029366df67d54ea0f"
+    }
+  }
+}

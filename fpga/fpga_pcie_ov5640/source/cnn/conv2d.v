@@ -1,32 +1,32 @@
 `timescale 1ns / 1ps
-//****************************************VSCODE PLUG-IN**********************************//
-//----------------------------------------------------------------------------------------
-// IDE :                   VSCODE     
-// VSCODE plug-in version: Verilog-Hdl-Format-2.8.20240817
+// VSCODE PLUG-IN。
+// ── 卷积流水线 ──
+// 卷积流水线：IDE : VSCODE
+// 参数记录为 VSCODE plug-in version: Verilog-Hdl-Format-2.8.20240817。
 // VSCODE plug-in author : Jiang Percy
-//----------------------------------------------------------------------------------------
+// ── 卷积流水线 ──
 //****************************************Copyright (c)***********************************//
 // Copyright(C)            company
 // All rights reserved     
-// File name:              
-// Last modified Date:     2024/10/19 14:54:32
-// Last Version:           V1.0
-// Descriptions:           
-//----------------------------------------------------------------------------------------
-// Created by:             黄煜宏
-// Created date:           2024/10/19 14:54:32
-// mail      :             1807092357@qq.com
-// Version:                V1.0
-// TEXT NAME:              cinv2d.v
-// PATH:                   C:\Users\huangyuhong\Desktop\cnn_juanji\user\src\cinv2d.v
-// Descriptions:           
-//                         
-//----------------------------------------------------------------------------------------
-//****************************************************************************************//
+// 卷积流水线：File name:
+// 卷积流水线：Last modified Date: 2024/10/19 14:54:32
+// 参数记录为 Last Version: V1.0。
+// 卷积流水线：Descriptions:
+// ── 卷积流水线 ──
+// 卷积流水线：Created by: 黄煜宏
+// 参数记录为 Created date: 2024/10/19 14:54:32。
+// 卷积流水线：mail : 1807092357@qq.com
+// 参数记录为 Version: V1.0。
+// 参数记录为 TEXT NAME: cinv2d.v。
+// 卷积流水线：PATH: C:\Users\huangyuhong\Desktop\cnn_juanji\user\src\cinv2d.v
+// 卷积流水线：Descriptions:
+// ── 卷积流水线 ──
+// ── 卷积流水线 ──
+// ── 卷积流水线 ──
 
 module conv2d
 #(
-    parameter   [10:0]  IMG_HDISP   = 11'd640,                      //  640*480
+    parameter   [10:0]  IMG_HDISP   = 11'd640,                      // 参数记录为 640*480。
     parameter   [10:0]  IMG_VDISP   = 11'd480,
     parameter                           core_witdh                = 4'd11  
 )
@@ -83,7 +83,7 @@ reg [5:0]level_reg;
     assign                              conv_coef_3               = (level_reg==8)?   0:(level_reg==7)?   0:(level_reg==6)?   0:(level_reg==5)?   0:(level_reg==4)?   0:(level_reg==3)?   0:(level_reg==2)?   0:(level_reg==1)?   0:(level_reg==0)?0:0;
     assign                              conv_coef_4               = (level_reg==8)?3842:(level_reg==7)?3638:(level_reg==6)?3433:(level_reg==5)?3229:(level_reg==4)?3024:(level_reg==3)?2820:(level_reg==2)?2614:(level_reg==1)?2409:(level_reg==0)?0:0;
 
-///////////////1拍/////////////////////
+// 1拍。
 always @(posedge clk)
 begin
     conv1_core_1_mult_g11 <=conv2d_1_Data *conv_coef_1 ;
@@ -92,12 +92,12 @@ begin
     conv1_core_1_mult_g12 <=conv2d_4_Data *conv_coef_4 ;
 end  
 
-//////////////////////2拍///////////////////
+// 2拍。
 reg  [8+2+3+core_witdh:0] conv1_core_2_mult_g11;
 always @(posedge clk)
 conv1_core_2_mult_g11<=conv1_core_1_mult_g11+conv1_core_1_mult_g21+conv1_core_1_mult_g31+conv1_core_1_mult_g12;
 
-////////////////////3拍////////////////////////
+// 3拍。
 
 always @(posedge clk)
 begin
@@ -105,7 +105,7 @@ begin
     else conv2d_data_out<=conv1_core_2_mult_g11[core_witdh+9:core_witdh];
 end
 
-////////////////延时//////////////////////////////////////////
+// 延时。
 localparam C_CLK_LATENCY = 3;
 
 reg     [C_CLK_LATENCY-1:0]     matrix_img_vsync_r1;
@@ -139,7 +139,7 @@ begin
     end
 end
 
-////////////////////////////////////////////////////////
+// ── 卷积流水线 ──
 reg [7:0] post_img_r_r1;
 reg [7:0] post_img_g_r1;
 reg [7:0] post_img_b_r1;

@@ -1,0 +1,113 @@
+[
+  {
+    "test": "compile_camera_baseline",
+    "command": [
+      "D:\\zheliVScode\\mingw64\\bin\\g++.exe",
+      "-std=c++11",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-DCAMERA_ORIENTATION_SOURCE=\"D:/Study_Object/image_recognition/image_recognition/output/code_similarity_20261102/baseline/udp_rk_rk_yolo/S/pcie/include/camera_orientation.h\"",
+      "D:\\Study_Object\\image_recognition\\image_recognition\\udp_rk_rk_yolo\\S\\pcie\\tests\\test_camera_orientation.cpp",
+      "-o",
+      "D:\\Study_Object\\image_recognition\\image_recognition\\output\\code_similarity_20261102\\test_build\\camera_baseline.exe"
+    ],
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "test": "test_camera_baseline",
+    "command": [
+      "D:\\Study_Object\\image_recognition\\image_recognition\\output\\code_similarity_20261102\\test_build\\camera_baseline.exe"
+    ],
+    "returncode": 0,
+    "stdout": "PASS camera orientation: 1098 geometries/invalid inputs; guarded buffers and twice-rotation identity\n",
+    "stderr": ""
+  },
+  {
+    "test": "compile_camera_current",
+    "command": [
+      "D:\\zheliVScode\\mingw64\\bin\\g++.exe",
+      "-std=c++11",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "D:\\Study_Object\\image_recognition\\image_recognition\\udp_rk_rk_yolo\\S\\pcie\\tests\\test_camera_orientation.cpp",
+      "-o",
+      "D:\\Study_Object\\image_recognition\\image_recognition\\output\\code_similarity_20261102\\test_build\\camera_current.exe"
+    ],
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "test": "test_camera_current",
+    "command": [
+      "D:\\Study_Object\\image_recognition\\image_recognition\\output\\code_similarity_20261102\\test_build\\camera_current.exe"
+    ],
+    "returncode": 0,
+    "stdout": "PASS camera orientation: 1098 geometries/invalid inputs; guarded buffers and twice-rotation identity\n",
+    "stderr": ""
+  },
+  {
+    "test": "test_font_baseline",
+    "command": [
+      "D:\\Anaconda\\python.exe",
+      "D:\\Study_Object\\image_recognition\\image_recognition\\udp_rk_rk_yolo\\M\\pcie\\tests\\test_compatibility_font.py",
+      "--compiler",
+      "D:\\zheliVScode\\mingw64\\bin\\g++.exe",
+      "--source",
+      "D:\\Study_Object\\image_recognition\\image_recognition\\output\\code_similarity_20261102\\baseline\\udp_rk_rk_yolo\\M\\pcie\\csrc\\yolop_opencv_integration.cpp",
+      "--work-dir",
+      "D:\\Study_Object\\image_recognition\\image_recognition\\output\\code_similarity_20261102\\test_build"
+    ],
+    "returncode": 0,
+    "stdout": "PASS compatibility font 4d619b0417d4d08c cases=889\n",
+    "stderr": ""
+  },
+  {
+    "test": "test_font_current",
+    "command": [
+      "D:\\Anaconda\\python.exe",
+      "D:\\Study_Object\\image_recognition\\image_recognition\\udp_rk_rk_yolo\\M\\pcie\\tests\\test_compatibility_font.py",
+      "--compiler",
+      "D:\\zheliVScode\\mingw64\\bin\\g++.exe",
+      "--work-dir",
+      "D:\\Study_Object\\image_recognition\\image_recognition\\output\\code_similarity_20261102\\test_build"
+    ],
+    "returncode": 0,
+    "stdout": "PASS compatibility font 4d619b0417d4d08c cases=889\n",
+    "stderr": ""
+  },
+  {
+    "test": "whole_M_translation_unit_syntax_baseline",
+    "command": [
+      "D:\\zheliVScode\\mingw64\\bin\\g++.exe",
+      "-std=c++11",
+      "-fsyntax-only",
+      "-ID:\\Study_Object\\image_recognition\\image_recognition\\udp_rk_rk_yolo\\M\\pcie\\include",
+      "-ID:\\Study_Object\\image_recognition\\image_recognition\\udp_rk_rk_yolo\\M\\include",
+      "D:\\Study_Object\\image_recognition\\image_recognition\\output\\code_similarity_20261102\\baseline\\udp_rk_rk_yolo\\M\\pcie\\csrc\\yolop_opencv_integration.cpp"
+    ],
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "test": "whole_M_translation_unit_syntax_current",
+    "command": [
+      "D:\\zheliVScode\\mingw64\\bin\\g++.exe",
+      "-std=c++11",
+      "-fsyntax-only",
+      "-ID:\\Study_Object\\image_recognition\\image_recognition\\udp_rk_rk_yolo\\M\\pcie\\include",
+      "-ID:\\Study_Object\\image_recognition\\image_recognition\\udp_rk_rk_yolo\\M\\include",
+      "D:\\Study_Object\\image_recognition\\image_recognition\\udp_rk_rk_yolo\\M\\pcie\\csrc\\yolop_opencv_integration.cpp"
+    ],
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

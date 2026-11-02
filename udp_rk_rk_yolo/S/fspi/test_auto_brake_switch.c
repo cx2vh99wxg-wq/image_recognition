@@ -1,4 +1,4 @@
-/* Exercise the production SPI transaction and brake monitor without hardware. */
+/* 用无硬件方式检查正式 SPI 事务及刹停监视逻辑。 */
 #define ioctl test_spi_ioctl
 #define perror test_spi_perror
 #include "csrc/fspi_module.c"
@@ -27,7 +27,7 @@ static int attach_calls;
 static int detach_calls;
 static int failed;
 
-/* Retry failures are intentional fixtures; retain the high-level monitor log. */
+/* 重试失败是有意设置的样本，仍保留上层监视日志。 */
 void test_spi_perror(const char *description)
 {
     (void)description;
@@ -84,7 +84,7 @@ int test_spi_ioctl(int fd, unsigned long request, ...)
         struct spi_ioc_transfer *tr = argument;
         const uint8_t *command = (const uint8_t *)(uintptr_t)tr->tx_buf;
         if(!command && tr->rx_buf) {
-            if(tr->len==4){memset((void*)(uintptr_t)tr->rx_buf,0,4);return 4;} // old FPGA: gear unavailable
+            if(tr->len==4){memset((void*)(uintptr_t)tr->rx_buf,0,4);return 4;} // 旧 FPGA 不提供可用档位信息。
             expect(tr->len==1 && tr->rx_nbits==4,"lane snapshot is RX-only HMI");
             *(uint8_t *)(uintptr_t)tr->rx_buf=0;
             return 1;
@@ -188,8 +188,8 @@ int main(void)
     io_failure = 0;
     expect(fspi_read_auto_brake_switch(NULL) != 0, "null output rejected");
 
-    /* A real board returned 00 for every 81 read. It must never be a runtime
-     * prerequisite for publishing detector requests or running steering. */
+    /* 曾有实板对每次 81 读取均返回 00，
+     * 因此读回不能成为发布检测请求或执行转向的前置条件。 */
     reply = 0x00;
     int diagnostic_transactions = checked_transactions;
     last_brake_value = 1;

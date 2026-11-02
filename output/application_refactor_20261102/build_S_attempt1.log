@@ -1,0 +1,10 @@
+License checkout: fabric_shell from D:\PDS\lisence\new_pds_acf23cc4dd8d.lic
+Compiling architecture definition.
+E: invalid command name "open_project"
+E: Flow-0163: Failed to parse file "D:\Study_Object\image_recognition\image_recognition\output\application_refactor_20261102\build_S.tcl" at line 1. Check if the command options or arguments are valid.
+Analyzing project file 'D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project_s_application_refactor_20261102/build_S.pds'.
+Executing : open_project D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project_s_application_refactor_20261102/project_s_refactor.pds
+Analyzing project file 'D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project_s_application_refactor_20261102/project_s_refactor.pds'.
+E: Flow-0130: [D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project_s_application_refactor_20261102/project_s_refactor.pds(line number: 28)] Syntax error occurs at column 17-18. Syntactic grouping begins at line 27, column 21.
+E: Flow-0121: The file D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project_s_application_refactor_20261102/project_s_refactor.pds analyze failed.
+W: Failed to execute the script : 

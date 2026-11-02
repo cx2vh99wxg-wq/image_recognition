@@ -1,0 +1,3449 @@
+{
+  "applied": false,
+  "files_changed": 274,
+  "comments_changed": 5616,
+  "categories": {
+    "reviewed_rewording": 575,
+    "reviewed_label": 693,
+    "style_only": 1850,
+    "section_layout": 549,
+    "inactive_example_label": 829,
+    "terminology_rewording": 177,
+    "field_prose_rewording": 228,
+    "named_scope_label": 208,
+    "parameter_annotation": 453,
+    "reviewed_header_layout": 19,
+    "damaged_text_annotation": 35
+  },
+  "preserved": [
+    {
+      "id": 105,
+      "path": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+      "start": 915,
+      "end": 938,
+      "line": 40,
+      "comment": "// *作   者：科研轮转（PCIE模块）\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 773,
+      "path": "udp_rk_rk_yolo/M/udp/csrc/main.cpp",
+      "start": 513,
+      "end": 535,
+      "line": 22,
+      "comment": "// *作   者：科研轮转（UDP模块）\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 909,
+      "path": "udp_rk_rk_yolo/S/fspi/csrc/main.c",
+      "start": 0,
+      "end": 437,
+      "line": 1,
+      "comment": "/*\r\n * S 端统一车控入口。\r\n * 作者：科研轮转\r\n *\r\n * 本进程读取共享内存中的车道、行人及交通灯状态，按现有策略更新 FSPI。\r\n * 请求闭环模式时，目标角、反馈新鲜度、参考会话和脉冲期限由 steering_runtime\r\n * 处理；初始化或反馈无效不会退回兼容模式的长时间转向脉冲。\r\n * 未请求闭环模式时，保留原有位置状态和定时转向分支。\r\n *\r\n * 人员通道发布原始刹停请求；AUTO 使能、STOP 锁存和人工解除仍由 FPGA 仲裁。\r\n * 实线变道权限、红灯 GO 门控及档位告警继续走各自既有监视入口。\r\n * 显示命令保持六路视角 22/33/44/66/77/88、全景 99，以及 11/55 兼容归并。\r\n *\r\n * 历史创建时间：2025年10月20日。\r\n * 历史修改记录：2025年11月18日曾调整前后控制与转向、制动的职责。\r\n * 本次仅校正模块说明，不修改上述分支、控制参数或日志字串。\r\n */",
+      "preserve": "notice"
+    },
+    {
+      "id": 1091,
+      "path": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+      "start": 586,
+      "end": 615,
+      "line": 24,
+      "comment": "// *作   者：科研轮转（PCIE+YOLO整合版）\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 1520,
+      "path": "udp_rk_rk_yolo/S/steering/tools/actuator/angle_from_line.py",
+      "start": 0,
+      "end": 22,
+      "line": 1,
+      "comment": "#!/usr/bin/env python3",
+      "preserve": "directive"
+    },
+    {
+      "id": 1595,
+      "path": "udp_rk_rk_yolo/S/udp/csrc/main_old.cpp",
+      "start": 722,
+      "end": 753,
+      "line": 30,
+      "comment": "// *作   者：科研轮转（C语言重构版：更好的函数封装）\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 2098,
+      "path": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+      "start": 970,
+      "end": 1004,
+      "line": 40,
+      "comment": "// *作   者：科研轮转（C语言重构版：X11双通道渲染程序）\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 2342,
+      "path": "udp_rk_rk_yolo/S/x11/tools/generate_dashboard_font.py",
+      "start": 0,
+      "end": 22,
+      "line": 1,
+      "comment": "#!/usr/bin/env python3",
+      "preserve": "directive"
+    },
+    {
+      "id": 2343,
+      "path": "udp_rk_rk_yolo/tools/measure_pipeline.py",
+      "start": 0,
+      "end": 22,
+      "line": 1,
+      "comment": "#!/usr/bin/env python3",
+      "preserve": "directive"
+    },
+    {
+      "id": 2495,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv2d.v",
+      "start": 308,
+      "end": 347,
+      "line": 6,
+      "comment": "// VSCODE plug-in author : Jiang Percy\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 2497,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv2d.v",
+      "start": 440,
+      "end": 533,
+      "line": 8,
+      "comment": "//****************************************Copyright (c)***********************************//\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 2498,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv2d.v",
+      "start": 534,
+      "end": 569,
+      "line": 9,
+      "comment": "// Copyright(C)            company\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 2499,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv2d.v",
+      "start": 570,
+      "end": 598,
+      "line": 10,
+      "comment": "// All rights reserved     \r",
+      "preserve": "notice"
+    },
+    {
+      "id": 3471,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_example.v",
+      "start": 308,
+      "end": 347,
+      "line": 6,
+      "comment": "// VSCODE plug-in author : Jiang Percy\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 3473,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_example.v",
+      "start": 440,
+      "end": 533,
+      "line": 8,
+      "comment": "//****************************************Copyright (c)***********************************//\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 3474,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_example.v",
+      "start": 534,
+      "end": 569,
+      "line": 9,
+      "comment": "// Copyright(C)            company\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 3475,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_example.v",
+      "start": 570,
+      "end": 598,
+      "line": 10,
+      "comment": "// All rights reserved     \r",
+      "preserve": "notice"
+    },
+    {
+      "id": 3537,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_example_1_1.v",
+      "start": 308,
+      "end": 347,
+      "line": 6,
+      "comment": "// VSCODE plug-in author : Jiang Percy\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 3539,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_example_1_1.v",
+      "start": 440,
+      "end": 533,
+      "line": 8,
+      "comment": "//****************************************Copyright (c)***********************************//\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 3540,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_example_1_1.v",
+      "start": 534,
+      "end": 569,
+      "line": 9,
+      "comment": "// Copyright(C)            company\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 3541,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_example_1_1.v",
+      "start": 570,
+      "end": 598,
+      "line": 10,
+      "comment": "// All rights reserved     \r",
+      "preserve": "notice"
+    },
+    {
+      "id": 3603,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_example_rgb_delay.v",
+      "start": 308,
+      "end": 347,
+      "line": 6,
+      "comment": "// VSCODE plug-in author : Jiang Percy\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 3605,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_example_rgb_delay.v",
+      "start": 440,
+      "end": 533,
+      "line": 8,
+      "comment": "//****************************************Copyright (c)***********************************//\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 3606,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_example_rgb_delay.v",
+      "start": 534,
+      "end": 569,
+      "line": 9,
+      "comment": "// Copyright(C)            company\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 3607,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_example_rgb_delay.v",
+      "start": 570,
+      "end": 598,
+      "line": 10,
+      "comment": "// All rights reserved     \r",
+      "preserve": "notice"
+    },
+    {
+      "id": 3768,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/gamma_judge.v",
+      "start": 286,
+      "end": 325,
+      "line": 5,
+      "comment": "// VSCODE plug-in author : Jiang Percy\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 3770,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/gamma_judge.v",
+      "start": 418,
+      "end": 511,
+      "line": 7,
+      "comment": "//****************************************Copyright (c)***********************************//\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 3771,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/gamma_judge.v",
+      "start": 512,
+      "end": 547,
+      "line": 8,
+      "comment": "// Copyright(C)            company\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 3772,
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/gamma_judge.v",
+      "start": 548,
+      "end": 576,
+      "line": 9,
+      "comment": "// All rights reserved     \r",
+      "preserve": "notice"
+    },
+    {
+      "id": 3903,
+      "path": "fpga/fpga_pcie_ov5640/source/fspi/spi_ram_crtl.v",
+      "start": 1309,
+      "end": 1346,
+      "line": 38,
+      "comment": "/* synthesis PAP_MARK_DEBUG=\"true\" */",
+      "preserve": "directive"
+    },
+    {
+      "id": 3904,
+      "path": "fpga/fpga_pcie_ov5640/source/fspi/spi_ram_crtl.v",
+      "start": 1527,
+      "end": 1564,
+      "line": 46,
+      "comment": "/* synthesis PAP_MARK_DEBUG=\"true\" */",
+      "preserve": "directive"
+    },
+    {
+      "id": 3906,
+      "path": "fpga/fpga_pcie_ov5640/source/fspi/spi_ram_crtl.v",
+      "start": 1596,
+      "end": 1633,
+      "line": 47,
+      "comment": "/* synthesis PAP_MARK_DEBUG=\"true\" */",
+      "preserve": "directive"
+    },
+    {
+      "id": 3908,
+      "path": "fpga/fpga_pcie_ov5640/source/fspi/spi_ram_crtl.v",
+      "start": 1665,
+      "end": 1702,
+      "line": 48,
+      "comment": "/* synthesis PAP_MARK_DEBUG=\"true\" */",
+      "preserve": "directive"
+    },
+    {
+      "id": 3910,
+      "path": "fpga/fpga_pcie_ov5640/source/fspi/spi_ram_crtl.v",
+      "start": 1738,
+      "end": 1775,
+      "line": 49,
+      "comment": "/* synthesis PAP_MARK_DEBUG=\"true\" */",
+      "preserve": "directive"
+    },
+    {
+      "id": 3912,
+      "path": "fpga/fpga_pcie_ov5640/source/fspi/spi_ram_crtl.v",
+      "start": 1823,
+      "end": 1860,
+      "line": 50,
+      "comment": "/* synthesis PAP_MARK_DEBUG=\"true\" */",
+      "preserve": "directive"
+    },
+    {
+      "id": 4049,
+      "path": "fpga/fpga_pcie_ov5640/source/image_pcie_capture.v",
+      "start": 5529,
+      "end": 5557,
+      "line": 149,
+      "comment": "/* synthesis syn_keep = 1 */",
+      "preserve": "directive"
+    },
+    {
+      "id": 4050,
+      "path": "fpga/fpga_pcie_ov5640/source/image_pcie_capture.v",
+      "start": 5602,
+      "end": 5630,
+      "line": 150,
+      "comment": "/* synthesis syn_keep = 1 */",
+      "preserve": "directive"
+    },
+    {
+      "id": 4059,
+      "path": "fpga/fpga_pcie_ov5640/source/image_pcie_capture.v",
+      "start": 6836,
+      "end": 6868,
+      "line": 197,
+      "comment": "/*synthesis PAP_MARK_DEBUG=\"1\"*/",
+      "preserve": "directive"
+    },
+    {
+      "id": 4061,
+      "path": "fpga/fpga_pcie_ov5640/source/image_pcie_capture.v",
+      "start": 6926,
+      "end": 6958,
+      "line": 198,
+      "comment": "/*synthesis PAP_MARK_DEBUG=\"1\"*/",
+      "preserve": "directive"
+    },
+    {
+      "id": 4066,
+      "path": "fpga/fpga_pcie_ov5640/source/image_pcie_capture.v",
+      "start": 8184,
+      "end": 8216,
+      "line": 243,
+      "comment": "/*synthesis PAP_MARK_DEBUG=\"1\"*/",
+      "preserve": "directive"
+    },
+    {
+      "id": 4069,
+      "path": "fpga/fpga_pcie_ov5640/source/image_pcie_capture.v",
+      "start": 8357,
+      "end": 8389,
+      "line": 249,
+      "comment": "/*synthesis PAP_MARK_DEBUG=\"1\"*/",
+      "preserve": "directive"
+    },
+    {
+      "id": 4397,
+      "path": "fpga/fpga_pcie_ov5640/source/isp/vip/myram.v",
+      "start": 0,
+      "end": 93,
+      "line": 1,
+      "comment": "//****************************************Copyright (c)***********************************//\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 4402,
+      "path": "fpga/fpga_pcie_ov5640/source/isp/vip/myram.v",
+      "start": 239,
+      "end": 252,
+      "line": 6,
+      "comment": "//版权所有，盗版必究。\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 4403,
+      "path": "fpga/fpga_pcie_ov5640/source/isp/vip/myram.v",
+      "start": 253,
+      "end": 283,
+      "line": 7,
+      "comment": "//Copyright(C) 正点原子 2018-2028\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 4404,
+      "path": "fpga/fpga_pcie_ov5640/source/isp/vip/myram.v",
+      "start": 284,
+      "end": 306,
+      "line": 8,
+      "comment": "//All rights reserved\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 4705,
+      "path": "fpga/fpga_pcie_ov5640/source/mpu9250/image_pcie_capture_m_imu.v",
+      "start": 5585,
+      "end": 5613,
+      "line": 151,
+      "comment": "/* synthesis syn_keep = 1 */",
+      "preserve": "directive"
+    },
+    {
+      "id": 4706,
+      "path": "fpga/fpga_pcie_ov5640/source/mpu9250/image_pcie_capture_m_imu.v",
+      "start": 5658,
+      "end": 5686,
+      "line": 152,
+      "comment": "/* synthesis syn_keep = 1 */",
+      "preserve": "directive"
+    },
+    {
+      "id": 4715,
+      "path": "fpga/fpga_pcie_ov5640/source/mpu9250/image_pcie_capture_m_imu.v",
+      "start": 6892,
+      "end": 6924,
+      "line": 199,
+      "comment": "/*synthesis PAP_MARK_DEBUG=\"1\"*/",
+      "preserve": "directive"
+    },
+    {
+      "id": 4717,
+      "path": "fpga/fpga_pcie_ov5640/source/mpu9250/image_pcie_capture_m_imu.v",
+      "start": 6982,
+      "end": 7014,
+      "line": 200,
+      "comment": "/*synthesis PAP_MARK_DEBUG=\"1\"*/",
+      "preserve": "directive"
+    },
+    {
+      "id": 4722,
+      "path": "fpga/fpga_pcie_ov5640/source/mpu9250/image_pcie_capture_m_imu.v",
+      "start": 8240,
+      "end": 8272,
+      "line": 245,
+      "comment": "/*synthesis PAP_MARK_DEBUG=\"1\"*/",
+      "preserve": "directive"
+    },
+    {
+      "id": 4725,
+      "path": "fpga/fpga_pcie_ov5640/source/mpu9250/image_pcie_capture_m_imu.v",
+      "start": 8413,
+      "end": 8445,
+      "line": 251,
+      "comment": "/*synthesis PAP_MARK_DEBUG=\"1\"*/",
+      "preserve": "directive"
+    },
+    {
+      "id": 5068,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/ov5640_top.v",
+      "start": 2906,
+      "end": 2938,
+      "line": 81,
+      "comment": "/*synthesis PAP_MARK_DEBUG=\"1\"*/",
+      "preserve": "directive"
+    },
+    {
+      "id": 5069,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/ov5640_top.v",
+      "start": 2970,
+      "end": 3002,
+      "line": 82,
+      "comment": "/*synthesis PAP_MARK_DEBUG=\"1\"*/",
+      "preserve": "directive"
+    },
+    {
+      "id": 5070,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/ov5640_top.v",
+      "start": 3035,
+      "end": 3067,
+      "line": 83,
+      "comment": "/*synthesis PAP_MARK_DEBUG=\"1\"*/",
+      "preserve": "directive"
+    },
+    {
+      "id": 5072,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/ov5640_top.v",
+      "start": 3245,
+      "end": 3277,
+      "line": 90,
+      "comment": "/*synthesis PAP_MARK_DEBUG=\"1\"*/",
+      "preserve": "directive"
+    },
+    {
+      "id": 5073,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/ov5640_top.v",
+      "start": 3309,
+      "end": 3341,
+      "line": 91,
+      "comment": "/*synthesis PAP_MARK_DEBUG=\"1\"*/",
+      "preserve": "directive"
+    },
+    {
+      "id": 5074,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/ov5640_top.v",
+      "start": 3374,
+      "end": 3406,
+      "line": 92,
+      "comment": "/*synthesis PAP_MARK_DEBUG=\"1\"*/",
+      "preserve": "directive"
+    },
+    {
+      "id": 5076,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/ov5640_top.v",
+      "start": 3584,
+      "end": 3616,
+      "line": 99,
+      "comment": "/*synthesis PAP_MARK_DEBUG=\"1\"*/",
+      "preserve": "directive"
+    },
+    {
+      "id": 5077,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/ov5640_top.v",
+      "start": 3648,
+      "end": 3680,
+      "line": 100,
+      "comment": "/*synthesis PAP_MARK_DEBUG=\"1\"*/",
+      "preserve": "directive"
+    },
+    {
+      "id": 5078,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/ov5640_top.v",
+      "start": 3713,
+      "end": 3745,
+      "line": 101,
+      "comment": "/*synthesis PAP_MARK_DEBUG=\"1\"*/",
+      "preserve": "directive"
+    },
+    {
+      "id": 5232,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/cmos_capture_data.v",
+      "start": 0,
+      "end": 93,
+      "line": 1,
+      "comment": "//****************************************Copyright (c)***********************************//\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 5237,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/cmos_capture_data.v",
+      "start": 264,
+      "end": 277,
+      "line": 6,
+      "comment": "//版权所有，盗版必究。\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 5238,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/cmos_capture_data.v",
+      "start": 278,
+      "end": 308,
+      "line": 7,
+      "comment": "//Copyright(C) 正点原子 2023-2033\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 5239,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/cmos_capture_data.v",
+      "start": 309,
+      "end": 331,
+      "line": 8,
+      "comment": "//All rights reserved\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 5285,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/i2c_dri.v",
+      "start": 0,
+      "end": 93,
+      "line": 1,
+      "comment": "//****************************************Copyright (c)***********************************//\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 5290,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/i2c_dri.v",
+      "start": 264,
+      "end": 277,
+      "line": 6,
+      "comment": "//版权所有，盗版必究。\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 5291,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/i2c_dri.v",
+      "start": 278,
+      "end": 308,
+      "line": 7,
+      "comment": "//Copyright(C) 正点原子 2023-2033\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 5292,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/i2c_dri.v",
+      "start": 309,
+      "end": 331,
+      "line": 8,
+      "comment": "//All rights reserved\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 5401,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/i2c_ov5640_rgb565_cfg.v",
+      "start": 0,
+      "end": 93,
+      "line": 1,
+      "comment": "//****************************************Copyright (c)***********************************//\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 5406,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/i2c_ov5640_rgb565_cfg.v",
+      "start": 264,
+      "end": 277,
+      "line": 6,
+      "comment": "//版权所有，盗版必究。\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 5407,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/i2c_ov5640_rgb565_cfg.v",
+      "start": 278,
+      "end": 308,
+      "line": 7,
+      "comment": "//Copyright(C) 正点原子 2023-2033\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 5408,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/i2c_ov5640_rgb565_cfg.v",
+      "start": 309,
+      "end": 331,
+      "line": 8,
+      "comment": "//All rights reserved\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 5553,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/ov5640_dri.v",
+      "start": 0,
+      "end": 93,
+      "line": 1,
+      "comment": "//****************************************Copyright (c)***********************************//\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 5558,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/ov5640_dri.v",
+      "start": 264,
+      "end": 277,
+      "line": 6,
+      "comment": "//版权所有，盗版必究。\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 5559,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/ov5640_dri.v",
+      "start": 278,
+      "end": 308,
+      "line": 7,
+      "comment": "//Copyright(C) 正点原子 2023-2033\r",
+      "preserve": "notice"
+    },
+    {
+      "id": 5560,
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/ov5640_dri.v",
+      "start": 309,
+      "end": 331,
+      "line": 8,
+      "comment": "//All rights reserved\r",
+      "preserve": "notice"
+    }
+  ],
+  "files": [
+    {
+      "path": "udp_rk_rk_yolo/common/image/letterbox_rgb888_impl.inc",
+      "comments_changed": 4,
+      "before_sha256": "7c85b2e7c2020dee605fac15fbefc47d94f4005203409f905574c6c23d15ea94",
+      "after_sha256": "79921179a17be708aa037fa6d8fa62034ac3def6062af5b1ced587ee6f961c04",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/common/perception/include/line_style.h",
+      "comments_changed": 1,
+      "before_sha256": "75896ff60ec986866025bf621ffa0325174c541c4beb5556a3a1de0af0e1e227",
+      "after_sha256": "9ff37b686891b3b0b2f2374e8698c5eb2974272b971304c1b14dd4ced1a5573a",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/common/perception/include/line_style_ipc.h",
+      "comments_changed": 6,
+      "before_sha256": "687abd926c25b3c8a19baf95e3cc9ebe0807e9aa970805db9b80b2702db0edde",
+      "after_sha256": "9a67eebdafa2ea9fe1b5f424bb876ca02df41247630a914e69634cedf3998ad4",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/common/perception/include/line_style_wire.h",
+      "comments_changed": 1,
+      "before_sha256": "d006cb72efd40373ff4273d1d6b1b97721b863715a456eb1570fbabc68bf2fcf",
+      "after_sha256": "5ed6ed8e478b3a24e4787ce967bddf11068e8053876368c901a0839b595bc419",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/common/perception/include/traffic_light.h",
+      "comments_changed": 1,
+      "before_sha256": "4a9e0ad3f467fe71067f89ce9bbbccd61a34f80c8441413d2c9d46a5aa37228c",
+      "after_sha256": "f36be5d7b3aef2663f8141d4ab50f0b3fa4dfdc958477e9aff01a607788355c1",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/common/steering/contracts/steering_feedback_wire.h",
+      "comments_changed": 1,
+      "before_sha256": "0509b01e636aa43420a3b5f03a356b17637a5c311a676ba81f7b67b1304efbac",
+      "after_sha256": "245397ffbcf24073609343f5c7967aad63fde49201ac120f507088106993b462",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/common/steering/contracts/steering_platform.h",
+      "comments_changed": 1,
+      "before_sha256": "0e6cbb25bb3c8fb43d1980527eedb147baa114ecf1f4c3ff9d0d8d704af3f860",
+      "after_sha256": "93fbc9fa43c259bdd61d0b9ddb34f4d46d571346abc0723622db02ef9f0395d0",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/common/steering/contracts/steering_types.h",
+      "comments_changed": 8,
+      "before_sha256": "73ef037c2da7ed18bb93764581d307b1488564f579e6ce04def193b0844fc900",
+      "after_sha256": "f318eeb09751e7ff8a5290734a11f037099a2284ba6b47e9575a2d69aa9c7139",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/common/steering/tools/check_scaffold.py",
+      "comments_changed": 3,
+      "before_sha256": "2d1ff8f2f87c9413915518d0e4841c1cdfb7fa0376fe8bcbeb795dbe7dda5371",
+      "after_sha256": "d0ea848520d34c88e6f4a03b9938abbe4454439039d4dfdc13db8414226c6d1e",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/common/transport/include/video_transport_v2.h",
+      "comments_changed": 6,
+      "before_sha256": "cc76807b610b5952291fa49dcd37736fbc2caee1e61fbfb57632b837124d89cf",
+      "after_sha256": "0d39c79c1adf57e1346d2fe4f4a72057f468cb1cf07dce949f5ae984f3b480f1",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+      "comments_changed": 10,
+      "before_sha256": "8c910db4563412a153a959f52522fa25eeb5c58e5dd3a4fa6ef000484c5760a6",
+      "after_sha256": "0ff53aa9dd321c38b23ad7ea6ec4d09d32c2b9a74e6d12f309fef6631610a481",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/imu/csrc/imu_stationary.c",
+      "comments_changed": 2,
+      "before_sha256": "2b20a2180c7442eab32eed62481b50c029b7b6d6b7e40a9fd7e0e74cfcd5eae3",
+      "after_sha256": "3fa3a8fd97335d93ff257d338e17df9f2cacd1e099d53c3c2cff1e845a3899a9",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/imu/csrc/mpu9250_transport.c",
+      "comments_changed": 4,
+      "before_sha256": "08fdfdf701b8c4fd29817f18f22aa007e95c5c69af77b1b2a2770c68155514a2",
+      "after_sha256": "038be58a87e484abdbecfa565155a482f4aeb3ecef7f5974cbc201ec54d2c6ec",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/imu/include/imu_source.h",
+      "comments_changed": 1,
+      "before_sha256": "8508690dea9b415479bc4bce4855dc8ed12cf6f0276c48fa1355234408d8edd9",
+      "after_sha256": "eec0ba2772002b2b2d6cf2e489b36ce697a24c7795253115f01449ac1ff30f5c",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/imu/include/imu_stationary.h",
+      "comments_changed": 1,
+      "before_sha256": "c9bd81ab8d4f37ad776a6dc8d37831b9c32f0f7a97cea30dbcfc7a36e924ffd9",
+      "after_sha256": "3f20f9c9a304837a8240dd4f12c59015dda918541e2fa3788acc5ba7b2673ff8",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/imu/include/mpu9250_transport.h",
+      "comments_changed": 3,
+      "before_sha256": "e8d2cd967b10fdbf9b4daf4595318a175513efc4b05940a0e6e37715106c0564",
+      "after_sha256": "fcd5b50880f92277519e5e87f0f0930c80e380ceee8fe8802ce5344aada850e6",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/imu/include/steering_angle.h",
+      "comments_changed": 2,
+      "before_sha256": "bcd4c2d927b5223f0592f3f774e10de45466917a8a3f079acf1504f2bf2e13c0",
+      "after_sha256": "910b0ee2006b26d2d4be0a92305ccf1438eaa1fec1796202fc50a6f95542efb1",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/imu/tools/imu_tool.c",
+      "comments_changed": 3,
+      "before_sha256": "74feb26c76b3753978e6508aa2e1f405b8883cb1b3d90c46ca227f298c51e954",
+      "after_sha256": "30f69f40830e547a09726678c1878dcbd8f40c2814281508f1d23018eab3f3f8",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/imu/tools/replay_stationary.c",
+      "comments_changed": 1,
+      "before_sha256": "199583b38464d7071bf68c3992ebe80b164efbdf8a324fdf5ac085b9c30950a0",
+      "after_sha256": "3d35179020d6ee206bcd45b266f9bbfbf5bf816f7411b4ba16ed9db35c227d56",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/imu/tools/start_angle_monitor.py",
+      "comments_changed": 1,
+      "before_sha256": "0fdae68bff40b09303c159eec6b2a5e04afc63527673979c8029929b0856e458",
+      "after_sha256": "549bbd8fe3aa2d9d8fabd004b9e73d1e835d9e57cc7763f961ef8d233b737f39",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/include/line_style.h",
+      "comments_changed": 1,
+      "before_sha256": "c961abda4631ab91cb8a3d2756a2607e7f041e6a7412aab20cd8d8030f621cd2",
+      "after_sha256": "45435f334e9a7422d31d932a05190e17ad5cd69692ae0762273cbb6843b198d6",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/include/line_style_ipc.h",
+      "comments_changed": 1,
+      "before_sha256": "b209c5dafd95c77b239e24d57f10cc84bd92cc793af8914a9221513f13a59dc5",
+      "after_sha256": "3f03b4703b34f4c78af8f2b872313ae62e4fed26382885cc658dedd6c40a0cd5",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/include/line_style_wire.h",
+      "comments_changed": 1,
+      "before_sha256": "c10ce1148a04cf4d7b29f0e3018b41e67e8a2be01d250fef8dd79825c3292152",
+      "after_sha256": "5d328cc69a0dc297918fbd047237228eb1bacc693cf98ee4d7d2ac8061b9fb1d",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/include/shared_memory.h",
+      "comments_changed": 22,
+      "before_sha256": "806b0e997bf38b57291e618afec43d70dcf2deb1d1592d7d4cd0373a9f3af479",
+      "after_sha256": "ad9a855fb6270b8f453f30f88c296887f41a8a7d14d3c2223041aaac09e0cbbe",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/include/traffic_light.h",
+      "comments_changed": 1,
+      "before_sha256": "554d999250e0b4bf630d18df60a74a9255e0b2bb3ef52645ab9b06147cc3f9c7",
+      "after_sha256": "fe730f17cf766167894b71ef58b2f13b73b7caa5ce7132b5afd63fc66a7a10d4",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/include/traffic_light_ipc.h",
+      "comments_changed": 1,
+      "before_sha256": "909c432faa18bf36f6e5c02563dad63c9d2e5b72a3049ab5380555f2acbcdf09",
+      "after_sha256": "4097ed2ba4d27388a23971d1df271a5ffd8ef3b558bcf1b0af73bdfcfa449d19",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/include/traffic_light_wire.h",
+      "comments_changed": 1,
+      "before_sha256": "f5465c7e74af356b05e87794093dc2a24038cc329f630fb7fc88c779be42e230",
+      "after_sha256": "5a20733d5b43ce8bd1da4e2b36458dddfec1cbf56d49450c843faf9367f2716a",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+      "comments_changed": 13,
+      "before_sha256": "bb72707d30d30aa7649473ca5f98914c64d2c7e894ad58c68e493856f119edb9",
+      "after_sha256": "797d235ba6fcdb357fa95a801c5b299787b8a87aadc5811fb67ef91e193927b7",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+      "comments_changed": 232,
+      "before_sha256": "3f89376229e72b0a88a7bfe436b3e9a8d3c2a2142cbed18e0d53d2670b457261",
+      "after_sha256": "f4b30ca71a87a98bee6d0625e609842577e242a09719c19edc3397be8976d35f",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/csrc/postprocess.cpp",
+      "comments_changed": 10,
+      "before_sha256": "8340ec3895ccd423fd54dee06bd91076f736a63e5175e633673358f9f85594ad",
+      "after_sha256": "d06ec8fe6451d8ade1584c120b074c7b8146bae55771ac4656c1cc42b88d3d4c",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/csrc/preprocess.c",
+      "comments_changed": 1,
+      "before_sha256": "eb0b52e516c3b70b589a6442489c1dcc2647283ac1b612b1db33105dd05e945b",
+      "after_sha256": "a812ca8be6f7b8fc992b648bf3fda738cea4616de9a5209d72bcd6f8f1e361b3",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/csrc/traffic_detector.cpp",
+      "comments_changed": 11,
+      "before_sha256": "5613449967e5b3be31987ba22eda396597c009b11acbdae030f09c1f292f9e96",
+      "after_sha256": "eff6604adbb6e5e53f6dee90525d6759acbd541c170525ef4b8054415cb5f2c9",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/csrc/traffic_service.cpp",
+      "comments_changed": 1,
+      "before_sha256": "2b531c9e79cfede2c33e687bc8dd6c370fa5cfd2a2278ceb5e7e545a23b20bd8",
+      "after_sha256": "5486ed8746487d61b2b0e526cbc6065400f887d72cfaa84df56c50ff2ab5cc31",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+      "comments_changed": 81,
+      "before_sha256": "12294b955da4b718e8cf3a949ab7a713e458745ad7ae44607378d7d9d3b78162",
+      "after_sha256": "0dc21f68f87b889a62d21fc0937fd25e35e337f6f280ada7b942a01e7c219d13",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+      "comments_changed": 115,
+      "before_sha256": "8073639a9fbfb8e5ad853c0261055a47b58ec3eb3bfc4f598865705cb6a1236d",
+      "after_sha256": "bfac1bcbcc39923508e7de1599b3e7b5998a21938b969f3fd3c166fbe7efcf2d",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/include/ego_lane_selector.h",
+      "comments_changed": 28,
+      "before_sha256": "1f7ecfe113b115bc9daeba1f621689f2239a79794a52f1265eba014c14f30013",
+      "after_sha256": "965e198c1379b76f9927bce0a82c5cb75579c015a5ac436887c9d1d607116b38",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/include/fspi_module.h",
+      "comments_changed": 7,
+      "before_sha256": "3edcf5e19f6f19836d952aacca3633c45e7052af7a404fdc61cb6da616d88671",
+      "after_sha256": "f9fc5d3dbf2c60483f60f7f45c1fb8f04863ded3d0b44e1cc5302b8b6c2b01e7",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/include/lane_curve_geometry.h",
+      "comments_changed": 3,
+      "before_sha256": "abc6470e9dbac9af6675a4a06bd9bcae4b69845fd8dd8a61933561b40b8da9c4",
+      "after_sha256": "921c2fe766539b270b009da64367866412b85eade4b4eaae4ad7d4565521b626",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/include/latest_lane_worker.h",
+      "comments_changed": 9,
+      "before_sha256": "b7c55684553c8f2f09628bfd817ce76631a150434ee1508ae65a15b3b1238ebe",
+      "after_sha256": "e1839a17e64291f6b5e1f946175795776adbc0a35023a122c3713c7efc22edd5",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/include/line_style_analyzer.h",
+      "comments_changed": 28,
+      "before_sha256": "15ead4e29b48f6345e0e8cfa96ed243e78e15cb0003c1b9cc9bfd11d7753121a",
+      "after_sha256": "131c47576b52b827042c6bae7cc78b207f70093249170261e934050afd3be744",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/include/line_style_snapshot.h",
+      "comments_changed": 2,
+      "before_sha256": "118b10d7861a96429bcc2d91750085abf48acd09d67f071224cbcf9f8781c766",
+      "after_sha256": "2c4e1f4d3771243b5717d220a1cf61f903073fc92e823f5a50c4189d1b62f9ee",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/include/pcie_capture.h",
+      "comments_changed": 56,
+      "before_sha256": "c18cea08b9872eb33c70a7b6596714d97038e00bf322af2bb01683f1588dab28",
+      "after_sha256": "e55fa21f8da7e0542aef0e51750a2ebd77eb59187e298ab5eee34bfedbcbae57",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/include/pcie_dma_read_test.h",
+      "comments_changed": 5,
+      "before_sha256": "1a8cf62dac8aacb6006c7edc72432643a7571d36355d469d574ba1650c28565f",
+      "after_sha256": "d3d5bb8f6888c326e9ea8803eb0907b90b77c78d9219056bb76e1365b5a5c0e6",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/include/postprocess.h",
+      "comments_changed": 4,
+      "before_sha256": "106ce8b3200f62fb0f1cd77995536c3ce9feebf1bf2e7385cdafc44775ba2fe7",
+      "after_sha256": "7dcf48d0fb9149212ae3eded2079333e1b85db3b297f1c1407b4178cef1bb59d",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/include/preprocess.h",
+      "comments_changed": 2,
+      "before_sha256": "d2e0dd6483c28ad7ed2359ef135c5ef7beb0297bdd72e781a0c3a6f05af51a21",
+      "after_sha256": "1045716ef98aaadb822f526658b1e19956237ca1bac05f6db6788be7d540e01e",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/include/traffic_offline_guard.h",
+      "comments_changed": 1,
+      "before_sha256": "2f8135590a383b5acdc7c5644d4c5dc9b2ba01f566c9c614287f96b01ee728b3",
+      "after_sha256": "bf6702ffeaebedd1174bf5163cb75cc5fe7c1fedfe0b61b85f24587a03284402",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/include/traffic_service.h",
+      "comments_changed": 1,
+      "before_sha256": "3bb7cac9f4a6a632b8a6a47ddfd5db6dbe2b60bd64ea4dcf52f92656756b8ec3",
+      "after_sha256": "215abf6607b517417125483ea7d58489819fafab2dbf86d0ac0b029884be1d27",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/include/traffic_vision.h",
+      "comments_changed": 14,
+      "before_sha256": "b839a142b1e9d4b277d986e9d765bf7257c1cc272e23f54a96af6abe526127f9",
+      "after_sha256": "19480e30501703f2774ff137c2c6273526bbb28d74bdcfb5fe01c795a337b908",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/include/yolo_integration.h",
+      "comments_changed": 15,
+      "before_sha256": "6b0536ae881ceb85af95190cacc3834fe6f8e8d1ce842c479df5b6883afb290d",
+      "after_sha256": "3622ab01eff002712182f368a0ab3351ac2c8b018cb637b13c97c3156268f12c",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+      "comments_changed": 35,
+      "before_sha256": "7ecc47663c55df509810bc79985270c80fceaf5e925df481e0ef8701ff4c8add",
+      "after_sha256": "19ce35a54607e29ca0ca0026f1d7a09a6954462d4d0651c9b8ada2ea21086e48",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/tools/curve_frame_replay.cpp",
+      "comments_changed": 1,
+      "before_sha256": "8c5e26e5fb17fb4c838793ab4679b288111a9b5aca23d193b4ce3fad81b3c471",
+      "after_sha256": "158ae991e690572e73ee5c3e3e4f7a304aab3bb37393ba47651210c897472b53",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/tools/curve_saved_input_check.cpp",
+      "comments_changed": 2,
+      "before_sha256": "093e1ff17e4ead4dcbc6d2bc3846e7f726df0dcfe7922cb662d584eef4e0dbbd",
+      "after_sha256": "01690b810eb927777fff0f6f4dfddc700835bd98495a7870cd6d93461a48a495",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/tools/line_style_model_probe.cpp",
+      "comments_changed": 1,
+      "before_sha256": "569831c4b32de7131f0d55dba80b8686dd740873c19a01832744fa6736cf14af",
+      "after_sha256": "33c94ee38708aa45f3e19c01340c59d8f3eeb7d9bfd3163c170b76a617558370",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/tools/line_style_replay.cpp",
+      "comments_changed": 1,
+      "before_sha256": "2d0c66f51f84a31aa645debe1dbbe2937450e048e87152d0fc2082a184de09f6",
+      "after_sha256": "a4917396f08ce15375cdcf79ccfc5248328f7a92f2f7e2047d56709bbc49ff72",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/tools/traffic_probe.cpp",
+      "comments_changed": 1,
+      "before_sha256": "25b7a553891b7d2f363a01248048a45a275176c9169a9730bfbad24cc54eba5a",
+      "after_sha256": "b88adf8fa9684cceb4cb9fd675cd37359d430beec03c14bf7f1743092e2c4b15",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/pcie/tools/traffic_replay.cpp",
+      "comments_changed": 3,
+      "before_sha256": "0ca25e728c9865dac9e9972c4b96f2972e4af280548147ff2ff30574112157d4",
+      "after_sha256": "52df78d14195b531599429ea4aecdfb6f8dd46c7b4f6ad95cd72b233faee528e",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/udp/csrc/main.cpp",
+      "comments_changed": 59,
+      "before_sha256": "560097418477b106e7471abca6cedc6935f1e19b90293f0ab62dd0cbdfd62538",
+      "after_sha256": "7ef38a6f2ded364c0cdb950afcdbc6e9022ac6da20de87d75ff805c92860b963",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/udp/include/udp_network.h",
+      "comments_changed": 34,
+      "before_sha256": "9f774f3fb225da4ebc0249a71af43b9c79a7fb33312c5f1a30601d350f0df456",
+      "after_sha256": "3cc041ea8d6601e3735ff13f6d20814e6c5fd208694430801a7a313a652e810e",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/M/udp/include/video_transport_v2.h",
+      "comments_changed": 1,
+      "before_sha256": "c0ffb73cf573e41b131f34d0eff184f31594fecd18a93f70739c3f72863063de",
+      "after_sha256": "dcf9fd8eb26f869a7cffdb028df8ad299625ce27fc713432bd5c621c574a10ea",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+      "comments_changed": 21,
+      "before_sha256": "155ef545cf3389fbca2e11118e7c9817b9096e51753c5456824e74360befcc03",
+      "after_sha256": "507f342e7bcbb2f7e6884161eb2d5be89288cb08e44443535ea720f0e8f2435a",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c",
+      "comments_changed": 21,
+      "before_sha256": "af9c4b9eb0d987013f2e0e3ae668194d3c8c009fbfd7cf2b01eead2f98fe49e5",
+      "after_sha256": "9b5d276fca09689b065dc5b819f2d4df5324fe787125776edd32ce6ac9c8fc48",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/fspi/csrc/main.c",
+      "comments_changed": 82,
+      "before_sha256": "00d346fbc3f83098dcfdd029a0e6d38a5f3b86c7b8c45c0ba003284b78eda48f",
+      "after_sha256": "ea01a71cbad505cdaf48b7a334112f3d03b891c202f418a0a1ae9915e8f55339",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/fspi/csrc/speed_gear_status.c",
+      "comments_changed": 1,
+      "before_sha256": "92b83e8ce28c304c8ef09630d0df04e15b6d13718b1515ba124fb2323a43cb2a",
+      "after_sha256": "cdb788b18847bffb72aacec3e743f873b8385fa0b4ef6f6a650b761aff9ca003",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/fspi/include/brake_policy.h",
+      "comments_changed": 2,
+      "before_sha256": "1e3f332bc40c1fdc71b32505b600bd672fe67ff00c90ce8324192e75ebf87a53",
+      "after_sha256": "83126ac964b1f5cc68755694f49fc88525efc06204a2a3ec9e94c54fa697d828",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/fspi/include/fspi_module.h",
+      "comments_changed": 14,
+      "before_sha256": "301a821a0ef3cd243f08292ec64d1f5b674c57c0e306304acdc018146bd09bb6",
+      "after_sha256": "ecfe4a83c45da4b07c29722dc2d788da7067069e9529a7f8bfbf0214c1fb4cf8",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/fspi/test_auto_brake_switch.c",
+      "comments_changed": 4,
+      "before_sha256": "e2c1708cd881d19f84f8b91c8cc961e8bdfece9e80f6f9c4138fc93c6613b624",
+      "after_sha256": "daa742617f660cdb2f22c4cf686dc2376b848f10529b51b85302260259eae40b",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/fspi/test_lane_steering.c",
+      "comments_changed": 5,
+      "before_sha256": "88489fa4c4a1502525c8c949f891efef9856990b3b9192acaa38264ae6d84d91",
+      "after_sha256": "37c43ff972806acea90af0932f182d87ad3c96bad331b0b56cd4bcfee9921ebd",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/fspi/test_smdt_transport.c",
+      "comments_changed": 3,
+      "before_sha256": "ce0a1cb1d9a28c9e70f1d78d13310232a23eec44db0703a5257672475785e9b1",
+      "after_sha256": "b27d6c228dca2e5ba3a8be2257a5c84d3b2225ed0535af916f30d87293844be7",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/fspi/test_speed_transport.c",
+      "comments_changed": 1,
+      "before_sha256": "7e28c3796312ed16304e08862b432bf4723bdf6a363c9403fabe6c67ed500781",
+      "after_sha256": "40e0af13edec74e70b91f4a5ddea73b4c04ff7afdb71bd42cd2557453c4ea7a0",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/fspi/test_spi_owner.c",
+      "comments_changed": 1,
+      "before_sha256": "e29a5a05a89fc434ce90e3f571be28b305ae82833b4344e4ba10ec91910a9e9f",
+      "after_sha256": "95135b87cd7d355a0d116444d59c71e093ef09add0df1895e5e6f9497600d74c",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/fspi/test_traffic_go.c",
+      "comments_changed": 2,
+      "before_sha256": "04cccccf9c496ac440ea6f8dd344b8131036eec32a43249e0a4e34aa2650c91e",
+      "after_sha256": "1a4835b3e2758dcf77cfb5fa33b4e3aa1f63c151f7517a4755e10c0c13c5803e",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/fspi/test_traffic_go_monitor.c",
+      "comments_changed": 4,
+      "before_sha256": "16ad706bc541cabb344b3c5b6f20bedbf9c75fdc76ecc3acf5478d1391027562",
+      "after_sha256": "605f58dd6ae2f5e30916a77ff964ece7752602f856875d7d4c97cdf6b0e7373b",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/include/brake_release_policy.h",
+      "comments_changed": 2,
+      "before_sha256": "656de21c9ca902e805a826b71a1135bbbe64a7bad55d7b81ed2815eb292cae11",
+      "after_sha256": "2149255657d92b7eb5ab51abf141ed3edd20333ba74c8e61db5dc2cfe0321b15",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/include/camera_views.h",
+      "comments_changed": 4,
+      "before_sha256": "1a3cf69937a7b4f2bc423f1cc11b3f46c3d55840e6c101e131eedd6822296044",
+      "after_sha256": "f984ed3e3899c763669d13b9bc8b1fb8a7ab47d4aa348a76ff85529b138b18a3",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/include/control_status.h",
+      "comments_changed": 1,
+      "before_sha256": "8c6588725ffc5c019a1822bd40bc9cefd5013ed4e60c9f0a275f874687c543fc",
+      "after_sha256": "db6b89a0ad07ffb59390a9339ee943395403c46de3e2833d20f356b8ca65e6a6",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/include/lane_rule.h",
+      "comments_changed": 1,
+      "before_sha256": "4093930cda9024edee7733fa52dd1478238e8e50cf71402ef8b810cee5ff984d",
+      "after_sha256": "aced8a5df858fd40e959090309423c005592938c49dabe548bfb52a9cf035e89",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/include/line_style.h",
+      "comments_changed": 1,
+      "before_sha256": "5e2eb71a8964c2d9a1cede5e899040299c1d83b5aa4ad56f85ce7c8d55352320",
+      "after_sha256": "387de0c3f4aa923e8af855eee95a3b22af489a4ad6052ea92d5c3337f87a27a3",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/include/line_style_ipc.h",
+      "comments_changed": 1,
+      "before_sha256": "6af24ed1e1a7f46502c3d3afa3c55a2b67b61234b5ae6ef96ef02d4b66e49061",
+      "after_sha256": "ef6280a1a867cbb5ba920e2468e4f711544284900ff81eac50ec86010de33c29",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/include/line_style_wire.h",
+      "comments_changed": 1,
+      "before_sha256": "6e17bd053576c5670e8709d18a7e510696361a57ac7d2dc42750d7a01448bb4f",
+      "after_sha256": "6faf325d7d7e9978b250bc679e917f2f6f356c888648f13a5b060cea6e9de349",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/include/person_brake_trigger.h",
+      "comments_changed": 1,
+      "before_sha256": "affe5535559d024e6177b261505e6babb6131a7d4be250d0b2ff72160326090f",
+      "after_sha256": "0af6965f92f4c5204795291f23517897ae0938921ed12623f985bf54aa6f1115",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/include/shared_memory.h",
+      "comments_changed": 29,
+      "before_sha256": "911d014948e98213bda88e7fd3e3dcd228c99502c23575ecdb052fb5316d2136",
+      "after_sha256": "7e81b208119863b9c948cd07d559ec5239b2c3cbf8fa331d881d80deb22a8922",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/include/speed_status.h",
+      "comments_changed": 1,
+      "before_sha256": "ab155da743c5908727751cb9327d9ebe58836a81a203e25d70400fe901a4a057",
+      "after_sha256": "219adb33d198f29adea39f29634fb0249667ac79b1e26b985b7e6e43d8219af8",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/include/traffic_go_rule.h",
+      "comments_changed": 2,
+      "before_sha256": "0b571725ebe5e7f221bc0804964252e739f790d624f50b7c7ebb6822d88eb294",
+      "after_sha256": "3673ab7ae1a8f69b9e794437bb592986bbcc0c540086fa3c91f113132e320354",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/include/traffic_light.h",
+      "comments_changed": 1,
+      "before_sha256": "cf93c579d70297099c40b1b5e5aba80e517c514af2f8543c9e866b4fa8643410",
+      "after_sha256": "3e508d0b41af4fe3bbf944ca679be83a254a0b5cf937592bdcf8e46b46360a6e",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/include/traffic_light_ipc.h",
+      "comments_changed": 1,
+      "before_sha256": "33b7c83d77dda118452e4394dcf8646a9d40ac397f2bf5cb84629139731cf83e",
+      "after_sha256": "4dcfdcf162c6c4df70eb2e37043624add9d0751621425860a38d04467ef23672",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/include/traffic_light_wire.h",
+      "comments_changed": 1,
+      "before_sha256": "3c9d1db9ef8db34887e61656f7c18cc1c9cc7f15510f323b71ccd6b05bd5d2a2",
+      "after_sha256": "228d7282e09f925fa62ffefe459c229780ebb4afd04b240a69bbb8453603d083",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/pcie/csrc/fspi_module.c",
+      "comments_changed": 13,
+      "before_sha256": "9615aacafbe3c48514e21fec46d0d7e7e9a819a42576b5011635b24d734b1fa9",
+      "after_sha256": "40cbdefc5d3848ee1ac53a14904737ddcaf5f8ee92913ad21cad2d7c5583fed6",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+      "comments_changed": 186,
+      "before_sha256": "f2b0dc19b0adec9cb10f33276a6f2163380b163402b8271bedbe400076f944a0",
+      "after_sha256": "a2caf93dec14a16d1e5e86a00424aeecb1fe47cf4e30c59f0a5093d6da397773",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+      "comments_changed": 19,
+      "before_sha256": "ac775024e99bfc2c704dab3ea101f7224ffbb96a9abeab94e8b4f3bb51d88ef2",
+      "after_sha256": "9c770d08a22ea8b7d34611f7152aaaa7d54ab3d6d678740993df951e34e3c3c9",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/pcie/csrc/postprocess.cpp",
+      "comments_changed": 12,
+      "before_sha256": "27bfeaa24fdb4da71ed378ed5224588734c26858841cf5f592bd034d20530259",
+      "after_sha256": "34ed8661a80ab62e464a1e3fa5f21b7958e1e39af1e8768fe5a23f3a4a711591",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/pcie/csrc/preprocess.c",
+      "comments_changed": 1,
+      "before_sha256": "8d2c1b4a8b382e4b951be1332a36ad45888fa54c1a96cd4181fae16b24445427",
+      "after_sha256": "569793d3055e6c3c0745e7fc80190e5302dad6dbc51bb538b3692a7613e5e1fd",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+      "comments_changed": 136,
+      "before_sha256": "22a72971bf46e0266c9d17d104eedecf2b89187dbfc5c364fde32935c79b6e01",
+      "after_sha256": "9b6ccf0ee4db9ac40836714d75dc4d12e8ba666d64af6b9359026abb2e6546f2",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/pcie/include/camera_orientation.h",
+      "comments_changed": 2,
+      "before_sha256": "f4d5cbe624a370002c8beba135a19a101e003e708cdd087bffca40f112f7bdd3",
+      "after_sha256": "fb97d56002c1d78d044f11fa70b25c34c01a1d06cf87ccf0d435bf3dfb3ffb36",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/pcie/include/fspi_module.h",
+      "comments_changed": 7,
+      "before_sha256": "0c75cf5f0c2591ea871c3874a621c1819166858ca3239db517da48be6dcaa550",
+      "after_sha256": "44fcc905c83f92d4d9244b801d7242d770e2848f200edda9744c92ae32a657c9",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/pcie/include/pcie_dma_read_test.h",
+      "comments_changed": 6,
+      "before_sha256": "25f13206a1f91c1fdb7d1f2c63cb074c8ba3164620202ae37a06d536a0b07438",
+      "after_sha256": "592e073d67c7570c2f44cf2d41a93ec00c3dd0339fd47f0980c6df48910a6421",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/pcie/include/person_alert_effects.h",
+      "comments_changed": 13,
+      "before_sha256": "d828e61f12fb30411462b378672b4b636ebc9c17cd9e287567e93ca09918a002",
+      "after_sha256": "0852d88ab4d1d3caf65b1252db9aa495f8c59cd21f731b9786c542611adab61e",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/pcie/include/postprocess.h",
+      "comments_changed": 5,
+      "before_sha256": "4d68ece73e5b52f5b24c7a53436d828c09247a981fdbc9c7c8ebe9bacd4ab801",
+      "after_sha256": "5615956c174a13a74eb39f4c0cfbc33bbe7df572175db5948f3eebefef47429a",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/pcie/include/preprocess.h",
+      "comments_changed": 2,
+      "before_sha256": "d2e0dd6483c28ad7ed2359ef135c5ef7beb0297bdd72e781a0c3a6f05af51a21",
+      "after_sha256": "1045716ef98aaadb822f526658b1e19956237ca1bac05f6db6788be7d540e01e",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/pcie/include/yolo_integration.h",
+      "comments_changed": 8,
+      "before_sha256": "dff3f36e4c1dd81698ba579791c78371d5b8778c64bb1626bda94feb38de0929",
+      "after_sha256": "db22cc4ad42f0f29974ad8a4947155e26fd2e4e61418a49f6d13db91862dc2a2",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/actuator/backend_fspi.c",
+      "comments_changed": 2,
+      "before_sha256": "e31a303b3b1296ba2e46ed0b66797e91bb27ddf6f6b2df7c451c19fee40b7048",
+      "after_sha256": "65cb286a118ece9aed25792624853cf203b16a35dbb33f21d5c323cac4f893fd",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/actuator/steering_actuator.h",
+      "comments_changed": 4,
+      "before_sha256": "d8b2543744568e7938219981abb8236ff341d503cba19e82435d45ad88b62bc9",
+      "after_sha256": "1ed16ee6654438474a7e633bf3282c73bd1c9b8049979581e6e18fd3d1c5f4fd",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/actuator/steering_predictive_stop.h",
+      "comments_changed": 2,
+      "before_sha256": "511e5bd1a8bdfb2c148d8874d4814c16a3c5e9a5d607b1e9ff9aeb9fff0e4a74",
+      "after_sha256": "25e115c847019427da5ef707922aee5a270e1510ff1df9bf8d4eda0e33238434",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/actuator/steering_sequence.h",
+      "comments_changed": 1,
+      "before_sha256": "4e95237b018877ae07e95f8a251d97ce6ef4074966000d6ee3ae174eca757763",
+      "after_sha256": "03d7900c13d4962dbfcb765a63f05e8e46604c6661566bac87c930f0cc781ba4",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/controller/steering_api.h",
+      "comments_changed": 5,
+      "before_sha256": "0fa373d28485c8ab8adfe21a45ce8b18bc702ee9eb39c25ed228380821d8323b",
+      "after_sha256": "6adad766de827062b63d19e026d8afbe65f51a72e7f2f1f41d438ca625489c60",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/controller/steering_controller.c",
+      "comments_changed": 4,
+      "before_sha256": "b161cf5820ca82b7d47354c9f8cde3ba461b1ab51fc6feef1530c70d759a5ca2",
+      "after_sha256": "8e8e706d1988018a142dfa7bc6fbc7d3af0772e41314fd0612429693ac5af9d1",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/controller/steering_keepalive.h",
+      "comments_changed": 1,
+      "before_sha256": "f07a0144721af65711f7ccb89ec1c42611272cf47abd5d776eab08a095af53df",
+      "after_sha256": "89f1cb2b2f6ba9fed4639451210e9adbf3932d4902c00fad759ed70352c3dff4",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/controller/steering_response.c",
+      "comments_changed": 1,
+      "before_sha256": "9d4effbbfe577d1375f6e11bcb470e7a288314392399c132f07bff8207a70391",
+      "after_sha256": "c0d75660fe59f09b9ec1ee12842f5116a0052dd6fe001faabe56b8314f034e24",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/controller/steering_response.h",
+      "comments_changed": 2,
+      "before_sha256": "f406dbf61f0639d2a29c60773a27a635ef4d28e6164d62a9f366a124ad3b26fb",
+      "after_sha256": "3e543eada6173849d8309a1c51d0996c7842d1530b1be324a4f2b987be5167c8",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/controller/steering_runtime.c",
+      "comments_changed": 4,
+      "before_sha256": "46d4de5f07a160b5b34dd4ef8c6ae45f3cce94225ba26fae614e76a15e68ca87",
+      "after_sha256": "ce11bc52d7f992182be6e2e06ba14ed2a49b827e67b5e850b061a460e08e04b2",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/controller/steering_runtime.h",
+      "comments_changed": 2,
+      "before_sha256": "bf6b8cf1fa43f48b33a4c2ffae98075ab647431d1c209765b55cf1039aaffe3a",
+      "after_sha256": "bca1888dd2085aeacd607f91e04bcebc1c23a73f0bd28d753bc60aece9efcbcb",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/feedback/feedback_tracker.c",
+      "comments_changed": 1,
+      "before_sha256": "4da44c094c581d9f2abbe168bcfebc253c46a28ba4c10c55cbbc02aaba8989dc",
+      "after_sha256": "8eb045592c3ceed8fdc4830f1501d7f426ce6612dba492721acf517d8a3986be",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/feedback/feedback_tracker.h",
+      "comments_changed": 1,
+      "before_sha256": "35cbcc69b29dad30f6fbab41a3c85048155731dde441064778b50a988032340d",
+      "after_sha256": "bac3f048c944e39401efe8892ff2ae0b768b12057b9322daa280bf225a7a5b73",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/feedback/steering_feedback.c",
+      "comments_changed": 1,
+      "before_sha256": "d5707a4855f6c0f95e3a48ee4720529018f88ccfddbf9015ee41a39bb50e963b",
+      "after_sha256": "d596165db813cfe7f231875eabfaa70c7e30a3aea8ae864af672540a44a0b76c",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/feedback/steering_feedback.h",
+      "comments_changed": 2,
+      "before_sha256": "807399aff80bb148890762982e21627e6ec5f9e2d5a188ccbef7733493b29177",
+      "after_sha256": "77ea2ebabc3bdaf43ac16a44a6e6509181f5e452834f9699669acc171546296b",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/actuator/angle_from_line.py",
+      "comments_changed": 2,
+      "before_sha256": "602f48b9e8d97c4fd13225a3c5252f44fb160181cf71eb05563b6c32c97f6fec",
+      "after_sha256": "44c56f0517ad2483a09a810be1e27e62a8c2884ba527166f368602151db63699",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/actuator/steering_action.c",
+      "comments_changed": 2,
+      "before_sha256": "11d9df148061f95c61afff0f614d89b7f5ada74eace8fca3444a63e3fe681001",
+      "after_sha256": "f76c8be248a2825f65fa165901c1f64c0bb55cbc2e9e3d0349b9fbc82b4f55f9",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/actuator/steering_goal.c",
+      "comments_changed": 1,
+      "before_sha256": "94f77e87eaae98dd1cd624743947064edc8d908fe5359f264636df55ab2ec3c0",
+      "after_sha256": "6c190018937360b6fa6d4d5901706ac133595116e5cf014ec467a7a0c31b469e",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/actuator/steering_lane_goal.c",
+      "comments_changed": 1,
+      "before_sha256": "dbb77444fffeb3b4cccc974a703c58118bea79e595c1727ebbf290f3b0525e75",
+      "after_sha256": "a1d38f578843c5e7fe95bfbf113db7cc307941343a67803b8d9e1f929b509b40",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/actuator/steering_status.c",
+      "comments_changed": 1,
+      "before_sha256": "cfe71b80612847d6e2b56b8a321f8ad3049b559191d5e7dac8be92906359e970",
+      "after_sha256": "447359fada590349c6fe0415e3856fa8794dba54b9a71827cf44d7e81b631184",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/actuator/steering_step.c",
+      "comments_changed": 4,
+      "before_sha256": "1f8797b80c98476238e16de45b424b8229a33cb9cc2b624fd11cc92c5d9d8d77",
+      "after_sha256": "2f04cec32e56e76f58a8f318a5e60ca8d9f65aeb11a238fccd69624e300d9e5f",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/build.py",
+      "comments_changed": 3,
+      "before_sha256": "7f9b51702b0628ae809d783298e578a0f213122e7b5fbb17acfe0b11771128b7",
+      "after_sha256": "57b45536a3f8d5d6a55b4a12cac70fa9405c7f8038f2cfa4fb454e40ab4ffe92",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/calibration/auto_home.py",
+      "comments_changed": 3,
+      "before_sha256": "6f91fe3c56acff230c547d00eb97004e45d7de08860b4b288e0269fda653a3ca",
+      "after_sha256": "3a85e809ca2f40131009742c319b01a75791dc668b899d6301d30bd6a9685993",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/calibration/burst_response.py",
+      "comments_changed": 1,
+      "before_sha256": "618ee134ca5850631b37db753ac5bf1f30d5abdff906b8a1168512bc54daea02",
+      "after_sha256": "872587f11197beec965b2dc2069cd6800751973e52d687057281128c1a8ffe1a",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/calibration/homing_core.py",
+      "comments_changed": 8,
+      "before_sha256": "bbe839f6a3247ad6603861b3f7c8fcb86b8bc773b1c3517531df0ee9a5e44f04",
+      "after_sha256": "02834bcb71e14ae169719919090b1ef1bfece40a5995386464428eb0f6189afd",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/calibration/partition_response.py",
+      "comments_changed": 3,
+      "before_sha256": "f09283f7e312ec1db0888785e151c286db673eb0c2096bcafe95f86e207eb954",
+      "after_sha256": "12586afe8f3a3aaf5fb685814e50a06e3de1bb0dfbfd36dc084801df1d3e3256",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/calibration/response_model.py",
+      "comments_changed": 5,
+      "before_sha256": "1e4616eea93aa55345d05e9a2948d546aac317402b1f4911676df0675e2d9376",
+      "after_sha256": "0aa6e2152422746549edb268c2bd8f574e9e872d546ddbb9e81b33be382aaec3",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/calibration/steering_auto_calibrate.py",
+      "comments_changed": 5,
+      "before_sha256": "0839febf29d0076a34050547b078c6ea5d26e82c7ffe22388d2c2f28eda5dd52",
+      "after_sha256": "3ab7033273d57f40b79d513c680f78773181026abd10ab5827aeba495e3891fa",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/calibration/steering_bench.py",
+      "comments_changed": 9,
+      "before_sha256": "4de32e94173a2e498e66aa622cd0cda5cc9726635f8524e0b34a6ef039adfe0b",
+      "after_sha256": "8470ba14555d9c402a7f726c4c61935f289fa7fcc1419c78412243d3748613f7",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/calibration/steering_partition_calibrate.py",
+      "comments_changed": 3,
+      "before_sha256": "ceb757d7c4b3f3a1c606755f20322cafcd2906767bc527dce693dd075d5634ef",
+      "after_sha256": "4d19c029feabb474cfd2a9953121d2ca39972938af0f78e0a72ea8d8c271f30b",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/calibration/terminal_center.py",
+      "comments_changed": 6,
+      "before_sha256": "ae9b5badc951c73cb436f0945d514aa5dcdf0c19965f73cd206528e6eb0a8659",
+      "after_sha256": "bf5cba291507ebd353e32e0c9ed2dbc456fcd3bac53f91cffd9b806f8af30b8d",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/calibration/terminal_home.py",
+      "comments_changed": 3,
+      "before_sha256": "2af5f1d66bbb35f4b00e447dc33ac89b6cd1aa74624a1860867c943723e8ed8a",
+      "after_sha256": "9504b17bfddecbc15359446d8b844c23d1b0924b2353cbc08aabfcc2e7efc2b7",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/steering/tools/feedback/steering_feedback_monitor.c",
+      "comments_changed": 1,
+      "before_sha256": "64eb2aca56c64c397c6556ca70d39c6140bea9636306177e9245f69f68f7cdb9",
+      "after_sha256": "070c18d368d530f7b6520dd54382ac9146e4efca12d017f2296092b353bfbda1",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/test_person_brake_trigger.cpp",
+      "comments_changed": 9,
+      "before_sha256": "7209fb568559e7ea6a87ddf33fe5eca78129d66c60f79d32334aecbcda891fc8",
+      "after_sha256": "8ba298776001d71ef0b712b87b7e1df408046456a49f7ffd53ab80f43074cbd4",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/udp/csrc/main.cpp",
+      "comments_changed": 1,
+      "before_sha256": "9123134b2cd6a2984493236f497291f5e3a2b3e0f5b2402b92c54e8958cb938c",
+      "after_sha256": "6e31df0fa85d988b58158b2385a98268423e680578a739986b53f7864efc8be3",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/udp/csrc/main_old.cpp",
+      "comments_changed": 445,
+      "before_sha256": "0c1656c36765014d1296499365356823256842c24e10da9d70ce020654df6847",
+      "after_sha256": "353802820a3319678f927fda8b519f123af7e7079755d2b6583ec994733fe1de",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/udp/include/pcie_dma_read_test.h",
+      "comments_changed": 5,
+      "before_sha256": "c8d3b57994f0e738d4b5e5e3fbf26f7a90d196256645df259972399a87fa427e",
+      "after_sha256": "b9b803422239058bb62449ba83271e210fdf01b201a29b104dbc26da1ef94c74",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/udp/include/video_transport_v2.h",
+      "comments_changed": 1,
+      "before_sha256": "485b315b763301262973ce73fe7a6f0fd87a1e0c48ba2a76bce5d024d506f109",
+      "after_sha256": "8ad906082b14e8ce86e2f0f00284744984683fc638e8a8c9f5c706c84cfd7eb0",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/x11/csrc/include/dashboard_ui.h",
+      "comments_changed": 35,
+      "before_sha256": "1587d0099ba8b8d73e64925c2cabe47f47a04311f8ba0de67040c836e7c89c30",
+      "after_sha256": "b608639245fe575e25afb402ee2886079f1f4dcb415f771797847608dfb76601",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/x11/csrc/include/gles_presenter.h",
+      "comments_changed": 6,
+      "before_sha256": "30db68403b94e41cda0396324be2b35edccec3b3eb40e8f1075afa57da8e7f12",
+      "after_sha256": "93f9c6bb397a0aca69520a2a2fad0e6140afd6586ffde63bd805265676bd1094",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/x11/csrc/include/six_camera_render.h",
+      "comments_changed": 1,
+      "before_sha256": "1213aaadc7e9034b7b01014b0d2a317a7804ad53b5156093bf420077f66c3ea6",
+      "after_sha256": "91da7bf5ddd4bf1cdab8d972528344bf86b12487cc99bc58d150bece7e1e6c7b",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/x11/csrc/include/speed_warning_glyphs.h",
+      "comments_changed": 2,
+      "before_sha256": "41775db7025df6d7ca60a9da07d6b959e15ee63f26ebe86062106fd80d24e7cc",
+      "after_sha256": "54d4d4aa6f55732feb6729dcccee4d56b838ce623976a7495fa230b50ca8e739",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/x11/csrc/include/video_input_fps.h",
+      "comments_changed": 7,
+      "before_sha256": "c3ca018b99ef4459728fc48cb63b60576a761ffdcdee65278de6e8a51a18fc72",
+      "after_sha256": "2507fac1f13d37283f7bb163d4f6c004c117375a2b20a1d4849e1fe07ea76f6e",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+      "comments_changed": 246,
+      "before_sha256": "6cf830a17f2546edd572c4c4236e88dd74aa2fd126aeab617801e15d1197042f",
+      "after_sha256": "4c3786b162c7beb4036d62df39a4d4e9ff957971f518c01d042857b82a366ed4",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "udp_rk_rk_yolo/tools/measure_pipeline.py",
+      "comments_changed": 2,
+      "before_sha256": "817d7be404b69fc92140b00f03bff9b7a8d0affe93ddc5ac41cf9d436b4bb974",
+      "after_sha256": "ead5117e3b0b4b588656dff0cff7a2a7d9ef125586145866a74c8faf029a4c67",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v",
+      "comments_changed": 61,
+      "before_sha256": "cee553a1653864705d6ea8d8ebdf1c1b5f61a25ebe9a688e0cfaa47a248800a6",
+      "after_sha256": "12fe0d7014c4969ada11450d8ee7e47ae6687de703a8a2385e055426a01b9231",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v",
+      "comments_changed": 23,
+      "before_sha256": "87d11d77515849293be9e0e34d3366a5fc28667ce178893a827131b0e4b0fefa",
+      "after_sha256": "86a98433f4f10d04beca561af46dad100c87602df4fec13baba7aa1b6acb0e2b",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/cnn_top.v",
+      "comments_changed": 13,
+      "before_sha256": "a38e174384c3ad411f87415f993ce06f192e9aa262178934609398f6c4a541d2",
+      "after_sha256": "b7dfb1753d30df0552368830698302baed2f5e5ad05d43dc5d1a2e98740da3b3",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv1.v",
+      "comments_changed": 26,
+      "before_sha256": "8577d58d70b9a3547f966959ec8c0a54daa7054183c4aaa8c294bb95d5620305",
+      "after_sha256": "cc6b959c5a129f13e854175067825a2f1036e262ce7601e88cbbc733fbaab9bb",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv2.v",
+      "comments_changed": 22,
+      "before_sha256": "c3cdbcb5e308781e038d12dd97beb032331badc35a2270c79b5c2c627fbcf288",
+      "after_sha256": "361d90a76c2c893cd99a2a63bc63db7c5d88010e1ccbcf28ce0d81b23df88fcb",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv2d.v",
+      "comments_changed": 26,
+      "before_sha256": "33f455a9309c8e78521a9142071d1d92b09c17b326c832c60573608cdf343030",
+      "after_sha256": "d6e7e122e511316f1683f09767d70e3ae3da653fc7f5352a9faf80c06ccf3a55",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv3.v",
+      "comments_changed": 22,
+      "before_sha256": "afe8bed55f8d0cd99300186e714fa5ce88fca0409e51b7c86717d0bf1c68ec41",
+      "after_sha256": "61a3d30b8f6c412dc104483ae284f0935fd60f6da890982bedca6ad5a6535c8d",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv4.v",
+      "comments_changed": 22,
+      "before_sha256": "0b6d3273e2a36a8f77c10fc4c66e3eba4b9ad277d6e23126cc464712cd03b894",
+      "after_sha256": "f0bcb1ff8448dd1e98d6ca977fcb98980d1f312a1f5ecc5232bda6de6641f369",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv5.v",
+      "comments_changed": 258,
+      "before_sha256": "2cab917effecb56cbae23158069fb39d06dc51dd7e09550dd8440a7e172eb2f8",
+      "after_sha256": "97c32f2388dadb2aeec498815cebf73e3a9b879384a3320f3b85609018d73741",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv6.v",
+      "comments_changed": 258,
+      "before_sha256": "3f4d09daebfba8278122d35a36c57d3b511afeb936c3191ded2ff741e10806d4",
+      "after_sha256": "1a9ab34f2ce8d7d20b395b13a47db062df3f0df2dc137342c73ef641975065ee",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv7.v",
+      "comments_changed": 245,
+      "before_sha256": "923eeebf4d45bd6f7e8b77a857dc067ee705bd63fa20e396bf077afe1baea92c",
+      "after_sha256": "0d788c2c58cf4d3ecfe9c423e439f47d61723d72c1c5664096168fadfefa75ba",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_2channel.v",
+      "comments_changed": 68,
+      "before_sha256": "d3c09e193b2fcc9e64fa4f866e3b3168231b326bbeb3842538d0025d1ae0aec6",
+      "after_sha256": "de3176b55891d39f14030bb2db8824023c6e8257d16dcc6ecdf265daae8f1b27",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_2channel_7.v",
+      "comments_changed": 68,
+      "before_sha256": "4c1e706e304cf9eca21d280cdb5dd832fda1cfb1641d6e1dac9fa519f1dd5674",
+      "after_sha256": "51bc890fb2dd4cfba7e0105fe40e3cc9b6d2aaf757caae07196034c7f4b9bddf",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_4channel_delay.v",
+      "comments_changed": 5,
+      "before_sha256": "36425f379ffc0262b228dafb3ad7d6d1b10a850aa6120ff9080318cc17e733a1",
+      "after_sha256": "c912f0d8cdc3e4c6781db82ac88cd7d5f24a4f86be35229d67ea121f8fe7726a",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_example.v",
+      "comments_changed": 62,
+      "before_sha256": "def95073358d0b17476223fd7cd168ea742451d9dcb7d319fc426b6d9c11f813",
+      "after_sha256": "24b7d74798cf454d15d5d545c2e42605f482a08e76294e1f434351201fd3150f",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_example_1_1.v",
+      "comments_changed": 62,
+      "before_sha256": "b8873ccff247ceb64a6a523d48efcdf63c52aac0b67b55692ef14654392361dd",
+      "after_sha256": "e9a15afaea88b0a5e6d46d8319ce5352f355cb3139da80fff97df96a376a6d9e",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_example_rgb_delay.v",
+      "comments_changed": 60,
+      "before_sha256": "b6ade7bff74163f4706c5c93efac8f92e70554d8bebc61d8b8075151311cdc7e",
+      "after_sha256": "13b7d2b9c0cc97548fe27f38b1638db700f56df95266fa69e05eebeb0cead48b",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/conv_top.v",
+      "comments_changed": 28,
+      "before_sha256": "58c438332e0ddf6a46037a4a31847f258854e4b772eecd9d56682eeba2fff821",
+      "after_sha256": "7159678d528e7ad31469c49a1033b9d0b717c1081a184cd31a79a35dd09e3eab",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_18.v",
+      "comments_changed": 1,
+      "before_sha256": "d08c92cd406816eb3df29c91a3e27697a5bde029c22b7316e78d3c7f5fdfffae",
+      "after_sha256": "a12179c729f6b346f93ad80b33177aa6400b03ceb7ba78e1e4065a00e9f6fd47",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_19.v",
+      "comments_changed": 1,
+      "before_sha256": "8c5757ac07349a5a1d5e1e99ecacd74669e3ef73d6a681d3ff840f92a90630b3",
+      "after_sha256": "dc86f4b19ef9eb7645aa90730f3a3d5c7951b7056f2df9a0a913961bd86eb30f",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_20.v",
+      "comments_changed": 1,
+      "before_sha256": "3ab6b20634ce63d20ca9bd8f073364355aaca804a18db5a700a90b83e105b46b",
+      "after_sha256": "8acc55db8db245d0a809f50ca1b1f792dd6d1ede08073cbcaa7448bc7c171e55",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_21.v",
+      "comments_changed": 1,
+      "before_sha256": "a27f931f12ac2050b6cbbc4b4dbe6a8ddc66e41a5755318245b0ee530ad51d2a",
+      "after_sha256": "e01992bb06b581e2e5f3056c792d08fd7fc6b558cbdc0bd037418b1feaa7bae4",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_22.v",
+      "comments_changed": 1,
+      "before_sha256": "1baf798137262e17a5473b0477c82e0539cda07696c39929312e08c22acfac39",
+      "after_sha256": "4e1636d1288963723068eac23c58caef0c4b1bd6cdd5599f76e266bc9f4f1925",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_23.v",
+      "comments_changed": 1,
+      "before_sha256": "cf038e0e7ba801f774247742b99db9fe25ab1843baf02c62a515ba3fc82c6c68",
+      "after_sha256": "804e7a7ea0165bb4e0be368ac14781fcc94917cb6bdfd50d8baff2f1a4bd98d3",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_24.v",
+      "comments_changed": 1,
+      "before_sha256": "4f7f7af57b56699e4656e685e02523194bec07ff65ffc1cf0f48d3c93281a0de",
+      "after_sha256": "fa344f47a51bb817b85dd8177c6e71e4d03056f654274e667fe13739884a67d3",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_25.v",
+      "comments_changed": 1,
+      "before_sha256": "e80a8e015549ec7f8584af93bcee9a9b5a8a2d57c8558d491d377eccb6cc0e1a",
+      "after_sha256": "af5f56e61faa2066eb0a75586e31de5bb85c03eb5ecac8cd07b347cb27649530",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_26.v",
+      "comments_changed": 1,
+      "before_sha256": "65d1c718cf4c099a4eadfccf6aadd6450b7750ac516f263ff03e4ec767ea89bf",
+      "after_sha256": "71c38d9c18ef666738fd327f8cc8107c934e91eeb50903a3682c1ab33feffe1f",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_27.v",
+      "comments_changed": 1,
+      "before_sha256": "5a0fc706db9ed15548e68f4cd03c20ece9413e93e086c85cc2e7a105c8af237b",
+      "after_sha256": "d0a2d831b30a643b6f338e8bf35feaecf7e3b360866952fa9e5c1c7086a53a13",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_28.v",
+      "comments_changed": 1,
+      "before_sha256": "7c7cc7d1c13957e384c36be0db3023fcb1564c51c4f8de42e1d6ef32cf51513c",
+      "after_sha256": "5e0c7e9be39df047d221cc7485e03e7021f0721a0754c198e68b194560b2881c",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_29.v",
+      "comments_changed": 1,
+      "before_sha256": "701645a074b8b4952d5d1acdcdd1c037cb76823d9fc397d4b689bd375a551631",
+      "after_sha256": "7c01bccef699a77201fb77e2b4f2c86c0e0f7d99c25f549ce14086611ab7531e",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_30.v",
+      "comments_changed": 1,
+      "before_sha256": "e1580fa74d0af7b481757d341967cd9963a24ffc7ce47dcc5ec0086c1c2789bf",
+      "after_sha256": "6db4b5ca6b6b9fd5b7fe0406855476a0ce4195c8620957cc2c2b1debd00f3fca",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_31.v",
+      "comments_changed": 1,
+      "before_sha256": "4468e95cded7fbc19bedb340a3ed67ba60b39dfb7007bf9aa733cbb363cc0a3f",
+      "after_sha256": "92d292b9e996961ecac10491f276248d01327d31fc89b7def85b6e295cddaff2",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_32.v",
+      "comments_changed": 1,
+      "before_sha256": "d77e81632fa0aca4cc5bbc379f7404342620dad131133fd99f354e453d8aea5d",
+      "after_sha256": "3ee47448013861f0c792d7f12b24488270a32a456ceac92e3f91257b890d9aec",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_33.v",
+      "comments_changed": 1,
+      "before_sha256": "c44d8f8855079d78100122d4476aae4b4c61e737df143615d0c062631d134ba8",
+      "after_sha256": "6ccd58928da704499ce0a6310bdde6bc9fe814f3954735a25b5bb4c8fd2b04e4",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_34.v",
+      "comments_changed": 1,
+      "before_sha256": "9f2364e3fe03a8da38f9c6ecf4c3cfc4702037505840ef8e4814b87c04ae2d53",
+      "after_sha256": "4edd6fe76e7b862e4e1fcc343ab6305d61517f8bb74f45234d0a6e7f596d8b30",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_35.v",
+      "comments_changed": 1,
+      "before_sha256": "1ea47bfd43010105f13d0f22c62239306d79e9221c9b464d3e77cee3d631a57d",
+      "after_sha256": "fc3d7e9df52581528f178254d9d1a7386cbf0bf4a66c6a4a9717480fc4145ea8",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_36.v",
+      "comments_changed": 1,
+      "before_sha256": "60143ff41a90253ac9af0230d3127b46249d607b16b400800caf25064fa245ad",
+      "after_sha256": "5d6f21332b4370602507f5cf2ba80324b4c54bc456c620a54641388f5ca33119",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_37.v",
+      "comments_changed": 1,
+      "before_sha256": "463aebd850b6954f8940e9c5b6e4ccefda80ad74bdd27ad0b7146a7287695fd2",
+      "after_sha256": "5894bfa6fa079d3f0aac6413fd086773669c1b888f9555875ec4c9459aa273e7",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_38.v",
+      "comments_changed": 1,
+      "before_sha256": "1507b0777342eccc4f632d45ae17c2295a588a58173bb1409083dbf0b55273a6",
+      "after_sha256": "93543509e1c80d38ad8d618b941e86d75c77107967c4ebe879b6308ee4abaa9f",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_39.v",
+      "comments_changed": 1,
+      "before_sha256": "ce11c636b67fb0734ef98e4d81f47c990f0757c35cf724f8d9416e0ae88a0acc",
+      "after_sha256": "824e74492912e131371a700f83f66202df5e6cf9d40abd59e7ffdbf556219064",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_40.v",
+      "comments_changed": 1,
+      "before_sha256": "2768e8e943b336d901ea91421625e76eea65633dd8a5c640dbeb8163af39e936",
+      "after_sha256": "fcda687f6e10cdead0cf3002696a54034165dabf66203e6ffba50373810fd94c",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_41.v",
+      "comments_changed": 1,
+      "before_sha256": "b056ac41442746a9ce9d88aa1c0ed684b5840eb992d1c5f315778571479fef1f",
+      "after_sha256": "9061259fed76500d850d8774d3e0771e85e9d4175b8679766e6b6dabd2025446",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_42.v",
+      "comments_changed": 1,
+      "before_sha256": "f2a8b91683e8a98558f5a10613d470235e9b63c2113aecd8a173f978ea7d13a4",
+      "after_sha256": "b9e21dd595f144c9a375fb91aa9eb3d7d46edcfd4d5396df2bfb48903cadc8e9",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_43.v",
+      "comments_changed": 1,
+      "before_sha256": "19426961d4a5727037c28ae0c7e2f2b32c7a05ed10f6298d80d62a52731bc7df",
+      "after_sha256": "499840bdd1efad95b59910af68150d6d2742f6cd0835c654856f032dfcb6c167",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_44.v",
+      "comments_changed": 1,
+      "before_sha256": "87e45622ac1ce6286375a11fd5fbc813ab1b69e17937cf9c56f2caf7d34e4c9b",
+      "after_sha256": "c1aab8af8075482748ad652e82bac967542f8225ec8afebe24cda6c962acbc54",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_45.v",
+      "comments_changed": 1,
+      "before_sha256": "53b915c0473236baa9a82dbb1f03b47d87e3f336c33a484094295416a4b470e5",
+      "after_sha256": "c97dba36018abc621339d06ad8a47ae8c8fa3c5b184032b84915b68412dcf2fa",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_46.v",
+      "comments_changed": 1,
+      "before_sha256": "32b7f250fbd448a1ccc379c9880dff44d2bb57b8d1c003c5a0aa2fff573b93d7",
+      "after_sha256": "40b164a06b9c19ff40f088540f1bc8d0a44c91ebc9ae5cadf7b2c19855528090",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_47.v",
+      "comments_changed": 1,
+      "before_sha256": "06d15107969563188506581f0c66c1f6a79d55ba998ef3ed470dbdddcd7fb22b",
+      "after_sha256": "13490e98c093aa4bff78fcf0e4a11c8657a1fb41cf3f54b31bf9c54ea96ae19d",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_48.v",
+      "comments_changed": 1,
+      "before_sha256": "d7c9676b62df5060775472ffb91e01b55607d843f63f8423e2549ff29de56d90",
+      "after_sha256": "03b2a34dacbdee1bd7668e49a5a6256fdcee0d8eecf80df10a98be35c6e36d33",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_49.v",
+      "comments_changed": 1,
+      "before_sha256": "065426f9a4725c3636495305c8fce2f0ba73fb2c6fb703d5e3c1e490d7ee297c",
+      "after_sha256": "d9cbdfcf9e7c889c915660d0d206c584f79cef75f36ab9eaba11e6a357c51a3c",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_50.v",
+      "comments_changed": 1,
+      "before_sha256": "634d47f5dac31c7a28407466ddcfdb99aa5500bfc13aba6db9fa50a1d65aedaf",
+      "after_sha256": "dff825a6a6abc0f48991d3aafd4a235ac72cd6a2ef279f7156406743ae442831",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_51.v",
+      "comments_changed": 1,
+      "before_sha256": "409f617b2cd3601332c0888b89d0a32b9aa49a9310b579e5c66fb7c7fa5610e7",
+      "after_sha256": "acb36592c84884ce115e01b998faa68a77a9b4d22db532872da65c0d0d9b7be6",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_52.v",
+      "comments_changed": 1,
+      "before_sha256": "a4b3f551d6c4cce1fa1aaa283fdfe4e6532416e4cb1e4be25fbe63f472a8f97d",
+      "after_sha256": "070ee539644882cf5e01b54204e7bc80fcd5a4d2bfac25dfd05cacc6558ad884",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_53.v",
+      "comments_changed": 1,
+      "before_sha256": "ab8bde2585c4f1f5776e74e86d9149267ce5e2f8110ff214639071a239b8d683",
+      "after_sha256": "6d749d83ae6d6e6805319c299dbd5665d73069f02d3df4600d7a992eaf06270b",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_54.v",
+      "comments_changed": 1,
+      "before_sha256": "96c29deaf6444b8a67401d064f120441c4cf7eccddac0b5e6e802fb839eb876b",
+      "after_sha256": "85b6ef90bdefddfb2b1938634b8be73e832660bb8e3183ae1fac71935af9b01d",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_55.v",
+      "comments_changed": 1,
+      "before_sha256": "65f59fbd270edb4e33325a95416872814908f6aec2d97349a4dc13decba822ad",
+      "after_sha256": "7f01f0283cfe792c776f52db3a44300541e324653da6f1da81077912dd90ffd3",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_56.v",
+      "comments_changed": 1,
+      "before_sha256": "33f89f7e0ee1c5b5443722241b7e3263b8f3b429c8bbaa9e4ff39cd5924a9e10",
+      "after_sha256": "de74e150370062cd1564eecaad751a7618f721ac2ef1a205fef785579e544797",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_57.v",
+      "comments_changed": 1,
+      "before_sha256": "5555000a31463fcd7e6a81241754d60dea95cff5d65e6a879b3ab8ff41769e65",
+      "after_sha256": "64d709a59f631728fdb0363fd2cc6c9e947ba6e85558aa3d10eb3701740e1607",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_58.v",
+      "comments_changed": 1,
+      "before_sha256": "c57af7f7d3bb35265bed07ed1cfc85d022422a31877f092403d42fb946347544",
+      "after_sha256": "87e0c145ba5f6ec09620cf994aa2de9946d61633870a65eedde1abd9bf69fadc",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_59.v",
+      "comments_changed": 1,
+      "before_sha256": "8cc6d706181ddb940a5a9649c51e7caf338336cf1d89e436c655aa58482f7648",
+      "after_sha256": "a0c917519e356ad836fa2eda03fbd90a60c7458170f96217ee0e17e29b4062c3",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_60.v",
+      "comments_changed": 1,
+      "before_sha256": "83b86ceeb38e5bde2693bc12bb3375da2ec4942869e6955d9f65a0f61e529e7a",
+      "after_sha256": "e8971d58d655da03d8f6e195831d003cd701f8929278d071266c2f5a5f3970d9",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_61.v",
+      "comments_changed": 1,
+      "before_sha256": "ebdf3ceba6fd4effc50455897aab614873faa404e7477cc248da2274e2a13ee7",
+      "after_sha256": "0d827e5832f1020484031e5b46edc69817af661303ec35485306ec3389b5bee3",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_62.v",
+      "comments_changed": 1,
+      "before_sha256": "21fd3b70f24470fb494c8186e688ffa311a1dab27c98f267f2cb4df0e32efe60",
+      "after_sha256": "17700bc6fe369c85974a855a1d05c1fde0d019c56660489103227622fb1176b7",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_63.v",
+      "comments_changed": 1,
+      "before_sha256": "ec5f7ead62bc1939e9aea4123ee79f6b3037655ee0d4c5ee483302714ec5a44a",
+      "after_sha256": "362f9f7a76a23917e2dd389d7b07a3bf4f51406a3f4e3046f80ac25ba42e09f0",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_64.v",
+      "comments_changed": 1,
+      "before_sha256": "db5c4aa70919bb8804fcc66b567fe70aa7034e7f650f0813f747914d366a545f",
+      "after_sha256": "223664c0464b03277cc48a3393d333e41ec473c455d57303ab4c523f328ee233",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_65.v",
+      "comments_changed": 1,
+      "before_sha256": "34567b9adf0e64320e3fa64b53afc2cd77e9e0ca41bb0eacfc1575f6f09f8d26",
+      "after_sha256": "2691afb6832575f7a49104bf0fef2f4489fc6a87a9c10d9fd4265f28c4bd19c8",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_66.v",
+      "comments_changed": 1,
+      "before_sha256": "f1edd7473b634e451a5f8e5a6fc5335e53511b26915b814f4d2fe68e77113c55",
+      "after_sha256": "7148feab65c384250c310cea5a18a423aa3f2daa9a816cf786047f20b161c970",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_67.v",
+      "comments_changed": 1,
+      "before_sha256": "c461c6b33fd87739781a9d75a89b5344c06d05db999839e427a7fe55b44b5a65",
+      "after_sha256": "272f30ceec15d25360b1702b7dafaef37971761631a3a46d57def92294bf1adc",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_68.v",
+      "comments_changed": 1,
+      "before_sha256": "7a45c6508f5cc51bf19b94e5dec73a0d6a9942eecf81bd4c7d942024e4869535",
+      "after_sha256": "690fd8aff758af8ee699d271c4eb86e4312e66997e6a84d44b568110c8f6533d",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_69.v",
+      "comments_changed": 1,
+      "before_sha256": "03711fc7676521e595f0461dc49915ab18c5ae0646ff5d59ce9116054b52c205",
+      "after_sha256": "273c429b70c3592d335a663deacf4a4bf0c6044d7d48458106334138bd0363ca",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_70.v",
+      "comments_changed": 1,
+      "before_sha256": "45c0a2d627c97beb6c2f5b2f4d7704119909beed17b18584e7a365ecf3127bb9",
+      "after_sha256": "f0e2a2463e05ed085c4f1e7930d9612bdc8ee50d4844db1e084f35c663c76ed0",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_71.v",
+      "comments_changed": 1,
+      "before_sha256": "72c49364ddb256ce930bf8d4b4647091e6a4ea2c7d8b55ede1d6bfb8678d0ea0",
+      "after_sha256": "8c76f5149a670d20fd1b03640a19090d131335b3ce29db31ceac208b7774be41",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_72.v",
+      "comments_changed": 1,
+      "before_sha256": "709320a7ec450832152397ec15aa865abe3fde801ea5fe68790907bc826130ad",
+      "after_sha256": "b5897d28f788dcaa2de5350dc8abcaf5bb146faafa3ab5083d0393dc26b858fd",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_73.v",
+      "comments_changed": 1,
+      "before_sha256": "723733e6ec2f3740e890b7dc040c1b33fc7759fd195cc6c95fd163411d48aa45",
+      "after_sha256": "1585d6e9749e098689d656d4179d66f0850722b5008404689af0546e3b3caa6e",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_74.v",
+      "comments_changed": 1,
+      "before_sha256": "6c6ab88fe5c49960300a5d84c51436ecd1b2da9cdfbfbb5db8d24bcffbfe353f",
+      "after_sha256": "87d069d8555656a4d80a7c429f8c6ed7e39d4eab05bbc8dca6266ca54f8f0523",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_75.v",
+      "comments_changed": 1,
+      "before_sha256": "caf4b26b05215bc649034ab85c4d0818e5d37df678567487aaec2b08280c3748",
+      "after_sha256": "eb58f54e2027ab5c13eb50c927f8314829e37b5c63d5e8794b657aa2ce4303ab",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_76.v",
+      "comments_changed": 1,
+      "before_sha256": "4667660abba136a61a24a313ddd2ecf08effafa6dee7011a08d61e1c1e6df50e",
+      "after_sha256": "761ef54de5301371fb0d2b4a1895e62fe2ef760291626d4e85e812f080fcb122",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_77.v",
+      "comments_changed": 1,
+      "before_sha256": "a478fdb231abe5bb68289456162fb9e8251dd618549a5b82cd6c400d7041e924",
+      "after_sha256": "37a0542f1d96f0dc7c069c9b50e7b72368b96bc8ccc73c145b46518625df19c1",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_78.v",
+      "comments_changed": 1,
+      "before_sha256": "4245c7103f806164aac44b9044cc0e6d4dcf69d652ab7b77533b098dc079af0d",
+      "after_sha256": "dce7dcf364ea3606b5541a0c9ef5383b34378788df69c4c347159c3dc6b18ddd",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_79.v",
+      "comments_changed": 1,
+      "before_sha256": "1cc82c893fbe20bac5cdd6fa8dfff489197c97320f7edfa5a2a582299dbbedc8",
+      "after_sha256": "ac384ec952876a09b57c7e95f3ee17646922e668230435e2d83e09592b158133",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_80.v",
+      "comments_changed": 1,
+      "before_sha256": "d0245f3b37808f4d80940fc2b6fb283e6343406e4ad95a9113fc642e982bb908",
+      "after_sha256": "b2ebded58a97e66f573137553fb1507c627c1f91a2ed2fb38db662844ce7fd98",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_81.v",
+      "comments_changed": 1,
+      "before_sha256": "31716c8ebeb5450ff8d60f7c67bba84a93caa14d47ab16ebe01f36f6c4addee3",
+      "after_sha256": "06bfed64d4cfa5c7da5bda57fc1df3178afc97960c353935b2f8e57d569cc36c",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_82.v",
+      "comments_changed": 1,
+      "before_sha256": "9963c0c1d21144ecb3015dcaf2a9f5fb95c58e906c28720513e7ce4ba8ec448a",
+      "after_sha256": "5437bc6c1fff4ee7f8f075a52d3f855094ce2e8f9ab129f22f9609198114bdab",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_83.v",
+      "comments_changed": 1,
+      "before_sha256": "cb90c4667f30ea570fe117f5168d621bf762715da13169730689cfabd27ae0c2",
+      "after_sha256": "21eb557f36fe6fd76800f4c26326e93a8ebf8c65d151c6ae8eafe03cb76599b3",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_84.v",
+      "comments_changed": 1,
+      "before_sha256": "08bef3adcfc7392c464931ee992db2469a00516289c1978084f229f9d57f867b",
+      "after_sha256": "093bc8dcb57cf0985c112fea4332951a972beed2047a518f1cc3d30dee0c6bf7",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_85.v",
+      "comments_changed": 1,
+      "before_sha256": "8a2ce06c44fa5c49d0a9dd51026403d2842fbc548dc46eb689a49dc2401e3a92",
+      "after_sha256": "d2d16809c6667672718681e3cbe1da949446a3db872e30a241dd1117fb6dd052",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_86.v",
+      "comments_changed": 1,
+      "before_sha256": "3329e8d74f3482714deecbb2738dccbffd757c6028fbb3e9c92817df5a7fd9c2",
+      "after_sha256": "0d22a493202b4d4a228331d3138d29bfe469915ff3face9a53e20c30d7cf7ede",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_87.v",
+      "comments_changed": 1,
+      "before_sha256": "23e5117061644f92a05354e4e8d25cc713ece1267ace40fddaf41a7b8d241539",
+      "after_sha256": "2f176bb78472bea6eb530128b1ee656005f12c261e7f94c2c2a5762ec258555f",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_88.v",
+      "comments_changed": 1,
+      "before_sha256": "9d0b81000086d9f5691263056ab6954614ed6b5bcfe8607d39c6fa3a5ee2babb",
+      "after_sha256": "8ec2d479ed8018119917ae6cfa51e0d18b8e2af0757c45097b5cf6364def8b02",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_89.v",
+      "comments_changed": 1,
+      "before_sha256": "7b74c23425369529d6b0f160fca33853c4639bef6a5fe9a1580888862c10d519",
+      "after_sha256": "698a5fc90ed17602836f8b60a2a5583ec374483fc92cc6edf15a39a4a99f5ba3",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/Curve_Gamma_90.v",
+      "comments_changed": 1,
+      "before_sha256": "4e812624e9a1e4efa16fb20243608cd32419d70a9b4fe7060b119bca18106273",
+      "after_sha256": "dc6d9c8788e03935608bc71da035f4e40cc6bc13e58a1177da3ed94fa316bad5",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/gamma_judge.v",
+      "comments_changed": 29,
+      "before_sha256": "ed9cc14fad5c80fe1ac41b341c8e2fa5d522644707626a11642d6521052a6230",
+      "after_sha256": "314df5cd3f5863d72a18fdf4048989065f61b56b1cd009976524651fdd9bc0f3",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/RGB888_YCbCr_cnn.v",
+      "comments_changed": 37,
+      "before_sha256": "7e70f1f650ebdd0ce757cf72ddc16064abbfc0da2253d8d78ea25a59228b2445",
+      "after_sha256": "3d11460805e6e280c814ef441ededa901e6f0411a9ee3fb6574d509d1979126a",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/cnn/rgb_end.v",
+      "comments_changed": 14,
+      "before_sha256": "3f7390f4361af2e7d490a7463ead8701835f88c3bbeaf2fe2797a8db829aab5c",
+      "after_sha256": "bbfac0317cdc74baca760d1c99198cee84e701877f6ade66a7ee03d1eecfe941",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/fspi/fspi_slave.v",
+      "comments_changed": 24,
+      "before_sha256": "0de243dcb924874e478ee64600bbe72c0f61c8e71ccd311d93e0ff1f2db1a422",
+      "after_sha256": "806b57abcc7453ced35eea7a824bd4938af077c1bc7219cd8e230a680ec70c18",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/fspi/fspi_slave_top.v",
+      "comments_changed": 11,
+      "before_sha256": "720772a0e61d53ca97cae961c040d9531ce4327a85ba680c5250769d58bd97a2",
+      "after_sha256": "afbbf29cf0e356ddee94e52d1624b41755f284bcef4b8da208a3b2f08826596e",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/fspi/spi_ram_crtl.v",
+      "comments_changed": 56,
+      "before_sha256": "ec36eb622e6f10612d98c3a7cd4d32d70b146a4a4ab8ced23e4b3fb1fbb450ac",
+      "after_sha256": "eaf7cec0a388d5bf5939848faf99f6127a7bbb6d21aac640b7a8be466449e756",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/HDMI/lcd_para.v",
+      "comments_changed": 38,
+      "before_sha256": "03a79aa4997c1f2039d218f983dc5e9ac13d6709e624b03aae044a0ca98c6c33",
+      "after_sha256": "28aee83e4d0c1a1009e37d4c6d082a6ad37c60b7f40cd3a2e103bd5aa22004c3",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/image_pcie_capture.v",
+      "comments_changed": 284,
+      "before_sha256": "481b0b0fddad5770baa7e9df57436bd6f4cd2e03fae7c986f484543fe34729a2",
+      "after_sha256": "5e5863b51de4db002ce3de619b2e4e3f9cd6051a3ed20a3bbd14ab382e79b8f8",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/isp/dialate.v",
+      "comments_changed": 1,
+      "before_sha256": "b4d563c0b7189a337787515ab6a65379d2425fd73631c275e6e4bb81ad71206a",
+      "after_sha256": "85bf132c63aa2a5005b5db9488308ae51f191c3ce57a0b38ac51acdfdd1949f2",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/isp/erode.v",
+      "comments_changed": 1,
+      "before_sha256": "6222136a290da15d7043fecca50b3f209ebfa4909af21f57c091fda36cdbe1d3",
+      "after_sha256": "13d0dae619d175490e2adde1abefea0f1567195463aec944e7b7c7ef15d77b3a",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/isp/fps/fps_calculation.v",
+      "comments_changed": 1,
+      "before_sha256": "967569dc20fdf2de4321f51ce39a9ab9b4d533e25be079b66dfb27815a7f3569",
+      "after_sha256": "9fc5ab9fb88adfc0252211d5d39ae0cc1cc898e07f4a6d6554d147d540db4afb",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/isp/ISP/color_dt.v",
+      "comments_changed": 12,
+      "before_sha256": "2acca799aecec620214a49ea615f2e6c68188b74c5b9081129ab73540ac87704",
+      "after_sha256": "98ef7b69519fad19d047f4d84444828ad2fb3bdd71f79c255e6e7f5d2b170221",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/isp/ISP/matrix_3x3_1bit.v",
+      "comments_changed": 33,
+      "before_sha256": "90646b288b7e99d6478ff3ba6de118ef9f9a5555f2043dc4bf4b26c5500324fb",
+      "after_sha256": "4ea924dcb5370ebd13539eb191eb2443d704342b9d0704d1ea2c85476d04ad57",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/isp/ISP/rgb2ycbcr.v",
+      "comments_changed": 11,
+      "before_sha256": "95f0718f40f719dc20aa565c998c2ea733d272f5fb982d2fcf56043c8b6e0d52",
+      "after_sha256": "0a45d092ac1cf069c392c46ff58942195c22c45a9a13a7af5bc98f469c0142e4",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/isp/isp_ctrl.v",
+      "comments_changed": 38,
+      "before_sha256": "dc862c3357cf38e61b2bcf6d82bbe4d772b63d64eb10545a0beadb6677c3cfab",
+      "after_sha256": "4bb703ab2bb321a07b2dc4a7a8f89b39a6951fa579e8fd5d2b9fc826bf299c65",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/isp/middle_filter.v",
+      "comments_changed": 11,
+      "before_sha256": "0a05ef506edef73f3597089ad22389a9e29b1197022effd85316fbd02b98651b",
+      "after_sha256": "f431f8ffab639fb3097d8bcecda753d34f7895ad8f9f2844d75e3ad785ad3dcf",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/isp/sort.v",
+      "comments_changed": 16,
+      "before_sha256": "d00752bd74a7dfcc81c31ed6158f161d14eabd380fdd9b0742dfe0770f56e9bf",
+      "after_sha256": "c04f0c9a05b1029611872ed5446845668c3cf5a54b9c3ff0a30e4d383f2ce6a3",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/isp/vip/myram.v",
+      "comments_changed": 29,
+      "before_sha256": "67d07ad86ab719e6d2e16a23ac43fca35637558f366d8433fd1bf19ceae42a2e",
+      "after_sha256": "4943110f8f35d139ef4ccc95c6693d06dd16a19f6547f2351a8b29996f47652a",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/martix/Line_Shift_RAM.v",
+      "comments_changed": 1,
+      "before_sha256": "84476ae125dbed6ff18d499de2dc8e6bc5c9d86fe31662bd7935fff163390a95",
+      "after_sha256": "02c02a2f1ca79a0845bdb4c19c8eb1858589c3fcd54029da52678741a9f93fe2",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/martix/line_shift_ram_8bit_new.v",
+      "comments_changed": 68,
+      "before_sha256": "c2156cd2bcbd0f589f01a7e57d78b4a18424747611353aec895a737eb6031e58",
+      "after_sha256": "371b4a04d81cceb6b9bbe28a6070d9b2d09d88c18c46ecac7de9571ab2952898",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/martix/Matrix_Generate_3X3_Buf.v",
+      "comments_changed": 105,
+      "before_sha256": "54c29e5d982c506fb6ebfaf105d57e712bf8127bc7d91c7f2c4ba62e25583507",
+      "after_sha256": "ed1f7ec0ae4adacf969f1f9e8323defd42376efa989744e4bda930c79593e38a",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/mpu9250/fspi_slave_m_imu.v",
+      "comments_changed": 24,
+      "before_sha256": "d27f9ba2e09f00afb8be0bf267c12210b50eb61498a39254e09b2a9d70c1df96",
+      "after_sha256": "9d4f60c1837042dc109863c2ffa0fb70905d39373722ab205d574e5366c9557f",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/mpu9250/fspi_slave_top_m_imu.v",
+      "comments_changed": 11,
+      "before_sha256": "d3177a7e2bccb52006bcfdc8c617b6b40382860470266050404a0e6698d2b898",
+      "after_sha256": "ad390edf5cd7cfeef5e4c12204fe3776c88e4ffb8cd88f8075d1aecb0d1e4cb5",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/mpu9250/image_pcie_capture_m_imu.v",
+      "comments_changed": 284,
+      "before_sha256": "4c3414d0bd69fee458e61a2aea7990c7cd43b00958086ecf562e68c5581294d2",
+      "after_sha256": "063d4c0b79a169f5c91eeede8b0330c87b2565855c89202a33ce576d9c0f41b9",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/mpu9250/imu_i2c_master.v",
+      "comments_changed": 2,
+      "before_sha256": "0bbd2df4dc1b3ad7362bcea7882efb3785f3c0862a85b72fcf0f712a78ec61fc",
+      "after_sha256": "7da63a7fe81f306982bab8a5f963a37436eea8df28687c2b43a79124f4a7f054",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/mpu9250/mpu9250_sampler.v",
+      "comments_changed": 18,
+      "before_sha256": "ed4c280225cdd781cc450b9f8bc2f73994ba0f0569468f5cd2860ad7e988b061",
+      "after_sha256": "e3b56bbd9e390186439204fc28a619482311db4a4589ab169eb590699ea02441",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/mpu9250/test_imu_bridge.sv",
+      "comments_changed": 3,
+      "before_sha256": "dc59d010bb3aaa498cc2f16f7c37b9451b9ad5d5e1de4ac101c7deb5f375f6c8",
+      "after_sha256": "aca368f84e7b87d1a92966c63b6b47aa9d05fe510c256b3d7a064caff0e6ad5e",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/mpu9250/test_imu_nack_retry.sv",
+      "comments_changed": 3,
+      "before_sha256": "04a680b29e07311465d97ad593184bbb847567f1d149234b18a3824e5fb3811a",
+      "after_sha256": "9b73502f3c81f3374df743a54c458eef42cd2fab9b35cdd2fea8d04902b350ae",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/cmos_capture_data.v",
+      "comments_changed": 31,
+      "before_sha256": "da9e16a5fb79da4a44cc41e1286c70ca51038a2c11c160d68fca9298e2c8b8b2",
+      "after_sha256": "50baa64d96bc17e1129c6d7f3bdd00051df0864bd9838f2a9d5341b83063884a",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/i2c_com.v",
+      "comments_changed": 32,
+      "before_sha256": "22e91bb572047d2ab1041f21be4c3b3286d591d7defa1158720081d897a1de8e",
+      "after_sha256": "eafd44ff075434de3e3830856b3e34b6df064ea2f5df662d4db98d389cdb60be",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/ov5640_top.v",
+      "comments_changed": 166,
+      "before_sha256": "752e894bc95356914ab8e5af522d0df211240becf8d2d9d8e2ce2073d2ef981d",
+      "after_sha256": "39a24e2da02cf3027c887c5bd1cbfd037c8259de10eb04d796141b76929b75d5",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/power_on_delay.v",
+      "comments_changed": 24,
+      "before_sha256": "e80cca3ed939401e514a4681708bfb4c63e7ac704a068d0bef6413ef7cbe7001",
+      "after_sha256": "aef5935a13607ba54e597c01269289cf9888325eeb892bd68c2a3a384c534fee",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640/rtl/reg_config.v",
+      "comments_changed": 15,
+      "before_sha256": "fb69314246e7e5e0adf392626528885b7f4a51e26542eae0070ebe6bc9f58d9e",
+      "after_sha256": "862eed1328b8bf95121bc5832bd00ef492355bc797c44ac1ad428ad85068d443",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/cmos_capture_data.v",
+      "comments_changed": 49,
+      "before_sha256": "4a592f8baa34396d91acd9f8d6d3d6141f1f23969fedbba57b055920f0604b27",
+      "after_sha256": "9f56710ec5d2945a7a55c9d2b4ed7336500a2dcc32d495d586f1a3cfa947415a",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/i2c_dri.v",
+      "comments_changed": 112,
+      "before_sha256": "eca2ab7c92ceffca374de078ca705f68ef9b022b1774a2074f24f9dc52329c65",
+      "after_sha256": "be9bc14d353109a244b411a2dc973143c1f990801258bb7991fecc432e628dd9",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/i2c_ov5640_rgb565_cfg.v",
+      "comments_changed": 148,
+      "before_sha256": "a60cca1c6e67735bdd306ae0c3668100d1128747ff63b431848f0d26bf8c02b5",
+      "after_sha256": "ddee49da7748f6caee63a7c950afde17384b3ac377707f81e40e34aa090a82fc",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/ov5640_dri/ov5640_dri.v",
+      "comments_changed": 72,
+      "before_sha256": "e51a06badf473c25fe45b350c7a3e6139c4c57a330d31810204de73c3ba9b6b6",
+      "after_sha256": "453a600d1de61631ac99ae7d3a115eddde7aed78a8f9f4cb3b0feb01af7431db",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/remote_vehicle_control.v",
+      "comments_changed": 43,
+      "before_sha256": "0a190ebeb6b03f98105eee964a60b7b5ca6fb1aba41571431934560906392da9",
+      "after_sha256": "cc8e9ea9cd99722ae7176d6a7c9e67bb8cc900d69c16b14a2d860fa60257eece",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    },
+    {
+      "path": "fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v",
+      "comments_changed": 20,
+      "before_sha256": "f892ca69726efe3ad68b34fafb00e3abc1ed9c22b4c10aa1261653394ad23f4e",
+      "after_sha256": "8db172c38a77acd1f7281e4f13c36d0021204e260c8b7c11ed79d2ce091ffa47",
+      "noncomment_slices_identical": true,
+      "tokens_identical": true,
+      "function_macros_identical": true,
+      "line_count_identical": true
+    }
+  ],
+  "runtime_tests_run": false,
+  "board_programs_changed": false,
+  "firmware_programmed": false
+}

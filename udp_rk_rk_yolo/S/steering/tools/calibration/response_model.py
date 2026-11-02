@@ -95,14 +95,14 @@ def choose(model,current,target,tolerance=1,min_samples=2,priority=0,
         enough=True
         if c['moved']==0 or c['min_deg']<-.15 or c['max_deg']>2*angle_limit:
             continue
-        # Zero response is allowed but remains a no-progress event. The worst
-        # observed nonzero response must not increase the residual materially.
+        # 允许记录零响应，但它仍算无进展；已观测非零响应的
+        # 最坏值也不能使剩余误差显著增大。
         worst=max(abs(error-sign*v) for v in [max(0,c['min_deg']),c['max_deg']])
         values=c.get('responses_deg') or [r['response_deg'] for r in model.get('records',[])
             if (r['direction'],r['duration_us'],r['priority'])==(direction,c['duration_us'],priority)]
         if not values:values=[c['min_deg'],c['max_deg']]
-        # E[|remaining error|], not |error - E[motion]|: a 0/6-degree
-        # actuator cannot be mistaken for a precise 3-degree actuator.
+        # 评分采用 E[|剩余误差|]，不是 |误差-E[转动]|；
+        # 响应为 0/6 度的执行器不能被误认为稳定转动 3 度。
         expected=statistics.mean(abs(error-sign*v) for v in values)
         guard=min(2*angle_limit,max(1,c['max_deg']*1.2+.3))
         if abs(current+sign*guard)>angle_limit or worst>abs(error)+.15 or expected>=abs(error)-.15:
@@ -123,7 +123,7 @@ def main():
     p.add_argument('--reference-binding',type=Path,
                    help='Explicit user-confirmed common physical zero; never inferred across sessions')
     args=p.parse_args()
-    # A trials fit the model; T goal trials stay out as independent validation.
+    # A 系列用于拟合，T 目标试验单独留作独立验证，不混入模型。
     paths=[v for v in args.logs.glob('*.json')
            if re.match(r'^A\d+_',v.name) and not v.name.endswith('.reservation.json')]
     model=fit(paths)

@@ -1,0 +1,15 @@
+{
+  "local_root": "D:\\Study_Object\\image_recognition\\image_recognition",
+  "source_files_checked": 193,
+  "mismatches": [],
+  "modified_existing_count": 147,
+  "counts": {
+    "两端公共模块": 4,
+    "M 端": 60,
+    "S 端": 73,
+    "FPGA 源码与工程入口": 10
+  },
+  "board_candidate_source_package_matches_local": true,
+  "production_updated": false,
+  "output": "D:\\Study_Object\\image_recognition\\image_recognition\\本次重构文件清单_20261102.txt"
+}

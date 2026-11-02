@@ -1,4 +1,4 @@
-/* Exercise module ownership without opening a device or issuing ioctl. */
+/* 验证模块独占关系，不打开设备或执行 ioctl。 */
 #define _DEFAULT_SOURCE
 #include <fcntl.h>
 #include <stdarg.h>

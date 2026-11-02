@@ -1,0 +1,29 @@
+{
+  "modules": [
+    "hmi_gear_feedback",
+    "remote_speed_controller",
+    "remote_direction_arbiter",
+    "lane_permission_guard",
+    "auto_brake_enable_gate",
+    "remote_stop_controller",
+    "hmi_control_synchronizer"
+  ],
+  "original_module_source": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\source\\image_pcie_capture.v",
+  "shared_module_source": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\source\\remote_vehicle_control.v",
+  "bodies_preserved": true,
+  "original_sha256": "d28dd8e827f051f9ebe050327fc6d9c5186f75c05f1eb92fb8393e69314d48ad",
+  "candidate_projects": [
+    {
+      "board": "S",
+      "project": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project_s_application_refactor_20261102\\project_s_refactor.pds",
+      "directory": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project_s_application_refactor_20261102",
+      "top_module": "image_pcie_capture"
+    },
+    {
+      "board": "M",
+      "project": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project_m_application_refactor_20261102\\project_m_refactor.pds",
+      "directory": "D:\\Study_Object\\image_recognition\\image_recognition\\fpga\\fpga_pcie_ov5640\\project_m_application_refactor_20261102",
+      "top_module": "image_pcie_capture_m_imu"
+    }
+  ]
+}

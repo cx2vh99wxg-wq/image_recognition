@@ -75,7 +75,7 @@ class HardwareIO:
     def center(self,mid,tolerance,budget):
         reference=self.out/'candidate.reference'
         reference.write_text('STEER_PHYSICAL_REFERENCE_V1 %u %.6f 1\n'%(self.session,mid))
-        # This reference is only for the isolated goal tool until verification.
+        # 在完成验证前，该零点只供隔离的目标工具使用。
         self.monitor.close();self.monitor=None
         tool=ROOT/'actuator/build/steering_goal_fspi'
         env=dict(os.environ,STEERING_PRIORITY='10',STEERING_MAX_CORRECTION_PULSES=str(min(6,budget//60000)))
@@ -172,8 +172,8 @@ def main():
             while (Path('/proc')/ids[0]).exists() and time.monotonic()<end:time.sleep(.02)
         if subprocess.run(['pgrep','-x','vehicle_control'],stdout=subprocess.DEVNULL).returncode!=1:raise HomeError('Controller did not release ownership')
         paused=True
-        # Declared=0 means UNKNOWN, never a fabricated mechanical zero. Normal
-        # FSPI policies can resume on failure, with closed-loop steering blocked.
+        # 声明值 0 表示 UNKNOWN，绝不捏造机械零点。正常
+        # 失败后可恢复 FSPI 策略，但闭环转向仍保持阻止状态。
         pending=out/'unconfirmed.reference'
         pending.write_text('STEER_PHYSICAL_REFERENCE_V1 %u 0 0\n'%a.session)
         config['environment']['STEERING_REFERENCE_FILE']=str(pending);atomic_json(config_path,config)

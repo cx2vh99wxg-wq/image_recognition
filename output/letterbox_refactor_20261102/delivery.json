@@ -1,0 +1,144 @@
+{
+  "date": "2026-11-02",
+  "project": "D:\\Study_Object\\image_recognition\\image_recognition",
+  "branch": "prelim_code",
+  "change": "Shared letterbox implementation with unchanged M/S compile-time policies; control overview comments corrected",
+  "static_inspection": {
+    "preprocessed_source_inspections": [
+      {
+        "board": "M",
+        "compiler_preprocessed_tokens_equal": true,
+        "token_count": 22514,
+        "token_sha256": "879a26dab8e78df3ba1634d4b8ca40c4f151ac30c84190c43eee359714a7b0dc"
+      },
+      {
+        "board": "S",
+        "compiler_preprocessed_tokens_equal": true,
+        "token_count": 22629,
+        "token_sha256": "45919057f980fb3e912b6aae95fb51eb39328400003110786aa3e386380d7359"
+      }
+    ],
+    "control_noncomment_tokens_unchanged": true,
+    "protected_files_unchanged": [
+      "udp_rk_rk_yolo/M/pcie/include/preprocess.h",
+      "udp_rk_rk_yolo/S/pcie/include/preprocess.h",
+      "udp_rk_rk_yolo/M/pcie/include/postprocess.h",
+      "udp_rk_rk_yolo/S/pcie/include/postprocess.h",
+      "udp_rk_rk_yolo/S/steering/runtime.json",
+      "udp_rk_rk_yolo/S/steering/homing.json",
+      "fpga/fpga_pcie_ov5640/project/project.fdc",
+      "fpga/fpga_pcie_ov5640/project_m_imu_nack_20261101/mpu9250_m.fdc"
+    ],
+    "runtime_tests_run": false,
+    "actuator_actions": false
+  },
+  "ARM_compile_and_text_sections": {
+    "M": {
+      "board": "M",
+      "root": "/home/linaro/refactor_letterbox_candidate_20261102",
+      "compiled": true,
+      "runtime_tests_run": false,
+      "production_files_replaced": false,
+      "processes_started_or_stopped": false,
+      "archive_sha256": "0ed687b3baad332d43f44e0289393008f75900683657b5655226b278da012a05",
+      "commands": [
+        {
+          "command": [
+            "make",
+            "-j2",
+            "all"
+          ],
+          "returncode": 0
+        },
+        {
+          "command": [
+            "/usr/bin/python3",
+            "imu/tools/build.py"
+          ],
+          "returncode": 0
+        }
+      ],
+      "binaries": {
+        "pcie/build/pcie_capture": {
+          "size": 3071928,
+          "sha256": "a9a20feb9afbb9deccd74136742943795b9e6ea46802b3a0a8b15a3e9e8223fd"
+        },
+        "udp/build/udp_sender": {
+          "size": 74080,
+          "sha256": "fbd289c8191d1524f584c973b8d8dd20daec2032192d85b31498975e61b16a1c"
+        },
+        "imu/build/angle_monitor": {
+          "size": 74264,
+          "sha256": "d7b8952fc336fe7824bdb745efbb4d7ab4dfc429674f415029366df67d54ea0f"
+        }
+      },
+      "preprocess_object_text_before_sha256": "c04fee6201cd4a353f46ca5b4d0d2ee270beb2f27e61c29685446563792d3b60",
+      "preprocess_object_text_after_sha256": "c04fee6201cd4a353f46ca5b4d0d2ee270beb2f27e61c29685446563792d3b60",
+      "preprocess_object_text_identical": true
+    },
+    "S": {
+      "board": "S",
+      "root": "/home/linaro/refactor_letterbox_candidate_20261102",
+      "compiled": true,
+      "runtime_tests_run": false,
+      "production_files_replaced": false,
+      "processes_started_or_stopped": false,
+      "archive_sha256": "0ed687b3baad332d43f44e0289393008f75900683657b5655226b278da012a05",
+      "commands": [
+        {
+          "command": [
+            "make",
+            "-j2",
+            "all"
+          ],
+          "returncode": 0
+        },
+        {
+          "command": [
+            "/usr/bin/python3",
+            "steering/tools/build.py",
+            "--hardware"
+          ],
+          "returncode": 0
+        }
+      ],
+      "binaries": {
+        "pcie/build/app": {
+          "size": 79592,
+          "sha256": "898b99e90a37f431aae4e6e21b44095a2c3da3e34b35661c5f7fd0949d5f55d1"
+        },
+        "udp/build/video_receiver": {
+          "size": 75392,
+          "sha256": "c30143a5ac9627d34ac5ab2baa7b81c0eb18ecd1a92fb9e730a7041a70ff2879"
+        },
+        "x11/csrc/build/eight_camera_renderer": {
+          "size": 362080,
+          "sha256": "0da0dd33815bc0991be2a82e6d496d4b8fd27cc8c2e33dfeb1df26a811efa218"
+        },
+        "fspi/build/vehicle_control": {
+          "size": 150088,
+          "sha256": "91326d9538b66a29d6dc02fb92718fd6214f4d4bd20e152f5576895bb2194ab9"
+        },
+        "steering/actuator/build/steering_step_fspi": {
+          "size": 74240,
+          "sha256": "477fd6c06f2b1669027a4b840f3fa6c00b4fd3b3ef2d4d2fcb35ad9a998608c5"
+        },
+        "steering/actuator/build/steering_goal_fspi": {
+          "size": 79752,
+          "sha256": "17e43fdf7a79536ec0da648fc699aa800ed190b9a8becd911511d310891d4644"
+        }
+      },
+      "preprocess_object_text_before_sha256": "649f880f0392befcc224b10cef461183cca46f1251920421886cd64f25fe0514",
+      "preprocess_object_text_after_sha256": "649f880f0392befcc224b10cef461183cca46f1251920421886cd64f25fe0514",
+      "preprocess_object_text_identical": true
+    }
+  },
+  "local_source_package_files_checked": 193,
+  "source_package_matches_local": true,
+  "runtime_tests_run": false,
+  "programs_started_or_stopped": false,
+  "production_files_replaced": false,
+  "FPGA_or_HMI_changed": false,
+  "previous_SBIT_SFC_sha256_unchanged": true,
+  "origin_directory_changed": false
+}

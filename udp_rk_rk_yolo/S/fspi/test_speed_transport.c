@@ -24,7 +24,7 @@ int main(void) {
  result=3;assert(fspi_read_speed_snapshot(&s,0)==-1&&errno==EIO);result=4;
  io_error=ETIMEDOUT;assert(fspi_read_speed_snapshot(&s,0)==-1&&errno==ETIMEDOUT);io_error=0;
  fixture[0]=0xaa;fixture[1]=0xa7;fixture[2]=0x81;fixture[3]=speed_crc8(fixture[2]);
- assert(!fspi_read_speed_snapshot(&s,0)&&!s.known); // released-baseline qualification pending
+ assert(!fspi_read_speed_snapshot(&s,0)&&!s.known); // 已释放基准的有效性尚待确认。
  fixture[2]=0xc0;fixture[3]=speed_crc8(fixture[2]);assert(fspi_read_speed_snapshot(&s,0)==-1);
  fixture[2]=0xc4;fixture[3]=speed_crc8(fixture[2]);assert(fspi_read_speed_snapshot(&s,0)==-1);
  fixture[0]=0xab;fixture[2]=0xc2;fixture[3]=speed_crc8(fixture[2]);assert(fspi_read_speed_snapshot(&s,0)==-1);

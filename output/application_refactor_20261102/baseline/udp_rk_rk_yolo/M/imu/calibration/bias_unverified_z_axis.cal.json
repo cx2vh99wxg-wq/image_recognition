@@ -1,0 +1,24 @@
+{
+  "axis": [
+    0.0,
+    0.0,
+    1.0
+  ],
+  "bias": [
+    -0.6493549605,
+    -2.3228664265,
+    0.257366415
+  ],
+  "gyro_std": [
+    0.04160904014831359,
+    0.05613060543376295,
+    0.04365395353680433
+  ],
+  "accel_norm_mean": 9.83415154419918,
+  "samples": 2000,
+  "duration_s": 19.993884,
+  "temperature_c": 30.0812991,
+  "physical_center_established": false,
+  "chassis_compensated": false,
+  "note": "Stationary declaration and mounting direction need independent physical verification"
+}

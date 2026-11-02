@@ -95,10 +95,10 @@ def main():
                 if not select.select([s],[],[],.25)[0]:continue
                 current=decode_packet(s.recv(65535))
                 if current is None:continue
-                # Never re-zero an already bound session merely because another
-                # terminal was opened while the mechanism was turned.
-                # A manual confirmation may have completed in another shell
-                # while this helper was waiting for normal system startup.
+                # 机构已偏转时又打开一个终端，
+                # 不能因此给已绑定的会话再次置零。
+                # 本辅助程序等待常规启动的同时，
+                # 操作者可能已在另一 shell 完成零点确认。
                 latest=json.loads((ROOT/'runtime.json').read_text())
                 reference=Path(latest['environment']['STEERING_REFERENCE_FILE'])
                 if reference_session(reference)==current:
@@ -112,8 +112,8 @@ def main():
                 if len(ids)>1:raise ValueError('Multiple vehicle_control processes')
                 pid=ids[0] if ids else None
                 if pid!=last_pid:last_pid=pid;stable_since=now
-                # make run checks its new FSPI PID after three seconds. Wait
-                # until that check has finished before replacing this process.
+                # make run 会在三秒后检查新 FSPI PID，
+                # 待该检查结束后才能替换此进程。
                 if pid and now-stable_since>=4:break
             else:
                 print('AUTO_CENTER_DEFER telemetry/controller not ready; no zero changed. Open another terminal to retry.',flush=True);return 3

@@ -1,0 +1,18 @@
+{
+  "schema": "STEER_MODEL_REFERENCE_REBIND_V1",
+  "original_model": "/home/linaro/S/steering/logs/rigid_fast_20261031/response_model.table",
+  "original_sha256": "256ad489bd9bc250bfe7f65fee2657b37cf4609317a452442fbaa8c2d28c8791",
+  "original_session": 290675832,
+  "new_model": "/home/linaro/S/steering/logs/road_recheck_20261031/response_model.table",
+  "new_sha256": "ce8e63311f837d02ae9759e615d1f0292984ca66eaa608db07cca3a6b2b58efa",
+  "new_reference": "/home/linaro/S/steering/logs/road_recheck_20261031/center.reference",
+  "reference_sha256": "9b1a6dac1a5d32d565528efa3f40e6c2f0f9fa8e29558acb8d95bfa04a3dd2ba",
+  "new_session": 4033203686,
+  "new_zero_raw_deg": 0.059,
+  "user_same_mounting_direction_confirmed": true,
+  "user_mechanical_center_confirmed": true,
+  "fine_cells_and_dynamics_unchanged": true,
+  "calibration_trials_relabelled": false,
+  "calibration_sessions_merged": false,
+  "no_actuation": true
+}

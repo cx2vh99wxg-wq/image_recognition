@@ -32,7 +32,7 @@ def atomic_write(path,data):
 
 def validate_recording(rows,axis,old_bias):
     if len(rows)!=SAMPLES:raise ValueError('incomplete startup capture')
-    # Validate continuity/session of the entire capture, including warmup.
+    # 连续性和会话检查覆盖整段采集数据，预热阶段也包括在内。
     calibrate(rows,axis)
     fit,holdout=rows[200:600],rows[600:]
     report=calibrate(fit,axis);check=calibrate(holdout,axis)

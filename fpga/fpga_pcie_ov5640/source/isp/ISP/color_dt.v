@@ -26,7 +26,7 @@ module color_dt
 	output [23:0] out_data
 );
 
-//坐标计算
+// 求出当前像素的坐标。
 reg [15:0] col_cnt;
 reg [15:0] row_cnt;
 
@@ -52,7 +52,7 @@ always @(posedge video_pclk or negedge rst_n) begin
 		row_cnt             <=          row_cnt;
 end
 
-//计算最大边框
+// 求出边框需要覆盖的最大范围。
 reg [15:0] 	up_reg	    ;	  
 reg [15:0] 	down_reg 	;
 reg [15:0] 	left_reg 	;
@@ -78,22 +78,22 @@ always@(posedge video_pclk or negedge rst_n) begin
 		flag_reg  <= 1'b1;
 		
 		if(col_cnt < left_reg) 
-			left_reg <= col_cnt;		//左边界
+			left_reg <= col_cnt;		// 当前区域的左端边界。
 		else
 			left_reg <= left_reg;
 			
 		if(col_cnt > right_reg) 
-			right_reg <= col_cnt;		//右边界
+			right_reg <= col_cnt;		// 当前区域的右端边界。
 		else
 			right_reg <= right_reg;
 			
 		if(row_cnt < up_reg) 
-			up_reg <= row_cnt;		    //上边界
+			up_reg <= row_cnt;		    // 当前区域的顶端边界。
 		else
 			up_reg <= up_reg;
 			
 		if(row_cnt > down_reg) 
-			down_reg <= row_cnt;		//下边界
+			down_reg <= row_cnt;		// 当前区域的底端边界。
 		else
 			down_reg <= down_reg;	
 	end
@@ -122,17 +122,17 @@ always@(posedge video_pclk or negedge rst_n) begin
 	end
 end
 
-//*****************************************************
-//绘制矩形框
+// ── 图像流水线 ──
+// 写入矩形边界的像素。
 
-//计算摄像头输入图像的像素坐标
+// 求出摄像头输入图像的像素坐标。
 wire [15:0] x_cnt;
 wire [15:0] y_cnt;
 
 assign x_cnt = video_x;
 assign y_cnt = video_y;
 
-reg boarder_flag;	//标志着像素点位于方框上
+reg boarder_flag;	// 图像流水线：标志着像素点位于方框上
 
 always@(posedge video_pclk or negedge rst_n) begin
 	if(!rst_n) begin
@@ -141,11 +141,11 @@ always@(posedge video_pclk or negedge rst_n) begin
 	else begin	
 			if(rectangular_flag)begin
 				if((x_cnt >  rectangular_left) && (x_cnt < rectangular_right)
-						&& ((y_cnt == rectangular_up ) ||(y_cnt == rectangular_down)) ) begin //绘制上下边界
+						&& ((y_cnt == rectangular_up ) ||(y_cnt == rectangular_down)) ) begin // 写入矩形的顶边和底边。
 					boarder_flag <= 1'd1;	
 				end
 				else if((y_cnt > rectangular_up) && (y_cnt < rectangular_down)
-						&& ((x_cnt == rectangular_left) ||(x_cnt == rectangular_right)) ) begin //绘制左右边界
+						&& ((x_cnt == rectangular_left) ||(x_cnt == rectangular_right)) ) begin // 写入矩形的左边和右边。
 					boarder_flag <= 1'd1;
 				end
 				else begin

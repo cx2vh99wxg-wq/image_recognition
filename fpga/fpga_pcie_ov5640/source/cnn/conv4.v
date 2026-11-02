@@ -2,7 +2,7 @@
 
 module conv4
 #(
-    parameter   [10:0]  IMG_HDISP   = 11'd640,                      //  640*480
+    parameter   [10:0]  IMG_HDISP   = 11'd640,                      // 参数记录为 640*480。
     parameter   [10:0]  IMG_VDISP   = 11'd480,
     parameter                           core_witdh                = 4'd8  
 )
@@ -18,25 +18,25 @@ module conv4
     output             [   7: 0]        post_img_b                 ,
     input              [   7: 0]        per_img_Y                  ,
     output             [   7: 0]        post_img_Y                 ,
-    //  Image data prepared to be processed
-    input  wire                         per_img_vsync              ,//  Prepared Image data vsync valid signal
-    input  wire                         per_img_href               ,//  Prepared Image data href vaild  signal
-    input  wire        [   7: 0]        conv4_1_Data_in            ,//  Prepared Image brightness input
+    // 卷积流水线：Image data prepared to be processed
+    input  wire                         per_img_vsync              ,// 卷积流水线：Prepared Image data vsync valid signal
+    input  wire                         per_img_href               ,// 卷积流水线：Prepared Image data href vaild signal
+    input  wire        [   7: 0]        conv4_1_Data_in            ,// 卷积流水线：Prepared Image brightness input
     input  wire        [   7: 0]        conv4_2_Data_in            ,
     input  wire        [   7: 0]        conv4_3_Data_in            ,
     input  wire        [   7: 0]        conv4_4_Data_in            ,
 
 
-    //  Image data has been processed
-    output wire                         post_img_vsync             ,//  processed Image data vsync valid signal
-    output wire                         post_img_href              ,//  processed Image data href vaild  signal
-    output wire        [   7: 0]        conv4_1_Data_out           ,//  processed Image brightness output
-    output wire        [   7: 0]        conv4_2_Data_out           ,//  processed Image brightness output
-    output wire        [   7: 0]        conv4_3_Data_out           ,//  processed Image brightness output
-    output wire        [   7: 0]        conv4_4_Data_out            //  processed Image brightness output
+    // 卷积流水线：Image data has been processed
+    output wire                         post_img_vsync             ,// 卷积流水线：processed Image data vsync valid signal
+    output wire                         post_img_href              ,// 卷积流水线：processed Image data href vaild signal
+    output wire        [   7: 0]        conv4_1_Data_out           ,// 卷积流水线：processed Image brightness output
+    output wire        [   7: 0]        conv4_2_Data_out           ,// 卷积流水线：processed Image brightness output
+    output wire        [   7: 0]        conv4_3_Data_out           ,// 卷积流水线：processed Image brightness output
+    output wire        [   7: 0]        conv4_4_Data_out            // 卷积流水线：processed Image brightness output
     
 );
-//----------------------------------------------------------------------
+// ── 卷积流水线 ──
 
 conv_example
 #(  .IMG_HDISP (IMG_HDISP ),
@@ -52,7 +52,7 @@ conv1_1      (
     .conv_Data_out                      (conv4_1_Data_out          ), 
     .post_img_vsync                     (     post_img_vsync       ),
     .post_img_href                      (     post_img_href        ),
-//卷积核参数
+// 本节给出卷积核系数。
     .conv_coef_1                        (     0                    ),
     .conv_coef_2                        (     0                    ),
     .conv_coef_3                        (     0                   ),
@@ -62,7 +62,7 @@ conv1_1      (
     .conv_coef_7                        (     0                   ),
     .conv_coef_8                        (     0                    ),
     .conv_coef_9                        (     0                   ),
-//偏置参数
+// 本节给出运算所用的偏置系数。
     .conv_bias_0                        (       58125                   ) 
 );
 
@@ -80,7 +80,7 @@ conv1_2      (
     .conv_Data_out                      (conv4_2_Data_out          ), 
     .post_img_vsync                     (            ),
     .post_img_href                      (            ),
-//卷积核参数
+// 本节给出卷积核系数。
     .conv_coef_1                        (        76                   ),
     .conv_coef_2                        (        126                  ),
     .conv_coef_3                        (        76                   ),
@@ -90,7 +90,7 @@ conv1_2      (
     .conv_coef_7                        (        76                   ),
     .conv_coef_8                        (        126                  ),
     .conv_coef_9                        (        76                   ),
-//偏置参数
+// 本节给出运算所用的偏置系数。
     .conv_bias_0                        (         0                 ) 
 );
 
@@ -108,7 +108,7 @@ conv1_3      (
     .conv_Data_out                      (conv4_3_Data_out          ), 
     .post_img_vsync                     (            ),
     .post_img_href                      (            ),
-//卷积核参数
+// 本节给出卷积核系数。
     .conv_coef_1                        (         76                  ),
     .conv_coef_2                        (         126                 ),
     .conv_coef_3                        (         76                  ),
@@ -118,7 +118,7 @@ conv1_3      (
     .conv_coef_7                        (         76                  ),
     .conv_coef_8                        (         126                 ),
     .conv_coef_9                        (         76                  ),
-//偏置参数
+// 本节给出运算所用的偏置系数。
     .conv_bias_0                        (         0                 ) 
 );
 
@@ -136,7 +136,7 @@ conv1_4      (
     .conv_Data_out                      (conv4_4_Data_out          ), 
     .post_img_vsync                     (            ),
     .post_img_href                      (            ),
-//卷积核参数
+// 本节给出卷积核系数。
     .conv_coef_1                        (         76                  ),
     .conv_coef_2                        (         126                 ),
     .conv_coef_3                        (         76                  ),
@@ -146,11 +146,11 @@ conv1_4      (
     .conv_coef_7                        (         76                  ),
     .conv_coef_8                        (         126                 ),
     .conv_coef_9                        (         76                  ),
-//偏置参数
+// 本节给出运算所用的偏置系数。
     .conv_bias_0                        (         0                 ) 
 );
 
-///////////////rgb Y ，延迟/////////////////
+// rgb Y ，延迟。
 conv_example_rgb_delay
 #(
     .IMG_HDISP                          (IMG_HDISP                 ),

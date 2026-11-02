@@ -1,19 +1,19 @@
 `timescale 1ns / 1ps
 
 
-/* RGBתYUV�㷨
-			Y  =  0.183R + 0.614G + 0.062B + 16 ;
- 			CB = -0.101R - 0.338G + 0.439B + 128;
-			CR =  0.439R - 0.399G - 0.040B + 128;
-			     		   |  |
-			      		  \|  |/ 
-			      		   \  / 
-			                \/
-			Y  =  (0.183R + 0.614G )+(0.062B +  16);
- 			CB = -(0.101R + 0.338G )+(0.439B + 128);
-			CR = -(0.399G + 0.040B )+(0.439R + 128);
-
-*/
+/* 旧说明含编码损坏，原记录为：RGBתYUV�㷨
+			* Y = 0.183R + 0.614G
+			* + 0.062B + 16 ; CB =
+			* -0.101R - 0.338G +
+			* 0.439B + 128; CR =
+			* 0.439R - 0.399G -
+			* 0.040B + 128; | | \|
+			* |/ \ / \/ Y = (0.183R
+			* + 0.614G )+(0.062B +
+			* 16); CB = -(0.101R +
+			* 0.338G )+(0.439B + 128);
+			* CR = -(0.399G + 0.040B
+			* )+(0.439R + 128); */
 
 module	rgb2ycbcr(
     input                            pixelclk   ,
@@ -37,8 +37,8 @@ module	rgb2ycbcr(
 );
 
 
-/***************************************parameters*******************************************/
-//multiply 256
+/** parameters。 */
+// 图像流水线：multiply 256
 parameter    para_0183_10b = 10'd47     ;    
 parameter    para_0614_10b = 10'd157    ;
 parameter    para_0062_10b = 10'd16     ;
@@ -53,7 +53,7 @@ parameter    para_128_18b  = 18'd32768  ;
 
 
 
-/********************************************************************************************/
+/** ── 图像流水线 ── */
 wire [7 : 0]        i_r_8b                  ;
 wire [7 : 0]        i_g_8b                  ;
 wire [7 : 0]        i_b_8b                  ;
@@ -122,11 +122,11 @@ assign o_de0   = i_de0_delay_3;
 
 
 
-/********************************************************************************************/
+/** ── 图像流水线 ── */
 
-/********************************************************************************************/
+/** ── 图像流水线 ── */
 
-//LV1 pipeline : mult
+// 图像流水线：LV1 pipeline : mult
 always @(posedge   pixelclk)begin
     mult_r_for_y_18b  <= i_r_8b * para_0183_10b;
     mult_r_for_cb_18b <= i_r_8b * para_0101_10b;
@@ -149,7 +149,7 @@ end
 
 
 
-//LV2 pipeline : add
+// 图像流水线：LV2 pipeline : add
 always @(posedge   pixelclk)begin
     add_y_0_18b  <= mult_r_for_y_18b  + mult_g_for_y_18b;
     add_y_1_18b  <= mult_b_for_y_18b  + para_16_18b;
@@ -162,7 +162,7 @@ always @(posedge   pixelclk)begin
 end
 
 
-//LV3 pipeline : y + cb + cr
+// 图像流水线：LV3 pipeline : y + cb + cr
 always @(posedge   pixelclk)begin
     y_tmp  <= add_y_0_18b  + add_y_1_18b;
     cb_tmp <= add_cb_0_18b - add_cb_1_18b ;
@@ -172,9 +172,9 @@ end
 
 
 
-/********************************************************************************************/
+/** ── 图像流水线 ── */
 
-/***************************************timing***********************************************/
+/** timing。 */
 always @(posedge    pixelclk)begin
     i_h_sync_delay_1  <= i_hsync;
     i_v_sync_delay_1  <= i_vsync;

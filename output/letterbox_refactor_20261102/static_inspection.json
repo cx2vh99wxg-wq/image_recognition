@@ -1,0 +1,29 @@
+{
+  "preprocessed_source_inspections": [
+    {
+      "board": "M",
+      "compiler_preprocessed_tokens_equal": true,
+      "token_count": 22514,
+      "token_sha256": "879a26dab8e78df3ba1634d4b8ca40c4f151ac30c84190c43eee359714a7b0dc"
+    },
+    {
+      "board": "S",
+      "compiler_preprocessed_tokens_equal": true,
+      "token_count": 22629,
+      "token_sha256": "45919057f980fb3e912b6aae95fb51eb39328400003110786aa3e386380d7359"
+    }
+  ],
+  "control_noncomment_tokens_unchanged": true,
+  "protected_files_unchanged": [
+    "udp_rk_rk_yolo/M/pcie/include/preprocess.h",
+    "udp_rk_rk_yolo/S/pcie/include/preprocess.h",
+    "udp_rk_rk_yolo/M/pcie/include/postprocess.h",
+    "udp_rk_rk_yolo/S/pcie/include/postprocess.h",
+    "udp_rk_rk_yolo/S/steering/runtime.json",
+    "udp_rk_rk_yolo/S/steering/homing.json",
+    "fpga/fpga_pcie_ov5640/project/project.fdc",
+    "fpga/fpga_pcie_ov5640/project_m_imu_nack_20261101/mpu9250_m.fdc"
+  ],
+  "runtime_tests_run": false,
+  "actuator_actions": false
+}

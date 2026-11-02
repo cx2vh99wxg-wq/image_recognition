@@ -1,2 +1,0 @@
-Vtest_hmi_auto_brake_switch.o: Vtest_hmi_auto_brake_switch.cpp \
- Vtest_hmi_auto_brake_switch__pch.h

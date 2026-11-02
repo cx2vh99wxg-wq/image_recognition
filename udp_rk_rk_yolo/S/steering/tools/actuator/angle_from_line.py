@@ -53,8 +53,8 @@ def main():
     if args.position_side is not None:
         parser.error('--position-side applies only to --abs-y-mm readings')
 
-    # The rotating straight mark must pass through the actual shaft centre.
-    # Both line orientations must stay on the same arctangent branch.
+    # 旋转直线标记必须穿过真实轴心。
+    # 两次直线方向须处于同一反正切分支。
     current = math.atan2(-args.y_mm, args.baseline_mm)
     zero = math.atan2(-args.zero_y_mm, args.baseline_mm)
     geometric_deg = math.degrees(current - zero)

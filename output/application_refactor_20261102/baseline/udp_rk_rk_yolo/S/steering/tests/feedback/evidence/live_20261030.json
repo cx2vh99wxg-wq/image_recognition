@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-30",
+  "capture": {
+    "csv": "logs/imu_merge_live_20261030_001.csv",
+    "sha256": "f068994fbb28787577c2cdd61fa4fd052f25e72515a56ed870c2744f3aa0ce28",
+    "rows": 1000,
+    "accepted": 1000,
+    "sessions": 1,
+    "flags": [
+      1
+    ],
+    "real_relative": 1000,
+    "zero_flagged": 0,
+    "simulated": 0,
+    "source_age_max_ms": 6,
+    "source_dt_median_ms": 10.565,
+    "source_dt_max_ms": 10.565,
+    "receive_dt_median_ms": 10.262875,
+    "receive_dt_max_ms": 18.031417,
+    "sequence_gaps": 0,
+    "raw_angle_min_deg": 2.306,
+    "raw_angle_max_deg": 2.495,
+    "fixture": "MPU not mounted; no independent angle reference",
+    "actuator_commands_issued": 0,
+    "absolute_network_latency_measured": false
+  },
+  "interpretation": {
+    "angle_accuracy_accepted": false,
+    "physical_axis_calibrated": false,
+    "tests_paused_by_user": true,
+    "reason": "MPU angle issue reported; no additional test or actuator command authorized until user resumes"
+  }
+}

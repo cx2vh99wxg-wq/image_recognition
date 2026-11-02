@@ -1,4 +1,0 @@
-source=42571 capture_ns=1593695264506
-L=DASHED raw=UNKNOWN reason=HELD Q=67 duty=55 spans=1 gaps=0
-R=DASHED raw=DASHED reason=OK Q=76 duty=41 spans=2 gaps=1
-ego_reference=176.00 road_area=4322 objects=2 evidence_ns=1593093901093/1593695264506

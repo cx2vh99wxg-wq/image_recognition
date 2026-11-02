@@ -28,7 +28,7 @@ def run_python(script: Path, *args: str, quiet: bool = False) -> None:
 
 
 def check_isolated_builds(tests: Path) -> None:
-    # Temporary copies deliberately omit the opposite board's source directory.
+    # 临时源码副本有意排除另一块板的实现目录。
     with tempfile.TemporaryDirectory(prefix="isolation_", dir=tests) as directory:
         isolated = Path(directory).resolve()
         if not isolated.is_relative_to(tests.resolve()):
@@ -40,7 +40,7 @@ def check_isolated_builds(tests: Path) -> None:
             destination = project / role / suffix
             shutil.copytree(source, destination, ignore=ignore)
             if role == "S":
-                # Native fake-FSPI tests need S's SDK headers, not any M implementation.
+                # 本机假 FSPI 检查只依赖 S 端 SDK 头文件，不链接 M 端实现。
                 for support in ["fspi/include", "include"]:
                     sdk = S_ROOT.parent / support
                     if sdk.exists():
@@ -91,7 +91,7 @@ def check_cli(tests: Path, contract_test: Path) -> None:
         assert len(rows) == 4 and all(r["zero_valid"] == "0" for r in rows)
         dt = (int(rows[-1]["sample_time_ns"]) - int(rows[0]["sample_time_ns"])) / 1e9
         assert abs(float(rows[-1]["relative_deg"]) - 30 * dt) < 1e-4
-        # The merged Linux backend is real: never open SPI in a software-only test.
+        # 合并后的 Linux 后端会访问真实硬件，纯软件检查不能打开 SPI。
         if sys.platform == "win32":
             assert "NOT_IMPLEMENTED_OR_NOT_READY" in run(
                 imu["imu_dump"], ["--backend", "fpga", "--samples", "1"], 1).stderr

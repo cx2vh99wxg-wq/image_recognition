@@ -1,0 +1,56 @@
+tail -n 9 /tmp/compile_letterbox_candidate_M_20261102.log; test ! -f /home/linaro/refactor_letterbox_candidate_20261102/compile_result.json || cat /home/linaro/refactor_letterbox_candidate_20261102/compile_result.json; printf '\nSIX_CMD_DONE\n'
+[?2004lmake[1]: Leaving directory '/home/linaro/refactor_letterbox_candidate_20261102/M/pcie'
+PCIe module build complete
+COMPILE_ONLY M /usr/bin/python3 imu/tools/build.py
+BUILT refactor_letterbox_candidate_20261102/M/imu/build/imu_dump
+BUILT refactor_letterbox_candidate_20261102/M/imu/build/angle_monitor
+BUILT refactor_letterbox_candidate_20261102/M/imu/build/feedback_inspect
+BUILT refactor_letterbox_candidate_20261102/M/imu/build/imu_probe
+BUILT refactor_letterbox_candidate_20261102/M/imu/build/replay_stationary
+CANDIDATE_COMPILE_RESULT {"board": "M", "root": "/home/linaro/refactor_letterbox_candidate_20261102", "compiled": true, "runtime_tests_run": false, "production_files_replaced": false, "processes_started_or_stopped": false, "archive_sha256": "0ed687b3baad332d43f44e0289393008f75900683657b5655226b278da012a05", "commands": [{"command": ["make", "-j2", "all"], "returncode": 0}, {"command": ["/usr/bin/python3", "imu/tools/build.py"], "returncode": 0}], "binaries": {"pcie/build/pcie_capture": {"size": 3071928, "sha256": "a9a20feb9afbb9deccd74136742943795b9e6ea46802b3a0a8b15a3e9e8223fd"}, "udp/build/udp_sender": {"size": 74080, "sha256": "fbd289c8191d1524f584c973b8d8dd20daec2032192d85b31498975e61b16a1c"}, "imu/build/angle_monitor": {"size": 74264, "sha256": "d7b8952fc336fe7824bdb745efbb4d7ab4dfc429674f415029366df67d54ea0f"}}, "preprocess_object_text_before_sha256": "c04fee6201cd4a353f46ca5b4d0d2ee270beb2f27e61c29685446563792d3b60", "preprocess_object_text_after_sha256": "c04fee6201cd4a353f46ca5b4d0d2ee270beb2f27e61c29685446563792d3b60", "preprocess_object_text_identical": true}
+[1]+  Done                    nohup python3 -u /tmp/compile_letterbox_candidate_20261102.py --board M > /tmp/compile_letterbox_candidate_M_20261102.log 2>&1 < /dev/null
+{
+  "board": "M",
+  "root": "/home/linaro/refactor_letterbox_candidate_20261102",
+  "compiled": true,
+  "runtime_tests_run": false,
+  "production_files_replaced": false,
+  "processes_started_or_stopped": false,
+  "archive_sha256": "0ed687b3baad332d43f44e0289393008f75900683657b5655226b278da012a05",
+  "commands": [
+    {
+      "command": [
+        "make",
+        "-j2",
+        "all"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "imu/tools/build.py"
+      ],
+      "returncode": 0
+    }
+  ],
+  "binaries": {
+    "pcie/build/pcie_capture": {
+      "size": 3071928,
+      "sha256": "a9a20feb9afbb9deccd74136742943795b9e6ea46802b3a0a8b15a3e9e8223fd"
+    },
+    "udp/build/udp_sender": {
+      "size": 74080,
+      "sha256": "fbd289c8191d1524f584c973b8d8dd20daec2032192d85b31498975e61b16a1c"
+    },
+    "imu/build/angle_monitor": {
+      "size": 74264,
+      "sha256": "d7b8952fc336fe7824bdb745efbb4d7ab4dfc429674f415029366df67d54ea0f"
+    }
+  },
+  "preprocess_object_text_before_sha256": "c04fee6201cd4a353f46ca5b4d0d2ee270beb2f27e61c29685446563792d3b60",
+  "preprocess_object_text_after_sha256": "c04fee6201cd4a353f46ca5b4d0d2ee270beb2f27e61c29685446563792d3b60",
+  "preprocess_object_text_identical": true
+}
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

@@ -2,9 +2,9 @@
 
 
 module cnn_top#(
-    parameter   [10:0]  IMG_HDISP   = 11'd640,                      //  640*480
+    parameter   [10:0]  IMG_HDISP   = 11'd640,                      // 参数记录为 640*480。
     parameter   [10:0]  IMG_VDISP   = 11'd480,
-    parameter                           core_witdh                = 4'd11   //对的
+    parameter                           core_witdh                = 4'd11   // 卷积流水线：对的
 )(
     input                               clk                        ,
     input                               rst_n                      ,
@@ -19,7 +19,7 @@ module cnn_top#(
 
     input                               per_img_vsync_1              ,
     input                               per_img_href_1               ,
-    //input              [   7: 0]        per_img_Y_1                  ,
+    // 停用示例，仅供对照：input [ 7: 0] per_img_Y_1 ,
 
     output                              post_img_vsync             ,
     output                              post_img_href              ,
@@ -110,7 +110,7 @@ wire [9:0] conv2d_data_out;
     wire                                conv2d_post_img_href       ;
     wire               [   7: 0]        conv2d_post_img_Y          ;
 
-conv2d                                                              ////卷积核在模块内部
+conv2d                                                              // 卷积流水线：//卷积核在模块内部
 #(
     .IMG_HDISP                          (IMG_HDISP                 ),
     .IMG_VDISP                          (IMG_VDISP                 ),
@@ -171,13 +171,13 @@ gamma_judge u_gamma_judge(
     .per_data                           (conv2d_data_out           ),
     .post_img_Y_dalay                   (gamma_judge_post_img_Y_delay) 
 );
-// reg href_delay_1 ;
-// reg vsync_delay_1;
-//     always @(posedge clk )           
-//         begin                                        
-//            href_delay_1<= gamma_judge_post_img_href;
-//            vsync_delay_1<= gamma_judge_post_img_vsync;
-//         end                 
+// 停用示例，仅供对照：reg href_delay_1 ;
+// 停用示例，仅供对照：reg vsync_delay_1;
+// 停用示例，仅供对照：always @(posedge clk )
+// begin：本节对应的标识或作用域。
+// 停用示例，仅供对照：href_delay_1<= gamma_judge_post_img_href;
+// 停用示例，仅供对照：vsync_delay_1<= gamma_judge_post_img_vsync;
+// end：本节对应的标识或作用域。
 
 rgb_end u_rgb_end(
     .clk             	( clk              ),
@@ -191,8 +191,8 @@ rgb_end u_rgb_end(
     .post_img_out_r  	( post_img_r   ),
     .post_img_out_g  	( post_img_g   ),
     .post_img_out_b  	( post_img_b   ),
-    // .per_img_href    	( href_delay_1    ),
-    // .per_img_vsync   	( vsync_delay_1     ),
+    // 停用示例，仅供对照：.per_img_href ( href_delay_1 ),
+    // 停用示例，仅供对照：.per_img_vsync ( vsync_delay_1 ),
     .per_img_href    	( gamma_judge_post_img_href    ),
     .per_img_vsync   	( gamma_judge_post_img_vsync     ),
     .post_img_href   	( post_img_href   ),

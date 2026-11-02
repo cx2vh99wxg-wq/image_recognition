@@ -8,8 +8,8 @@ module rgb_end(
     input              [   7: 0]        per_img_r                  ,
     input              [   7: 0]        per_img_g                  ,
     input              [   7: 0]        per_img_b                  ,
-    input              [   7: 0]        per_img_Y                  ,//处理完的Y值
-    input              [   7: 0]        per_img_Y_delay            ,//原始Y值
+    input              [   7: 0]        per_img_Y                  ,// 图像处理后的 Y 分量。
+    input              [   7: 0]        per_img_Y_delay            ,// 处理前的 Y 分量。
     
     output reg         [   7: 0]        post_img_out_r             ,
     output reg         [   7: 0]        post_img_out_g             ,
@@ -21,7 +21,7 @@ module rgb_end(
     output reg                          post_img_vsync              
 );
 
-////////////////延时//////////////////////////////////////////
+// 延时。
 localparam C_CLK_LATENCY = 2;
 
 reg     [C_CLK_LATENCY-1:0]     matrix_img_vsync_r1;
@@ -55,9 +55,9 @@ begin
     end
 end
 
-/////////////////////////////////////////////////////////////////
+// ── 卷积流水线 ──
 
-////////////////1拍///////////////////////
+// 1拍。
 
     reg                [  15: 0]        data_r,data_g,data_b;
     always @(posedge clk or negedge rst_n)
@@ -76,14 +76,14 @@ end
                 end
         end
 
-//打一拍
+// 延后一拍再送往下级。
 reg [7:0] per_img_Y_delay_reg=0;
 always @(posedge clk)
     per_img_Y_delay_reg <= per_img_Y_delay;
 
 
-////////////2拍///////////////////////
-// outports wire
+// 2拍。
+// 卷积流水线：outports wire
 wire [31:0] 	Recip;
 
 Reciprocal_cnn u_Reciprocal_cnn(
@@ -101,7 +101,7 @@ always @(posedge clk)
     end
 
 
-///////////////////////3拍////////////////////////////
+// 3拍。
 reg [47:0]   	R_out,G_out,B_out;
     always @(posedge clk )           
         begin                                        
@@ -118,7 +118,7 @@ reg [47:0]   	R_out,G_out,B_out;
                     B_out<=Recip*data_b_delay;
                 end                                                                                        
         end                                          
-//////////////4拍//////////////////////
+// 4拍。
 reg [7:0]R_out1,G_out1,B_out1;
 
     always @(posedge clk or negedge rst_n)           
@@ -145,7 +145,7 @@ reg [7:0]R_out1,G_out1,B_out1;
             else    B_out1<=B_out[38:31];                                                                                                                                                     
         end                                          
 
-//////////////5拍///////////////////////////////
+// 5拍。
 
     always @(posedge clk )           
         begin                                        
@@ -160,7 +160,7 @@ reg [7:0]R_out1,G_out1,B_out1;
             post_img_out_g   <=G_out1;
             post_img_out_b   <=B_out1;
         end                                          
-   //assign out_raw = raw[47:31] > 255 ? 255 : raw[38:31];
+   // 停用示例，仅供对照：assign out_raw = raw[47:31] > 255 ? 255 : raw[38:31];
                                                                                         
                                                                                                                                                                  
 endmodule                    
@@ -170,8 +170,8 @@ endmodule
 
 module Reciprocal_cnn(
     input clk,
-    input wire[7:0]     Average,    //均�??
-    output reg[31:0]    Recip       //倒数,1位整数位�?31位小数位
+    input wire[7:0]     Average,    // 旧说明含编码损坏，原记录为：均�??
+    output reg[31:0]    Recip       // 旧说明含编码损坏，原记录为：倒数,1位整数位�?31位小数位
 );
 
     always @ (clk)

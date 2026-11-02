@@ -1,0 +1,198 @@
+{
+  "S": {
+    "Setup_Slow": {
+      "clock_pair_rows": 25,
+      "failed_pairs": [
+        [
+          "cmos2_pclk",
+          "ddrphy_sysclk",
+          -6.921
+        ],
+        [
+          "cmos5_pclk",
+          "ddrphy_sysclk",
+          -6.89
+        ],
+        [
+          "cmos6_pclk",
+          "ddrphy_sysclk",
+          -6.91
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos2_pclk",
+          -2.955
+        ],
+        [
+          "ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred",
+          "cmos2_pclk",
+          -3.613
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos5_pclk",
+          -8.093
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos6_pclk",
+          -7.742
+        ]
+      ],
+      "new_failed_pairs": []
+    },
+    "Hold_Slow": {
+      "clock_pair_rows": 25,
+      "failed_pairs": [],
+      "new_failed_pairs": []
+    },
+    "Setup_Fast": {
+      "clock_pair_rows": 25,
+      "failed_pairs": [
+        [
+          "cmos2_pclk",
+          "ddrphy_sysclk",
+          -3.821
+        ],
+        [
+          "cmos5_pclk",
+          "ddrphy_sysclk",
+          -3.631
+        ],
+        [
+          "cmos6_pclk",
+          "ddrphy_sysclk",
+          -3.706
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos2_pclk",
+          -2.473
+        ],
+        [
+          "ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred",
+          "cmos2_pclk",
+          -2.146
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos5_pclk",
+          -5.864
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos6_pclk",
+          -5.522
+        ]
+      ],
+      "new_failed_pairs": []
+    },
+    "Hold_Fast": {
+      "clock_pair_rows": 25,
+      "failed_pairs": [],
+      "new_failed_pairs": []
+    },
+    "no_new_failing_clock_pair": true,
+    "all_hold_pairs_clean": true,
+    "full_design_timing_clean": false,
+    "note": "Existing asynchronous camera/DDR setup failing pairs remain; generation success is not an all-timing-pass claim."
+  },
+  "M": {
+    "Setup_Slow": {
+      "clock_pair_rows": 25,
+      "failed_pairs": [
+        [
+          "cmos6_pclk",
+          "ddrphy_sysclk",
+          -6.805
+        ],
+        [
+          "cmos2_pclk",
+          "ddrphy_sysclk",
+          -6.594
+        ],
+        [
+          "cmos5_pclk",
+          "ddrphy_sysclk",
+          -6.884
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos2_pclk",
+          -2.98
+        ],
+        [
+          "ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred",
+          "cmos2_pclk",
+          -4.758
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos5_pclk",
+          -4.532
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos6_pclk",
+          -9.456
+        ]
+      ],
+      "new_failed_pairs": []
+    },
+    "Hold_Slow": {
+      "clock_pair_rows": 25,
+      "failed_pairs": [],
+      "new_failed_pairs": []
+    },
+    "Setup_Fast": {
+      "clock_pair_rows": 25,
+      "failed_pairs": [
+        [
+          "cmos6_pclk",
+          "ddrphy_sysclk",
+          -3.563
+        ],
+        [
+          "cmos2_pclk",
+          "ddrphy_sysclk",
+          -3.702
+        ],
+        [
+          "cmos5_pclk",
+          "ddrphy_sysclk",
+          -3.655
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos2_pclk",
+          -2.491
+        ],
+        [
+          "ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred",
+          "cmos2_pclk",
+          -2.891
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos5_pclk",
+          -3.583
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos6_pclk",
+          -6.592
+        ]
+      ],
+      "new_failed_pairs": []
+    },
+    "Hold_Fast": {
+      "clock_pair_rows": 25,
+      "failed_pairs": [],
+      "new_failed_pairs": []
+    },
+    "no_new_failing_clock_pair": true,
+    "all_hold_pairs_clean": true,
+    "full_design_timing_clean": false,
+    "note": "Existing asynchronous camera/DDR setup failing pairs remain; generation success is not an all-timing-pass claim."
+  }
+}

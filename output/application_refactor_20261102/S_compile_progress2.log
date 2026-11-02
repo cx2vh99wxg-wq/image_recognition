@@ -1,0 +1,71 @@
+tail -n 14 /tmp/compile_application_candidate_S_20261102.log; test ! -f /home/linaro/refactor_candidate_20261102/compile_result.json || cat /home/linaro/refactor_candidate_20261102/compile_result.json; printf '\nSIX_CMD_DONE\n'
+[?2004l?????????:    build/libshared.a
+
+?????? 'make run-background' ?????????????????? (PCIe + UDP)
+?????? 'make run-display' ?????????????????? (X11)
+?????? 'make run-fspi' ???????????????????????? (FSPI)
+?????? 'make run' ??????????????????
+?????? 'make stop' ????????????
+COMPILE_ONLY S /usr/bin/python3 steering/tools/build.py --hardware
+BUILT refactor_candidate_20261102/S/steering/actuator/build/steering_step_fspi
+BUILT refactor_candidate_20261102/S/steering/actuator/build/steering_status
+BUILT refactor_candidate_20261102/S/steering/actuator/build/steering_goal_fspi
+BUILT refactor_candidate_20261102/S/steering/actuator/build/steering_lane_goal_fspi
+BUILT refactor_candidate_20261102/S/steering/actuator/build/steering_action_fspi
+CANDIDATE_COMPILE_RESULT {"board": "S", "root": "/home/linaro/refactor_candidate_20261102", "compiled": true, "runtime_tests_run": false, "production_files_replaced": false, "processes_started_or_stopped": false, "archive_sha256": "d6d62790cd2ad03b0b64ce44e0e106d92c6e8a5694476069a4951fe1ed6f61f4", "commands": [{"command": ["make", "-j2", "all"], "returncode": 0}, {"command": ["/usr/bin/python3", "steering/tools/build.py", "--hardware"], "returncode": 0}], "binaries": {"pcie/build/app": {"size": 79592, "sha256": "898b99e90a37f431aae4e6e21b44095a2c3da3e34b35661c5f7fd0949d5f55d1"}, "udp/build/video_receiver": {"size": 75392, "sha256": "c30143a5ac9627d34ac5ab2baa7b81c0eb18ecd1a92fb9e730a7041a70ff2879"}, "x11/csrc/build/eight_camera_renderer": {"size": 362080, "sha256": "0da0dd33815bc0991be2a82e6d496d4b8fd27cc8c2e33dfeb1df26a811efa218"}, "fspi/build/vehicle_control": {"size": 150088, "sha256": "91326d9538b66a29d6dc02fb92718fd6214f4d4bd20e152f5576895bb2194ab9"}, "steering/actuator/build/steering_step_fspi": {"size": 74240, "sha256": "477fd6c06f2b1669027a4b840f3fa6c00b4fd3b3ef2d4d2fcb35ad9a998608c5"}, "steering/actuator/build/steering_goal_fspi": {"size": 79752, "sha256": "17e43fdf7a79536ec0da648fc699aa800ed190b9a8becd911511d310891d4644"}}}
+[1]+  Done                    nohup python3 -u /tmp/compile_application_candidate_20261102.py --board S > /tmp/compile_application_candidate_S_20261102.log 2>&1 < /dev/null
+{
+  "board": "S",
+  "root": "/home/linaro/refactor_candidate_20261102",
+  "compiled": true,
+  "runtime_tests_run": false,
+  "production_files_replaced": false,
+  "processes_started_or_stopped": false,
+  "archive_sha256": "d6d62790cd2ad03b0b64ce44e0e106d92c6e8a5694476069a4951fe1ed6f61f4",
+  "commands": [
+    {
+      "command": [
+        "make",
+        "-j2",
+        "all"
+      ],
+      "returncode": 0
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "steering/tools/build.py",
+        "--hardware"
+      ],
+      "returncode": 0
+    }
+  ],
+  "binaries": {
+    "pcie/build/app": {
+      "size": 79592,
+      "sha256": "898b99e90a37f431aae4e6e21b44095a2c3da3e34b35661c5f7fd0949d5f55d1"
+    },
+    "udp/build/video_receiver": {
+      "size": 75392,
+      "sha256": "c30143a5ac9627d34ac5ab2baa7b81c0eb18ecd1a92fb9e730a7041a70ff2879"
+    },
+    "x11/csrc/build/eight_camera_renderer": {
+      "size": 362080,
+      "sha256": "0da0dd33815bc0991be2a82e6d496d4b8fd27cc8c2e33dfeb1df26a811efa218"
+    },
+    "fspi/build/vehicle_control": {
+      "size": 150088,
+      "sha256": "91326d9538b66a29d6dc02fb92718fd6214f4d4bd20e152f5576895bb2194ab9"
+    },
+    "steering/actuator/build/steering_step_fspi": {
+      "size": 74240,
+      "sha256": "477fd6c06f2b1669027a4b840f3fa6c00b4fd3b3ef2d4d2fcb35ad9a998608c5"
+    },
+    "steering/actuator/build/steering_goal_fspi": {
+      "size": 79752,
+      "sha256": "17e43fdf7a79536ec0da648fc699aa800ed190b9a8becd911511d310891d4644"
+    }
+  }
+}
+SIX_CMD_DONE
+[?2004hroot@linaro-alip:/# 

@@ -23,6 +23,10 @@
                     (_format verilog)
                     (_timespec "2026-10-29T13:08:13")
                 )
+                (_file "../source/remote_vehicle_control.v"
+                    (_format verilog)
+                    (_timespec "2026-11-02T00:00:00")
+                )
                 (_file "../source/pcie/pcie_dma_ctrl/ipm_distributed_sdpram_v1_2.v"
                     (_format verilog)
                     (_timespec "2026-10-19T20:28:37")

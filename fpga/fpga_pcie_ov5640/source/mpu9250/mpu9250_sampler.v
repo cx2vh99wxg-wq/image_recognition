@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
-// M-only autonomous sensor sampler; disabled until 00 4D 00 A5 arrives.
-// A snapshot request (00 4D 01 A5) freezes all fields + FPGA acquisition time.
+// IMU 硬件：M-only autonomous sensor sampler; disabled until 00 4D 00 A5 arrives.
+// IMU 硬件：A snapshot request (00 4D 01 A5) freezes all fields + FPGA acquisition time.
 module mpu9250_sampler #(parameter CLK_HZ=25000000)(
     input wire clk,rst_n,spi_clk,spi_cs,
     input wire [3:0] spi_data,
@@ -49,15 +49,15 @@ module mpu9250_sampler #(parameter CLK_HZ=25000000)(
       .scl(mpu_scl),.sda(mpu_sda),.busy(busy),.done(done),.error(bus_error),.read_data(read_data));
     function [15:0] configuration(input [4:0] n);
       case(n)
-        0:configuration=16'h6b80; // device reset; wait 100ms
-        1:configuration=16'h6b01; // PLL X gyro; wait 100ms
+        0:configuration=16'h6b80; // 参数记录为 device reset; wait 100ms。
+        1:configuration=16'h6b01; // 参数记录为 PLL X gyro; wait 100ms。
         2:configuration=16'h6c00;
-        3:configuration=16'h1a03; // 41Hz gyro DLPF, internal sample clock 1kHz
-        4:configuration=16'h1909; // 100Hz
-        5:configuration=16'h1b00; // +/-250 dps, 131 LSB/dps
-        6:configuration=16'h1c00; // +/-2g, 16384 LSB/g
-        7:configuration=16'h1d03; // 41Hz accel DLPF
-        8:configuration=16'h3700; // clear data-ready by INT_STATUS read
+        3:configuration=16'h1a03; // IMU 硬件：41Hz gyro DLPF, internal sample clock 1kHz
+        4:configuration=16'h1909; // 参数记录为 100Hz。
+        5:configuration=16'h1b00; // 参数记录为 +/-250 dps, 131 LSB/dps。
+        6:configuration=16'h1c00; // 参数记录为 +/-2g, 16384 LSB/g。
+        7:configuration=16'h1d03; // 参数记录为 41Hz accel DLPF。
+        8:configuration=16'h3700; // IMU 硬件：clear data-ready by INT_STATUS read
         default:configuration=16'h3801;
       endcase
     endfunction
@@ -98,11 +98,11 @@ module mpu9250_sampler #(parameter CLK_HZ=25000000)(
         if(done&&enabled)begin
           if(bus_error!=0)begin
             error_code<=bus_error;errors<=errors+1'b1;valid_sample<=0;
-            // A NACK before a sample read returns no usable bytes. Retry
-            // that transaction twice without resetting the identified MPU,
-            // timestamps or sequence. Invalidity remains visible until a
-            // genuinely new successful sample; persistent/other faults keep
-            // the original slow recovery and host freshness protection.
+            // IMU 硬件：A NACK before a sample read returns no usable bytes. Retry
+            // IMU 硬件：that transaction twice without resetting the identified MPU,
+            // IMU 硬件：timestamps or sequence. Invalidity remains visible until a
+            // IMU 硬件：genuinely new successful sample; persistent/other faults keep
+            // IMU 硬件：the original slow recovery and host freshness protection.
             if(state==SAMPLE_WAIT&&identified&&bus_error==1&&sample_nack_retries<2)begin
               sample_nack_retries<=sample_nack_retries+1'b1;
               state<=SAMPLE;delay_count<=CLK_HZ/1000;
@@ -123,18 +123,18 @@ module mpu9250_sampler #(parameter CLK_HZ=25000000)(
             end
             SAMPLE_WAIT:begin
               sample_nack_retries<=0;
-              if(read_data[112])begin // INT_STATUS.RAW_DATA_RDY_INT, not a repeat
+              if(read_data[112])begin // IMU 硬件：INT_STATUS.RAW_DATA_RDY_INT, not a repeat
                 raw_sample<=read_data[111:0];sample_us<=transaction_us;
                 sample_sequence<=sample_sequence+1'b1;valid_sample<=1;error_code<=0;
               end
-              state<=SAMPLE;delay_count<=CLK_HZ/10000; // 0.1ms gap, ~2ms polling period
+              state<=SAMPLE;delay_count<=CLK_HZ/10000; // IMU 硬件：0.1ms gap, ~2ms polling period
             end
             default:begin end
           endcase
         end
       end
     end
-    // CRC is computed sequentially away from the SPI/400MHz datapath.
+    // IMU 硬件：CRC is computed sequentially away from the SPI/400MHz datapath.
     reg [511:0] staging;
     reg [31:0] crc;
     reg [6:0] crc_index;

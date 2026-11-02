@@ -1,0 +1,54 @@
+[
+  {
+    "path": "udp_rk_rk_yolo/M/pcie/csrc/preprocess.c",
+    "sha256": "caf0805cd8fae0a31593d27ae9847567e4c1b0a32b934a910e9e3daf86909699"
+  },
+  {
+    "path": "udp_rk_rk_yolo/S/pcie/csrc/preprocess.c",
+    "sha256": "8f1675f040bf9bdcca37a0a2e127c9a1df4b6695c4e9ddda0db5fff7ce1df130"
+  },
+  {
+    "path": "udp_rk_rk_yolo/S/fspi/csrc/main.c",
+    "sha256": "bbc62672f1dd616edf18ada39b508879ba5cd4b787d5c1110ed57739fd0ce40c"
+  },
+  {
+    "path": "udp_rk_rk_yolo/M/pcie/include/preprocess.h",
+    "sha256": "d2e0dd6483c28ad7ed2359ef135c5ef7beb0297bdd72e781a0c3a6f05af51a21",
+    "protected": true
+  },
+  {
+    "path": "udp_rk_rk_yolo/S/pcie/include/preprocess.h",
+    "sha256": "d2e0dd6483c28ad7ed2359ef135c5ef7beb0297bdd72e781a0c3a6f05af51a21",
+    "protected": true
+  },
+  {
+    "path": "udp_rk_rk_yolo/M/pcie/include/postprocess.h",
+    "sha256": "106ce8b3200f62fb0f1cd77995536c3ce9feebf1bf2e7385cdafc44775ba2fe7",
+    "protected": true
+  },
+  {
+    "path": "udp_rk_rk_yolo/S/pcie/include/postprocess.h",
+    "sha256": "4d68ece73e5b52f5b24c7a53436d828c09247a981fdbc9c7c8ebe9bacd4ab801",
+    "protected": true
+  },
+  {
+    "path": "udp_rk_rk_yolo/S/steering/runtime.json",
+    "sha256": "45a7010f8f02077db152ff3f432fee495a3ba798dbc2b1bd63758717ec47e873",
+    "protected": true
+  },
+  {
+    "path": "udp_rk_rk_yolo/S/steering/homing.json",
+    "sha256": "b8045a7a7ff82cdc0fb22fbb7a077ca44e249b8dc77ba1bf24b60ba798b676a0",
+    "protected": true
+  },
+  {
+    "path": "fpga/fpga_pcie_ov5640/project/project.fdc",
+    "sha256": "5a63707b374137a6c1ae9c5f3c553364848895a14db404317672dcdb5ffcbae3",
+    "protected": true
+  },
+  {
+    "path": "fpga/fpga_pcie_ov5640/project_m_imu_nack_20261101/mpu9250_m.fdc",
+    "sha256": "85653e1d2cd339da8e603761510235eb808758d4c7102124d64d033ebbf40778",
+    "protected": true
+  }
+]

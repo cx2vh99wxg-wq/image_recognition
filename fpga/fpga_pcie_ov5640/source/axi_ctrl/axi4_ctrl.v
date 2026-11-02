@@ -1,15 +1,15 @@
 module axi4_ctrl #(
 	parameter 	C_ID_LEN      = 4, 
 			C_DATA_LEN    = 128, 
-			C_DATA_SIZE   = 3'b100, 	//	C_DATA_LEN=8:0, 16:1, 32:2, 64:3, 128:4, 256:5, 512:6, 1024:7
+			C_DATA_SIZE   = 3'b100, 	// 参数记录为 C_DATA_LEN=8:0, 16:1, 32:2, 64:3, 128:4, 256:5, 512:6, 1024:7。
 			
 			C_BURST_LEN   = 16,
 			
 			C_STRB_LEN    = C_DATA_LEN / 8, 
 			C_ADDR_INC    = C_BURST_LEN * C_STRB_LEN,
 			
-			C_BASE_ADDR   = 32'h00000000, 	//	Start at 0x00000000 by default
-			C_BUF_SIZE    = 22, 			//	Allocate 2^22 bytes (4MB) by default. The module takes 4*4MB by default. 
+			C_BASE_ADDR   = 32'h00000000, 	// 参数记录为 Start at 0x00000000 by default。
+			C_BUF_SIZE    = 22, 			// 存储接口：Allocate 2^22 bytes (4MB) by default. The module takes 4*4MB by default.
 			C_RD_END_ADDR = 1920*1080*2,
 			
 			C_W_WIDTH     = 16, 
@@ -61,14 +61,14 @@ module axi4_ctrl #(
     output                   axi_rready      ,
     
     input  wire     [2:0]       wframe_pclk     ,
-    input  wire     [2:0]       wframe_vsync    ,		//	Writter VSync. Flush on falling edge. Connect to EOF.
+    input  wire     [2:0]       wframe_vsync    ,		// 存储接口：Writter VSync. Flush on falling edge. Connect to EOF.
     input  wire     [2:0]       wframe_data_en  ,
     input  wire     [C_W_WIDTH-1:0]      wframe_data0    ,
     input  wire     [C_W_WIDTH-1:0]      wframe_data1    ,
     input  wire     [C_W_WIDTH-1:0]      wframe_data2    ,
     
     input  wire                 rframe_pclk     ,
-    input  wire                 rframe_vsync    ,		//	Reader VSync. Flush on falling edge. Connect to ~EOF. 
+    input  wire                 rframe_vsync    ,		// 存储接口：Reader VSync. Flush on falling edge. Connect to ~EOF.
     input  wire                 rframe_data_en  ,
 	output reg                  rframe_data_valid,
     output wire     [C_R_WIDTH-1:0]      rframe_data     ,
@@ -85,7 +85,7 @@ module axi4_ctrl #(
 	assign axi_awid    = {C_ID_LEN{1'b0}};
 	assign axi_awlen   = C_BURST_LEN - 1'b1;
 	assign axi_awsize  = C_DATA_SIZE;
-	assign axi_awburst = 2'b01;	//	INCR
+	assign axi_awburst = 2'b01;	// INCR：本节对应的标识或作用域。
 	assign axi_awlock  = 1'b0;
 	assign axi_awcache = 0;
 	assign axi_awprot  = 3'b0;
@@ -96,7 +96,7 @@ module axi4_ctrl #(
 	assign axi_arid    = {C_ID_LEN{1'b0}};
 	assign axi_arlen   = C_BURST_LEN - 1'b1;
 	assign axi_arsize  = C_DATA_SIZE;
-	assign axi_arburst = 2'b01;	//	INCR
+	assign axi_arburst = 2'b01;	// INCR：本节对应的标识或作用域。
 	assign axi_arlock  = 1'b0;
 	assign axi_arcache = 0;
 	assign axi_arprot  = 3'b0;
@@ -106,12 +106,12 @@ module axi4_ctrl #(
 	
 	
 	
-	////////////////////////////////////////////////////////////////
-	//	R/W Schedule
+	// ── 存储接口 ──
+	// 存储接口：R/W Schedule
 	reg	[1:0] 	rc_wframe_index;
 	reg	[1:0] 	rc_rframe_index;
 
-	//	Use 4 data buffers to simplify control. 
+	// 存储接口：Use 4 data buffers to simplify control.
 	wire 	[1:0] 	w_wframe_index_p1 = rc_wframe_index + 1; 
 	wire 	[1:0] 	w_wframe_index_next = (w_wframe_index_p1 == rc_rframe_index) ? rc_wframe_index + 2 : rc_wframe_index + 1; 
 
@@ -129,20 +129,20 @@ module axi4_ctrl #(
 			rc_wframe_index <= rc_wframe_index; 
 			rc_rframe_index <= rc_rframe_index; 
 			
-			//	When wfifo_rd_rst_busy_neg, write pointer increments. When rfifo_wr_rst_busy_neg, read pointer increments. 
+			// 存储接口：When wfifo_rd_rst_busy_neg, write pointer increments. When rfifo_wr_rst_busy_neg, read pointer increments.
 			case ({r_rframe_inc, r_wframe_inc})
 				2'b01: begin
-						//	Write increment only. 
-						rc_wframe_index <= w_wframe_index_next; 	//	Use 4 buffers. 
+						// 存储接口：Write increment only.
+						rc_wframe_index <= w_wframe_index_next; 	// 参数记录为 Use 4 buffers.。
 						r_wframe_index_last <= rc_wframe_index; 
 					end
 				2'b10: begin
-						//	Use r_wframe_index_last. 
+						// 存储接口：Use r_wframe_index_last.
 						rc_rframe_index <= r_wframe_index_last; 
 					end
 				2'b11: begin
-						//	Update write & read pointer simutaneously. 
-						rc_wframe_index <= w_wframe_index_next; 	//	Use 4 buffers. 
+						// 存储接口：Update write & read pointer simutaneously.
+						rc_wframe_index <= w_wframe_index_next; 	// 参数记录为 Use 4 buffers.。
 						rc_rframe_index <= rc_wframe_index; 		
 					end
 			endcase
@@ -152,29 +152,29 @@ module axi4_ctrl #(
 	
 	
 	
-	////////////////////////////////////////////////////////////////
-	//	AXI Writter
+	// ── 存储接口 ──
+	// 存储接口：AXI Writter
 
 	wire 				w_wfifo_pempty, w_wfifo_empty; 
 	wire 				w_wfifo_ren; 
 	wire 	[C_DATA_LEN-1:0] 	w_wfifo_rdata; 
 
-	//	On EOF when ~empty, flush the last data then reset FIFO. 
+	// 存储接口：On EOF when ~empty, flush the last data then reset FIFO.
 	reg 	[3:0] 	rs_w = 0; 
 	wire 	[3:0] 	ws_w_idle = 0; 
 	wire 	[3:0] 	ws_w_wdata = 1; 
 	wire 	[3:0] 	ws_w_winc = 2; 
 	wire 	[3:0] 	ws_w_eof = 3; 
 
-	//	Write Pointer. Burst bytes is always C_ADDR_INC. 
+	// 存储接口：Write Pointer. Burst bytes is always C_ADDR_INC.
 	reg 	[C_BUF_SIZE-1:0] 	rc_w_ptr = 0; 
 	reg 	[0:0] 		rc_w_eof = 0; 
 	reg 				r_w_rst = 1; 
 	
-	//	Burst Control
-	reg 	[7:0] 	rc_burst = 0; 	//	Compare to C_BURST_LEN - 1. 
+	// 存储接口：Burst Control
+	reg 	[7:0] 	rc_burst = 0; 	// 参数记录为 Compare to C_BURST_LEN - 1.。
 	
-	//	EOF Monitor. 
+	// 存储接口：EOF Monitor.
 	reg 	[1:0] 	r_wframe_sync = 0; 	
 	reg 			r_weof_pending = 0; 
 
@@ -194,7 +194,7 @@ module axi4_ctrl #(
 			rc_w_eof <= 0; 
 			r_wframe_inc <= 0; 
 			
-			//	Raise EOF on falling edge of VSYNC. 
+			// 存储接口：Raise EOF on falling edge of VSYNC.
 			r_wframe_sync <= {r_wframe_sync, wframe_vsync}; 
 			if(r_wframe_sync == 2'b10) begin
 				r_weof_pending <= 1; 
@@ -217,13 +217,13 @@ module axi4_ctrl #(
 							rs_w <= ws_w_wdata; 
 						
 						end else if(r_weof_pending && (~w_wfifo_empty)) begin
-							//	There's some data in the FIFO. write last. 
+							// 存储接口：There's some data in the FIFO. write last.
 							axi_awvalid <= 1; 
 							axi_wvalid <= 1; 
 							rs_w <= ws_w_wdata; 
 							
 						end else if(r_weof_pending) begin
-							//	EOF. Reset FIFO. Increment write pointer. 
+							// 存储接口：EOF. Reset FIFO. Increment write pointer.
 							r_w_rst <= 1; 
 							r_wframe_inc <= 1; 
 							rs_w <= ws_w_eof; 
@@ -233,7 +233,7 @@ module axi4_ctrl #(
 					end
 					
 				ws_w_eof: begin
-						//	Wait for some cycles to release reset. 
+						// 存储接口：Wait for some cycles to release reset.
 						r_weof_pending <= 0; 
 						rc_w_ptr <= 0; 
 						
@@ -247,7 +247,7 @@ module axi4_ctrl #(
 				ws_w_wdata: begin
 						rc_burst <= rc_burst + axi_wready; 
 						
-						//	On last transaction terminate write. 
+						// 存储接口：On last transaction terminate write.
 						if(axi_wlast && axi_wready) begin
 							axi_wvalid <= 0; 
 							rs_w <= ws_w_winc; 
@@ -277,19 +277,19 @@ module axi4_ctrl #(
 
 
 	W_FIFO_16i_128o u_W_FIFO_16i_128o (
-	.wr_clk(wframe_pclk),                    // input
-	.wr_rst(r_w_rst),                    // input
-	.wr_en(wframe_data_en),                      // input
-	.wr_data(wframe_data),                  // input [15:0]
-	// .wr_full(wr_full),                  // output
-	// .almost_full(almost_full),          // output
-	.rd_clk(axi_clk),                    // input
-	.rd_rst(r_w_rst),                    // input
-	.rd_en(w_wfifo_ren),                      // input
-	.rd_data(w_wfifo_rdata),                  // output [255:0]
-	.rd_empty(w_wfifo_empty),                // output
-	// .rd_water_level(rd_water_level),    // output [7:0]
-	.almost_empty(w_wfifo_pempty)         // output
+	.wr_clk(wframe_pclk),                    // 停用示例，仅供对照：input
+	.wr_rst(r_w_rst),                    // 停用示例，仅供对照：input
+	.wr_en(wframe_data_en),                      // 停用示例，仅供对照：input
+	.wr_data(wframe_data),                  // 停用示例，仅供对照：input [15:0]
+	// 停用示例，仅供对照：.wr_full(wr_full), // output
+	// 停用示例，仅供对照：.almost_full(almost_full), // output
+	.rd_clk(axi_clk),                    // 停用示例，仅供对照：input
+	.rd_rst(r_w_rst),                    // 停用示例，仅供对照：input
+	.rd_en(w_wfifo_ren),                      // 停用示例，仅供对照：input
+	.rd_data(w_wfifo_rdata),                  // 停用示例，仅供对照：output [255:0]
+	.rd_empty(w_wfifo_empty),                // 停用示例，仅供对照：output
+	// 停用示例，仅供对照：.rd_water_level(rd_water_level), // output [7:0]
+	.almost_empty(w_wfifo_pempty)         // 停用示例，仅供对照：output
 	);
 
 
@@ -368,19 +368,19 @@ wire 					w_rfifo_empty;
 
 
 	R_FIFO_128i_128o u_R_FIFO_128i_128o (
-	.wr_clk(axi_clk),                    // input
-	.wr_rst(w_rfifo_rst),                    // input
-	.wr_en(rfifo_wenb),                      // input
-	.wr_data(rfifo_wdata),                  // input [255:0]
-	// .wr_full(wr_full),                  // output
-	// .wr_water_level(wr_water_level),    // output [7:0]
-	.almost_full(rfifo_wfull),          // output
-	.rd_clk(rframe_pclk),                    // input
-	.rd_rst(w_rfifo_rst),                    // input
-	.rd_en(rframe_data_en),                      // input
-	.rd_data(rframe_data)                  // output [15:0]
-	// .rd_empty(rd_empty),                // output
-	// .almost_empty(almost_empty)         // output
+	.wr_clk(axi_clk),                    // 停用示例，仅供对照：input
+	.wr_rst(w_rfifo_rst),                    // 停用示例，仅供对照：input
+	.wr_en(rfifo_wenb),                      // 停用示例，仅供对照：input
+	.wr_data(rfifo_wdata),                  // 停用示例，仅供对照：input [255:0]
+	// 停用示例，仅供对照：.wr_full(wr_full), // output
+	// 停用示例，仅供对照：.wr_water_level(wr_water_level), // output [7:0]
+	.almost_full(rfifo_wfull),          // 停用示例，仅供对照：output
+	.rd_clk(rframe_pclk),                    // 停用示例，仅供对照：input
+	.rd_rst(w_rfifo_rst),                    // 停用示例，仅供对照：input
+	.rd_en(rframe_data_en),                      // 停用示例，仅供对照：input
+	.rd_data(rframe_data)                  // 停用示例，仅供对照：output [15:0]
+	// 停用示例，仅供对照：.rd_empty(rd_empty), // output
+	// 存储接口：.almost_empty(almost_empty) // output
 	);
 
 
@@ -399,7 +399,7 @@ begin
 	r_rfifo_rst <= w_rfifo_rst; 
 end
 
-//assign tp_o[7:0] = {w_rfifo_empty, rfifo_wfull, rframe_data_en, rfifo_wenb, rfifo_rst, axi_reset, rframe_pclk, axi_clk}; 
+// 停用示例，仅供对照：assign tp_o[7:0] = {w_rfifo_empty, rfifo_wfull, rframe_data_en, rfifo_wenb, rfifo_rst, axi_reset, rframe_pclk, axi_clk};
 
 reg             [15:0]               rfifo_wr_rst_busy_dly = 2'b0;
 
@@ -442,12 +442,12 @@ end
 wire                                read_ddr_init_flag;
 assign read_ddr_init_flag = (read_ddr_delay_cnt == 5'd1) ? 1'b1 : 1'b0;
 
-//----------------------------------------------------------------------
+// ── 存储接口 ──
 
 
 
 
-//----------------------------------------------------------------------
+// ── 存储接口 ──
 localparam S_READ_IDLE = 2'd0;
 localparam S_READ_ADDR = 2'd1;
 localparam S_READ_DATA = 2'd2;
@@ -481,8 +481,8 @@ begin
         case(rd_state)
             S_READ_IDLE : 
             begin
-			//	Continue if RFIFO ~Full. 
-                if(rfifo_wr_rst_busy_dly[15] && (araddr < C_RD_END_ADDR)&&(~rfifo_wfull)) begin	//	rfifo_wcnt < 10'd256))
+			// 存储接口：Continue if RFIFO ~Full.
+                if(rfifo_wr_rst_busy_dly[15] && (araddr < C_RD_END_ADDR)&&(~rfifo_wfull)) begin	// 参数记录为 rfifo_wcnt < 10'd256))。
                     rd_state <= S_READ_ADDR;
                 end else
                     rd_state <= S_READ_IDLE;
@@ -496,9 +496,9 @@ begin
             end
             S_READ_DATA : 
             begin
-			//	Return when ~arvalid && ~rd_pend. 
+			// 存储接口：Return when ~arvalid && ~rd_pend.
 			if((~axi_arvalid) && (~r_rd_pend))
-                //if((axi_rvalid == 1'b1)&&(axi_rready == 1'b1)&&(rdata_cnt == C_BURST_LEN))
+                // 停用示例，仅供对照：if((axi_rvalid == 1'b1)&&(axi_rready == 1'b1)&&(rdata_cnt == C_BURST_LEN))
                     rd_state <= S_READ_IDLE;
                 else
                     rd_state <= S_READ_DATA;

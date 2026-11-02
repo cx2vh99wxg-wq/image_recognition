@@ -42,7 +42,7 @@ class Rig:
             if c['direction']==direction and c['first_us']==duration and not c['brake_us'] and c['priority']==10:rs.append(c)
         count=sum(c['n'] for c in rs)
         peak=max([max(abs(c['peak_low_deg']),abs(c['peak_high_deg'])) for c in rs]+[0])
-        # Repeated zero readings are not a mechanical end-stop certificate.
+        # 反复读到零响应不能作为到达机械止挡的凭证。
         return max(4,peak*1.35+.7) if count>=3 and peak>.15 else 12.
     def pulse(self,direction,duration,purpose='CALIBRATION',bounds=None):
         if self.index>=self.a.max_actions:raise RuntimeError('action budget exhausted')
@@ -135,8 +135,8 @@ class Rig:
                 self.goal(-12,repeat)
                 if -14.5<=self.current<=-9.1:
                     self.pulse(1,self.a.fine_return_us,'NEGATIVE_FINE_RETURN',(-.3,8))
-                # Characterize outward response only from a start with enough
-                # full transient margin; never push from the guarded endpoint.
+                # 向外表征仅从具有完整瞬态余量的起点开始，
+                # 不能从受保护端点继续向外推动。
                 for _ in range(2):
                     if self.current>=-11.1:break
                     self.pulse(1,self.a.fine_return_us,'NEGATIVE_FINE_RETURN',(-.3,8))

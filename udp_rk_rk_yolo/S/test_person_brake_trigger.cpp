@@ -15,7 +15,7 @@ static void expect(bool condition, const char *name)
     }
 }
 
-/* Synthetic RKNN output uses the existing NCHW int8 layout and quantization. */
+/* 合成 RKNN 输出沿用现有 NCHW int8 布局及量化参数。 */
 static void put_candidate(std::vector<int8_t> &tensor, int grid_len, int cell,
                           int class_id, int8_t object_score, int8_t class_score)
 {
@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     expect(result.count == 0 && result.person_brake_count == 0,
            "empty frame clears display and brake summary");
 
-    /* Fill every display slot with car; the later person must still brake. */
+    /* 先以 car 占满所有显示槽，随后出现的 person 仍必须触发制动。 */
     for (int i = 0; i < OBJ_NUMB_MAX_SIZE; ++i) {
         put_candidate(tensor0, grid0, i, 2, 127, 127);
     }
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 
     std::fill(tensor0.begin(), tensor0.end(), -128);
     for (int i = 0; i < OBJ_NUMB_MAX_SIZE; ++i) {
-        put_candidate(tensor0, grid0, i, 0, 127, -89);  // Brake-only candidates.
+        put_candidate(tensor0, grid0, i, 0, 127, -89);  // 本模块：Brake-only candidates.
         put_candidate(tensor0, grid0, OBJ_NUMB_MAX_SIZE + i, 2, 127, 127);
     }
     expect(post_process_simple(tensor0.data(), tensor1.data(), tensor2.data(),
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
            "all brake-only candidates contribute to the summary");
 
     std::fill(tensor0.begin(), tensor0.end(), -128);
-    put_candidate(tensor0, grid0, 0, 0, -39, -39);  // (89/255)^2 < 0.15
+    put_candidate(tensor0, grid0, 0, 0, -39, -39);  // 本模块：(89/255)^2 < 0.15
     expect(post_process_simple(tensor0.data(), tensor1.data(), tensor2.data(),
                                640, 640, 0.25f, 0.45f, pads, 1.0f, 1.0f, &result) == 0,
            "low-confidence person frame decodes");
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
            "display can show a person below 15% without triggering brake");
 
     std::fill(tensor0.begin(), tensor0.end(), -128);
-    put_candidate(tensor0, grid0, 0, 0, 25, 25);  // 0.60 * 0.60 = 0.36
+    put_candidate(tensor0, grid0, 0, 0, 25, 25);  // 参数记录为 0.60 * 0.60 = 0.36。
     expect(post_process_simple(tensor0.data(), tensor1.data(), tensor2.data(),
                                640, 640, 0.25f, 0.45f, pads, 1.0f, 1.0f, &result) == 0,
            "joint confidence frame decodes");
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
            "threshold uses objectness times class probability");
 
     std::fill(tensor0.begin(), tensor0.end(), -128);
-    put_candidate(tensor0, grid0, 0, 0, 127, -89);  // 39/255 > 0.15, class < 0.25
+    put_candidate(tensor0, grid0, 0, 0, 127, -89);  // 参数记录为 39/255 > 0.15, class < 0.25。
     expect(post_process_simple(tensor0.data(), tensor1.data(), tensor2.data(),
                                640, 640, 0.25f, 0.45f, pads, 1.0f, 1.0f, &result) == 0,
            "person below original class display gate decodes");
@@ -120,7 +120,7 @@ int main(int argc, char **argv)
            "class factor just above 15% triggers without changing display gate");
 
     std::fill(tensor0.begin(), tensor0.end(), -128);
-    put_candidate(tensor0, grid0, 0, 0, -89, 127);  // objectness < 0.25
+    put_candidate(tensor0, grid0, 0, 0, -89, 127);  // 本模块：objectness < 0.25
     expect(post_process_simple(tensor0.data(), tensor1.data(), tensor2.data(),
                                640, 640, 0.25f, 0.45f, pads, 1.0f, 1.0f, &result) == 0,
            "person below original objectness display gate decodes");
@@ -128,14 +128,14 @@ int main(int argc, char **argv)
            "objectness factor just above 15% triggers without changing display gate");
 
     std::fill(tensor0.begin(), tensor0.end(), -128);
-    put_candidate(tensor0, grid0, 0, 0, 127, -90);  // 38/255 < 0.15
+    put_candidate(tensor0, grid0, 0, 0, 127, -90);  // 参数记录为 38/255 < 0.15。
     expect(post_process_simple(tensor0.data(), tensor1.data(), tensor2.data(),
                                640, 640, 0.25f, 0.45f, pads, 1.0f, 1.0f, &result) == 0,
            "person below 15% decodes");
     expect(result.person_brake_count == 0, "quantized confidence below 15% stays clear");
 
     std::fill(tensor0.begin(), tensor0.end(), -128);
-    put_candidate(tensor0, grid0, 0, 0, 127, 76);  // 204/255 = 0.80
+    put_candidate(tensor0, grid0, 0, 0, 127, 76);  // 参数记录为 204/255 = 0.80。
     expect(post_process_simple(tensor0.data(), tensor1.data(), tensor2.data(),
                                640, 640, 0.25f, 0.45f, pads, 1.0f, 1.0f, &result) == 0,
            "80% person frame decodes");
