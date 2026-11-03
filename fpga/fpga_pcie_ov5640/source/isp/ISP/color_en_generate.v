@@ -1,3 +1,4 @@
+// 2026-11-03 æ³¨é‡Šæ ¡è®¢ã€‚ç»Ÿè®¡æœ‰æ•ˆåŒºåŸŸå†…çš„é¢œè‰²åƒç´ ã€‚è®¡æ•°ç›¸åŒæ—¶æŒ‰çº¢ã€ç»¿ã€è“ã€é»„çš„æ¬¡åºå–ä¼˜å…ˆé¡¹ã€‚
 module color_en_generate
 #(
     parameter H_PIXEL     = 640,
@@ -11,21 +12,21 @@ module color_en_generate
     input wire        de,
 	input wire [9:0]  x,
 	input wire [9:0]  y,
-    
+
     output wire       red_en,
     output wire       blue_en,
     output wire       yellow_en,
     output wire       green_en
 );
 parameter TOTAL_PIXEL = H_PIXEL * V_PIXEL;
-////////////ycbcr ²ÎÊıÅäÖÃ////////////////
+
 parameter DW        = 24 ;
 parameter Y_TH      = 200;
 parameter Y_TL      = 50;
 parameter CB_TH     = 120;
 parameter CB_TL     = 80;
 parameter CR_TH     = 250;
-parameter CR_TL     = 140; 
+parameter CR_TL     = 140;
 
 parameter Y_TH_B      = 200;
 parameter Y_TL_B      = 50;
@@ -34,13 +35,13 @@ parameter CB_TL_B     = 140;
 parameter CR_TH_B     = 120;
 parameter CR_TL_B     = 80;
 
-parameter Y_MIN_YELLOW  = 100;   
-parameter Y_MAX_YELLOW  = 220;  
-parameter CB_MIN_YELLOW = 70;    
-parameter CB_MAX_YELLOW = 110;   
-parameter CR_MIN_YELLOW = 130;   
+parameter Y_MIN_YELLOW  = 100;
+parameter Y_MAX_YELLOW  = 220;
+parameter CB_MIN_YELLOW = 70;
+parameter CB_MAX_YELLOW = 110;
+parameter CR_MIN_YELLOW = 130;
 parameter CR_MAX_YELLOW = 170;
-//////////// Í¬²½´¦ÀíÄ£¿é ////////////
+
 reg vs_d0, vs_d1;
 
 always @(posedge clk or negedge rst_n) begin
@@ -52,9 +53,9 @@ always @(posedge clk or negedge rst_n) begin
         vs_d1 <= vs_d0;
     end
 end
-wire vs_posedge = vs_d0 & ~vs_d1;  
+wire vs_posedge = vs_d0 & ~vs_d1;
 wire area_en = ((x <= 40 || x>=600) || (y <= 40 || y >= 440))?0:1;
-//////////// ÑÕÉ«Ê¶±ğÄ£¿é ////////////
+
 wire en0,en1,en2;
 wire en0_b,en1_b,en2_b;
 wire is_yellow,is_red,is_blue,is_green;
@@ -64,26 +65,23 @@ assign en2      =i_ycbcr[ 7: 0] >=CR_TL && i_ycbcr[ 7: 0] <= CR_TH;
 assign en0_b      =i_ycbcr[23:16] >=Y_TL_B && i_ycbcr[23:16] <= Y_TH_B  ;
 assign en1_b      =i_ycbcr[15: 8] >=CB_TL_B && i_ycbcr[15: 8] <= CB_TH_B;
 assign en2_b      =i_ycbcr[ 7: 0] >=CR_TL_B && i_ycbcr[ 7: 0] <= CR_TH_B;
-assign is_yellow = (i_ycbcr[23:16] >= Y_MIN_YELLOW)  && (i_ycbcr[23:16] <= Y_MAX_YELLOW) &&  
-                      (i_ycbcr[15:8]  >= CB_MIN_YELLOW) && (i_ycbcr[15:8]  <= CB_MAX_YELLOW) &&  
-                      (i_ycbcr[7:0]   >= CR_MIN_YELLOW)  && (i_ycbcr[7:0]   <= CR_MAX_YELLOW); 
+assign is_yellow = (i_ycbcr[23:16] >= Y_MIN_YELLOW)  && (i_ycbcr[23:16] <= Y_MAX_YELLOW) &&
+                      (i_ycbcr[15:8]  >= CB_MIN_YELLOW) && (i_ycbcr[15:8]  <= CB_MAX_YELLOW) &&
+                      (i_ycbcr[7:0]   >= CR_MIN_YELLOW)  && (i_ycbcr[7:0]   <= CR_MAX_YELLOW);
 assign is_red    = en0 && en1 && en2;
 assign is_green  = 0;
 assign is_blue   = en0_b && en1_b && en2_b;
 
-
-//////////// ÏñËØ¼ÆÊıÆ÷Ä£¿é ////////////
 reg [19:0] pixel_cnt;
 reg        compare_en;
 reg [19:0] red_cnt, green_cnt, blue_cnt, yellow_cnt;
 
-// ÏñËØ¼ÆÊıÆ÷ÓëÊ¹ÄÜÉú³É
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         pixel_cnt  <= 20'd0;
         compare_en <= 1'b0;
     end else begin
-        // ÑÓ³ÙÒ»ÅÄÉú³Écompare_en£¬È·±£Ê±ĞòÎÈ¶¨
+
         compare_en <= (pixel_cnt == TOTAL_PIXEL-1) && de;
 
         if (vs_posedge) begin
@@ -94,7 +92,6 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-// ÑÕÉ«¼ÆÊıÆ÷£¨ÓÅ»¯Îª²¢ĞĞ¼ÆÊı£©
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         red_cnt    <= 20'd0;
@@ -114,38 +111,28 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-//////////// ×î´óÖµ±È½ÏÓëÓÅÏÈ¼¶Âß¼­ ////////////
-reg [3:0] color_en;  // [3:0] = {yellow, blue, green, red}
+reg [3:0] color_en;
 
-always @(*) begin
-    color_en = 4'b0000;
-    
-    // ²ã¼¶±È½Ï£¨ºì > ÂÌ > À¶ > »Æ µÄÓÅÏÈ¼¶£©
-    if (|{red_cnt, green_cnt, blue_cnt, yellow_cnt}) begin
-        // µÚÒ»¼¶£ººì vs ÂÌ
-        if (red_cnt >= green_cnt) begin
-            // µÚ¶ş¼¶£ººì vs À¶
-            if (red_cnt >= blue_cnt) begin
-                // µÚÈı¼¶£ººì vs »Æ
-                color_en = (red_cnt >= yellow_cnt) ? 4'b0001 : 4'b1000;
-            end else begin
-                // µÚ¶ş¼¶£ºÀ¶ vs »Æ
-                color_en = (blue_cnt >= yellow_cnt) ? 4'b0100 : 4'b1000;
-            end
-        end else begin
-            // µÚ¶ş¼¶£ºÂÌ vs À¶
-            if (green_cnt >= blue_cnt) begin
-                // µÚÈı¼¶£ºÂÌ vs »Æ
-                color_en = (green_cnt >= yellow_cnt) ? 4'b0010 : 4'b1000;
-            end else begin
-                // µÚ¶ş¼¶£ºÀ¶ vs »Æ
-                color_en = (blue_cnt >= yellow_cnt) ? 4'b0100 : 4'b1000;
-            end
+reg [19:0] leader_count;
+reg [3:0] leader_mask;
+always @* begin
+    leader_count = blue_cnt;
+    leader_mask = 4'b0100;
+    if (red_cnt >= green_cnt) begin
+        if (red_cnt >= blue_cnt) begin
+            leader_count = red_cnt;
+            leader_mask = 4'b0001;
         end
+    end else if (green_cnt >= blue_cnt) begin
+        leader_count = green_cnt;
+        leader_mask = 4'b0010;
     end
+
+    color_en = 4'b0000;
+    if (|{red_cnt, green_cnt, blue_cnt, yellow_cnt})
+        color_en = (leader_count >= yellow_cnt) ? leader_mask : 4'b1000;
 end
 
-//////////// Êä³ö¼Ä´æÆ÷ ////////////
 reg [3:0] en_reg;
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin

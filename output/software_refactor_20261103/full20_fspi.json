@@ -1,0 +1,5812 @@
+{
+  "scopes": {
+    "all": {
+      "metrics": {
+        "files": 253,
+        "tokens": 338230,
+        "bytes": 2005665,
+        "exact_external_files": 0,
+        "exact_external_file_percent": 0.0,
+        "normalized_external_files": 14,
+        "normalized_external_file_percent": 5.533596837944664,
+        "internal_exact_extra_copies": 4,
+        "internal_normalized_extra_copies": 4,
+        "internal_normalized_extra_token_percent": 1.0534251840463589,
+        "unique_normalized_contents": 249,
+        "covered_tokens": 109305,
+        "coverage_percent": 32.31676669721787,
+        "deduplicated_coverage_percent": 32.25684038163308,
+        "large_regions": 74,
+        "large_regions_deduplicated": 73,
+        "regions_with_500_token_match": 20,
+        "large_region_files": 34,
+        "large_region_tokens": 93550
+      },
+      "blocks": [
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/include/stb_image.h",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/include/stb_image.h",
+          "region_tokens": 50973,
+          "longest_match_tokens": 50973,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/include/stb_image.h"
+          ],
+          "current_line": null,
+          "origin_line": null,
+          "current_lines": [
+            129,
+            7762
+          ],
+          "origin_lines": [
+            129,
+            7762
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/udp/csrc/main_old.cpp",
+          "origin": "udp_rk_rk_yolo/S/udp/csrc/main_old.cpp",
+          "region_tokens": 11478,
+          "longest_match_tokens": 11478,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/udp/csrc/main_old.cpp"
+          ],
+          "current_line": null,
+          "origin_line": 1,
+          "current_lines": [
+            1,
+            2653
+          ],
+          "origin_lines": [
+            1,
+            2321
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/rknn_api.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/rknn_api.h",
+          "region_tokens": 1301,
+          "longest_match_tokens": 1301,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/rknn_api.h",
+            "udp_rk_rk_yolo/S/pcie/include/rknn_api.h"
+          ],
+          "current_line": 1,
+          "origin_line": 14,
+          "current_lines": [
+            1,
+            791
+          ],
+          "origin_lines": [
+            14,
+            804
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/common/pcie/pango_dma_abi.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/pcie_dma_read_test.h",
+          "region_tokens": 1100,
+          "longest_match_tokens": 1100,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/common/pcie/pango_dma_abi.h"
+          ],
+          "current_line": 1,
+          "origin_line": 1,
+          "current_lines": [
+            1,
+            319
+          ],
+          "origin_lines": [
+            1,
+            295
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/Makefile",
+          "origin": "udp_rk_rk_yolo/M/Makefile",
+          "region_tokens": 1085,
+          "longest_match_tokens": 1085,
+          "current_start_token": 1273,
+          "origin_start_token": 1089,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/Makefile"
+          ],
+          "current_line": null,
+          "origin_line": null,
+          "current_lines": [
+            225,
+            450
+          ],
+          "origin_lines": [
+            210,
+            435
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+          "region_tokens": 894,
+          "longest_match_tokens": 894,
+          "current_start_token": 630,
+          "origin_start_token": 1270,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c"
+          ],
+          "current_line": 127,
+          "origin_line": 316,
+          "current_lines": [
+            127,
+            353
+          ],
+          "origin_lines": [
+            316,
+            536
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 879,
+          "longest_match_tokens": 879,
+          "current_start_token": 1830,
+          "origin_start_token": 2662,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_line": 295,
+          "origin_line": 397,
+          "current_lines": [
+            295,
+            431
+          ],
+          "origin_lines": [
+            397,
+            508
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+          "region_tokens": 791,
+          "longest_match_tokens": 791,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c"
+          ],
+          "current_line": 1,
+          "origin_line": 1,
+          "current_lines": [
+            1,
+            184
+          ],
+          "origin_lines": [
+            1,
+            163
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 739,
+          "longest_match_tokens": 739,
+          "current_start_token": 2274,
+          "origin_start_token": 1892,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_line": null,
+          "origin_line": null,
+          "current_lines": [
+            333,
+            474
+          ],
+          "origin_lines": [
+            337,
+            478
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 727,
+          "longest_match_tokens": 727,
+          "current_start_token": 825,
+          "origin_start_token": 2483,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_line": 88,
+          "origin_line": 177,
+          "current_lines": [
+            88,
+            251
+          ],
+          "origin_lines": [
+            177,
+            318
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 719,
+          "longest_match_tokens": 719,
+          "current_start_token": 4583,
+          "origin_start_token": 4092,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_line": 941,
+          "origin_line": 875,
+          "current_lines": [
+            941,
+            1107
+          ],
+          "origin_lines": [
+            875,
+            1032
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 711,
+          "longest_match_tokens": 711,
+          "current_start_token": 2504,
+          "origin_start_token": 3126,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_line": 497,
+          "origin_line": 535,
+          "current_lines": [
+            497,
+            631
+          ],
+          "origin_lines": [
+            535,
+            643
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 704,
+          "longest_match_tokens": 704,
+          "current_start_token": 16,
+          "origin_start_token": 10,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_line": 6,
+          "origin_line": 4,
+          "current_lines": [
+            6,
+            145
+          ],
+          "origin_lines": [
+            4,
+            122
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 673,
+          "longest_match_tokens": 673,
+          "current_start_token": 1043,
+          "origin_start_token": 1408,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_line": 192,
+          "origin_line": 230,
+          "current_lines": [
+            192,
+            281
+          ],
+          "origin_lines": [
+            230,
+            317
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/fspi_module.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/fspi_module.c",
+          "region_tokens": 672,
+          "longest_match_tokens": 672,
+          "current_start_token": 632,
+          "origin_start_token": 1246,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/fspi_module.c"
+          ],
+          "current_line": 123,
+          "origin_line": 307,
+          "current_lines": [
+            123,
+            295
+          ],
+          "origin_lines": [
+            307,
+            476
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/setup_network.sh",
+          "origin": "udp_rk_rk_yolo/S/setup_network.sh",
+          "region_tokens": 605,
+          "longest_match_tokens": 605,
+          "current_start_token": 94,
+          "origin_start_token": 57,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/setup_network.sh"
+          ],
+          "current_lines": [
+            23,
+            169
+          ],
+          "origin_lines": [
+            25,
+            171
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 576,
+          "longest_match_tokens": 576,
+          "current_start_token": 1081,
+          "origin_start_token": 643,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            233,
+            348
+          ],
+          "origin_lines": [
+            149,
+            253
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 564,
+          "longest_match_tokens": 564,
+          "current_start_token": 2571,
+          "origin_start_token": 3127,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            622,
+            758
+          ],
+          "origin_lines": [
+            714,
+            844
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/setup_network.sh",
+          "origin": "udp_rk_rk_yolo/M/setup_network.sh",
+          "region_tokens": 523,
+          "longest_match_tokens": 523,
+          "current_start_token": 95,
+          "origin_start_token": 58,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/setup_network.sh"
+          ],
+          "current_lines": [
+            23,
+            145
+          ],
+          "origin_lines": [
+            25,
+            147
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 492,
+          "longest_match_tokens": 492,
+          "current_start_token": 3659,
+          "origin_start_token": 4187,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            707,
+            773
+          ],
+          "origin_lines": [
+            699,
+            752
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/Makefile",
+          "origin": "udp_rk_rk_yolo/S/pcie/Makefile",
+          "region_tokens": 481,
+          "longest_match_tokens": 481,
+          "current_start_token": 69,
+          "origin_start_token": 69,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/Makefile"
+          ],
+          "current_lines": [
+            82,
+            164
+          ],
+          "origin_lines": [
+            78,
+            160
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 480,
+          "longest_match_tokens": 480,
+          "current_start_token": 2289,
+          "origin_start_token": 2065,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            451,
+            575
+          ],
+          "origin_lines": [
+            383,
+            493
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+          "region_tokens": 459,
+          "longest_match_tokens": 459,
+          "current_start_token": 921,
+          "origin_start_token": 904,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c"
+          ],
+          "current_lines": [
+            212,
+            314
+          ],
+          "origin_lines": [
+            189,
+            277
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 455,
+          "longest_match_tokens": 455,
+          "current_start_token": 3822,
+          "origin_start_token": 3564,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            833,
+            953
+          ],
+          "origin_lines": [
+            725,
+            825
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+          "region_tokens": 440,
+          "longest_match_tokens": 440,
+          "current_start_token": 2061,
+          "origin_start_token": 1884,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            343,
+            441
+          ],
+          "origin_lines": [
+            415,
+            502
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 440,
+          "longest_match_tokens": 440,
+          "current_start_token": 2070,
+          "origin_start_token": 1746,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            469,
+            556
+          ],
+          "origin_lines": [
+            409,
+            495
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 435,
+          "longest_match_tokens": 435,
+          "current_start_token": 3335,
+          "origin_start_token": 4486,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            544,
+            642
+          ],
+          "origin_lines": [
+            631,
+            717
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 434,
+          "longest_match_tokens": 434,
+          "current_start_token": 1576,
+          "origin_start_token": 3294,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_lines": [
+            256,
+            334
+          ],
+          "origin_lines": [
+            335,
+            403
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/Makefile",
+          "origin": "udp_rk_rk_yolo/M/pcie/Makefile",
+          "region_tokens": 415,
+          "longest_match_tokens": 415,
+          "current_start_token": 1320,
+          "origin_start_token": 430,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/Makefile"
+          ],
+          "current_lines": [
+            177,
+            254
+          ],
+          "origin_lines": [
+            118,
+            195
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 409,
+          "longest_match_tokens": 409,
+          "current_start_token": 1761,
+          "origin_start_token": 1461,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            384,
+            505
+          ],
+          "origin_lines": [
+            347,
+            451
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 408,
+          "longest_match_tokens": 408,
+          "current_start_token": 1735,
+          "origin_start_token": 1620,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            346,
+            439
+          ],
+          "origin_lines": [
+            311,
+            379
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/Makefile",
+          "origin": "udp_rk_rk_yolo/M/Makefile",
+          "region_tokens": 398,
+          "longest_match_tokens": 398,
+          "current_start_token": 243,
+          "origin_start_token": 151,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/Makefile"
+          ],
+          "current_lines": [
+            59,
+            138
+          ],
+          "origin_lines": [
+            50,
+            129
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 395,
+          "longest_match_tokens": 395,
+          "current_start_token": 4873,
+          "origin_start_token": 6268,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            907,
+            975
+          ],
+          "origin_lines": [
+            932,
+            990
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/pcie_capture.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/pcie_capture.h",
+          "region_tokens": 394,
+          "longest_match_tokens": 394,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/pcie_capture.h"
+          ],
+          "current_lines": [
+            1,
+            209
+          ],
+          "origin_lines": [
+            1,
+            206
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 378,
+          "longest_match_tokens": 378,
+          "current_start_token": 360,
+          "origin_start_token": 337,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            117,
+            201
+          ],
+          "origin_lines": [
+            108,
+            188
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 361,
+          "longest_match_tokens": 361,
+          "current_start_token": 4371,
+          "origin_start_token": 6289,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_lines": [
+            702,
+            779
+          ],
+          "origin_lines": [
+            751,
+            822
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+          "region_tokens": 326,
+          "longest_match_tokens": 326,
+          "current_start_token": 270,
+          "origin_start_token": 81,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            64,
+            132
+          ],
+          "origin_lines": [
+            19,
+            80
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c",
+          "origin": "udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c",
+          "region_tokens": 326,
+          "longest_match_tokens": 326,
+          "current_start_token": 2209,
+          "origin_start_token": 1690,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c"
+          ],
+          "current_lines": [
+            422,
+            512
+          ],
+          "origin_lines": [
+            461,
+            541
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 326,
+          "longest_match_tokens": 326,
+          "current_start_token": 2880,
+          "origin_start_token": 3539,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            462,
+            529
+          ],
+          "origin_lines": [
+            507,
+            547
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 321,
+          "longest_match_tokens": 321,
+          "current_start_token": 247,
+          "origin_start_token": 227,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_lines": [
+            62,
+            114
+          ],
+          "origin_lines": [
+            61,
+            113
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/common/perception/include/yolo_engine_resources.h",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 316,
+          "longest_match_tokens": 316,
+          "current_start_token": 85,
+          "origin_start_token": 226,
+          "current_copies": [
+            "udp_rk_rk_yolo/common/perception/include/yolo_engine_resources.h"
+          ],
+          "current_lines": [
+            22,
+            63
+          ],
+          "origin_lines": [
+            44,
+            80
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 307,
+          "longest_match_tokens": 307,
+          "current_start_token": 728,
+          "origin_start_token": 325,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            187,
+            228
+          ],
+          "origin_lines": [
+            104,
+            148
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 286,
+          "longest_match_tokens": 286,
+          "current_start_token": 4375,
+          "origin_start_token": 4725,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            810,
+            868
+          ],
+          "origin_lines": [
+            759,
+            812
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 284,
+          "longest_match_tokens": 284,
+          "current_start_token": 3516,
+          "origin_start_token": 3164,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            742,
+            827
+          ],
+          "origin_lines": [
+            617,
+            695
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/include/shared_memory.h",
+          "origin": "udp_rk_rk_yolo/M/include/shared_memory.h",
+          "region_tokens": 281,
+          "longest_match_tokens": 281,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/include/shared_memory.h"
+          ],
+          "current_lines": [
+            1,
+            91
+          ],
+          "origin_lines": [
+            1,
+            94
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+          "region_tokens": 280,
+          "longest_match_tokens": 280,
+          "current_start_token": 377,
+          "origin_start_token": 117,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            58,
+            129
+          ],
+          "origin_lines": [
+            24,
+            84
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+          "region_tokens": 276,
+          "longest_match_tokens": 276,
+          "current_start_token": 263,
+          "origin_start_token": 236,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h"
+          ],
+          "current_lines": [
+            104,
+            174
+          ],
+          "origin_lines": [
+            100,
+            159
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 275,
+          "longest_match_tokens": 275,
+          "current_start_token": 15,
+          "origin_start_token": 6,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            6,
+            102
+          ],
+          "origin_lines": [
+            3,
+            103
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/udp/Makefile",
+          "origin": "udp_rk_rk_yolo/M/udp/Makefile",
+          "region_tokens": 268,
+          "longest_match_tokens": 268,
+          "current_start_token": 540,
+          "origin_start_token": 361,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/udp/Makefile"
+          ],
+          "current_lines": [
+            104,
+            172
+          ],
+          "origin_lines": [
+            95,
+            163
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 260,
+          "longest_match_tokens": 260,
+          "current_start_token": 2777,
+          "origin_start_token": 2545,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            581,
+            636
+          ],
+          "origin_lines": [
+            499,
+            544
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 254,
+          "longest_match_tokens": 254,
+          "current_start_token": 2019,
+          "origin_start_token": 1637,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_lines": [
+            300,
+            332
+          ],
+          "origin_lines": [
+            304,
+            336
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 253,
+          "longest_match_tokens": 253,
+          "current_start_token": 816,
+          "origin_start_token": 711,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_lines": [
+            161,
+            190
+          ],
+          "origin_lines": [
+            155,
+            184
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/Makefile",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/Makefile",
+          "region_tokens": 250,
+          "longest_match_tokens": 250,
+          "current_start_token": 17,
+          "origin_start_token": 3,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/Makefile"
+          ],
+          "current_lines": [
+            9,
+            39
+          ],
+          "origin_lines": [
+            7,
+            37
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 242,
+          "longest_match_tokens": 242,
+          "current_start_token": 3386,
+          "origin_start_token": 2888,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            707,
+            796
+          ],
+          "origin_lines": [
+            633,
+            710
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 241,
+          "longest_match_tokens": 241,
+          "current_start_token": 117,
+          "origin_start_token": 97,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            27,
+            116
+          ],
+          "origin_lines": [
+            20,
+            108
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/Makefile",
+          "origin": "udp_rk_rk_yolo/M/pcie/Makefile",
+          "region_tokens": 240,
+          "longest_match_tokens": 240,
+          "current_start_token": 129,
+          "origin_start_token": 113,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/Makefile"
+          ],
+          "current_lines": [
+            41,
+            90
+          ],
+          "origin_lines": [
+            41,
+            90
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/postprocess.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/postprocess.h",
+          "region_tokens": 238,
+          "longest_match_tokens": 238,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/postprocess.h"
+          ],
+          "current_lines": [
+            1,
+            65
+          ],
+          "origin_lines": [
+            1,
+            64
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+          "region_tokens": 238,
+          "longest_match_tokens": 238,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h"
+          ],
+          "current_lines": [
+            1,
+            102
+          ],
+          "origin_lines": [
+            1,
+            100
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 236,
+          "longest_match_tokens": 236,
+          "current_start_token": 292,
+          "origin_start_token": 280,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            103,
+            149
+          ],
+          "origin_lines": [
+            103,
+            150
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+          "region_tokens": 228,
+          "longest_match_tokens": 228,
+          "current_start_token": 1145,
+          "origin_start_token": 930,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            257,
+            296
+          ],
+          "origin_lines": [
+            179,
+            212
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/fspi/csrc/main.c",
+          "origin": "udp_rk_rk_yolo/S/fspi/csrc/main.c",
+          "region_tokens": 223,
+          "longest_match_tokens": 223,
+          "current_start_token": 3254,
+          "origin_start_token": 1430,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/fspi/csrc/main.c"
+          ],
+          "current_lines": [
+            789,
+            861
+          ],
+          "origin_lines": [
+            420,
+            479
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 218,
+          "longest_match_tokens": 218,
+          "current_start_token": 1671,
+          "origin_start_token": 1387,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_lines": [
+            259,
+            287
+          ],
+          "origin_lines": [
+            272,
+            299
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 214,
+          "longest_match_tokens": 214,
+          "current_start_token": 2242,
+          "origin_start_token": 1934,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            448,
+            485
+          ],
+          "origin_lines": [
+            368,
+            400
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 212,
+          "longest_match_tokens": 212,
+          "current_start_token": 820,
+          "origin_start_token": 689,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            232,
+            277
+          ],
+          "origin_lines": [
+            197,
+            235
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 210,
+          "longest_match_tokens": 210,
+          "current_start_token": 1096,
+          "origin_start_token": 691,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            263,
+            307
+          ],
+          "origin_lines": [
+            198,
+            235
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/include/shared_memory.h",
+          "origin": "udp_rk_rk_yolo/S/include/shared_memory.h",
+          "region_tokens": 208,
+          "longest_match_tokens": 208,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/include/shared_memory.h"
+          ],
+          "current_lines": [
+            1,
+            56
+          ],
+          "origin_lines": [
+            1,
+            61
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 207,
+          "longest_match_tokens": 207,
+          "current_start_token": 3330,
+          "origin_start_token": 5125,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_lines": [
+            536,
+            568
+          ],
+          "origin_lines": [
+            594,
+            615
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/udp/include/udp_network.h",
+          "origin": "udp_rk_rk_yolo/M/udp/include/udp_network.h",
+          "region_tokens": 205,
+          "longest_match_tokens": 205,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/udp/include/udp_network.h"
+          ],
+          "current_lines": [
+            1,
+            102
+          ],
+          "origin_lines": [
+            1,
+            97
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 205,
+          "longest_match_tokens": 205,
+          "current_start_token": 2175,
+          "origin_start_token": 1960,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            506,
+            580
+          ],
+          "origin_lines": [
+            471,
+            534
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 204,
+          "longest_match_tokens": 204,
+          "current_start_token": 392,
+          "origin_start_token": 703,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            70,
+            112
+          ],
+          "origin_lines": [
+            102,
+            139
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/include/yolo_integration.h",
+          "origin": "udp_rk_rk_yolo/S/pcie/include/yolo_integration.h",
+          "region_tokens": 203,
+          "longest_match_tokens": 203,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/include/yolo_integration.h"
+          ],
+          "current_lines": [
+            1,
+            67
+          ],
+          "origin_lines": [
+            1,
+            65
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+          "region_tokens": 200,
+          "longest_match_tokens": 200,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c"
+          ],
+          "current_lines": [
+            2,
+            42
+          ],
+          "origin_lines": [
+            2,
+            46
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 200,
+          "longest_match_tokens": 200,
+          "current_start_token": 2710,
+          "origin_start_token": 4037,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_lines": [
+            448,
+            473
+          ],
+          "origin_lines": [
+            457,
+            479
+          ]
+        }
+      ]
+    },
+    "previous_app": {
+      "metrics": {
+        "files": 198,
+        "tokens": 234067,
+        "bytes": 1430206,
+        "exact_external_files": 0,
+        "exact_external_file_percent": 0.0,
+        "normalized_external_files": 11,
+        "normalized_external_file_percent": 5.555555555555555,
+        "internal_exact_extra_copies": 2,
+        "internal_normalized_extra_copies": 2,
+        "internal_normalized_extra_token_percent": 0.023070317473202116,
+        "unique_normalized_contents": 196,
+        "covered_tokens": 55730,
+        "coverage_percent": 23.809422088547297,
+        "deduplicated_coverage_percent": 23.79312260429976,
+        "large_regions": 71,
+        "large_regions_deduplicated": 71,
+        "regions_with_500_token_match": 17,
+        "large_region_files": 31,
+        "large_region_tokens": 39975
+      },
+      "blocks": [
+        {
+          "current": "udp_rk_rk_yolo/S/udp/csrc/main_old.cpp",
+          "origin": "udp_rk_rk_yolo/S/udp/csrc/main_old.cpp",
+          "region_tokens": 11478,
+          "longest_match_tokens": 11478,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/udp/csrc/main_old.cpp"
+          ],
+          "current_line": null,
+          "origin_line": 1,
+          "current_lines": [
+            1,
+            2653
+          ],
+          "origin_lines": [
+            1,
+            2321
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/common/pcie/pango_dma_abi.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/pcie_dma_read_test.h",
+          "region_tokens": 1100,
+          "longest_match_tokens": 1100,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/common/pcie/pango_dma_abi.h"
+          ],
+          "current_line": 1,
+          "origin_line": 1,
+          "current_lines": [
+            1,
+            319
+          ],
+          "origin_lines": [
+            1,
+            295
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/Makefile",
+          "origin": "udp_rk_rk_yolo/M/Makefile",
+          "region_tokens": 1085,
+          "longest_match_tokens": 1085,
+          "current_start_token": 1273,
+          "origin_start_token": 1089,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/Makefile"
+          ],
+          "current_line": null,
+          "origin_line": null,
+          "current_lines": [
+            225,
+            450
+          ],
+          "origin_lines": [
+            210,
+            435
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+          "region_tokens": 894,
+          "longest_match_tokens": 894,
+          "current_start_token": 630,
+          "origin_start_token": 1270,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c"
+          ],
+          "current_line": 127,
+          "origin_line": 316,
+          "current_lines": [
+            127,
+            353
+          ],
+          "origin_lines": [
+            316,
+            536
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 879,
+          "longest_match_tokens": 879,
+          "current_start_token": 1830,
+          "origin_start_token": 2662,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_line": 295,
+          "origin_line": 397,
+          "current_lines": [
+            295,
+            431
+          ],
+          "origin_lines": [
+            397,
+            508
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+          "region_tokens": 791,
+          "longest_match_tokens": 791,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c"
+          ],
+          "current_line": 1,
+          "origin_line": 1,
+          "current_lines": [
+            1,
+            184
+          ],
+          "origin_lines": [
+            1,
+            163
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 739,
+          "longest_match_tokens": 739,
+          "current_start_token": 2274,
+          "origin_start_token": 1892,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_line": null,
+          "origin_line": null,
+          "current_lines": [
+            333,
+            474
+          ],
+          "origin_lines": [
+            337,
+            478
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 727,
+          "longest_match_tokens": 727,
+          "current_start_token": 825,
+          "origin_start_token": 2483,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_line": 88,
+          "origin_line": 177,
+          "current_lines": [
+            88,
+            251
+          ],
+          "origin_lines": [
+            177,
+            318
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 719,
+          "longest_match_tokens": 719,
+          "current_start_token": 4583,
+          "origin_start_token": 4092,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_line": 941,
+          "origin_line": 875,
+          "current_lines": [
+            941,
+            1107
+          ],
+          "origin_lines": [
+            875,
+            1032
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 711,
+          "longest_match_tokens": 711,
+          "current_start_token": 2504,
+          "origin_start_token": 3126,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_line": 497,
+          "origin_line": 535,
+          "current_lines": [
+            497,
+            631
+          ],
+          "origin_lines": [
+            535,
+            643
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 704,
+          "longest_match_tokens": 704,
+          "current_start_token": 16,
+          "origin_start_token": 10,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_line": 6,
+          "origin_line": 4,
+          "current_lines": [
+            6,
+            145
+          ],
+          "origin_lines": [
+            4,
+            122
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 673,
+          "longest_match_tokens": 673,
+          "current_start_token": 1043,
+          "origin_start_token": 1408,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_line": 192,
+          "origin_line": 230,
+          "current_lines": [
+            192,
+            281
+          ],
+          "origin_lines": [
+            230,
+            317
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/fspi_module.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/fspi_module.c",
+          "region_tokens": 672,
+          "longest_match_tokens": 672,
+          "current_start_token": 632,
+          "origin_start_token": 1246,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/fspi_module.c"
+          ],
+          "current_line": 123,
+          "origin_line": 307,
+          "current_lines": [
+            123,
+            295
+          ],
+          "origin_lines": [
+            307,
+            476
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/setup_network.sh",
+          "origin": "udp_rk_rk_yolo/S/setup_network.sh",
+          "region_tokens": 605,
+          "longest_match_tokens": 605,
+          "current_start_token": 94,
+          "origin_start_token": 57,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/setup_network.sh"
+          ],
+          "current_line": null,
+          "origin_line": null,
+          "current_lines": [
+            23,
+            169
+          ],
+          "origin_lines": [
+            25,
+            171
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 576,
+          "longest_match_tokens": 576,
+          "current_start_token": 1081,
+          "origin_start_token": 643,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_line": 233,
+          "origin_line": 149,
+          "current_lines": [
+            233,
+            348
+          ],
+          "origin_lines": [
+            149,
+            253
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 564,
+          "longest_match_tokens": 564,
+          "current_start_token": 2571,
+          "origin_start_token": 3127,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            622,
+            758
+          ],
+          "origin_lines": [
+            714,
+            844
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/setup_network.sh",
+          "origin": "udp_rk_rk_yolo/M/setup_network.sh",
+          "region_tokens": 523,
+          "longest_match_tokens": 523,
+          "current_start_token": 95,
+          "origin_start_token": 58,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/setup_network.sh"
+          ],
+          "current_lines": [
+            23,
+            145
+          ],
+          "origin_lines": [
+            25,
+            147
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 492,
+          "longest_match_tokens": 492,
+          "current_start_token": 3659,
+          "origin_start_token": 4187,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            707,
+            773
+          ],
+          "origin_lines": [
+            699,
+            752
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/Makefile",
+          "origin": "udp_rk_rk_yolo/S/pcie/Makefile",
+          "region_tokens": 481,
+          "longest_match_tokens": 481,
+          "current_start_token": 69,
+          "origin_start_token": 69,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/Makefile"
+          ],
+          "current_lines": [
+            82,
+            164
+          ],
+          "origin_lines": [
+            78,
+            160
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 480,
+          "longest_match_tokens": 480,
+          "current_start_token": 2289,
+          "origin_start_token": 2065,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            451,
+            575
+          ],
+          "origin_lines": [
+            383,
+            493
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+          "region_tokens": 459,
+          "longest_match_tokens": 459,
+          "current_start_token": 921,
+          "origin_start_token": 904,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c"
+          ],
+          "current_lines": [
+            212,
+            314
+          ],
+          "origin_lines": [
+            189,
+            277
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 455,
+          "longest_match_tokens": 455,
+          "current_start_token": 3822,
+          "origin_start_token": 3564,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            833,
+            953
+          ],
+          "origin_lines": [
+            725,
+            825
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+          "region_tokens": 440,
+          "longest_match_tokens": 440,
+          "current_start_token": 2061,
+          "origin_start_token": 1884,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            343,
+            441
+          ],
+          "origin_lines": [
+            415,
+            502
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 440,
+          "longest_match_tokens": 440,
+          "current_start_token": 2070,
+          "origin_start_token": 1746,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            469,
+            556
+          ],
+          "origin_lines": [
+            409,
+            495
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 435,
+          "longest_match_tokens": 435,
+          "current_start_token": 3335,
+          "origin_start_token": 4486,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            544,
+            642
+          ],
+          "origin_lines": [
+            631,
+            717
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 434,
+          "longest_match_tokens": 434,
+          "current_start_token": 1576,
+          "origin_start_token": 3294,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_lines": [
+            256,
+            334
+          ],
+          "origin_lines": [
+            335,
+            403
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/Makefile",
+          "origin": "udp_rk_rk_yolo/M/pcie/Makefile",
+          "region_tokens": 415,
+          "longest_match_tokens": 415,
+          "current_start_token": 1320,
+          "origin_start_token": 430,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/Makefile"
+          ],
+          "current_lines": [
+            177,
+            254
+          ],
+          "origin_lines": [
+            118,
+            195
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 409,
+          "longest_match_tokens": 409,
+          "current_start_token": 1761,
+          "origin_start_token": 1461,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            384,
+            505
+          ],
+          "origin_lines": [
+            347,
+            451
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 408,
+          "longest_match_tokens": 408,
+          "current_start_token": 1735,
+          "origin_start_token": 1620,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            346,
+            439
+          ],
+          "origin_lines": [
+            311,
+            379
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/Makefile",
+          "origin": "udp_rk_rk_yolo/M/Makefile",
+          "region_tokens": 398,
+          "longest_match_tokens": 398,
+          "current_start_token": 243,
+          "origin_start_token": 151,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/Makefile"
+          ],
+          "current_lines": [
+            59,
+            138
+          ],
+          "origin_lines": [
+            50,
+            129
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 395,
+          "longest_match_tokens": 395,
+          "current_start_token": 4873,
+          "origin_start_token": 6268,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            907,
+            975
+          ],
+          "origin_lines": [
+            932,
+            990
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/pcie_capture.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/pcie_capture.h",
+          "region_tokens": 394,
+          "longest_match_tokens": 394,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/pcie_capture.h"
+          ],
+          "current_lines": [
+            1,
+            209
+          ],
+          "origin_lines": [
+            1,
+            206
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 378,
+          "longest_match_tokens": 378,
+          "current_start_token": 360,
+          "origin_start_token": 337,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            117,
+            201
+          ],
+          "origin_lines": [
+            108,
+            188
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 361,
+          "longest_match_tokens": 361,
+          "current_start_token": 4371,
+          "origin_start_token": 6289,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_lines": [
+            702,
+            779
+          ],
+          "origin_lines": [
+            751,
+            822
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+          "region_tokens": 326,
+          "longest_match_tokens": 326,
+          "current_start_token": 270,
+          "origin_start_token": 81,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            64,
+            132
+          ],
+          "origin_lines": [
+            19,
+            80
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c",
+          "origin": "udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c",
+          "region_tokens": 326,
+          "longest_match_tokens": 326,
+          "current_start_token": 2209,
+          "origin_start_token": 1690,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c"
+          ],
+          "current_lines": [
+            422,
+            512
+          ],
+          "origin_lines": [
+            461,
+            541
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 326,
+          "longest_match_tokens": 326,
+          "current_start_token": 2880,
+          "origin_start_token": 3539,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            462,
+            529
+          ],
+          "origin_lines": [
+            507,
+            547
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 321,
+          "longest_match_tokens": 321,
+          "current_start_token": 247,
+          "origin_start_token": 227,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_lines": [
+            62,
+            114
+          ],
+          "origin_lines": [
+            61,
+            113
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/common/perception/include/yolo_engine_resources.h",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 316,
+          "longest_match_tokens": 316,
+          "current_start_token": 85,
+          "origin_start_token": 226,
+          "current_copies": [
+            "udp_rk_rk_yolo/common/perception/include/yolo_engine_resources.h"
+          ],
+          "current_lines": [
+            22,
+            63
+          ],
+          "origin_lines": [
+            44,
+            80
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 307,
+          "longest_match_tokens": 307,
+          "current_start_token": 728,
+          "origin_start_token": 325,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            187,
+            228
+          ],
+          "origin_lines": [
+            104,
+            148
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 286,
+          "longest_match_tokens": 286,
+          "current_start_token": 4375,
+          "origin_start_token": 4725,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            810,
+            868
+          ],
+          "origin_lines": [
+            759,
+            812
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 284,
+          "longest_match_tokens": 284,
+          "current_start_token": 3516,
+          "origin_start_token": 3164,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            742,
+            827
+          ],
+          "origin_lines": [
+            617,
+            695
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/include/shared_memory.h",
+          "origin": "udp_rk_rk_yolo/M/include/shared_memory.h",
+          "region_tokens": 281,
+          "longest_match_tokens": 281,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/include/shared_memory.h"
+          ],
+          "current_lines": [
+            1,
+            91
+          ],
+          "origin_lines": [
+            1,
+            94
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+          "region_tokens": 280,
+          "longest_match_tokens": 280,
+          "current_start_token": 377,
+          "origin_start_token": 117,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            58,
+            129
+          ],
+          "origin_lines": [
+            24,
+            84
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+          "region_tokens": 276,
+          "longest_match_tokens": 276,
+          "current_start_token": 263,
+          "origin_start_token": 236,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h"
+          ],
+          "current_lines": [
+            104,
+            174
+          ],
+          "origin_lines": [
+            100,
+            159
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 275,
+          "longest_match_tokens": 275,
+          "current_start_token": 15,
+          "origin_start_token": 6,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            6,
+            102
+          ],
+          "origin_lines": [
+            3,
+            103
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/udp/Makefile",
+          "origin": "udp_rk_rk_yolo/M/udp/Makefile",
+          "region_tokens": 268,
+          "longest_match_tokens": 268,
+          "current_start_token": 540,
+          "origin_start_token": 361,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/udp/Makefile"
+          ],
+          "current_lines": [
+            104,
+            172
+          ],
+          "origin_lines": [
+            95,
+            163
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 260,
+          "longest_match_tokens": 260,
+          "current_start_token": 2777,
+          "origin_start_token": 2545,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            581,
+            636
+          ],
+          "origin_lines": [
+            499,
+            544
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 254,
+          "longest_match_tokens": 254,
+          "current_start_token": 2019,
+          "origin_start_token": 1637,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_lines": [
+            300,
+            332
+          ],
+          "origin_lines": [
+            304,
+            336
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 253,
+          "longest_match_tokens": 253,
+          "current_start_token": 816,
+          "origin_start_token": 711,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_lines": [
+            161,
+            190
+          ],
+          "origin_lines": [
+            155,
+            184
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/Makefile",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/Makefile",
+          "region_tokens": 250,
+          "longest_match_tokens": 250,
+          "current_start_token": 17,
+          "origin_start_token": 3,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/Makefile"
+          ],
+          "current_lines": [
+            9,
+            39
+          ],
+          "origin_lines": [
+            7,
+            37
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 242,
+          "longest_match_tokens": 242,
+          "current_start_token": 3386,
+          "origin_start_token": 2888,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            707,
+            796
+          ],
+          "origin_lines": [
+            633,
+            710
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 241,
+          "longest_match_tokens": 241,
+          "current_start_token": 117,
+          "origin_start_token": 97,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            27,
+            116
+          ],
+          "origin_lines": [
+            20,
+            108
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/Makefile",
+          "origin": "udp_rk_rk_yolo/M/pcie/Makefile",
+          "region_tokens": 240,
+          "longest_match_tokens": 240,
+          "current_start_token": 129,
+          "origin_start_token": 113,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/Makefile"
+          ],
+          "current_lines": [
+            41,
+            90
+          ],
+          "origin_lines": [
+            41,
+            90
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/postprocess.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/postprocess.h",
+          "region_tokens": 238,
+          "longest_match_tokens": 238,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/postprocess.h"
+          ],
+          "current_lines": [
+            1,
+            65
+          ],
+          "origin_lines": [
+            1,
+            64
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+          "region_tokens": 238,
+          "longest_match_tokens": 238,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h"
+          ],
+          "current_lines": [
+            1,
+            102
+          ],
+          "origin_lines": [
+            1,
+            100
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 236,
+          "longest_match_tokens": 236,
+          "current_start_token": 292,
+          "origin_start_token": 280,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            103,
+            149
+          ],
+          "origin_lines": [
+            103,
+            150
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+          "region_tokens": 228,
+          "longest_match_tokens": 228,
+          "current_start_token": 1145,
+          "origin_start_token": 930,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            257,
+            296
+          ],
+          "origin_lines": [
+            179,
+            212
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/fspi/csrc/main.c",
+          "origin": "udp_rk_rk_yolo/S/fspi/csrc/main.c",
+          "region_tokens": 223,
+          "longest_match_tokens": 223,
+          "current_start_token": 3254,
+          "origin_start_token": 1430,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/fspi/csrc/main.c"
+          ],
+          "current_lines": [
+            789,
+            861
+          ],
+          "origin_lines": [
+            420,
+            479
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 218,
+          "longest_match_tokens": 218,
+          "current_start_token": 1671,
+          "origin_start_token": 1387,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_lines": [
+            259,
+            287
+          ],
+          "origin_lines": [
+            272,
+            299
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 214,
+          "longest_match_tokens": 214,
+          "current_start_token": 2242,
+          "origin_start_token": 1934,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            448,
+            485
+          ],
+          "origin_lines": [
+            368,
+            400
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 212,
+          "longest_match_tokens": 212,
+          "current_start_token": 820,
+          "origin_start_token": 689,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            232,
+            277
+          ],
+          "origin_lines": [
+            197,
+            235
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 210,
+          "longest_match_tokens": 210,
+          "current_start_token": 1096,
+          "origin_start_token": 691,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            263,
+            307
+          ],
+          "origin_lines": [
+            198,
+            235
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/include/shared_memory.h",
+          "origin": "udp_rk_rk_yolo/S/include/shared_memory.h",
+          "region_tokens": 208,
+          "longest_match_tokens": 208,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/include/shared_memory.h"
+          ],
+          "current_lines": [
+            1,
+            56
+          ],
+          "origin_lines": [
+            1,
+            61
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 207,
+          "longest_match_tokens": 207,
+          "current_start_token": 3330,
+          "origin_start_token": 5125,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_lines": [
+            536,
+            568
+          ],
+          "origin_lines": [
+            594,
+            615
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/udp/include/udp_network.h",
+          "origin": "udp_rk_rk_yolo/M/udp/include/udp_network.h",
+          "region_tokens": 205,
+          "longest_match_tokens": 205,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/udp/include/udp_network.h"
+          ],
+          "current_lines": [
+            1,
+            102
+          ],
+          "origin_lines": [
+            1,
+            97
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 205,
+          "longest_match_tokens": 205,
+          "current_start_token": 2175,
+          "origin_start_token": 1960,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            506,
+            580
+          ],
+          "origin_lines": [
+            471,
+            534
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 204,
+          "longest_match_tokens": 204,
+          "current_start_token": 392,
+          "origin_start_token": 703,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            70,
+            112
+          ],
+          "origin_lines": [
+            102,
+            139
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/include/yolo_integration.h",
+          "origin": "udp_rk_rk_yolo/S/pcie/include/yolo_integration.h",
+          "region_tokens": 203,
+          "longest_match_tokens": 203,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/include/yolo_integration.h"
+          ],
+          "current_lines": [
+            1,
+            67
+          ],
+          "origin_lines": [
+            1,
+            65
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+          "region_tokens": 200,
+          "longest_match_tokens": 200,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c"
+          ],
+          "current_lines": [
+            2,
+            42
+          ],
+          "origin_lines": [
+            2,
+            46
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 200,
+          "longest_match_tokens": 200,
+          "current_start_token": 2710,
+          "origin_start_token": 4037,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_lines": [
+            448,
+            473
+          ],
+          "origin_lines": [
+            457,
+            479
+          ]
+        }
+      ]
+    },
+    "app": {
+      "metrics": {
+        "files": 196,
+        "tokens": 222586,
+        "bytes": 1329612,
+        "exact_external_files": 0,
+        "exact_external_file_percent": 0.0,
+        "normalized_external_files": 10,
+        "normalized_external_file_percent": 5.1020408163265305,
+        "internal_exact_extra_copies": 1,
+        "internal_normalized_extra_copies": 1,
+        "internal_normalized_extra_token_percent": 0.022912492250186444,
+        "unique_normalized_contents": 195,
+        "covered_tokens": 44252,
+        "coverage_percent": 19.880855040299032,
+        "deduplicated_coverage_percent": 19.86249354034197,
+        "large_regions": 70,
+        "large_regions_deduplicated": 70,
+        "regions_with_500_token_match": 16,
+        "large_region_files": 30,
+        "large_region_tokens": 28497
+      },
+      "blocks": [
+        {
+          "current": "udp_rk_rk_yolo/common/pcie/pango_dma_abi.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/pcie_dma_read_test.h",
+          "region_tokens": 1100,
+          "longest_match_tokens": 1100,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/common/pcie/pango_dma_abi.h"
+          ],
+          "current_line": 1,
+          "origin_line": 1,
+          "current_lines": [
+            1,
+            319
+          ],
+          "origin_lines": [
+            1,
+            295
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/Makefile",
+          "origin": "udp_rk_rk_yolo/M/Makefile",
+          "region_tokens": 1085,
+          "longest_match_tokens": 1085,
+          "current_start_token": 1273,
+          "origin_start_token": 1089,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/Makefile"
+          ],
+          "current_line": null,
+          "origin_line": null,
+          "current_lines": [
+            225,
+            450
+          ],
+          "origin_lines": [
+            210,
+            435
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+          "region_tokens": 894,
+          "longest_match_tokens": 894,
+          "current_start_token": 630,
+          "origin_start_token": 1270,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c"
+          ],
+          "current_line": 127,
+          "origin_line": 316,
+          "current_lines": [
+            127,
+            353
+          ],
+          "origin_lines": [
+            316,
+            536
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 879,
+          "longest_match_tokens": 879,
+          "current_start_token": 1830,
+          "origin_start_token": 2662,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_line": 295,
+          "origin_line": 397,
+          "current_lines": [
+            295,
+            431
+          ],
+          "origin_lines": [
+            397,
+            508
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+          "region_tokens": 791,
+          "longest_match_tokens": 791,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c"
+          ],
+          "current_line": 1,
+          "origin_line": 1,
+          "current_lines": [
+            1,
+            184
+          ],
+          "origin_lines": [
+            1,
+            163
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 739,
+          "longest_match_tokens": 739,
+          "current_start_token": 2274,
+          "origin_start_token": 1892,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_line": null,
+          "origin_line": null,
+          "current_lines": [
+            333,
+            474
+          ],
+          "origin_lines": [
+            337,
+            478
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 727,
+          "longest_match_tokens": 727,
+          "current_start_token": 825,
+          "origin_start_token": 2483,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_line": 88,
+          "origin_line": 177,
+          "current_lines": [
+            88,
+            251
+          ],
+          "origin_lines": [
+            177,
+            318
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 719,
+          "longest_match_tokens": 719,
+          "current_start_token": 4583,
+          "origin_start_token": 4092,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_line": 941,
+          "origin_line": 875,
+          "current_lines": [
+            941,
+            1107
+          ],
+          "origin_lines": [
+            875,
+            1032
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 711,
+          "longest_match_tokens": 711,
+          "current_start_token": 2504,
+          "origin_start_token": 3126,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_line": 497,
+          "origin_line": 535,
+          "current_lines": [
+            497,
+            631
+          ],
+          "origin_lines": [
+            535,
+            643
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 704,
+          "longest_match_tokens": 704,
+          "current_start_token": 16,
+          "origin_start_token": 10,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_line": 6,
+          "origin_line": 4,
+          "current_lines": [
+            6,
+            145
+          ],
+          "origin_lines": [
+            4,
+            122
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 673,
+          "longest_match_tokens": 673,
+          "current_start_token": 1043,
+          "origin_start_token": 1408,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_line": 192,
+          "origin_line": 230,
+          "current_lines": [
+            192,
+            281
+          ],
+          "origin_lines": [
+            230,
+            317
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/fspi_module.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/fspi_module.c",
+          "region_tokens": 672,
+          "longest_match_tokens": 672,
+          "current_start_token": 632,
+          "origin_start_token": 1246,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/fspi_module.c"
+          ],
+          "current_line": 123,
+          "origin_line": 307,
+          "current_lines": [
+            123,
+            295
+          ],
+          "origin_lines": [
+            307,
+            476
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/setup_network.sh",
+          "origin": "udp_rk_rk_yolo/S/setup_network.sh",
+          "region_tokens": 605,
+          "longest_match_tokens": 605,
+          "current_start_token": 94,
+          "origin_start_token": 57,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/setup_network.sh"
+          ],
+          "current_line": null,
+          "origin_line": null,
+          "current_lines": [
+            23,
+            169
+          ],
+          "origin_lines": [
+            25,
+            171
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 576,
+          "longest_match_tokens": 576,
+          "current_start_token": 1081,
+          "origin_start_token": 643,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_line": 233,
+          "origin_line": 149,
+          "current_lines": [
+            233,
+            348
+          ],
+          "origin_lines": [
+            149,
+            253
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 564,
+          "longest_match_tokens": 564,
+          "current_start_token": 2571,
+          "origin_start_token": 3127,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_line": 622,
+          "origin_line": 714,
+          "current_lines": [
+            622,
+            758
+          ],
+          "origin_lines": [
+            714,
+            844
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/setup_network.sh",
+          "origin": "udp_rk_rk_yolo/M/setup_network.sh",
+          "region_tokens": 523,
+          "longest_match_tokens": 523,
+          "current_start_token": 95,
+          "origin_start_token": 58,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/setup_network.sh"
+          ],
+          "current_lines": [
+            23,
+            145
+          ],
+          "origin_lines": [
+            25,
+            147
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 492,
+          "longest_match_tokens": 492,
+          "current_start_token": 3659,
+          "origin_start_token": 4187,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            707,
+            773
+          ],
+          "origin_lines": [
+            699,
+            752
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/Makefile",
+          "origin": "udp_rk_rk_yolo/S/pcie/Makefile",
+          "region_tokens": 481,
+          "longest_match_tokens": 481,
+          "current_start_token": 69,
+          "origin_start_token": 69,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/Makefile"
+          ],
+          "current_lines": [
+            82,
+            164
+          ],
+          "origin_lines": [
+            78,
+            160
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 480,
+          "longest_match_tokens": 480,
+          "current_start_token": 2289,
+          "origin_start_token": 2065,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            451,
+            575
+          ],
+          "origin_lines": [
+            383,
+            493
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+          "region_tokens": 459,
+          "longest_match_tokens": 459,
+          "current_start_token": 921,
+          "origin_start_token": 904,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c"
+          ],
+          "current_lines": [
+            212,
+            314
+          ],
+          "origin_lines": [
+            189,
+            277
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 455,
+          "longest_match_tokens": 455,
+          "current_start_token": 3822,
+          "origin_start_token": 3564,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            833,
+            953
+          ],
+          "origin_lines": [
+            725,
+            825
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+          "region_tokens": 440,
+          "longest_match_tokens": 440,
+          "current_start_token": 2061,
+          "origin_start_token": 1884,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            343,
+            441
+          ],
+          "origin_lines": [
+            415,
+            502
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 440,
+          "longest_match_tokens": 440,
+          "current_start_token": 2070,
+          "origin_start_token": 1746,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            469,
+            556
+          ],
+          "origin_lines": [
+            409,
+            495
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 435,
+          "longest_match_tokens": 435,
+          "current_start_token": 3335,
+          "origin_start_token": 4486,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            544,
+            642
+          ],
+          "origin_lines": [
+            631,
+            717
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 434,
+          "longest_match_tokens": 434,
+          "current_start_token": 1576,
+          "origin_start_token": 3294,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_lines": [
+            256,
+            334
+          ],
+          "origin_lines": [
+            335,
+            403
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/Makefile",
+          "origin": "udp_rk_rk_yolo/M/pcie/Makefile",
+          "region_tokens": 415,
+          "longest_match_tokens": 415,
+          "current_start_token": 1320,
+          "origin_start_token": 430,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/Makefile"
+          ],
+          "current_lines": [
+            177,
+            254
+          ],
+          "origin_lines": [
+            118,
+            195
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 409,
+          "longest_match_tokens": 409,
+          "current_start_token": 1761,
+          "origin_start_token": 1461,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            384,
+            505
+          ],
+          "origin_lines": [
+            347,
+            451
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 408,
+          "longest_match_tokens": 408,
+          "current_start_token": 1735,
+          "origin_start_token": 1620,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            346,
+            439
+          ],
+          "origin_lines": [
+            311,
+            379
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/Makefile",
+          "origin": "udp_rk_rk_yolo/M/Makefile",
+          "region_tokens": 398,
+          "longest_match_tokens": 398,
+          "current_start_token": 243,
+          "origin_start_token": 151,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/Makefile"
+          ],
+          "current_lines": [
+            59,
+            138
+          ],
+          "origin_lines": [
+            50,
+            129
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 395,
+          "longest_match_tokens": 395,
+          "current_start_token": 4873,
+          "origin_start_token": 6268,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            907,
+            975
+          ],
+          "origin_lines": [
+            932,
+            990
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/pcie_capture.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/pcie_capture.h",
+          "region_tokens": 394,
+          "longest_match_tokens": 394,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/pcie_capture.h"
+          ],
+          "current_lines": [
+            1,
+            209
+          ],
+          "origin_lines": [
+            1,
+            206
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 378,
+          "longest_match_tokens": 378,
+          "current_start_token": 360,
+          "origin_start_token": 337,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            117,
+            201
+          ],
+          "origin_lines": [
+            108,
+            188
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 361,
+          "longest_match_tokens": 361,
+          "current_start_token": 4371,
+          "origin_start_token": 6289,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_lines": [
+            702,
+            779
+          ],
+          "origin_lines": [
+            751,
+            822
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+          "region_tokens": 326,
+          "longest_match_tokens": 326,
+          "current_start_token": 270,
+          "origin_start_token": 81,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            64,
+            132
+          ],
+          "origin_lines": [
+            19,
+            80
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c",
+          "origin": "udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c",
+          "region_tokens": 326,
+          "longest_match_tokens": 326,
+          "current_start_token": 2209,
+          "origin_start_token": 1690,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c"
+          ],
+          "current_lines": [
+            422,
+            512
+          ],
+          "origin_lines": [
+            461,
+            541
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 326,
+          "longest_match_tokens": 326,
+          "current_start_token": 2880,
+          "origin_start_token": 3539,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            462,
+            529
+          ],
+          "origin_lines": [
+            507,
+            547
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 321,
+          "longest_match_tokens": 321,
+          "current_start_token": 247,
+          "origin_start_token": 227,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_lines": [
+            62,
+            114
+          ],
+          "origin_lines": [
+            61,
+            113
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/common/perception/include/yolo_engine_resources.h",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 316,
+          "longest_match_tokens": 316,
+          "current_start_token": 85,
+          "origin_start_token": 226,
+          "current_copies": [
+            "udp_rk_rk_yolo/common/perception/include/yolo_engine_resources.h"
+          ],
+          "current_lines": [
+            22,
+            63
+          ],
+          "origin_lines": [
+            44,
+            80
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 307,
+          "longest_match_tokens": 307,
+          "current_start_token": 728,
+          "origin_start_token": 325,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            187,
+            228
+          ],
+          "origin_lines": [
+            104,
+            148
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 286,
+          "longest_match_tokens": 286,
+          "current_start_token": 4375,
+          "origin_start_token": 4725,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            810,
+            868
+          ],
+          "origin_lines": [
+            759,
+            812
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 284,
+          "longest_match_tokens": 284,
+          "current_start_token": 3516,
+          "origin_start_token": 3164,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            742,
+            827
+          ],
+          "origin_lines": [
+            617,
+            695
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/include/shared_memory.h",
+          "origin": "udp_rk_rk_yolo/M/include/shared_memory.h",
+          "region_tokens": 281,
+          "longest_match_tokens": 281,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/include/shared_memory.h"
+          ],
+          "current_lines": [
+            1,
+            91
+          ],
+          "origin_lines": [
+            1,
+            94
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+          "region_tokens": 280,
+          "longest_match_tokens": 280,
+          "current_start_token": 377,
+          "origin_start_token": 117,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            58,
+            129
+          ],
+          "origin_lines": [
+            24,
+            84
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+          "region_tokens": 276,
+          "longest_match_tokens": 276,
+          "current_start_token": 263,
+          "origin_start_token": 236,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h"
+          ],
+          "current_lines": [
+            104,
+            174
+          ],
+          "origin_lines": [
+            100,
+            159
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 275,
+          "longest_match_tokens": 275,
+          "current_start_token": 15,
+          "origin_start_token": 6,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            6,
+            102
+          ],
+          "origin_lines": [
+            3,
+            103
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/udp/Makefile",
+          "origin": "udp_rk_rk_yolo/M/udp/Makefile",
+          "region_tokens": 268,
+          "longest_match_tokens": 268,
+          "current_start_token": 540,
+          "origin_start_token": 361,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/udp/Makefile"
+          ],
+          "current_lines": [
+            104,
+            172
+          ],
+          "origin_lines": [
+            95,
+            163
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 260,
+          "longest_match_tokens": 260,
+          "current_start_token": 2777,
+          "origin_start_token": 2545,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            581,
+            636
+          ],
+          "origin_lines": [
+            499,
+            544
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 254,
+          "longest_match_tokens": 254,
+          "current_start_token": 2019,
+          "origin_start_token": 1637,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_lines": [
+            300,
+            332
+          ],
+          "origin_lines": [
+            304,
+            336
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 253,
+          "longest_match_tokens": 253,
+          "current_start_token": 816,
+          "origin_start_token": 711,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_lines": [
+            161,
+            190
+          ],
+          "origin_lines": [
+            155,
+            184
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/Makefile",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/Makefile",
+          "region_tokens": 250,
+          "longest_match_tokens": 250,
+          "current_start_token": 17,
+          "origin_start_token": 3,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/Makefile"
+          ],
+          "current_lines": [
+            9,
+            39
+          ],
+          "origin_lines": [
+            7,
+            37
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 242,
+          "longest_match_tokens": 242,
+          "current_start_token": 3386,
+          "origin_start_token": 2888,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            707,
+            796
+          ],
+          "origin_lines": [
+            633,
+            710
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 241,
+          "longest_match_tokens": 241,
+          "current_start_token": 117,
+          "origin_start_token": 97,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            27,
+            116
+          ],
+          "origin_lines": [
+            20,
+            108
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/Makefile",
+          "origin": "udp_rk_rk_yolo/M/pcie/Makefile",
+          "region_tokens": 240,
+          "longest_match_tokens": 240,
+          "current_start_token": 129,
+          "origin_start_token": 113,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/Makefile"
+          ],
+          "current_lines": [
+            41,
+            90
+          ],
+          "origin_lines": [
+            41,
+            90
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/postprocess.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/postprocess.h",
+          "region_tokens": 238,
+          "longest_match_tokens": 238,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/postprocess.h"
+          ],
+          "current_lines": [
+            1,
+            65
+          ],
+          "origin_lines": [
+            1,
+            64
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+          "region_tokens": 238,
+          "longest_match_tokens": 238,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h"
+          ],
+          "current_lines": [
+            1,
+            102
+          ],
+          "origin_lines": [
+            1,
+            100
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 236,
+          "longest_match_tokens": 236,
+          "current_start_token": 292,
+          "origin_start_token": 280,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            103,
+            149
+          ],
+          "origin_lines": [
+            103,
+            150
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+          "region_tokens": 228,
+          "longest_match_tokens": 228,
+          "current_start_token": 1145,
+          "origin_start_token": 930,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            257,
+            296
+          ],
+          "origin_lines": [
+            179,
+            212
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/fspi/csrc/main.c",
+          "origin": "udp_rk_rk_yolo/S/fspi/csrc/main.c",
+          "region_tokens": 223,
+          "longest_match_tokens": 223,
+          "current_start_token": 3254,
+          "origin_start_token": 1430,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/fspi/csrc/main.c"
+          ],
+          "current_lines": [
+            789,
+            861
+          ],
+          "origin_lines": [
+            420,
+            479
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 218,
+          "longest_match_tokens": 218,
+          "current_start_token": 1671,
+          "origin_start_token": 1387,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_lines": [
+            259,
+            287
+          ],
+          "origin_lines": [
+            272,
+            299
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 214,
+          "longest_match_tokens": 214,
+          "current_start_token": 2242,
+          "origin_start_token": 1934,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            448,
+            485
+          ],
+          "origin_lines": [
+            368,
+            400
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 212,
+          "longest_match_tokens": 212,
+          "current_start_token": 820,
+          "origin_start_token": 689,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            232,
+            277
+          ],
+          "origin_lines": [
+            197,
+            235
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 210,
+          "longest_match_tokens": 210,
+          "current_start_token": 1096,
+          "origin_start_token": 691,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            263,
+            307
+          ],
+          "origin_lines": [
+            198,
+            235
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/include/shared_memory.h",
+          "origin": "udp_rk_rk_yolo/S/include/shared_memory.h",
+          "region_tokens": 208,
+          "longest_match_tokens": 208,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/include/shared_memory.h"
+          ],
+          "current_lines": [
+            1,
+            56
+          ],
+          "origin_lines": [
+            1,
+            61
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 207,
+          "longest_match_tokens": 207,
+          "current_start_token": 3330,
+          "origin_start_token": 5125,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_lines": [
+            536,
+            568
+          ],
+          "origin_lines": [
+            594,
+            615
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/udp/include/udp_network.h",
+          "origin": "udp_rk_rk_yolo/M/udp/include/udp_network.h",
+          "region_tokens": 205,
+          "longest_match_tokens": 205,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/udp/include/udp_network.h"
+          ],
+          "current_lines": [
+            1,
+            102
+          ],
+          "origin_lines": [
+            1,
+            97
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 205,
+          "longest_match_tokens": 205,
+          "current_start_token": 2175,
+          "origin_start_token": 1960,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            506,
+            580
+          ],
+          "origin_lines": [
+            471,
+            534
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 204,
+          "longest_match_tokens": 204,
+          "current_start_token": 392,
+          "origin_start_token": 703,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            70,
+            112
+          ],
+          "origin_lines": [
+            102,
+            139
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/include/yolo_integration.h",
+          "origin": "udp_rk_rk_yolo/S/pcie/include/yolo_integration.h",
+          "region_tokens": 203,
+          "longest_match_tokens": 203,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/include/yolo_integration.h"
+          ],
+          "current_lines": [
+            1,
+            67
+          ],
+          "origin_lines": [
+            1,
+            65
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+          "region_tokens": 200,
+          "longest_match_tokens": 200,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c"
+          ],
+          "current_lines": [
+            2,
+            42
+          ],
+          "origin_lines": [
+            2,
+            46
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 200,
+          "longest_match_tokens": 200,
+          "current_start_token": 2710,
+          "origin_start_token": 4037,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_lines": [
+            448,
+            473
+          ],
+          "origin_lines": [
+            457,
+            479
+          ]
+        }
+      ]
+    },
+    "vendor": {
+      "metrics": {
+        "files": 3,
+        "tokens": 53575,
+        "bytes": 360031,
+        "exact_external_files": 0,
+        "exact_external_file_percent": 0.0,
+        "normalized_external_files": 3,
+        "normalized_external_file_percent": 100.0,
+        "internal_exact_extra_copies": 1,
+        "internal_normalized_extra_copies": 1,
+        "internal_normalized_extra_token_percent": 2.428371441903873,
+        "unique_normalized_contents": 2,
+        "covered_tokens": 53575,
+        "coverage_percent": 100.0,
+        "deduplicated_coverage_percent": 100.0,
+        "large_regions": 3,
+        "large_regions_deduplicated": 2,
+        "regions_with_500_token_match": 3,
+        "large_region_files": 3,
+        "large_region_tokens": 53575
+      },
+      "blocks": [
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/include/stb_image.h",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/include/stb_image.h",
+          "region_tokens": 50973,
+          "longest_match_tokens": 50973,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/include/stb_image.h"
+          ],
+          "current_line": null,
+          "origin_line": null,
+          "current_lines": [
+            129,
+            7762
+          ],
+          "origin_lines": [
+            129,
+            7762
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/rknn_api.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/rknn_api.h",
+          "region_tokens": 1301,
+          "longest_match_tokens": 1301,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/rknn_api.h",
+            "udp_rk_rk_yolo/S/pcie/include/rknn_api.h"
+          ],
+          "current_line": 1,
+          "origin_line": 14,
+          "current_lines": [
+            1,
+            791
+          ],
+          "origin_lines": [
+            14,
+            804
+          ]
+        }
+      ]
+    },
+    "history": {
+      "metrics": {
+        "files": 2,
+        "tokens": 11481,
+        "bytes": 100594,
+        "exact_external_files": 0,
+        "exact_external_file_percent": 0.0,
+        "normalized_external_files": 1,
+        "normalized_external_file_percent": 50.0,
+        "internal_exact_extra_copies": 0,
+        "internal_normalized_extra_copies": 0,
+        "internal_normalized_extra_token_percent": 0.0,
+        "unique_normalized_contents": 2,
+        "covered_tokens": 11478,
+        "coverage_percent": 99.97386987196238,
+        "deduplicated_coverage_percent": 99.97386987196238,
+        "large_regions": 1,
+        "large_regions_deduplicated": 1,
+        "regions_with_500_token_match": 1,
+        "large_region_files": 1,
+        "large_region_tokens": 11478
+      },
+      "blocks": [
+        {
+          "current": "udp_rk_rk_yolo/S/udp/csrc/main_old.cpp",
+          "origin": "udp_rk_rk_yolo/S/udp/csrc/main_old.cpp",
+          "region_tokens": 11478,
+          "longest_match_tokens": 11478,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/udp/csrc/main_old.cpp"
+          ],
+          "current_line": null,
+          "origin_line": 1,
+          "current_lines": [
+            1,
+            2653
+          ],
+          "origin_lines": [
+            1,
+            2321
+          ]
+        }
+      ]
+    },
+    "history_expanded": {
+      "metrics": {
+        "files": 6,
+        "tokens": 13484,
+        "bytes": 120442,
+        "exact_external_files": 0,
+        "exact_external_file_percent": 0.0,
+        "normalized_external_files": 4,
+        "normalized_external_file_percent": 66.66666666666667,
+        "internal_exact_extra_copies": 0,
+        "internal_normalized_extra_copies": 0,
+        "internal_normalized_extra_token_percent": 0.0,
+        "unique_normalized_contents": 6,
+        "covered_tokens": 13136,
+        "coverage_percent": 97.41916345298131,
+        "deduplicated_coverage_percent": 97.41916345298131,
+        "large_regions": 4,
+        "large_regions_deduplicated": 4,
+        "regions_with_500_token_match": 2,
+        "large_region_files": 4,
+        "large_region_tokens": 12749
+      },
+      "blocks": [
+        {
+          "current": "udp_rk_rk_yolo/S/udp/csrc/main_old.cpp",
+          "origin": "udp_rk_rk_yolo/S/udp/csrc/main_old.cpp",
+          "region_tokens": 11478,
+          "longest_match_tokens": 11478,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/udp/csrc/main_old.cpp"
+          ],
+          "current_line": null,
+          "origin_line": 1,
+          "current_lines": [
+            1,
+            2653
+          ],
+          "origin_lines": [
+            1,
+            2321
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/fspi_module.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/fspi_module.c",
+          "region_tokens": 672,
+          "longest_match_tokens": 672,
+          "current_start_token": 632,
+          "origin_start_token": 1246,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/fspi_module.c"
+          ],
+          "current_line": 123,
+          "origin_line": 307,
+          "current_lines": [
+            123,
+            295
+          ],
+          "origin_lines": [
+            307,
+            476
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/pcie_capture.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/pcie_capture.h",
+          "region_tokens": 394,
+          "longest_match_tokens": 394,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/pcie_capture.h"
+          ],
+          "current_line": 1,
+          "origin_line": 1,
+          "current_lines": [
+            1,
+            209
+          ],
+          "origin_lines": [
+            1,
+            206
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/udp/include/udp_network.h",
+          "origin": "udp_rk_rk_yolo/M/udp/include/udp_network.h",
+          "region_tokens": 205,
+          "longest_match_tokens": 205,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/udp/include/udp_network.h"
+          ],
+          "current_line": 1,
+          "origin_line": 1,
+          "current_lines": [
+            1,
+            102
+          ],
+          "origin_lines": [
+            1,
+            97
+          ]
+        }
+      ]
+    },
+    "active_app": {
+      "metrics": {
+        "files": 192,
+        "tokens": 220583,
+        "bytes": 1309764,
+        "exact_external_files": 0,
+        "exact_external_file_percent": 0.0,
+        "normalized_external_files": 7,
+        "normalized_external_file_percent": 3.6458333333333335,
+        "internal_exact_extra_copies": 1,
+        "internal_normalized_extra_copies": 1,
+        "internal_normalized_extra_token_percent": 0.023120548727689805,
+        "unique_normalized_contents": 191,
+        "covered_tokens": 42590,
+        "coverage_percent": 19.307924908084484,
+        "deduplicated_coverage_percent": 19.289264143072206,
+        "large_regions": 67,
+        "large_regions_deduplicated": 67,
+        "regions_with_500_token_match": 15,
+        "large_region_files": 27,
+        "large_region_tokens": 27226
+      },
+      "blocks": [
+        {
+          "current": "udp_rk_rk_yolo/common/pcie/pango_dma_abi.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/pcie_dma_read_test.h",
+          "region_tokens": 1100,
+          "longest_match_tokens": 1100,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/common/pcie/pango_dma_abi.h"
+          ],
+          "current_line": 1,
+          "origin_line": 1,
+          "current_lines": [
+            1,
+            319
+          ],
+          "origin_lines": [
+            1,
+            295
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/Makefile",
+          "origin": "udp_rk_rk_yolo/M/Makefile",
+          "region_tokens": 1085,
+          "longest_match_tokens": 1085,
+          "current_start_token": 1273,
+          "origin_start_token": 1089,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/Makefile"
+          ],
+          "current_line": null,
+          "origin_line": null,
+          "current_lines": [
+            225,
+            450
+          ],
+          "origin_lines": [
+            210,
+            435
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+          "region_tokens": 894,
+          "longest_match_tokens": 894,
+          "current_start_token": 630,
+          "origin_start_token": 1270,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c"
+          ],
+          "current_line": 127,
+          "origin_line": 316,
+          "current_lines": [
+            127,
+            353
+          ],
+          "origin_lines": [
+            316,
+            536
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 879,
+          "longest_match_tokens": 879,
+          "current_start_token": 1830,
+          "origin_start_token": 2662,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_line": 295,
+          "origin_line": 397,
+          "current_lines": [
+            295,
+            431
+          ],
+          "origin_lines": [
+            397,
+            508
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+          "region_tokens": 791,
+          "longest_match_tokens": 791,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c"
+          ],
+          "current_line": 1,
+          "origin_line": 1,
+          "current_lines": [
+            1,
+            184
+          ],
+          "origin_lines": [
+            1,
+            163
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 739,
+          "longest_match_tokens": 739,
+          "current_start_token": 2274,
+          "origin_start_token": 1892,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_line": null,
+          "origin_line": null,
+          "current_lines": [
+            333,
+            474
+          ],
+          "origin_lines": [
+            337,
+            478
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 727,
+          "longest_match_tokens": 727,
+          "current_start_token": 825,
+          "origin_start_token": 2483,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_line": 88,
+          "origin_line": 177,
+          "current_lines": [
+            88,
+            251
+          ],
+          "origin_lines": [
+            177,
+            318
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 719,
+          "longest_match_tokens": 719,
+          "current_start_token": 4583,
+          "origin_start_token": 4092,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_line": 941,
+          "origin_line": 875,
+          "current_lines": [
+            941,
+            1107
+          ],
+          "origin_lines": [
+            875,
+            1032
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 711,
+          "longest_match_tokens": 711,
+          "current_start_token": 2504,
+          "origin_start_token": 3126,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_line": 497,
+          "origin_line": 535,
+          "current_lines": [
+            497,
+            631
+          ],
+          "origin_lines": [
+            535,
+            643
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 704,
+          "longest_match_tokens": 704,
+          "current_start_token": 16,
+          "origin_start_token": 10,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_line": 6,
+          "origin_line": 4,
+          "current_lines": [
+            6,
+            145
+          ],
+          "origin_lines": [
+            4,
+            122
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 673,
+          "longest_match_tokens": 673,
+          "current_start_token": 1043,
+          "origin_start_token": 1408,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_line": 192,
+          "origin_line": 230,
+          "current_lines": [
+            192,
+            281
+          ],
+          "origin_lines": [
+            230,
+            317
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/setup_network.sh",
+          "origin": "udp_rk_rk_yolo/S/setup_network.sh",
+          "region_tokens": 605,
+          "longest_match_tokens": 605,
+          "current_start_token": 94,
+          "origin_start_token": 57,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/setup_network.sh"
+          ],
+          "current_line": null,
+          "origin_line": null,
+          "current_lines": [
+            23,
+            169
+          ],
+          "origin_lines": [
+            25,
+            171
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 576,
+          "longest_match_tokens": 576,
+          "current_start_token": 1081,
+          "origin_start_token": 643,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_line": 233,
+          "origin_line": 149,
+          "current_lines": [
+            233,
+            348
+          ],
+          "origin_lines": [
+            149,
+            253
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 564,
+          "longest_match_tokens": 564,
+          "current_start_token": 2571,
+          "origin_start_token": 3127,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_line": 622,
+          "origin_line": 714,
+          "current_lines": [
+            622,
+            758
+          ],
+          "origin_lines": [
+            714,
+            844
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/setup_network.sh",
+          "origin": "udp_rk_rk_yolo/M/setup_network.sh",
+          "region_tokens": 523,
+          "longest_match_tokens": 523,
+          "current_start_token": 95,
+          "origin_start_token": 58,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/setup_network.sh"
+          ],
+          "current_line": null,
+          "origin_line": null,
+          "current_lines": [
+            23,
+            145
+          ],
+          "origin_lines": [
+            25,
+            147
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 492,
+          "longest_match_tokens": 492,
+          "current_start_token": 3659,
+          "origin_start_token": 4187,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            707,
+            773
+          ],
+          "origin_lines": [
+            699,
+            752
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/Makefile",
+          "origin": "udp_rk_rk_yolo/S/pcie/Makefile",
+          "region_tokens": 481,
+          "longest_match_tokens": 481,
+          "current_start_token": 69,
+          "origin_start_token": 69,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/Makefile"
+          ],
+          "current_lines": [
+            82,
+            164
+          ],
+          "origin_lines": [
+            78,
+            160
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 480,
+          "longest_match_tokens": 480,
+          "current_start_token": 2289,
+          "origin_start_token": 2065,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            451,
+            575
+          ],
+          "origin_lines": [
+            383,
+            493
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c",
+          "region_tokens": 459,
+          "longest_match_tokens": 459,
+          "current_start_token": 921,
+          "origin_start_token": 904,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/person_alert_effects.c"
+          ],
+          "current_lines": [
+            212,
+            314
+          ],
+          "origin_lines": [
+            189,
+            277
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 455,
+          "longest_match_tokens": 455,
+          "current_start_token": 3822,
+          "origin_start_token": 3564,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            833,
+            953
+          ],
+          "origin_lines": [
+            725,
+            825
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+          "region_tokens": 440,
+          "longest_match_tokens": 440,
+          "current_start_token": 2061,
+          "origin_start_token": 1884,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            343,
+            441
+          ],
+          "origin_lines": [
+            415,
+            502
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 440,
+          "longest_match_tokens": 440,
+          "current_start_token": 2070,
+          "origin_start_token": 1746,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            469,
+            556
+          ],
+          "origin_lines": [
+            409,
+            495
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 435,
+          "longest_match_tokens": 435,
+          "current_start_token": 3335,
+          "origin_start_token": 4486,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            544,
+            642
+          ],
+          "origin_lines": [
+            631,
+            717
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 434,
+          "longest_match_tokens": 434,
+          "current_start_token": 1576,
+          "origin_start_token": 3294,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_lines": [
+            256,
+            334
+          ],
+          "origin_lines": [
+            335,
+            403
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/Makefile",
+          "origin": "udp_rk_rk_yolo/M/pcie/Makefile",
+          "region_tokens": 415,
+          "longest_match_tokens": 415,
+          "current_start_token": 1320,
+          "origin_start_token": 430,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/Makefile"
+          ],
+          "current_lines": [
+            177,
+            254
+          ],
+          "origin_lines": [
+            118,
+            195
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 409,
+          "longest_match_tokens": 409,
+          "current_start_token": 1761,
+          "origin_start_token": 1461,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            384,
+            505
+          ],
+          "origin_lines": [
+            347,
+            451
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 408,
+          "longest_match_tokens": 408,
+          "current_start_token": 1735,
+          "origin_start_token": 1620,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            346,
+            439
+          ],
+          "origin_lines": [
+            311,
+            379
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/Makefile",
+          "origin": "udp_rk_rk_yolo/M/Makefile",
+          "region_tokens": 398,
+          "longest_match_tokens": 398,
+          "current_start_token": 243,
+          "origin_start_token": 151,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/Makefile"
+          ],
+          "current_lines": [
+            59,
+            138
+          ],
+          "origin_lines": [
+            50,
+            129
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 395,
+          "longest_match_tokens": 395,
+          "current_start_token": 4873,
+          "origin_start_token": 6268,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            907,
+            975
+          ],
+          "origin_lines": [
+            932,
+            990
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 378,
+          "longest_match_tokens": 378,
+          "current_start_token": 360,
+          "origin_start_token": 337,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            117,
+            201
+          ],
+          "origin_lines": [
+            108,
+            188
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 361,
+          "longest_match_tokens": 361,
+          "current_start_token": 4371,
+          "origin_start_token": 6289,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_lines": [
+            702,
+            779
+          ],
+          "origin_lines": [
+            751,
+            822
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+          "region_tokens": 326,
+          "longest_match_tokens": 326,
+          "current_start_token": 270,
+          "origin_start_token": 81,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            64,
+            132
+          ],
+          "origin_lines": [
+            19,
+            80
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c",
+          "origin": "udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c",
+          "region_tokens": 326,
+          "longest_match_tokens": 326,
+          "current_start_token": 2209,
+          "origin_start_token": 1690,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/fspi/csrc/fspi_module.c"
+          ],
+          "current_lines": [
+            422,
+            512
+          ],
+          "origin_lines": [
+            461,
+            541
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 326,
+          "longest_match_tokens": 326,
+          "current_start_token": 2880,
+          "origin_start_token": 3539,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            462,
+            529
+          ],
+          "origin_lines": [
+            507,
+            547
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 321,
+          "longest_match_tokens": 321,
+          "current_start_token": 247,
+          "origin_start_token": 227,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_lines": [
+            62,
+            114
+          ],
+          "origin_lines": [
+            61,
+            113
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/common/perception/include/yolo_engine_resources.h",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 316,
+          "longest_match_tokens": 316,
+          "current_start_token": 85,
+          "origin_start_token": 226,
+          "current_copies": [
+            "udp_rk_rk_yolo/common/perception/include/yolo_engine_resources.h"
+          ],
+          "current_lines": [
+            22,
+            63
+          ],
+          "origin_lines": [
+            44,
+            80
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 307,
+          "longest_match_tokens": 307,
+          "current_start_token": 728,
+          "origin_start_token": 325,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            187,
+            228
+          ],
+          "origin_lines": [
+            104,
+            148
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 286,
+          "longest_match_tokens": 286,
+          "current_start_token": 4375,
+          "origin_start_token": 4725,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            810,
+            868
+          ],
+          "origin_lines": [
+            759,
+            812
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 284,
+          "longest_match_tokens": 284,
+          "current_start_token": 3516,
+          "origin_start_token": 3164,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            742,
+            827
+          ],
+          "origin_lines": [
+            617,
+            695
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/include/shared_memory.h",
+          "origin": "udp_rk_rk_yolo/M/include/shared_memory.h",
+          "region_tokens": 281,
+          "longest_match_tokens": 281,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/include/shared_memory.h"
+          ],
+          "current_lines": [
+            1,
+            91
+          ],
+          "origin_lines": [
+            1,
+            94
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/M/csrc/shared_memory.c",
+          "region_tokens": 280,
+          "longest_match_tokens": 280,
+          "current_start_token": 377,
+          "origin_start_token": 117,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            58,
+            129
+          ],
+          "origin_lines": [
+            24,
+            84
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+          "region_tokens": 276,
+          "longest_match_tokens": 276,
+          "current_start_token": 263,
+          "origin_start_token": 236,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h"
+          ],
+          "current_lines": [
+            104,
+            174
+          ],
+          "origin_lines": [
+            100,
+            159
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 275,
+          "longest_match_tokens": 275,
+          "current_start_token": 15,
+          "origin_start_token": 6,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            6,
+            102
+          ],
+          "origin_lines": [
+            3,
+            103
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/udp/Makefile",
+          "origin": "udp_rk_rk_yolo/M/udp/Makefile",
+          "region_tokens": 268,
+          "longest_match_tokens": 268,
+          "current_start_token": 540,
+          "origin_start_token": 361,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/udp/Makefile"
+          ],
+          "current_lines": [
+            104,
+            172
+          ],
+          "origin_lines": [
+            95,
+            163
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "origin": "udp_rk_rk_yolo/S/csrc/shared_memory.c",
+          "region_tokens": 260,
+          "longest_match_tokens": 260,
+          "current_start_token": 2777,
+          "origin_start_token": 2545,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/csrc/shared_memory.c"
+          ],
+          "current_lines": [
+            581,
+            636
+          ],
+          "origin_lines": [
+            499,
+            544
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 254,
+          "longest_match_tokens": 254,
+          "current_start_token": 2019,
+          "origin_start_token": 1637,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_lines": [
+            300,
+            332
+          ],
+          "origin_lines": [
+            304,
+            336
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 253,
+          "longest_match_tokens": 253,
+          "current_start_token": 816,
+          "origin_start_token": 711,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_lines": [
+            161,
+            190
+          ],
+          "origin_lines": [
+            155,
+            184
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/Makefile",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/Makefile",
+          "region_tokens": 250,
+          "longest_match_tokens": 250,
+          "current_start_token": 17,
+          "origin_start_token": 3,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/Makefile"
+          ],
+          "current_lines": [
+            9,
+            39
+          ],
+          "origin_lines": [
+            7,
+            37
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 242,
+          "longest_match_tokens": 242,
+          "current_start_token": 3386,
+          "origin_start_token": 2888,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            707,
+            796
+          ],
+          "origin_lines": [
+            633,
+            710
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "region_tokens": 241,
+          "longest_match_tokens": 241,
+          "current_start_token": 117,
+          "origin_start_token": 97,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            27,
+            116
+          ],
+          "origin_lines": [
+            20,
+            108
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/Makefile",
+          "origin": "udp_rk_rk_yolo/M/pcie/Makefile",
+          "region_tokens": 240,
+          "longest_match_tokens": 240,
+          "current_start_token": 129,
+          "origin_start_token": 113,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/Makefile"
+          ],
+          "current_lines": [
+            41,
+            90
+          ],
+          "origin_lines": [
+            41,
+            90
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/postprocess.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/postprocess.h",
+          "region_tokens": 238,
+          "longest_match_tokens": 238,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/postprocess.h"
+          ],
+          "current_lines": [
+            1,
+            65
+          ],
+          "origin_lines": [
+            1,
+            64
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+          "origin": "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h",
+          "region_tokens": 238,
+          "longest_match_tokens": 238,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/include/yolop_opencv_integration.h"
+          ],
+          "current_lines": [
+            1,
+            102
+          ],
+          "origin_lines": [
+            1,
+            100
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 236,
+          "longest_match_tokens": 236,
+          "current_start_token": 292,
+          "origin_start_token": 280,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            103,
+            149
+          ],
+          "origin_lines": [
+            103,
+            150
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c",
+          "region_tokens": 228,
+          "longest_match_tokens": 228,
+          "current_start_token": 1145,
+          "origin_start_token": 930,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            257,
+            296
+          ],
+          "origin_lines": [
+            179,
+            212
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/fspi/csrc/main.c",
+          "origin": "udp_rk_rk_yolo/S/fspi/csrc/main.c",
+          "region_tokens": 223,
+          "longest_match_tokens": 223,
+          "current_start_token": 3254,
+          "origin_start_token": 1430,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/fspi/csrc/main.c"
+          ],
+          "current_lines": [
+            789,
+            861
+          ],
+          "origin_lines": [
+            420,
+            479
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/Makefile",
+          "origin": "udp_rk_rk_yolo/S/Makefile",
+          "region_tokens": 218,
+          "longest_match_tokens": 218,
+          "current_start_token": 1671,
+          "origin_start_token": 1387,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/Makefile"
+          ],
+          "current_lines": [
+            259,
+            287
+          ],
+          "origin_lines": [
+            272,
+            299
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/x11/csrc/main.cpp",
+          "region_tokens": 214,
+          "longest_match_tokens": 214,
+          "current_start_token": 2242,
+          "origin_start_token": 1934,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/x11/csrc/main.cpp"
+          ],
+          "current_lines": [
+            448,
+            485
+          ],
+          "origin_lines": [
+            368,
+            400
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 212,
+          "longest_match_tokens": 212,
+          "current_start_token": 820,
+          "origin_start_token": 689,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            232,
+            277
+          ],
+          "origin_lines": [
+            197,
+            235
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 210,
+          "longest_match_tokens": 210,
+          "current_start_token": 1096,
+          "origin_start_token": 691,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            263,
+            307
+          ],
+          "origin_lines": [
+            198,
+            235
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/include/shared_memory.h",
+          "origin": "udp_rk_rk_yolo/S/include/shared_memory.h",
+          "region_tokens": 208,
+          "longest_match_tokens": 208,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/include/shared_memory.h"
+          ],
+          "current_lines": [
+            1,
+            56
+          ],
+          "origin_lines": [
+            1,
+            61
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 207,
+          "longest_match_tokens": 207,
+          "current_start_token": 3330,
+          "origin_start_token": 5125,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_lines": [
+            536,
+            568
+          ],
+          "origin_lines": [
+            594,
+            615
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/main.cpp",
+          "region_tokens": 205,
+          "longest_match_tokens": 205,
+          "current_start_token": 2175,
+          "origin_start_token": 1960,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/main.cpp"
+          ],
+          "current_lines": [
+            506,
+            580
+          ],
+          "origin_lines": [
+            471,
+            534
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "origin": "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c",
+          "region_tokens": 204,
+          "longest_match_tokens": 204,
+          "current_start_token": 392,
+          "origin_start_token": 703,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/csrc/yolo_integration.c"
+          ],
+          "current_lines": [
+            70,
+            112
+          ],
+          "origin_lines": [
+            102,
+            139
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/S/pcie/include/yolo_integration.h",
+          "origin": "udp_rk_rk_yolo/S/pcie/include/yolo_integration.h",
+          "region_tokens": 203,
+          "longest_match_tokens": 203,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/S/pcie/include/yolo_integration.h"
+          ],
+          "current_lines": [
+            1,
+            67
+          ],
+          "origin_lines": [
+            1,
+            65
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c",
+          "region_tokens": 200,
+          "longest_match_tokens": 200,
+          "current_start_token": 0,
+          "origin_start_token": 0,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/fspi_module.c"
+          ],
+          "current_lines": [
+            2,
+            42
+          ],
+          "origin_lines": [
+            2,
+            46
+          ]
+        },
+        {
+          "current": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "origin": "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp",
+          "region_tokens": 200,
+          "longest_match_tokens": 200,
+          "current_start_token": 2710,
+          "origin_start_token": 4037,
+          "current_copies": [
+            "udp_rk_rk_yolo/M/pcie/csrc/yolop_opencv_integration.cpp"
+          ],
+          "current_lines": [
+            448,
+            473
+          ],
+          "origin_lines": [
+            457,
+            479
+          ]
+        }
+      ]
+    },
+    "tests": {
+      "metrics": {
+        "files": 52,
+        "tokens": 50588,
+        "bytes": 215428,
+        "exact_external_files": 0,
+        "exact_external_file_percent": 0.0,
+        "normalized_external_files": 0,
+        "normalized_external_file_percent": 0.0,
+        "internal_exact_extra_copies": 1,
+        "internal_normalized_extra_copies": 1,
+        "internal_normalized_extra_token_percent": 4.364671463588203,
+        "unique_normalized_contents": 51,
+        "covered_tokens": 0,
+        "coverage_percent": 0.0,
+        "deduplicated_coverage_percent": 0.0,
+        "large_regions": 0,
+        "large_regions_deduplicated": 0,
+        "regions_with_500_token_match": 0,
+        "large_region_files": 0,
+        "large_region_tokens": 0
+      },
+      "blocks": []
+    }
+  },
+  "unreadable": []
+}

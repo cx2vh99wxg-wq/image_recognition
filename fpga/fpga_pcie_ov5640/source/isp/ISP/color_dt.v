@@ -1,3 +1,4 @@
+// 2026-11-03 注释校订。根据区域边界生成方框叠加。边缘判定、颜色和输出各自沿用原寄存拍。
 module color_dt
 #(
 	parameter     COL = 640  ,
@@ -12,11 +13,11 @@ module color_dt
 	input         video_bit  ,
     input  [9:0]  video_x    ,
     input  [9:0]  video_y    ,
-          
+
     input 	      red_en     ,
     input 	      blue_en    ,
     input 	      yellow_en  ,
-	
+
     output [9:0]  out_up     ,
     output [9:0]  out_down   ,
     output [9:0]  out_left   ,
@@ -26,7 +27,6 @@ module color_dt
 	output [23:0] out_data
 );
 
-// 求出当前像素的坐标。
 reg [15:0] col_cnt;
 reg [15:0] row_cnt;
 
@@ -46,14 +46,13 @@ always @(posedge video_pclk or negedge rst_n) begin
 		row_cnt             <=          16'd0;
 	else if(row_cnt == ROW-1 && col_cnt == COL-1 && video_valid == 1'b1)
 		row_cnt             <=          16'd0;
-	else if(col_cnt == COL-1 && video_valid == 1'b1) 
+	else if(col_cnt == COL-1 && video_valid == 1'b1)
 		row_cnt             <=          row_cnt + 1'b1;
 	else
 		row_cnt             <=          row_cnt;
 end
 
-// 求出边框需要覆盖的最大范围。
-reg [15:0] 	up_reg	    ;	  
+reg [15:0] 	up_reg	    ;
 reg [15:0] 	down_reg 	;
 reg [15:0] 	left_reg 	;
 reg [15:0] 	right_reg	;
@@ -76,26 +75,26 @@ always@(posedge video_pclk or negedge rst_n) begin
 	end
 	else if(video_valid & (~video_bit)) begin
 		flag_reg  <= 1'b1;
-		
-		if(col_cnt < left_reg) 
-			left_reg <= col_cnt;		// 当前区域的左端边界。
+
+		if(col_cnt < left_reg)
+			left_reg <= col_cnt;
 		else
 			left_reg <= left_reg;
-			
-		if(col_cnt > right_reg) 
-			right_reg <= col_cnt;		// 当前区域的右端边界。
+
+		if(col_cnt > right_reg)
+			right_reg <= col_cnt;
 		else
 			right_reg <= right_reg;
-			
-		if(row_cnt < up_reg) 
-			up_reg <= row_cnt;		    // 当前区域的顶端边界。
+
+		if(row_cnt < up_reg)
+			up_reg <= row_cnt;
 		else
 			up_reg <= up_reg;
-			
-		if(row_cnt > down_reg) 
-			down_reg <= row_cnt;		// 当前区域的底端边界。
+
+		if(row_cnt > down_reg)
+			down_reg <= row_cnt;
 		else
-			down_reg <= down_reg;	
+			down_reg <= down_reg;
 	end
 end
 
@@ -114,49 +113,35 @@ always@(posedge video_pclk or negedge rst_n) begin
 		rectangular_flag  <= 1'b0 ;
 	end
 	else if((col_cnt == COL - 1) && (row_cnt == ROW - 1))begin
-		rectangular_up	  <= up_reg	  ;		
+		rectangular_up	  <= up_reg	  ;
 		rectangular_down  <= down_reg ;
-		rectangular_left  <= left_reg ;		
+		rectangular_left  <= left_reg ;
 		rectangular_right <= right_reg;
 		rectangular_flag  <= flag_reg ;
 	end
 end
 
-// ── 图像流水线 ──
-// 写入矩形边界的像素。
-
-// 求出摄像头输入图像的像素坐标。
 wire [15:0] x_cnt;
 wire [15:0] y_cnt;
 
 assign x_cnt = video_x;
 assign y_cnt = video_y;
 
-reg boarder_flag;	// 图像流水线：标志着像素点位于方框上
+reg boarder_flag;
 
-always@(posedge video_pclk or negedge rst_n) begin
-	if(!rst_n) begin
-		boarder_flag <= 1'd0;			
-	end
-	else begin	
-			if(rectangular_flag)begin
-				if((x_cnt >  rectangular_left) && (x_cnt < rectangular_right)
-						&& ((y_cnt == rectangular_up ) ||(y_cnt == rectangular_down)) ) begin // 写入矩形的顶边和底边。
-					boarder_flag <= 1'd1;	
-				end
-				else if((y_cnt > rectangular_up) && (y_cnt < rectangular_down)
-						&& ((x_cnt == rectangular_left) ||(x_cnt == rectangular_right)) ) begin // 写入矩形的左边和右边。
-					boarder_flag <= 1'd1;
-				end
-				else begin
-					boarder_flag <= 1'd0;
-				end
-			end
-			else begin	
-				boarder_flag <= 1'd0;
-			end
-		end
-	end
+wire horizontal_edge = (x_cnt > rectangular_left) && (x_cnt < rectangular_right) &&
+                       ((y_cnt == rectangular_up) || (y_cnt == rectangular_down));
+wire vertical_edge = (y_cnt > rectangular_up) && (y_cnt < rectangular_down) &&
+                     ((x_cnt == rectangular_left) || (x_cnt == rectangular_right));
+
+always @(posedge video_pclk or negedge rst_n) begin
+    if (!rst_n)
+        boarder_flag <= 1'b0;
+    else if (rectangular_flag && (horizontal_edge || vertical_edge))
+        boarder_flag <= 1'b1;
+    else
+        boarder_flag <= 1'b0;
+end
 
 reg [23:0] color_data;
 

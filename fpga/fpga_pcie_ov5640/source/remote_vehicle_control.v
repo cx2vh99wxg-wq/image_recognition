@@ -1,8 +1,7 @@
+// 2026-11-03 注释校订。车控输入同步、挡位估计与按键调度。独立模块负责 STOP、REARM 和 HMI 回显。
 `timescale 1ns / 1ps
-// 车控模块集中于此文件，接口端口和模块体逻辑均延续原实现。
-// FPGA 到 HMI 只回传状态，与接收命令及所有车辆输出相互分离。
-// 屏幕按 GB2312 解码，B5 B5 表示“档”；周期刷新可在
-// 切页或仅屏幕重启后恢复显示，档位不靠 HMI 本地计数。
+
+// 档位文本带 GB2312 后缀，连续三个 FF 结束命令。滑块就绪后追加数值回显。
 module hmi_gear_feedback #(
     parameter integer CLK_FREQ=50000000,
     parameter integer UART_BPS=115200,
@@ -31,61 +30,23 @@ module hmi_gear_feedback #(
       default:gear_ascii="?";
     endcase
   endfunction
+  localparam [135:0] TEXT_PREFIX = {"page0.tGear.txt=", 8'h22};
+  localparam [183:0] SLIDER_PREFIX = "page0.vaGearActual.val=";
+
   function [7:0] frame_byte(input [5:0] n,input [7:0] gear);
-    case(n)
-        0:frame_byte=8'h70;
-        1:frame_byte=8'h61;
-        2:frame_byte=8'h67;
-        3:frame_byte=8'h65;
-        4:frame_byte=8'h30;
-        5:frame_byte=8'h2e;
-        6:frame_byte=8'h74;
-        7:frame_byte=8'h47;
-        8:frame_byte=8'h65;
-        9:frame_byte=8'h61;
-        10:frame_byte=8'h72;
-        11:frame_byte=8'h2e;
-        12:frame_byte=8'h74;
-        13:frame_byte=8'h78;
-        14:frame_byte=8'h74;
-        15:frame_byte=8'h3d;
-        16:frame_byte=8'h22;
-        17:frame_byte=gear;
-        18:frame_byte=8'hb5;
-        19:frame_byte=8'hb5;
-        20:frame_byte=8'h22;
-        21:frame_byte=8'hff;
-        22:frame_byte=8'hff;
-        23:frame_byte=8'hff;
-        24:frame_byte=8'h70;
-        25:frame_byte=8'h61;
-        26:frame_byte=8'h67;
-        27:frame_byte=8'h65;
-        28:frame_byte=8'h30;
-        29:frame_byte=8'h2e;
-        30:frame_byte=8'h76;
-        31:frame_byte=8'h61;
-        32:frame_byte=8'h47;
-        33:frame_byte=8'h65;
-        34:frame_byte=8'h61;
-        35:frame_byte=8'h72;
-        36:frame_byte=8'h41;
-        37:frame_byte=8'h63;
-        38:frame_byte=8'h74;
-        39:frame_byte=8'h75;
-        40:frame_byte=8'h61;
-        41:frame_byte=8'h6c;
-        42:frame_byte=8'h2e;
-        43:frame_byte=8'h76;
-        44:frame_byte=8'h61;
-        45:frame_byte=8'h6c;
-        46:frame_byte=8'h3d;
-        47:frame_byte=(gear=="?" ? "0" : gear);
-        48:frame_byte=8'hff;
-        49:frame_byte=8'hff;
-        50:frame_byte=8'hff;
-        default:frame_byte=8'hff;
-    endcase
+    begin
+      if (n < 17)
+        frame_byte = TEXT_PREFIX[135 - 8*n -: 8];
+      else if (n >= 24 && n <= 46)
+        frame_byte = SLIDER_PREFIX[183 - 8*(n-24) -: 8];
+      else case (n)
+        17: frame_byte = gear;
+        18, 19: frame_byte = 8'hb5;
+        20: frame_byte = 8'h22;
+        47: frame_byte = (gear == "?" ? "0" : gear);
+        default: frame_byte = 8'hff;
+      endcase
+    end
   endfunction
   uart_tx #(.CLK_FREQ(CLK_FREQ),.UART_BPS(UART_BPS)) tx (
       .clk(clk),.rst_n(rst_n),.uart_tx_en(tx_enable),.uart_tx_data(tx_data),
@@ -117,11 +78,10 @@ module hmi_gear_feedback #(
   end
 endmodule
 
-// SPEED 与普通低有效瞬时触点一致；滑块目标采用
-// 有界脉冲，但人工持续按住绝不能被截短成固定时长。
+// 自动脉冲按状态调度。同拍命令按目标、人工接管、空闲校准的既有顺序覆盖。
 module remote_speed_controller #(
     parameter integer DEBOUNCE_CYCLES=250000,
-    parameter integer PULSE_CYCLES=12500000, // 滑块触发时长：25 MHz 时钟下为 500 ms。
+    parameter integer PULSE_CYCLES=12500000,
     parameter integer GAP_CYCLES=12500000
 ) (
     input wire clk,rst_n,key_n,
@@ -146,9 +106,7 @@ module remote_speed_controller #(
     localparam IDLE=0,PRESS=1,GAP=2;
     wire target_event=target_pipe[2]!=target_previous;
     wire sensed_press=!key_pipe[1]&&!pressed&&(debounce_count>=DEBOUNCE_CYCLES-1);
-    // 人工触点按下无需先等反馈输入到达高电平；
-    // RIGHT 同样没有这一前置条件。只有排队的绝对档位
-    // 请求需要有效基准，人工按下和释放始终独立生效。
+
     assign drive_active=rst_n&&(hmi_pipe[1]||(ready&&auto_state==PRESS));
     function [2:0] next_phase(input [2:0] p);
         case(p)
@@ -159,28 +117,52 @@ module remote_speed_controller #(
     function [1:0] gear(input [2:0] p);
         case(p)0,2:gear=1;1,6:gear=2;3,4:gear=3;default:gear=0;endcase
     endfunction
-    always @(posedge clk or negedge rst_n) begin
-        if(!rst_n)begin
-            key_pipe<=3;hmi_pipe<=0;target_pipe<=0;target_meta<=1;target_sync<=1;
-            sync_meta<=0;sync_value<=0;previous_sync<=0;target_previous<=0;
-            phase_gray<=0;ready<=0;pressed<=0;
-            debounce_count<=0;release_count<=0;pulse_count<=0;
-            auto_state<=IDLE;wanted<=1;attempts_left<=0;pending<=0;phase_at_press<=0;
-        end else begin
-            key_pipe<={key_pipe[0],key_n};hmi_pipe<={hmi_pipe[0],hmi_level_async};
-            target_pipe<={target_pipe[1:0],target_toggle_async};target_previous<=target_pipe[2];
-            target_meta<=target_gear_async;target_sync<=target_meta;
-            sync_meta<=sync_command_async;sync_value<=sync_meta;previous_sync<=sync_value;
-            if(key_pipe[1])begin
-                if(release_count<DEBOUNCE_CYCLES)release_count<=release_count+1'b1;
-                if(release_count>=DEBOUNCE_CYCLES-1)ready<=1;
-            end else release_count<=0;
-            if(key_pipe[1]==!pressed)debounce_count<=0;
-            else if(debounce_count>=DEBOUNCE_CYCLES-1)begin
-                debounce_count<=0;pressed<=!key_pipe[1];
-                if(!key_pipe[1]&&ready)phase_gray<=next_phase(phase_gray);
-            end else debounce_count<=debounce_count+1'b1;
+    wire calibrate = sync_value == 8'ha5 && previous_sync != 8'ha5 &&
+                     ready && key_pipe[1] && !pressed && !drive_active;
 
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            key_pipe <= 3; hmi_pipe <= 0; target_pipe <= 0;
+            target_meta <= 1; target_sync <= 1;
+            sync_meta <= 0; sync_value <= 0; previous_sync <= 0; target_previous <= 0;
+        end else begin
+            key_pipe <= {key_pipe[0],key_n};
+            hmi_pipe <= {hmi_pipe[0],hmi_level_async};
+            target_pipe <= {target_pipe[1:0],target_toggle_async};
+            target_previous <= target_pipe[2];
+            target_meta <= target_gear_async;
+            target_sync <= target_meta;
+            sync_meta <= sync_command_async;
+            sync_value <= sync_meta;
+            previous_sync <= sync_value;
+        end
+    end
+
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            phase_gray <= 0; ready <= 0; pressed <= 0;
+            debounce_count <= 0; release_count <= 0;
+        end else begin
+            if (key_pipe[1]) begin
+                if (release_count < DEBOUNCE_CYCLES) release_count <= release_count + 1'b1;
+                if (release_count >= DEBOUNCE_CYCLES-1) ready <= 1;
+            end else release_count <= 0;
+
+            if (key_pipe[1] == !pressed) debounce_count <= 0;
+            else if (debounce_count >= DEBOUNCE_CYCLES-1) begin
+                debounce_count <= 0;
+                pressed <= !key_pipe[1];
+                if (!key_pipe[1] && ready) phase_gray <= next_phase(phase_gray);
+            end else debounce_count <= debounce_count + 1'b1;
+            if (calibrate) phase_gray <= 0;
+        end
+    end
+
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            pulse_count <= 0; auto_state <= IDLE; wanted <= 1;
+            attempts_left <= 0; pending <= 0; phase_at_press <= 0;
+        end else begin
             case(auto_state)
               IDLE:if(pending&&ready&&key_pipe[1]&&!pressed&&release_count>=DEBOUNCE_CYCLES)begin
                 if(gear(phase_gray)==wanted||attempts_left==0)pending<=0;
@@ -191,7 +173,7 @@ module remote_speed_controller #(
               end
               PRESS:if(pulse_count>=PULSE_CYCLES-1)begin
                 auto_state<=GAP;pulse_count<=0;
-                // 未感知到触点边沿时停止请求，不盲目反复发送脉冲。
+
                 if(phase_gray==phase_at_press)pending<=0;
               end else pulse_count<=pulse_count+1'b1;
               GAP:if(pulse_count>=GAP_CYCLES-1)begin auto_state<=IDLE;pulse_count<=0;end
@@ -201,24 +183,18 @@ module remote_speed_controller #(
             if(target_event&&ready&&target_sync>=1&&target_sync<=3)begin
                 wanted<=target_sync;pending<=1;attempts_left<=2;
             end
-            // 人工输入优先于排队的滑块操作：按住期间
-            // 持续输出低电平，收到 00 即刻释放。
+
             if(hmi_pipe[1]||(sensed_press&&auto_state!=PRESS))begin
                 pending<=0;auto_state<=IDLE;pulse_count<=0;
             end
-            if(sync_value==8'ha5&&previous_sync!=8'ha5&&ready&&key_pipe[1]&&!pressed&&!drive_active)begin
-                phase_gray<=0;pending<=0;auto_state<=IDLE;
+            if (calibrate) begin
+                pending <= 0;
+                auto_state <= IDLE;
             end
         end
     end
 endmodule
 
-
-// 前后轴与转向轴分别仲裁，HMI GO/BACK 不得遮蔽
-// 自动 LEFT/RIGHT。各轴保留原过期命令防护：
-// 人工释放后先等待该轴 FSPI 位回到空闲。
-// HMI 前进/后退意图锁存，直到 STOP 或反方向的新按下事件。
-// 左右转向继续遵循原来的按住有效、松开释放规则。
 module remote_direction_arbiter (
     input  wire       clk,
     input  wire       rst_n,
@@ -250,9 +226,6 @@ module remote_direction_arbiter (
   reg traction_press_consumed;
   wire hmi_code_changed = (hmi_code != previous_hmi_code);
 
-  // STOP（包括自动 STOP）清除锁存意图；阻止期间仍跟踪
-  // 接收码，避免 STOP 前按住的按键在 REARM 后
-  // 自动恢复驱动，操作者须先松开，再重新按 GO/BACK。
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       hmi_traction_latched <= TRACTION_IDLE;
@@ -266,8 +239,6 @@ module remote_direction_arbiter (
       else if (traction_stable_count != 3'd7)
         traction_stable_count <= traction_stable_count + 3'd1;
 
-      // 采用现有经过滤波的 STOP 信号，多位 CDC 中短暂出现的 E
-      // 中间值不能清除合法的前后行驶锁存。
       if (movement_blocked) begin
         hmi_traction_latched <= TRACTION_IDLE;
         traction_press_consumed <= 1'b1;
@@ -313,12 +284,6 @@ module remote_direction_arbiter (
   assign right_released = movement_blocked | (hmi_owns_steering ? (~hmi_right | hmi_right_denied) : (fspi_blocked | fspi_released[3]));
 endmodule
 
-// reg5 协议：位 6 表有效，位 7 为翻转心跳，位 [1:0] 分别禁止右/左。
-// 位 2 置红灯 GO 保持，位 3 在确认绿灯后解除；同时出现时置位优先。
-// 心跳丢失仅撤销原车道权限；曾确认的红灯
-// 继续保持，直到显式绿灯或 FPGA 上电复位。
-// 旧软件写位 [3:2]=00，不能误解除该保持。
-// 稳定字 CDC 配合单个原子字节，避免左右权限混用。
 module lane_permission_guard #(
     parameter TIMEOUT_CYCLES = 18750000
 ) (
@@ -357,7 +322,6 @@ module lane_permission_guard #(
   end
 endmodule
 
-// 只有新增的持续使能位跨入现有 STOP 时钟域。
 module auto_brake_enable_gate (
     input  wire clk,
     input  wire rst_n,
@@ -374,16 +338,12 @@ module auto_brake_enable_gate (
       enable_pipe <= {enable_pipe[0], async_enable};
     end
   end
-  // 关闭 AUTO 仅阻止新请求，既有 STOP 锁存
-  // 仍由 remote_stop_controller 保持，并依旧要求原 REARM 动作。
+
   assign enable_sync = enable_pipe[1];
   assign brake_request_out = enable_sync && brake_request_in;
 endmodule
 
-// 新自动刹停请求把 STOP 保持为低，直到人工重新按下 E。
-// 即使请求仍高，E 也可强制清除锁存；本次
-// 请求随即被消费，待其先清零再上升才再次刹停。
-// 人工 E 本身仍使 STOP 为低，只有 E 松开后 STOP 才恢复高。
+// 制动锁存与档位调度独立。重新使能须遵守原报警及方向空闲条件。
 module remote_stop_controller (
     input  wire clk,
     input  wire rst_n,
@@ -414,8 +374,6 @@ module remote_stop_controller (
     end else begin
       rearm_previous <= rearm_command;
 
-      // 刹停前已保持的方向命令不能在人工解锁后自动恢复。
-      // 四个 FSPI 运动寄存器须全部空闲，才接收下一条命令。
       if (brake_latched || new_brake_event || rearm_command)
         fspi_armed <= 1'b0;
       else if (fspi_directions_idle)
@@ -425,8 +383,7 @@ module remote_stop_controller (
         brake_event_armed <= 1'b1;
 
       if (rearm_rising && brake_latched) begin
-        // 明确的人工覆盖会消费仍存在的告警，防止
-        // 下一周期立刻再次锁住，抵消本次人工解锁。
+
         brake_latched <= 1'b0;
         if (brake_request)
           brake_event_armed <= 1'b0;
@@ -438,9 +395,6 @@ module remote_stop_controller (
   end
 endmodule
 
-// UART 解码与遥控按键控制处于不同的时钟域。
-// E 码须连续经过八次 25 MHz 采样才允许切换 STOP，
-// 以过滤四位 CDC 过程中可能出现的短暂中间码。
 module hmi_control_synchronizer (
     input  wire       clk,
     input  wire       rst_n,

@@ -1,0 +1,5 @@
+PASS 73 Gamma curves, 512 SCCB indices, and complete SCCB stream
+- /tmp/pineapple-rom-f7o299ht/compare_rom.sv:204: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 405us; walltime 0.108 s; speed 3.738 ms/s
+- Verilator: cpu 0.108 s on 1 threads; allocated 7 MB

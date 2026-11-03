@@ -1,0 +1,12 @@
+test_direction_arbiter PASS
+test_fspi_control PASS
+test_hmi_auto_brake_switch PASS
+test_hmi_gear_feedback PASS
+test_hmi_serial_release PASS
+test_hmi_uart PASS
+test_lane_permission PASS
+test_remote_stop_controller PASS
+test_smdt_transport PASS
+test_speed_key PASS
+test_speed_spi PASS
+test_traffic_go PASS

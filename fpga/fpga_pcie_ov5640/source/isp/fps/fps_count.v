@@ -1,81 +1,66 @@
+// 2026-11-03 æ³¨é‡Šæ ¡è®¢ã€‚åœ¨å‚è€ƒæ—¶é’ŸåŸŸç”Ÿæˆç»Ÿè®¡çª—å£ï¼Œåœ¨åƒç´ æ—¶é’ŸåŸŸç»Ÿè®¡å¸§æ²¿å¹¶ç™»è®°æ˜¾ç¤ºå€¼ã€‚
 module fps_count(
-    input wire pixelclk,    // VGAÏñËØÊ±ÖÓÓò
-    input wire clk,         // »ù×¼Ê±ÖÓ£¨50MHz£©
-    input wire rst_n,            // µÍµçÆ½¸´Î»
-    input wire vsync,            // VGA´¹Ö±Í¬²½ĞÅºÅ
-    output wire [8:0] fps   // Ö¡ÂÊÊä³ö
+    input wire pixelclk,
+    input wire clk,
+    input wire rst_n,
+    input wire vsync,
+    output wire [8:0] fps
 );
 
-//--------------------------------------------------
-// Ê±ÖÓÓò£ºclk£¨50MHz£©
-//--------------------------------------------------
 reg [26:0] cnt;
 wire clear_flag;
 
-// Éú³É1Ãë¶¨Ê±Âö³å£¨50MHz ¡ú 50,000,000ÖÜÆÚ£©
-reg [1:0] clear_flag_hold;  // ĞÂÔö¼Ä´æÆ÷£¬ÓÃÓÚÑÓ³¤Âö³å
+reg [1:0] clear_flag_hold;
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         cnt <= 27'd0;
         clear_flag_hold <= 2'b00;
     end else if (cnt == 27'd49_999_999) begin
         cnt <= 27'd0;
-        clear_flag_hold <= 2'b11;  // ±£³Ö¸ßµçÆ½2¸öÖÜÆÚ
+        clear_flag_hold <= 2'b11;
     end else if (clear_flag_hold != 2'b00) begin
-        clear_flag_hold <= clear_flag_hold - 1;  // µİ¼õÖÁ0
+        clear_flag_hold <= clear_flag_hold - 1;
     end else begin
         cnt <= cnt + 1;
     end
 end
 
-assign clear_flag = (clear_flag_hold != 2'b00);  // Âö³å¿í¶ÈÎª2¸öÖÜÆÚ
-//--------------------------------------------------
-// Ê±ÖÓÓò£ºpixelclk£¨VGAÏñËØÊ±ÖÓ£©
-//--------------------------------------------------
-reg vsync_d0, vsync_d1;
+assign clear_flag = (clear_flag_hold != 2'b00);
+
+reg [1:0] vsync_history;
+reg [2:0] clear_history;
 always @(posedge pixelclk or negedge rst_n) begin
     if (!rst_n) begin
-        vsync_d0 <= 0;
-        vsync_d1 <= 0;
+        vsync_history <= 2'b00;
+        clear_history <= 3'b000;
     end else begin
-        vsync_d0 <= vsync;
-        vsync_d1 <= vsync_d0;
+        vsync_history <= {vsync_history[0], vsync};
+        clear_history <= {clear_history[1:0], clear_flag};
     end
 end
-wire vsync_pos = (!vsync_d1 && vsync_d0); // Ê¹ÓÃÍ¬²½ºóµÄĞÅºÅ
+wire vsync_pos = !vsync_history[1] && vsync_history[0];
+wire clear_flag_sync2 = clear_history[1];
+wire clear_flag_sync3 = clear_history[2];
 
-// Í¬²½clear_flagµ½pixelclkÓò
-reg clear_flag_sync1, clear_flag_sync2, clear_flag_sync3;
-always @(posedge pixelclk or negedge rst_n) begin
-    if (!rst_n) begin
-        clear_flag_sync1 <= 0;
-        clear_flag_sync2 <= 0;
-        clear_flag_sync3 <= 0;
-    end else begin
-        clear_flag_sync1 <= clear_flag;
-        clear_flag_sync2 <= clear_flag_sync1;
-        clear_flag_sync3 <= clear_flag_sync2;
-    end
-end
-wire clear_pulse = (clear_flag_sync2 && !clear_flag_sync3); // ÉÏÉıÑØ¼ì²â
+// è®¡æ•°æ¸…é›¶å–åƒç´ åŸŸåŒæ­¥åçš„ä¸Šå‡æ²¿ï¼Œæ˜¾ç¤ºå¯„å­˜å™¨ä»æŒ‰åŸæ¸…é™¤ç”µå¹³å–æ ·ã€‚
+wire clear_pulse = (clear_flag_sync2 && !clear_flag_sync3);
 
-// Ö¡¼ÆÊıÆ÷£¨´øÇåÁã£©
-reg [9:0] fps_out;  // À©Õ¹Îª10Î»
+reg [9:0] fps_out;
 always @(posedge pixelclk or negedge rst_n) begin
-    if (!rst_n) 
+    if (!rst_n)
         fps_out <= 10'd0;
-    else if (clear_pulse) 
-        fps_out <= 10'd0;        // ÓÅÏÈÇåÁã
-    else if (vsync_pos) 
-        fps_out <= fps_out + 1;  // Æä´Î¼ÆÊı
+    else if (clear_pulse)
+        fps_out <= 10'd0;
+    else if (vsync_pos)
+        fps_out <= fps_out + 1;
 end
-// Êä³öËø´æ
+
 reg [8:0] fps_reg;
 always @(posedge pixelclk or negedge rst_n) begin
-    if (!rst_n) 
+    if (!rst_n)
         fps_reg <= 0;
-    else if (clear_flag) 
-        fps_reg <= fps_out; // Ã¿Ãë½áÊøÊ±Ëø´æÎÈ¶¨Öµ
+    else if (clear_flag)
+        fps_reg <= fps_out;
 end
 
 assign fps = fps_reg;

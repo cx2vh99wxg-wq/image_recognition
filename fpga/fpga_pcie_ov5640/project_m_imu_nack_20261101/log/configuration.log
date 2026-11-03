@@ -1,0 +1,47 @@
+[Info] [2026-11-3 21:08:59] /***************************Start Configuration***************************/
+[Info] [2026-11-3 21:08:59] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-11-3 21:08:59] Version: 146967
+[Info] [2026-11-3 21:09:00] Current Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project_m_imu_nack_20261101
+[Info] [2026-11-3 21:09:00] PDS Dir Path: D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/project_m_imu_nack_20261101
+[Info] [2026-11-3 21:09:22] Configuration is not connect with server. connect first then scan chain.
+[Debug] [2026-11-3 21:09:22] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-11-3 21:09:22] Client Local Address:10.17.104.77
+[Debug] [2026-11-3 21:09:22] Client Local Address:172.24.144.1
+[Debug] [2026-11-3 21:09:22] Server Address:127.0.0.1, Port:65420
+[Debug] [2026-11-3 21:09:22] Log::Print : Connecting to server[127.0.0.1 : 65420].
+[Info] [2026-11-3 21:09:23] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-11-3 21:09:23] Finish.
+[Info] [2026-11-3 21:09:23] Connect server succeeded
+[Debug] [2026-11-3 21:09:23] Send RPC:1
+[Debug] [2026-11-3 21:09:23] Send cmd [check version information:40004] OK
+[Debug] [2026-11-3 21:09:23] Log::Print : Connect to server[127.0.0.1 : 65420] successfully.
+[Debug] [2026-11-3 21:09:23] Send RPC:2
+[Debug] [2026-11-3 21:09:23] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-11-3 21:09:23] Begin to send initialize chain cmd...
+[Debug] [2026-11-3 21:09:23] Send RPC:3
+[Debug] [2026-11-3 21:09:23] Send cmd [Open config cable:20001] OK
+[Debug] [2026-11-3 21:09:23] End to send initialize chain cmd.
+[Debug] [2026-11-3 21:09:23] COMMAND[check version information] execute successfully, takes 0.1 secs.
+[Debug] [2026-11-3 21:09:23] Log::Print : COMMAND[check version information] execute successfully, takes 0.1 secs.
+[Debug] [2026-11-3 21:09:24] COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-11-3 21:09:24] Log::Print : The cable List : 
+Cable index 0:USB Cable II/fffffffffffffffe 
+
+[Debug] [2026-11-3 21:09:24] Log::Print : COMMAND[get_cable_paras] execute successfully, takes 0.9 secs.
+[Debug] [2026-11-3 21:09:24] begin the exec of open cable cmd...
+[Debug] [2026-11-3 21:09:24] Begin to deal with chain from server...
+[Debug] [2026-11-3 21:09:24] Begin to set user chain...
+[Debug] [2026-11-3 21:09:24] End to set user chain.
+[Debug] [2026-11-3 21:09:24] Begin to update graphic item and tree item ...
+[Debug] [2026-11-3 21:09:24] End to update graphic item and tree item ...
+[Debug] [2026-11-3 21:09:24] Log::Print : PANGO USB CABLE II cable driver: D2XX DLL
+[Debug] [2026-11-3 21:09:24] Log::Print : PG2L100H
+[Debug] [2026-11-3 21:09:24] Log::Print : This device configure situation (done bit): 1
+[Debug] [2026-11-3 21:09:27] selected file name is empty and ignore.
+[Debug] [2026-11-3 21:09:27] Begin to update graphic item and tree item ...
+[Debug] [2026-11-3 21:09:27] End to update graphic item and tree item ...
+[Debug] [2026-11-3 21:09:27] End to deal wiht chain from server.
+[Debug] [2026-11-3 21:09:27] end the exec of open cable cmd.
+[Debug] [2026-11-3 21:09:27] COMMAND[Open config cable] execute successfully, takes 4.8 secs.
+[Debug] [2026-11-3 21:09:27] Log::Print : COMMAND[Open config cable] execute successfully, takes 4.8 secs.
+[Info] [2026-11-3 21:09:30] /***************************End Configration***************************/

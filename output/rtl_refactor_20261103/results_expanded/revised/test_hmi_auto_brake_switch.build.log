@@ -1,0 +1,127 @@
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:23:37: Instance has missing pin: 'blc'
+   23 |   uart_lcd #(.FRAME_GAP_CYCLES(32)) u_hmi (
+      |                                     ^~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v:18:23: ... Location of port declaration
+   18 |     output     [7:0]  blc,
+      |                       ^~~
+                     ... For warning description see https://verilator.org/warn/PINMISSING?v=5.048
+                     ... Use "/* verilator lint_off PINMISSING */" and lint_on around source to disable this message.
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:23:37: Instance has missing pin: 'awb'
+   23 |   uart_lcd #(.FRAME_GAP_CYCLES(32)) u_hmi (
+      |                                     ^~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v:19:23: ... Location of port declaration
+   19 |     output     [7:0]  awb,
+      |                       ^~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:23:37: Instance has missing pin: 'liangdu'
+   23 |   uart_lcd #(.FRAME_GAP_CYCLES(32)) u_hmi (
+      |                                     ^~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v:20:23: ... Location of port declaration
+   20 |     output     [7:0]  liangdu,
+      |                       ^~~~~~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:23:37: Instance has missing pin: 'baohedu'
+   23 |   uart_lcd #(.FRAME_GAP_CYCLES(32)) u_hmi (
+      |                                     ^~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v:21:23: ... Location of port declaration
+   21 |     output     [7:0]  baohedu,
+      |                       ^~~~~~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:23:37: Instance has missing pin: 'awb_en'
+   23 |   uart_lcd #(.FRAME_GAP_CYCLES(32)) u_hmi (
+      |                                     ^~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v:22:23: ... Location of port declaration
+   22 |     output            awb_en,
+      |                       ^~~~~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:23:37: Instance has missing pin: 'binarization'
+   23 |   uart_lcd #(.FRAME_GAP_CYCLES(32)) u_hmi (
+      |                                     ^~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v:23:23: ... Location of port declaration
+   23 |     output     [7:0]  binarization,
+      |                       ^~~~~~~~~~~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:23:37: Instance has missing pin: 'sobel'
+   23 |   uart_lcd #(.FRAME_GAP_CYCLES(32)) u_hmi (
+      |                                     ^~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v:25:23: ... Location of port declaration
+   25 |     output     [7:0]  sobel,
+      |                       ^~~~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:23:37: Instance has missing pin: 'isp_judge'
+   23 |   uart_lcd #(.FRAME_GAP_CYCLES(32)) u_hmi (
+      |                                     ^~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v:26:23: ... Location of port declaration
+   26 |     output            isp_judge,
+      |                       ^~~~~~~~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:23:37: Instance has missing pin: 'cb_min'
+   23 |   uart_lcd #(.FRAME_GAP_CYCLES(32)) u_hmi (
+      |                                     ^~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v:27:23: ... Location of port declaration
+   27 |     output     [7:0]  cb_min,
+      |                       ^~~~~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:23:37: Instance has missing pin: 'cb_max'
+   23 |   uart_lcd #(.FRAME_GAP_CYCLES(32)) u_hmi (
+      |                                     ^~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v:28:23: ... Location of port declaration
+   28 |     output     [7:0]  cb_max,
+      |                       ^~~~~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:23:37: Instance has missing pin: 'cr_min'
+   23 |   uart_lcd #(.FRAME_GAP_CYCLES(32)) u_hmi (
+      |                                     ^~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v:29:23: ... Location of port declaration
+   29 |     output     [7:0]  cr_min,
+      |                       ^~~~~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:23:37: Instance has missing pin: 'cr_max'
+   23 |   uart_lcd #(.FRAME_GAP_CYCLES(32)) u_hmi (
+      |                                     ^~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v:30:23: ... Location of port declaration
+   30 |     output     [7:0]  cr_max,
+      |                       ^~~~~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:23:37: Instance has missing pin: 'speed_slider_present'
+   23 |   uart_lcd #(.FRAME_GAP_CYCLES(32)) u_hmi (
+      |                                     ^~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v:32:23: ... Location of port declaration
+   32 |     output reg        speed_slider_present,
+      |                       ^~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:23:37: Instance has missing pin: 'speed_request_level'
+   23 |   uart_lcd #(.FRAME_GAP_CYCLES(32)) u_hmi (
+      |                                     ^~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v:33:23: ... Location of port declaration
+   33 |     output reg        speed_request_level,
+      |                       ^~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:23:37: Instance has missing pin: 'speed_target_gear'
+   23 |   uart_lcd #(.FRAME_GAP_CYCLES(32)) u_hmi (
+      |                                     ^~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v:34:23: ... Location of port declaration
+   34 |     output reg [1:0]  speed_target_gear,
+      |                       ^~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:23:37: Instance has missing pin: 'speed_target_toggle'
+   23 |   uart_lcd #(.FRAME_GAP_CYCLES(32)) u_hmi (
+      |                                     ^~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/uart_lcd/uart_lcd.v:35:23: ... Location of port declaration
+   35 |     output reg        speed_target_toggle
+      |                       ^~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:77:14: Instance has missing pin: 'speed_status_async'
+   77 |   fspi_slave u_fspi (
+      |              ^~~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/fspi/fspi_slave.v:10:29: ... Location of port declaration
+   10 |     input   wire [5:0]      speed_status_async,
+      |                             ^~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:77:14: Instance has missing pin: 'control_status_async'
+   77 |   fspi_slave u_fspi (
+      |              ^~~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/fspi/fspi_slave.v:11:29: ... Location of port declaration
+   11 |     input   wire [15:0]     control_status_async,
+      |                             ^~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:84:16: Instance has missing pin: 'mem5_out'
+   84 |   spi_ram_crtl u_spi_registers (
+      |                ^~~~~~~~~~~~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/fspi/spi_ram_crtl.v:19:34: ... Location of port declaration
+   19 |     output  wire    [7:0]        mem5_out,    
+      |                                  ^~~~~~~~
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:84:16: Instance has missing pin: 'mem6_out'
+   84 |   spi_ram_crtl u_spi_registers (
+      |                ^~~~~~~~~~~~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/fspi/spi_ram_crtl.v:20:34: ... Location of port declaration
+   20 |     output  wire    [7:0]        mem6_out     
+      |                                  ^~~~~~~~
+%Error: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_auto_brake_switch.v:153:21: Can't find definition of 'status_tx_started' in dotted variable/method: 'u_fspi.status_tx_started'
+  153 |       check(!u_fspi.status_tx_started, "slave releases bus throughout address phase");
+      |                     ^~~~~~~~~~~~~~~~~
+        ... See the manual at https://verilator.org/verilator_doc.html?v=5.048 for more assistance.
+%Error: Exiting due to 1 error(s)

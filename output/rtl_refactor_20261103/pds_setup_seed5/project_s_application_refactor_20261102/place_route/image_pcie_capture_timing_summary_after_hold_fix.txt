@@ -1,0 +1,244 @@
+Design Summary : Some Constraints Violated.
+
+Setup Summary(Slow Corner):
+****************************************************************************************************
+                                                                          TNS Failing      TNS Total
+ Launch Clock           Capture Clock              WNS(ns)     TNS(ns)      Endpoints      Endpoints
+----------------------------------------------------------------------------------------------------
+ ref_clk                ref_clk                     30.165       0.000              0            549
+ rst_clk                rst_clk                     36.968       0.000              0            437
+ ddrphy_sysclk          ddrphy_sysclk                1.721       0.000              0          12286
+ phy_dq_sysclk_1        ddrphy_sysclk                1.855       0.000              0            130
+ phy_dq_sysclk_0        ddrphy_sysclk                3.021       0.000              0              1
+ cmos2_pclk             ddrphy_sysclk               -6.714    -146.686             23             23
+ cmos6_pclk             ddrphy_sysclk               -6.656     -76.254             12             12
+ cmos5_pclk             ddrphy_sysclk               -7.327     -77.914             12             12
+ ddrphy_sysclk          phy_dq_sysclk_0              0.083       0.000              0            196
+ ddrphy_sysclk          phy_dq_sysclk_1             -0.107      -0.107              1            210
+ pclk                   pclk                         0.291       0.000              0           1019
+ pclk_div2              pclk_div2                    0.207       0.000              0          16082
+ ref_clk1               ref_clk1                     6.163       0.000              0           1062
+ clk_25M                clk_25M                     77.604       0.000              0             37
+ cmos2_pclk             cmos2_pclk                   8.166       0.000              0          28375
+ ddrphy_sysclk          cmos2_pclk                  -2.818     -60.652             22             22
+ ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred
+                        cmos2_pclk                  -4.641    -114.287             26             26
+ cmos5_pclk             cmos5_pclk                  10.754       0.000              0          10291
+ ddrphy_sysclk          cmos5_pclk                  -5.457     -52.874             11             11
+ cmos6_pclk             cmos6_pclk                  10.775       0.000              0          10291
+ ddrphy_sysclk          cmos6_pclk                  -7.229     -58.458             11             11
+ clk_50M                clk_50M                     37.659       0.000              0             72
+ ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred
+                        ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred
+                                                    15.920       0.000              0            556
+ image_pcie_capture|spi_clk
+                        image_pcie_capture|spi_clk
+                                                   497.797       0.000              0            226
+ ref_clk|u_fspi_slave_top/clk_gen_inst/u_gpll/CLKOUT0_Inferred
+                        ref_clk|u_fspi_slave_top/clk_gen_inst/u_gpll/CLKOUT0_Inferred
+                                                     0.473       0.000              0            154
+====================================================================================================
+
+Hold Summary(Slow Corner):
+****************************************************************************************************
+                                                                          THS Failing      THS Total
+ Launch Clock           Capture Clock              WHS(ns)     THS(ns)      Endpoints      Endpoints
+----------------------------------------------------------------------------------------------------
+ ref_clk                ref_clk                      0.250       0.000              0            549
+ rst_clk                rst_clk                      0.353       0.000              0            437
+ ddrphy_sysclk          ddrphy_sysclk                0.316       0.000              0          12286
+ phy_dq_sysclk_1        ddrphy_sysclk                0.970       0.000              0            130
+ phy_dq_sysclk_0        ddrphy_sysclk                1.251       0.000              0              1
+ cmos2_pclk             ddrphy_sysclk                1.934       0.000              0             23
+ cmos6_pclk             ddrphy_sysclk                1.915       0.000              0             12
+ cmos5_pclk             ddrphy_sysclk                2.095       0.000              0             12
+ ddrphy_sysclk          phy_dq_sysclk_0              0.689       0.000              0            196
+ ddrphy_sysclk          phy_dq_sysclk_1              0.783       0.000              0            210
+ pclk                   pclk                         0.187       0.000              0           1019
+ pclk_div2              pclk_div2                    0.081       0.000              0          16082
+ ref_clk1               ref_clk1                     0.173       0.000              0           1062
+ clk_25M                clk_25M                      0.376       0.000              0             37
+ cmos2_pclk             cmos2_pclk                   0.134       0.000              0          28375
+ ddrphy_sysclk          cmos2_pclk                   0.533       0.000              0             22
+ ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred
+                        cmos2_pclk                   2.873       0.000              0             26
+ cmos5_pclk             cmos5_pclk                   0.201       0.000              0          10291
+ ddrphy_sysclk          cmos5_pclk                   1.050       0.000              0             11
+ cmos6_pclk             cmos6_pclk                   0.272       0.000              0          10291
+ ddrphy_sysclk          cmos6_pclk                   1.418       0.000              0             11
+ clk_50M                clk_50M                      0.400       0.000              0             72
+ ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred
+                        ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred
+                                                     0.347       0.000              0            556
+ image_pcie_capture|spi_clk
+                        image_pcie_capture|spi_clk
+                                                     0.259       0.000              0            226
+ ref_clk|u_fspi_slave_top/clk_gen_inst/u_gpll/CLKOUT0_Inferred
+                        ref_clk|u_fspi_slave_top/clk_gen_inst/u_gpll/CLKOUT0_Inferred
+                                                     0.383       0.000              0            154
+====================================================================================================
+
+Recovery Summary(Slow Corner):
+****************************************************************************************************
+                                                                          TNS Failing      TNS Total
+ Launch Clock           Capture Clock              WNS(ns)     TNS(ns)      Endpoints      Endpoints
+----------------------------------------------------------------------------------------------------
+ rst_clk                rst_clk                     36.987       0.000              0            101
+ ddrphy_sysclk          ddrphy_sysclk                3.619       0.000              0           2611
+ pclk                   pclk                         2.458       0.000              0             78
+ pclk_div2              pclk_div2                    3.049       0.000              0           2195
+ ref_clk1               ref_clk1                     7.444       0.000              0            189
+ cmos2_pclk             cmos2_pclk                  14.875       0.000              0             60
+ ddrphy_sysclk          cmos2_pclk                  -3.710     -18.550              5              5
+ cmos5_pclk             cmos5_pclk                  14.835       0.000              0             30
+ ddrphy_sysclk          cmos5_pclk                  -3.900     -19.279              5              5
+ cmos6_pclk             cmos6_pclk                  14.474       0.000              0             30
+ ddrphy_sysclk          cmos6_pclk                  -3.658     -18.137              5              5
+====================================================================================================
+
+Removal Summary(Slow Corner):
+****************************************************************************************************
+                                                                          THS Failing      THS Total
+ Launch Clock           Capture Clock              WHS(ns)     THS(ns)      Endpoints      Endpoints
+----------------------------------------------------------------------------------------------------
+ rst_clk                rst_clk                      0.433       0.000              0            101
+ ddrphy_sysclk          ddrphy_sysclk                0.373       0.000              0           2611
+ pclk                   pclk                         0.511       0.000              0             78
+ pclk_div2              pclk_div2                    0.795       0.000              0           2195
+ ref_clk1               ref_clk1                     0.352       0.000              0            189
+ cmos2_pclk             cmos2_pclk                   0.735       0.000              0             60
+ ddrphy_sysclk          cmos2_pclk                   1.351       0.000              0              5
+ cmos5_pclk             cmos5_pclk                   0.400       0.000              0             30
+ ddrphy_sysclk          cmos5_pclk                   0.554       0.000              0              5
+ cmos6_pclk             cmos6_pclk                   0.321       0.000              0             30
+ ddrphy_sysclk          cmos6_pclk                   0.476       0.000              0              5
+====================================================================================================
+
+Minimum Pulse Width Summary(Slow Corner):
+****************************************************************************************************
+                                                                         WPWS Failing     WPWS Total
+ Clock                                            WPWS(ns)    TPWS(ns)      Endpoints      Endpoints
+----------------------------------------------------------------------------------------------------
+====================================================================================================
+
+Setup Summary(Fast Corner):
+****************************************************************************************************
+                                                                          TNS Failing      TNS Total
+ Launch Clock           Capture Clock              WNS(ns)     TNS(ns)      Endpoints      Endpoints
+----------------------------------------------------------------------------------------------------
+ ref_clk                ref_clk                     33.823       0.000              0            549
+ rst_clk                rst_clk                     38.050       0.000              0            437
+ ddrphy_sysclk          ddrphy_sysclk                3.948       0.000              0          12286
+ phy_dq_sysclk_1        ddrphy_sysclk                3.613       0.000              0            130
+ phy_dq_sysclk_0        ddrphy_sysclk                4.426       0.000              0              1
+ cmos2_pclk             ddrphy_sysclk               -3.867     -82.869             23             23
+ cmos6_pclk             ddrphy_sysclk               -3.610     -40.266             12             12
+ cmos5_pclk             ddrphy_sysclk               -4.052     -41.482             12             12
+ ddrphy_sysclk          phy_dq_sysclk_0              2.603       0.000              0            196
+ ddrphy_sysclk          phy_dq_sysclk_1              2.380       0.000              0            210
+ pclk                   pclk                         1.682       0.000              0           1019
+ pclk_div2              pclk_div2                    3.068       0.000              0          16082
+ ref_clk1               ref_clk1                     7.708       0.000              0           1062
+ clk_25M                clk_25M                     78.514       0.000              0             37
+ cmos2_pclk             cmos2_pclk                  11.757       0.000              0          28375
+ ddrphy_sysclk          cmos2_pclk                  -2.395     -51.777             22             22
+ ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred
+                        cmos2_pclk                  -2.873     -70.615             26             26
+ cmos5_pclk             cmos5_pclk                  13.438       0.000              0          10291
+ ddrphy_sysclk          cmos5_pclk                  -4.187     -41.656             11             11
+ cmos6_pclk             cmos6_pclk                  13.291       0.000              0          10291
+ ddrphy_sysclk          cmos6_pclk                  -5.516     -45.673             11             11
+ clk_50M                clk_50M                     38.552       0.000              0             72
+ ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred
+                        ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred
+                                                    17.509       0.000              0            556
+ image_pcie_capture|spi_clk
+                        image_pcie_capture|spi_clk
+                                                   498.697       0.000              0            226
+ ref_clk|u_fspi_slave_top/clk_gen_inst/u_gpll/CLKOUT0_Inferred
+                        ref_clk|u_fspi_slave_top/clk_gen_inst/u_gpll/CLKOUT0_Inferred
+                                                     1.280       0.000              0            154
+====================================================================================================
+
+Hold Summary(Fast Corner):
+****************************************************************************************************
+                                                                          THS Failing      THS Total
+ Launch Clock           Capture Clock              WHS(ns)     THS(ns)      Endpoints      Endpoints
+----------------------------------------------------------------------------------------------------
+ ref_clk                ref_clk                      0.251       0.000              0            549
+ rst_clk                rst_clk                      0.250       0.000              0            437
+ ddrphy_sysclk          ddrphy_sysclk                0.217       0.000              0          12286
+ phy_dq_sysclk_1        ddrphy_sysclk                0.379       0.000              0            130
+ phy_dq_sysclk_0        ddrphy_sysclk                0.537       0.000              0              1
+ cmos2_pclk             ddrphy_sysclk                0.557       0.000              0             23
+ cmos6_pclk             ddrphy_sysclk                0.404       0.000              0             12
+ cmos5_pclk             ddrphy_sysclk                0.519       0.000              0             12
+ ddrphy_sysclk          phy_dq_sysclk_0              0.254       0.000              0            196
+ ddrphy_sysclk          phy_dq_sysclk_1              0.284       0.000              0            210
+ pclk                   pclk                         0.125       0.000              0           1019
+ pclk_div2              pclk_div2                    0.040       0.000              0          16082
+ ref_clk1               ref_clk1                     0.101       0.000              0           1062
+ clk_25M                clk_25M                      0.260       0.000              0             37
+ cmos2_pclk             cmos2_pclk                   0.100       0.000              0          28375
+ ddrphy_sysclk          cmos2_pclk                   0.824       0.000              0             22
+ ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred
+                        cmos2_pclk                   1.863       0.000              0             26
+ cmos5_pclk             cmos5_pclk                   0.149       0.000              0          10291
+ ddrphy_sysclk          cmos5_pclk                   1.403       0.000              0             11
+ cmos6_pclk             cmos6_pclk                   0.250       0.000              0          10291
+ ddrphy_sysclk          cmos6_pclk                   1.597       0.000              0             11
+ clk_50M                clk_50M                      0.273       0.000              0             72
+ ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred
+                        ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred
+                                                     0.250       0.000              0            556
+ image_pcie_capture|spi_clk
+                        image_pcie_capture|spi_clk
+                                                     0.153       0.000              0            226
+ ref_clk|u_fspi_slave_top/clk_gen_inst/u_gpll/CLKOUT0_Inferred
+                        ref_clk|u_fspi_slave_top/clk_gen_inst/u_gpll/CLKOUT0_Inferred
+                                                     0.250       0.000              0            154
+====================================================================================================
+
+Recovery Summary(Fast Corner):
+****************************************************************************************************
+                                                                          TNS Failing      TNS Total
+ Launch Clock           Capture Clock              WNS(ns)     TNS(ns)      Endpoints      Endpoints
+----------------------------------------------------------------------------------------------------
+ rst_clk                rst_clk                     38.005       0.000              0            101
+ ddrphy_sysclk          ddrphy_sysclk                4.937       0.000              0           2611
+ pclk                   pclk                         3.007       0.000              0             78
+ pclk_div2              pclk_div2                    4.897       0.000              0           2195
+ ref_clk1               ref_clk1                     8.470       0.000              0            189
+ cmos2_pclk             cmos2_pclk                  16.043       0.000              0             60
+ ddrphy_sysclk          cmos2_pclk                  -2.937     -14.685              5              5
+ cmos5_pclk             cmos5_pclk                  15.940       0.000              0             30
+ ddrphy_sysclk          cmos5_pclk                  -3.081     -15.332              5              5
+ cmos6_pclk             cmos6_pclk                  15.737       0.000              0             30
+ ddrphy_sysclk          cmos6_pclk                  -3.034     -15.083              5              5
+====================================================================================================
+
+Removal Summary(Fast Corner):
+****************************************************************************************************
+                                                                          THS Failing      THS Total
+ Launch Clock           Capture Clock              WHS(ns)     THS(ns)      Endpoints      Endpoints
+----------------------------------------------------------------------------------------------------
+ rst_clk                rst_clk                      0.301       0.000              0            101
+ ddrphy_sysclk          ddrphy_sysclk                0.257       0.000              0           2611
+ pclk                   pclk                         0.360       0.000              0             78
+ pclk_div2              pclk_div2                    0.507       0.000              0           2195
+ ref_clk1               ref_clk1                     0.247       0.000              0            189
+ cmos2_pclk             cmos2_pclk                   0.523       0.000              0             60
+ ddrphy_sysclk          cmos2_pclk                   1.399       0.000              0              5
+ cmos5_pclk             cmos5_pclk                   0.294       0.000              0             30
+ ddrphy_sysclk          cmos5_pclk                   1.094       0.000              0              5
+ cmos6_pclk             cmos6_pclk                   0.364       0.000              0             30
+ ddrphy_sysclk          cmos6_pclk                   1.011       0.000              0              5
+====================================================================================================
+
+Minimum Pulse Width Summary(Fast Corner):
+****************************************************************************************************
+                                                                         WPWS Failing     WPWS Total
+ Clock                                            WPWS(ns)    TPWS(ns)      Endpoints      Endpoints
+----------------------------------------------------------------------------------------------------
+====================================================================================================
+

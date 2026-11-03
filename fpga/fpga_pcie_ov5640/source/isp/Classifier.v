@@ -1,3 +1,4 @@
+// 2026-11-03 æ³¨é‡Šæ ¡è®¢ã€‚æŒ‰é¢œè‰²ã€æ•°å­—å’Œå½¢çŠ¶åŒ¹é…è§„åˆ™ã€‚æ•°å­—ç»“æœä¼˜å…ˆï¼Œé‡å¤åŒ¹é…æ²¿ç”¨æœ€åå‘½ä¸­çš„è§„åˆ™ã€‚
 module Classifier(
     input   wire        clk,
     input   wire        rst_n,
@@ -6,117 +7,105 @@ module Classifier(
     input   wire        yellow_en,
     input   wire [7:0]  digit,
 	input   wire [15:0]	shape_en,
-    
+
     output  wire        o_red_en,
     output  wire        o_blue_en,
     output  wire        o_yellow_en,
     output  wire  [15:0]  char_en
 );
 
-localparam MAX_CONDITIONS = 39; // Ö§³Ö×î¶àn¸öÌõ¼ş£¨¿ÉÀ©Õ¹£©
+localparam MAX_CONDITIONS = 39;
 wire [2:0] color_en = {red_en , yellow_en , blue_en};
 
-reg [3:0] tens_cond [0:MAX_CONDITIONS-1];
-reg [3:0] ones_cond [0:MAX_CONDITIONS-1];
-reg [2:0] color_en_cond [0:MAX_CONDITIONS-1];
-reg [15:0] code_cond [0:MAX_CONDITIONS-1];
-reg [15:0] shape_en_cond[0:MAX_CONDITIONS-1];
+reg [42:0] rules [0:MAX_CONDITIONS-1];
 reg [15:0] choose_char_out;
-// ³õÊ¼»¯Ìõ¼şÊı×é
+
 always@(*) begin
-	//ÏŞËÙ±êÖ¾
-    //speed15
-    tens_cond[0] = 4'd1;  ones_cond[0] = 4'd5;  color_en_cond[0] = 3'b100; shape_en_cond[0] = 16'b11111111_11111111; code_cond[0] = 16'd1;
-    //speed30
-    tens_cond[1] = 4'd3;  ones_cond[1] = 4'd0;  color_en_cond[1] = 3'b100; shape_en_cond[1] = 16'b11111111_11111111; code_cond[1] = 16'd2;
-    //speed40
-    tens_cond[2] = 4'd4;  ones_cond[2] = 4'd0;  color_en_cond[2] = 3'b100; shape_en_cond[2] = 16'b11111111_11111111; code_cond[2] = 16'd3;
-	 //speed50
-    tens_cond[3] = 4'd5;  ones_cond[3] = 4'd0;  color_en_cond[3] = 3'b100; shape_en_cond[3] = 16'b11111111_11111111; code_cond[3] = 16'd4;
-    //speed60
-    tens_cond[4] = 4'd6;  ones_cond[4] = 4'd0;  color_en_cond[4] = 3'b100; shape_en_cond[4] = 16'b11111111_11111111; code_cond[4] = 16'd5;
-	
-	//Ö¸Ê¾±êÖ¾
-	//Ö±ĞĞ
-	tens_cond[5] = 4'd15;  ones_cond[5] = 4'd15;  color_en_cond[5] = 3'b001; shape_en_cond[5] = 16'd1; code_cond[5] = 16'd6;
-	//×ó×ª
-	tens_cond[6] = 4'd15;  ones_cond[6] = 4'd15;  color_en_cond[6] = 3'b001; shape_en_cond[6] = 16'd2; code_cond[6] = 16'd7;
-	//ÓÒ×ª
-	tens_cond[7] = 4'd15;  ones_cond[7] = 4'd15;  color_en_cond[7] = 3'b001; shape_en_cond[7] = 16'd3; code_cond[7] = 16'd8;
-	//Ö±ĞĞ»ò×ó×ª
-	tens_cond[8] = 4'd15;  ones_cond[8] = 4'd15;  color_en_cond[8] = 3'b001; shape_en_cond[8] = 16'd4; code_cond[8] = 16'd9;
-	//Ö±ĞĞ»òÓÒ×ª
-	tens_cond[9] = 4'd15;  ones_cond[9] = 4'd15;  color_en_cond[9] = 3'b001; shape_en_cond[9] = 16'd5; code_cond[9] = 16'd10;
-	//Í£³µÎ»
-	tens_cond[10] = 4'd15;  ones_cond[10] = 4'd15;  color_en_cond[10] = 3'b001; shape_en_cond[10] = 16'd6; code_cond[10] = 16'd11;
-	//ÈËĞĞµÀ
-	tens_cond[11] = 4'd15;  ones_cond[11] = 4'd15;  color_en_cond[11] = 3'b001; shape_en_cond[11] = 16'd7; code_cond[11] = 16'd12;
-	//»·µºĞĞÊ»
-	tens_cond[12] = 4'd15;  ones_cond[12] = 4'd15;  color_en_cond[12] = 3'b001; shape_en_cond[12] = 16'd8; code_cond[12] = 16'd13;
-	//µôÍ·
-	tens_cond[13] = 4'd15;  ones_cond[13] = 4'd15;  color_en_cond[13] = 3'b001; shape_en_cond[13] = 16'd9; code_cond[13] = 16'd14;
-	//µ¥ĞĞÂ·
-	tens_cond[14] = 4'd15;  ones_cond[14] = 4'd15;  color_en_cond[14] = 3'b001; shape_en_cond[14] = 16'd10; code_cond[14] = 16'd15;
-	
-	//¾¯¸æ±êÖ¾
-	//½»²æÂ·¿Ú
-	tens_cond[15] = 4'd15;  ones_cond[15] = 4'd15;  color_en_cond[15] = 3'b010; shape_en_cond[15] = 16'd11; code_cond[15] = 16'd16;
-	//Ë«Ïò½»Í¨
-	tens_cond[16] = 4'd15;  ones_cond[16] = 4'd15;  color_en_cond[16] = 3'b010; shape_en_cond[16] = 16'd12; code_cond[16] = 16'd17;
-	//×¢ÒâÎ£ÏÕ
-	tens_cond[17] = 4'd15;  ones_cond[17] = 4'd15;  color_en_cond[17] = 3'b010; shape_en_cond[17] = 16'd13; code_cond[17] = 16'd18;
-	//×¢ÒâĞĞÈË
-	tens_cond[18] = 4'd15;  ones_cond[18] = 4'd15;  color_en_cond[18] = 3'b010; shape_en_cond[18] = 16'd14; code_cond[18] = 16'd19;
-	//×¢Òâ¶ùÍ¯
-	tens_cond[19] = 4'd15;  ones_cond[19] = 4'd15;  color_en_cond[19] = 3'b010; shape_en_cond[19] = 16'd15; code_cond[19] = 16'd20;
-	//×¢ÒâÒ°Éú¶¯Îï
-	tens_cond[20] = 4'd15;  ones_cond[20] = 4'd15;  color_en_cond[20] = 3'b010; shape_en_cond[20] = 16'd16; code_cond[20] = 16'd21;
-	//×¢ÒâÉüĞó
-	tens_cond[21] = 4'd15;  ones_cond[21] = 4'd15;  color_en_cond[21] = 3'b010; shape_en_cond[21] = 16'd17; code_cond[21] = 16'd22;
-	//×ó¼±×ª
-	tens_cond[22] = 4'd15;  ones_cond[22] = 4'd15;  color_en_cond[22] = 3'b010; shape_en_cond[22] = 16'd18; code_cond[22] = 16'd23;
-	//ÓÒ¼±×ª
-	tens_cond[23] = 4'd15;  ones_cond[23] = 4'd15;  color_en_cond[23] = 3'b010; shape_en_cond[23] = 16'd19; code_cond[23] = 16'd24;
-	
-	//½ûÁî±êÖ¾
-	//½ûÖ¹Ê»Èë
-	tens_cond[24] = 4'd15;  ones_cond[24] = 4'd15;  color_en_cond[24] = 3'b100; shape_en_cond[24] = 16'd20; code_cond[24] = 16'd25;
-	//½ûÖ¹³µÁ¾Í£·Å
-	tens_cond[25] = 4'd15;  ones_cond[25] = 4'd15;  color_en_cond[25] = 3'b100; shape_en_cond[25] = 16'd21; code_cond[25] = 16'd26;
-	//Ê©¹¤
-	tens_cond[26] = 4'd15;  ones_cond[26] = 4'd15;  color_en_cond[26] = 3'b100; shape_en_cond[26] = 16'd22; code_cond[26] = 16'd27;
-	//Í£³µÈÃĞĞ
-	tens_cond[27] = 4'd15;  ones_cond[27] = 4'd15;  color_en_cond[27] = 3'b100; shape_en_cond[27] = 16'd23; code_cond[27] = 16'd28;
-	//¼õËÙÈÃĞĞ
-	tens_cond[28] = 4'd15;  ones_cond[28] = 4'd15;  color_en_cond[28] = 3'b100; shape_en_cond[28] = 16'd24; code_cond[28] = 16'd29;
-	//½ûÖ¹Ö±ĞĞ
-	tens_cond[29] = 4'd15;  ones_cond[29] = 4'd15;  color_en_cond[29] = 3'b100; shape_en_cond[29] = 16'd25; code_cond[29] = 16'd30;
-	//½ûÖ¹ÓÒ×ª
-	tens_cond[30] = 4'd15;  ones_cond[30] = 4'd15;  color_en_cond[30] = 3'b100; shape_en_cond[30] = 16'd26; code_cond[30] = 16'd31;
-	//½ûÖ¹×óÓÒ×ª
-	tens_cond[31] = 4'd15;  ones_cond[31] = 4'd15;  color_en_cond[31] = 3'b100; shape_en_cond[31] = 16'd27; code_cond[31] = 16'd32;
-	//½ûÖ¹µôÍ·
-	tens_cond[32] = 4'd15;  ones_cond[32] = 4'd15;  color_en_cond[32] = 3'b100; shape_en_cond[32] = 16'd28; code_cond[32] = 16'd33;
-	//½ûÖ¹ÃùµÑ
-	tens_cond[33] = 4'd15;  ones_cond[33] = 4'd15;  color_en_cond[33] = 3'b100; shape_en_cond[33] = 16'd29; code_cond[33] = 16'd34;
-	//»á³µÈÃĞĞ
-	tens_cond[34] = 4'd15;  ones_cond[34] = 4'd15;  color_en_cond[34] = 3'b100; shape_en_cond[34] = 16'd30; code_cond[34] = 16'd35;
-	//speed70
-	tens_cond[35] = 4'd7;  ones_cond[35] = 4'd0;  color_en_cond[35] = 3'b100; shape_en_cond[35] = 16'b11111111_11111111; code_cond[35] = 16'd36;
-	//speed80
-	tens_cond[36] = 4'd8;  ones_cond[36] = 4'd0;  color_en_cond[36] = 3'b100; shape_en_cond[36] = 16'b11111111_11111111; code_cond[36] = 16'd37;
-	//speed20
-	tens_cond[37] = 4'd2;  ones_cond[37] = 4'd0;  color_en_cond[37] = 3'b100; shape_en_cond[37] = 16'b11111111_11111111; code_cond[37] = 16'd38;
-	//½ûÖ¹×ó×ª
-	tens_cond[38] = 4'd15;  ones_cond[38] = 4'd15;  color_en_cond[38] = 3'b100; shape_en_cond[38] = 16'd31; code_cond[38] = 16'd39;
+
+    rules[0] = {4'd1, 4'd5, 3'b100, 16'b11111111_11111111, 16'd1};
+
+    rules[1] = {4'd3, 4'd0, 3'b100, 16'b11111111_11111111, 16'd2};
+
+    rules[2] = {4'd4, 4'd0, 3'b100, 16'b11111111_11111111, 16'd3};
+
+    rules[3] = {4'd5, 4'd0, 3'b100, 16'b11111111_11111111, 16'd4};
+
+    rules[4] = {4'd6, 4'd0, 3'b100, 16'b11111111_11111111, 16'd5};
+
+	rules[5] = {4'd15, 4'd15, 3'b001, 16'd1, 16'd6};
+
+	rules[6] = {4'd15, 4'd15, 3'b001, 16'd2, 16'd7};
+
+	rules[7] = {4'd15, 4'd15, 3'b001, 16'd3, 16'd8};
+
+	rules[8] = {4'd15, 4'd15, 3'b001, 16'd4, 16'd9};
+
+	rules[9] = {4'd15, 4'd15, 3'b001, 16'd5, 16'd10};
+
+	rules[10] = {4'd15, 4'd15, 3'b001, 16'd6, 16'd11};
+
+	rules[11] = {4'd15, 4'd15, 3'b001, 16'd7, 16'd12};
+
+	rules[12] = {4'd15, 4'd15, 3'b001, 16'd8, 16'd13};
+
+	rules[13] = {4'd15, 4'd15, 3'b001, 16'd9, 16'd14};
+
+	rules[14] = {4'd15, 4'd15, 3'b001, 16'd10, 16'd15};
+
+	rules[15] = {4'd15, 4'd15, 3'b010, 16'd11, 16'd16};
+
+	rules[16] = {4'd15, 4'd15, 3'b010, 16'd12, 16'd17};
+
+	rules[17] = {4'd15, 4'd15, 3'b010, 16'd13, 16'd18};
+
+	rules[18] = {4'd15, 4'd15, 3'b010, 16'd14, 16'd19};
+
+	rules[19] = {4'd15, 4'd15, 3'b010, 16'd15, 16'd20};
+
+	rules[20] = {4'd15, 4'd15, 3'b010, 16'd16, 16'd21};
+
+	rules[21] = {4'd15, 4'd15, 3'b010, 16'd17, 16'd22};
+
+	rules[22] = {4'd15, 4'd15, 3'b010, 16'd18, 16'd23};
+
+	rules[23] = {4'd15, 4'd15, 3'b010, 16'd19, 16'd24};
+
+	rules[24] = {4'd15, 4'd15, 3'b100, 16'd20, 16'd25};
+
+	rules[25] = {4'd15, 4'd15, 3'b100, 16'd21, 16'd26};
+
+	rules[26] = {4'd15, 4'd15, 3'b100, 16'd22, 16'd27};
+
+	rules[27] = {4'd15, 4'd15, 3'b100, 16'd23, 16'd28};
+
+	rules[28] = {4'd15, 4'd15, 3'b100, 16'd24, 16'd29};
+
+	rules[29] = {4'd15, 4'd15, 3'b100, 16'd25, 16'd30};
+
+	rules[30] = {4'd15, 4'd15, 3'b100, 16'd26, 16'd31};
+
+	rules[31] = {4'd15, 4'd15, 3'b100, 16'd27, 16'd32};
+
+	rules[32] = {4'd15, 4'd15, 3'b100, 16'd28, 16'd33};
+
+	rules[33] = {4'd15, 4'd15, 3'b100, 16'd29, 16'd34};
+
+	rules[34] = {4'd15, 4'd15, 3'b100, 16'd30, 16'd35};
+
+	rules[35] = {4'd7, 4'd0, 3'b100, 16'b11111111_11111111, 16'd36};
+
+	rules[36] = {4'd8, 4'd0, 3'b100, 16'b11111111_11111111, 16'd37};
+
+	rules[37] = {4'd2, 4'd0, 3'b100, 16'b11111111_11111111, 16'd38};
+
+	rules[38] = {4'd15, 4'd15, 3'b100, 16'd31, 16'd39};
 end
 
-// ÌáÈ¡Ê®Î»ºÍ¸öÎ»
 wire [3:0] tens_digit = digit[7:4];
 wire [3:0] ones_digit = digit[3:0];
 reg [15:0] digit_reg;
 reg digit_en;
-// Êä³öÂß¼­
+
 integer i;
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -128,18 +117,18 @@ always @(posedge clk or negedge rst_n) begin
 		digit_reg <= 16'd0;
 		digit_en <= 1'd0;
         for (i = 0; i < MAX_CONDITIONS; i = i + 1) begin
-			if(color_en_cond[i] == color_en && tens_cond[i] == tens_digit && ones_cond[i] == ones_digit)begin
-				digit_reg <= code_cond[i];
+			if(rules[i][42:32] == {tens_digit, ones_digit, color_en})begin
+				digit_reg <= rules[i][15:0];
 				digit_en <= 1'd1;
 			end
-            else if(color_en_cond[i] == color_en && shape_en_cond[i] == shape_en)
-                choose_char_out <= code_cond[i];
+            else if(rules[i][34:16] == {color_en, shape_en})
+                choose_char_out <= rules[i][15:0];
         end
     end
 end
 
 assign char_en = (digit_en == 1)?digit_reg:choose_char_out;
-// Ê¹ÄÜĞÅºÅ´òÅÄ
+
 reg red_en_r, blue_en_r, yellow_en_r;
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin

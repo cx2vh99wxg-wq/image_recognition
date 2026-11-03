@@ -1,0 +1,76 @@
+本地与对照路径均相对于各自的 udp_rk_rk_yolo 目录。
+每行显示一个合并区间内最长的连续匹配。相同词元序列的物理副本另列。
+本地文件与行号 | 对照文件与行号 | 连续词元 | 默认构建 | 本地同词元副本
+S/x11/csrc/include/stb_image.h:129–7762 | S/x11/csrc/include/stb_image.h:129–7762 | 50973 | 是 | 
+S/udp/csrc/main_old.cpp:1–2653 | S/udp/csrc/main_old.cpp:1–2321 | 11478 | 否。旧版 UDP 接收器，S/udp/Makefile 显式过滤。 | 
+M/pcie/csrc/yolop_opencv_integration.cpp:157–952 | M/pcie/csrc/yolop_opencv_integration.cpp:177–857 | 4375 | 是 | 
+S/pcie/csrc/yolo_integration.c:413–834 | S/pcie/csrc/yolo_integration.c:397–717 | 2259 | 是 | 
+S/pcie/csrc/main.cpp:361–828 | S/pcie/csrc/main.cpp:298–713 | 1924 | 是 | 
+M/pcie/csrc/main.cpp:725–1024 | M/pcie/csrc/main.cpp:604–863 | 1301 | 是 | 
+M/pcie/include/rknn_api.h:14–804 | M/pcie/include/rknn_api.h:14–804 | 1301 | 是 | S/pcie/include/rknn_api.h
+S/pcie/include/pcie_dma_read_test.h:1–320 | S/pcie/include/pcie_dma_read_test.h:1–296 | 1111 | 是 | 
+M/pcie/include/pcie_dma_read_test.h:1–319 | M/pcie/include/pcie_dma_read_test.h:1–295 | 1100 | 是 | S/udp/include/pcie_dma_read_test.h
+M/pcie/csrc/fspi_module.c:2–244 | M/pcie/csrc/fspi_module.c:2–265 | 1086 | 是 | 
+M/Makefile:225–450 | M/Makefile:210–435 | 1085 | 是 | 
+M/pcie/include/yolop_opencv_integration.h:1–255 | M/pcie/include/yolop_opencv_integration.h:1–227 | 990 | 是 | 
+M/pcie/csrc/postprocess.cpp:1–163 | M/pcie/csrc/postprocess.cpp:1–140 | 975 | 是 | 
+M/pcie/csrc/fspi_module.c:289–525 | M/pcie/csrc/fspi_module.c:306–536 | 922 | 是 | 
+S/pcie/csrc/yolo_integration.c:46–196 | S/pcie/csrc/yolo_integration.c:10–139 | 863 | 是 | 
+S/csrc/shared_memory.c:741–983 | S/csrc/shared_memory.c:617–825 | 855 | 是 | 
+S/pcie/csrc/yolo_integration.c:266–399 | S/pcie/csrc/yolo_integration.c:194–317 | 818 | 是 | 
+S/pcie/csrc/person_alert_effects.c:1–184 | S/pcie/csrc/person_alert_effects.c:1–163 | 791 | 是 | 
+S/Makefile:333–474 | S/Makefile:337–478 | 739 | 是 | 
+M/pcie/csrc/yolop_opencv_integration.cpp:1–117 | M/pcie/csrc/yolop_opencv_integration.cpp:1–99 | 721 | 是 | 
+M/pcie/csrc/main.cpp:1141–1307 | M/pcie/csrc/main.cpp:875–1032 | 719 | 是 | 
+S/x11/csrc/main.cpp:497–631 | S/x11/csrc/main.cpp:535–643 | 711 | 是 | 
+S/csrc/shared_memory.c:5–144 | S/csrc/shared_memory.c:4–122 | 704 | 是 | 
+S/pcie/csrc/fspi_module.c:288–470 | S/pcie/csrc/fspi_module.c:297–476 | 700 | 否。旧 PCIe 进程中的 SPI 实现，S/pcie 默认源列表未包含。 | 
+M/pcie/csrc/yolo_integration.c:255–367 | M/pcie/csrc/yolo_integration.c:179–277 | 671 | 是 | 
+M/csrc/shared_memory.c:342–489 | M/csrc/shared_memory.c:415–544 | 627 | 是 | 
+S/setup_network.sh:23–169 | S/setup_network.sh:25–171 | 605 | 否。板端网络配置脚本，可独立执行。 | 
+S/x11/csrc/main.cpp:233–348 | S/x11/csrc/main.cpp:149–253 | 576 | 是 | 
+S/pcie/csrc/main.cpp:831–967 | S/pcie/csrc/main.cpp:714–844 | 564 | 是 | 
+M/setup_network.sh:23–145 | M/setup_network.sh:25–147 | 523 | 否。板端网络配置脚本，可独立执行。 | 
+S/x11/csrc/main.cpp:707–773 | S/x11/csrc/main.cpp:699–752 | 492 | 是 | 
+S/pcie/Makefile:82–164 | S/pcie/Makefile:78–160 | 481 | 是 | 
+S/csrc/shared_memory.c:450–574 | S/csrc/shared_memory.c:383–493 | 480 | 是 | 
+S/pcie/csrc/person_alert_effects.c:212–314 | S/pcie/csrc/person_alert_effects.c:189–277 | 459 | 是 | 
+M/pcie/csrc/postprocess.cpp:179–254 | M/pcie/csrc/postprocess.cpp:159–226 | 445 | 是 | 
+M/pcie/csrc/main.cpp:498–585 | M/pcie/csrc/main.cpp:409–495 | 440 | 是 | 
+M/pcie/Makefile:177–254 | M/pcie/Makefile:118–195 | 415 | 是 | 
+S/csrc/shared_memory.c:345–438 | S/csrc/shared_memory.c:311–379 | 408 | 是 | 
+M/Makefile:59–138 | M/Makefile:50–129 | 398 | 是 | 
+S/x11/csrc/main.cpp:907–975 | S/x11/csrc/main.cpp:932–990 | 395 | 是 | 
+M/pcie/include/pcie_capture.h:1–209 | M/pcie/include/pcie_capture.h:1–206 | 394 | 否。PCIe 采集声明，未找到引用。 | 
+M/pcie/csrc/main.cpp:115–199 | M/pcie/csrc/main.cpp:108–188 | 378 | 是 | 
+M/pcie/csrc/yolo_integration.c:62–130 | M/pcie/csrc/yolo_integration.c:19–80 | 326 | 是 | 
+S/fspi/csrc/fspi_module.c:616–706 | S/fspi/csrc/fspi_module.c:461–541 | 326 | 是 | 
+S/Makefile:62–114 | S/Makefile:61–113 | 321 | 是 | 
+M/pcie/csrc/main.cpp:356–419 | M/pcie/csrc/main.cpp:337–398 | 309 | 是 | 
+S/x11/csrc/main.cpp:187–228 | S/x11/csrc/main.cpp:104–148 | 307 | 是 | 
+S/pcie/csrc/fspi_module.c:156–226 | S/pcie/csrc/fspi_module.c:160–238 | 300 | 否。旧 PCIe 进程中的 SPI 实现，S/pcie 默认源列表未包含。 | 
+S/pcie/csrc/postprocess.cpp:38–83 | S/pcie/csrc/postprocess.cpp:31–71 | 289 | 是 | 
+S/x11/csrc/main.cpp:810–868 | S/x11/csrc/main.cpp:759–812 | 286 | 是 | 
+M/include/shared_memory.h:1–91 | M/include/shared_memory.h:1–94 | 281 | 是 | 
+M/csrc/shared_memory.c:57–128 | M/csrc/shared_memory.c:24–84 | 280 | 是 | 
+S/pcie/csrc/main.cpp:4–100 | S/pcie/csrc/main.cpp:3–103 | 275 | 是 | 
+M/udp/Makefile:104–172 | M/udp/Makefile:95–163 | 268 | 是 | 
+S/fspi/csrc/fspi_module.c:78–125 | S/fspi/csrc/fspi_module.c:76–125 | 266 | 是 | 
+S/csrc/shared_memory.c:580–635 | S/csrc/shared_memory.c:499–544 | 260 | 是 | 
+S/Makefile:300–332 | S/Makefile:304–336 | 254 | 是 | 
+S/Makefile:161–190 | S/Makefile:155–184 | 253 | 是 | 
+S/x11/csrc/Makefile:9–39 | S/x11/csrc/Makefile:7–37 | 250 | 是 | 
+S/pcie/csrc/postprocess.cpp:103–133 | S/pcie/csrc/postprocess.cpp:81–107 | 249 | 是 | 
+S/pcie/csrc/fspi_module.c:72–117 | S/pcie/csrc/fspi_module.c:76–123 | 242 | 否。旧 PCIe 进程中的 SPI 实现，S/pcie 默认源列表未包含。 | 
+M/pcie/csrc/main.cpp:25–114 | M/pcie/csrc/main.cpp:20–108 | 241 | 是 | 
+M/pcie/Makefile:41–90 | M/pcie/Makefile:41–90 | 240 | 是 | 
+M/pcie/include/postprocess.h:1–65 | M/pcie/include/postprocess.h:1–64 | 238 | 是 | 
+S/pcie/csrc/main.cpp:101–147 | S/pcie/csrc/main.cpp:103–150 | 236 | 是 | 
+S/fspi/csrc/main.c:789–861 | S/fspi/csrc/main.c:420–479 | 223 | 是 | 
+S/Makefile:259–287 | S/Makefile:272–299 | 218 | 是 | 
+S/x11/csrc/main.cpp:448–485 | S/x11/csrc/main.cpp:368–400 | 214 | 是 | 
+M/pcie/csrc/main.cpp:230–275 | S/pcie/csrc/main.cpp:197–235 | 212 | 是 | 
+S/pcie/csrc/main.cpp:261–305 | S/pcie/csrc/main.cpp:198–235 | 210 | 是 | 
+S/include/shared_memory.h:1–56 | S/include/shared_memory.h:1–61 | 208 | 是 | 
+M/udp/include/udp_network.h:1–102 | M/udp/include/udp_network.h:1–97 | 205 | 否。旧 UDP 报文与网络声明，未找到引用。 | 
+S/pcie/include/yolo_integration.h:1–67 | S/pcie/include/yolo_integration.h:1–65 | 203 | 是 | 

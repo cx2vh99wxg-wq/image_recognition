@@ -1,3 +1,4 @@
+// 2026-11-03 注释校订。环形行存储。地址达到终点时可在禁写周期回绕，复位拍的写使能仍独立有效。
 `timescale 1 ns / 1 ns
 
 module RAMshift_taps
@@ -11,7 +12,6 @@ module RAMshift_taps
      output [DATA_WIDTH - 1 : 0] shiftout);
 
     reg [31 : 0] RAM_CNT = 0;
-    reg [DATA_WIDTH - 1 : 0] ram_buf = 0;
     reg [DATA_WIDTH - 1 : 0] shift_ram[TOTAL_RAM_Length - 1 : 0];
 
     integer m;
@@ -23,33 +23,16 @@ module RAMshift_taps
         end
     end
 
-    always @(posedge clock)
-    begin
+    always @(posedge clock) begin
         if (rst_n == 1'b0)
-        begin
             RAM_CNT <= 0;
-        end
-        else
-        begin
-            if (RAM_CNT == (Delay_Length))
-                RAM_CNT <= 0;
-            else if (clken)
-                RAM_CNT <= RAM_CNT + 1;
-            else
-                RAM_CNT <= RAM_CNT;
-        end
-    end
+        else if (RAM_CNT == Delay_Length)
+            RAM_CNT <= 0;
+        else if (clken)
+            RAM_CNT <= RAM_CNT + 1;
 
-    always @(posedge clock)
-    begin
         if (clken)
-        begin
             shift_ram[RAM_CNT] <= shiftin;
-        end
-        else
-        begin
-            shift_ram[RAM_CNT] <= shift_ram[RAM_CNT];
-        end
     end
 
     assign shiftout = shift_ram[RAM_CNT];

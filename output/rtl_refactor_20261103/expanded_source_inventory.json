@@ -1,0 +1,1531 @@
+{
+  "counts": {
+    "expanded_refactored": 135,
+    "retained_vendor_pcie_support": 22,
+    "retained_display_configuration": 1,
+    "retained_attributed_upstream_rtl": 14
+  },
+  "files": {
+    "source/HDMI/lcd_para.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "28aee83e4d0c1a1009e37d4c6d082a6ad37c60b7f40cd3a2e103bd5aa22004c3",
+      "state": "retained_display_configuration",
+      "provenance": "Display timing and color macro definitions"
+    },
+    "source/axi_ctrl/axi4_ctrl.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "330890edb998aad833e77b235051566049ef2c55df9cd43b6c8b060889db6ce4",
+      "original_sha256": "12fe0d7014c4969ada11450d8ee7e47ae6687de703a8a2385e055426a01b9231",
+      "state": "expanded_refactored"
+    },
+    "source/axi_ctrl/axi4_ctrl_3ch.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "7a4a682727747b7d60eb49a000bc7ee9ec3441ec583a1bce2140a3e6fbc96ad1",
+      "original_sha256": "86a98433f4f10d04beca561af46dad100c87602df4fec13baba7aa1b6acb0e2b",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_18.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "0b55f61b21701786276619fa2fc20d22a5aabe53072f1a7d653005a0036c669f",
+      "original_sha256": "a12179c729f6b346f93ad80b33177aa6400b03ceb7ba78e1e4065a00e9f6fd47",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_19.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "2324a39d2dec4b6c4a584c6366e51b2455199b6806cd1f87746891beec39ce9d",
+      "original_sha256": "dc86f4b19ef9eb7645aa90730f3a3d5c7951b7056f2df9a0a913961bd86eb30f",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_20.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "e919d8d858063d26c59aa1ea5ac6d3865beecb69d130f9588b56c73f8bd5dbf8",
+      "original_sha256": "8acc55db8db245d0a809f50ca1b1f792dd6d1ede08073cbcaa7448bc7c171e55",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_21.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "0b5aa3d2c5eb9f0dff1d24594beaf0f929b230f5cd775d021deb623a44debb3c",
+      "original_sha256": "e01992bb06b581e2e5f3056c792d08fd7fc6b558cbdc0bd037418b1feaa7bae4",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_22.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "2937b6076b988d100f83bdfd1e37f64086b0488746a4aedfdf6b1d9e5b04e618",
+      "original_sha256": "4e1636d1288963723068eac23c58caef0c4b1bd6cdd5599f76e266bc9f4f1925",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_23.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "c0c568576ef0cffaf8cf4e89609e6c8d8918beeea61a7cfb656e4c917f6bc4f3",
+      "original_sha256": "804e7a7ea0165bb4e0be368ac14781fcc94917cb6bdfd50d8baff2f1a4bd98d3",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_24.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "f0e0be1825b1f0c429247d955360c308ad71b4ed8cfd8cd9394946568f6bf234",
+      "original_sha256": "fa344f47a51bb817b85dd8177c6e71e4d03056f654274e667fe13739884a67d3",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_25.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "a74af5891ccccc49718e968bf4e1abb6e5511f3b3e6bfa9fcfd54b09544465c0",
+      "original_sha256": "af5f56e61faa2066eb0a75586e31de5bb85c03eb5ecac8cd07b347cb27649530",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_26.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "1781ca5eb91cca3cc6d639d7c95e963f1999dd0266a2038030c6efa0458d6b63",
+      "original_sha256": "71c38d9c18ef666738fd327f8cc8107c934e91eeb50903a3682c1ab33feffe1f",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_27.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "10c336f337d21ff284159bf72bcf496359f32eded7184693577ae134bba0bb54",
+      "original_sha256": "d0a2d831b30a643b6f338e8bf35feaecf7e3b360866952fa9e5c1c7086a53a13",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_28.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "11d93925a7bf16fb544b69dd0a18b2c3285fc2a5026baf18d84c04067545f60f",
+      "original_sha256": "5e0c7e9be39df047d221cc7485e03e7021f0721a0754c198e68b194560b2881c",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_29.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "b3ce7c83cb8a156e6224068c4ec536513c5a9c89e4a105ea3c1f18048ecba866",
+      "original_sha256": "7c01bccef699a77201fb77e2b4f2c86c0e0f7d99c25f549ce14086611ab7531e",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_30.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "a20aa6d86dfa6ff6937ebc25bbb122433faead8f182972bb653703793b169301",
+      "original_sha256": "6db4b5ca6b6b9fd5b7fe0406855476a0ce4195c8620957cc2c2b1debd00f3fca",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_31.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "2a88d4d699e36fe2b3cb572697cd5ece71e1b31ef3fe53f52f9889d3b855fe55",
+      "original_sha256": "92d292b9e996961ecac10491f276248d01327d31fc89b7def85b6e295cddaff2",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_32.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "420b597698211303fb5c3152554df9d32b9df51a4b808355a48f17664bee80ec",
+      "original_sha256": "3ee47448013861f0c792d7f12b24488270a32a456ceac92e3f91257b890d9aec",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_33.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "6e6c55cb556053ed15baf6be4998a71c38d0b9404957126e3d36d628066d5126",
+      "original_sha256": "6ccd58928da704499ce0a6310bdde6bc9fe814f3954735a25b5bb4c8fd2b04e4",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_34.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "840dd508a703b27c42b7072da74a6e1cbab9e836dbcfd8f2952dc60985a80da8",
+      "original_sha256": "4edd6fe76e7b862e4e1fcc343ab6305d61517f8bb74f45234d0a6e7f596d8b30",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_35.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "d36d0ddd979233d212e8a490c4be2f77809616c279d6e423d60e00e5a87e852d",
+      "original_sha256": "fc3d7e9df52581528f178254d9d1a7386cbf0bf4a66c6a4a9717480fc4145ea8",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_36.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "d7133f02662e7065ac7a3adfc460b844479651ff44ff97cf8c9e3afb78c9db1a",
+      "original_sha256": "5d6f21332b4370602507f5cf2ba80324b4c54bc456c620a54641388f5ca33119",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_37.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "6e24efb27473f73c2c77d98110526d3975106a162973e467300a101751ad6ef0",
+      "original_sha256": "5894bfa6fa079d3f0aac6413fd086773669c1b888f9555875ec4c9459aa273e7",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_38.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "b7fa3c79a865070830f869b9032170a45d33297740054af769f18a185954f759",
+      "original_sha256": "93543509e1c80d38ad8d618b941e86d75c77107967c4ebe879b6308ee4abaa9f",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_39.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "bd0e034d99c8966cc70f704a8b74a4a43124fca9ea3a0eb5523e5cb60de28f8b",
+      "original_sha256": "824e74492912e131371a700f83f66202df5e6cf9d40abd59e7ffdbf556219064",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_40.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "9b1340840452f1af9d8fde491b54ee3948e80218523e157908640abbfb984811",
+      "original_sha256": "fcda687f6e10cdead0cf3002696a54034165dabf66203e6ffba50373810fd94c",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_41.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "2ad4086c6998faaf39f4dc983772b3865c58f5010696312cdffb096b33ada34a",
+      "original_sha256": "9061259fed76500d850d8774d3e0771e85e9d4175b8679766e6b6dabd2025446",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_42.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "4dc458b1e27c41f667a7cb5c8778f6f3457322037e08c1e9d316c67155335730",
+      "original_sha256": "b9e21dd595f144c9a375fb91aa9eb3d7d46edcfd4d5396df2bfb48903cadc8e9",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_43.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "d1e7cc96dd10868fa9e790c54bfcd6484de318b720c528bd0b26b1eb34b4921b",
+      "original_sha256": "499840bdd1efad95b59910af68150d6d2742f6cd0835c654856f032dfcb6c167",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_44.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "81ca92abe43a8f197290b12338184de1f4d8fe079c1f0e287315feac5733802e",
+      "original_sha256": "c1aab8af8075482748ad652e82bac967542f8225ec8afebe24cda6c962acbc54",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_45.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "417d1abb2cd739098bfcaf98a48bad84aae8f709f270db49e4d4273cfa2c544e",
+      "original_sha256": "c97dba36018abc621339d06ad8a47ae8c8fa3c5b184032b84915b68412dcf2fa",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_46.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "4cf08825b5d4af0d03c279edcfc34c9a68823d0ca95739e7cb06ded785955166",
+      "original_sha256": "40b164a06b9c19ff40f088540f1bc8d0a44c91ebc9ae5cadf7b2c19855528090",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_47.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "6d34117c9fc9e0da5b3a3370bb3b0f6f7564675b4bd47f5eddf13e4f453171df",
+      "original_sha256": "13490e98c093aa4bff78fcf0e4a11c8657a1fb41cf3f54b31bf9c54ea96ae19d",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_48.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "514043c0b9a0dc72621b9c99d0cb75b5f8c9d4376f78d7282f1ffa5b7bad7fa1",
+      "original_sha256": "03b2a34dacbdee1bd7668e49a5a6256fdcee0d8eecf80df10a98be35c6e36d33",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_49.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "103865da5d666fa5fce1f5bd9781f9df11fb7e288731942983829ce59905a3e8",
+      "original_sha256": "d9cbdfcf9e7c889c915660d0d206c584f79cef75f36ab9eaba11e6a357c51a3c",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_50.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "52d546420041d5b29dde3ed1b4f2dea0a009439b59f574cb91313e2e8868c43a",
+      "original_sha256": "dff825a6a6abc0f48991d3aafd4a235ac72cd6a2ef279f7156406743ae442831",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_51.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "a952b4eedaff173b76297b833f95b57ab66defd6a87f025f4e293d06f927f941",
+      "original_sha256": "acb36592c84884ce115e01b998faa68a77a9b4d22db532872da65c0d0d9b7be6",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_52.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "21863addbc30066da7b3fb37a622bb98c11be96525078ad59d1eb502ccd8679a",
+      "original_sha256": "070ee539644882cf5e01b54204e7bc80fcd5a4d2bfac25dfd05cacc6558ad884",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_53.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "d79e096197a8480fb7a0757c545c9c8da5d7c69c2b0f76d07fa42a70615e89c4",
+      "original_sha256": "6d749d83ae6d6e6805319c299dbd5665d73069f02d3df4600d7a992eaf06270b",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_54.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "830684b01eb2fa4548c4768f0bcfe8d832768eb7eac790ed202d3f06250e8fd5",
+      "original_sha256": "85b6ef90bdefddfb2b1938634b8be73e832660bb8e3183ae1fac71935af9b01d",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_55.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "781af54560f6b820c68de242251c3fb27254d3c3cfc4b3bb1d553a1a92064854",
+      "original_sha256": "7f01f0283cfe792c776f52db3a44300541e324653da6f1da81077912dd90ffd3",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_56.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "e9d40337fd5258acfe49b50f58f125cf4fd0b89c3f97f69850a5ec25316f6384",
+      "original_sha256": "de74e150370062cd1564eecaad751a7618f721ac2ef1a205fef785579e544797",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_57.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "10f6003b7e1b84966aa63be7d3f8bb3fa564002b83b528527c69716cc716dd45",
+      "original_sha256": "64d709a59f631728fdb0363fd2cc6c9e947ba6e85558aa3d10eb3701740e1607",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_58.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "f7f52876e132af678ac52f56ab7e7c241277dfd32c39bcd21fc3469ac66579c8",
+      "original_sha256": "87e0c145ba5f6ec09620cf994aa2de9946d61633870a65eedde1abd9bf69fadc",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_59.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "dbd475fdacf432dd4d2c8b56a5341999512aaf2f8cf67bfd44252378276c5cd6",
+      "original_sha256": "a0c917519e356ad836fa2eda03fbd90a60c7458170f96217ee0e17e29b4062c3",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_60.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "1e8119aa9e8af736fe8a56fdecececa86da52df9cf029ff7564623a2032cfdb3",
+      "original_sha256": "e8971d58d655da03d8f6e195831d003cd701f8929278d071266c2f5a5f3970d9",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_61.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "8132d013cbe36047e8b49eec401548b87e7acdddfc7879207719211f489a3a19",
+      "original_sha256": "0d827e5832f1020484031e5b46edc69817af661303ec35485306ec3389b5bee3",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_62.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "78bd7aaa8389adfda9f885da3f1d80a607ee2d5573ae072ce4e8d81ccc75d646",
+      "original_sha256": "17700bc6fe369c85974a855a1d05c1fde0d019c56660489103227622fb1176b7",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_63.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "f47f62c3154e1d0672cd1fbf4db9ea085c1097441bdbdf7ae0e567378395e9f5",
+      "original_sha256": "362f9f7a76a23917e2dd389d7b07a3bf4f51406a3f4e3046f80ac25ba42e09f0",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_64.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "e110badc13fcb488d96367787eeabdd4f253d54b0ee395475c7a12815938e331",
+      "original_sha256": "223664c0464b03277cc48a3393d333e41ec473c455d57303ab4c523f328ee233",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_65.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "35a04bce22db325877539b150e5cf48df1115f8699c056dfe7247a336bf48097",
+      "original_sha256": "2691afb6832575f7a49104bf0fef2f4489fc6a87a9c10d9fd4265f28c4bd19c8",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_66.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "ca1151487da4cd067a62a3711d43c454eb308074afb682d33cfca4d0c8376624",
+      "original_sha256": "7148feab65c384250c310cea5a18a423aa3f2daa9a816cf786047f20b161c970",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_67.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "c9666cdb2e9ec43099abc5b16583383ff987817bc76971334c6350292fe47249",
+      "original_sha256": "272f30ceec15d25360b1702b7dafaef37971761631a3a46d57def92294bf1adc",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_68.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "0efe6d18f4bf98342634c3748598baafcacedf7c72e2a7fc52410d6a00332935",
+      "original_sha256": "690fd8aff758af8ee699d271c4eb86e4312e66997e6a84d44b568110c8f6533d",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_69.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "fa162abd83abe8419010e0a7e8226a59fc3acd8748e71519cf1d66459039dc38",
+      "original_sha256": "273c429b70c3592d335a663deacf4a4bf0c6044d7d48458106334138bd0363ca",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_70.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "5f1c7426258a2ae167b80d84a659c8339efb5f540490368711bd7b033e4cbd0b",
+      "original_sha256": "f0e2a2463e05ed085c4f1e7930d9612bdc8ee50d4844db1e084f35c663c76ed0",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_71.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "6b564e026a922059a9b224d8c52b04968023dcc06a6600ffba4615a6b1e71742",
+      "original_sha256": "8c76f5149a670d20fd1b03640a19090d131335b3ce29db31ceac208b7774be41",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_72.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "d49677336209f5335dc3265c037a387b97ea8eacd6769c896eca779ab99a7c79",
+      "original_sha256": "b5897d28f788dcaa2de5350dc8abcaf5bb146faafa3ab5083d0393dc26b858fd",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_73.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "f1bcb924f107833be1f7fc2924d043f9a8272b702827a359bd87c35c26f08106",
+      "original_sha256": "1585d6e9749e098689d656d4179d66f0850722b5008404689af0546e3b3caa6e",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_74.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "e273b9e442cc229826a039cbf3faaca76075f7f4851826ff01c6567b922f9e3a",
+      "original_sha256": "87d069d8555656a4d80a7c429f8c6ed7e39d4eab05bbc8dca6266ca54f8f0523",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_75.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "94bfbacc843d865ede632ab59c9fa921363b44fd6336579d0de8a1df907330d8",
+      "original_sha256": "eb58f54e2027ab5c13eb50c927f8314829e37b5c63d5e8794b657aa2ce4303ab",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_76.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "cc0cb3597097bf23486701a4a39ab0eeaa7932d2bb0d2c7e4e96d2a606b2febb",
+      "original_sha256": "761ef54de5301371fb0d2b4a1895e62fe2ef760291626d4e85e812f080fcb122",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_77.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "4bd0c3fd40cbca025cbcdc00924a82a320a5e7b783a45b882cbc80e78a17fa8f",
+      "original_sha256": "37a0542f1d96f0dc7c069c9b50e7b72368b96bc8ccc73c145b46518625df19c1",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_78.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "0254ea7e3b17611494f4dc464bedde2e3bf3208d9a15e6898f80520e0deb74d3",
+      "original_sha256": "dce7dcf364ea3606b5541a0c9ef5383b34378788df69c4c347159c3dc6b18ddd",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_79.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "79e49b066e0ca51d27767d9390c5706430ab743e7678dd94f14d13277b69e3fa",
+      "original_sha256": "ac384ec952876a09b57c7e95f3ee17646922e668230435e2d83e09592b158133",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_80.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "9c8d8a1863798b00a22748d76382228b995b56a65f06b9d72154ee046e19155e",
+      "original_sha256": "b2ebded58a97e66f573137553fb1507c627c1f91a2ed2fb38db662844ce7fd98",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_81.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "cbbcc91c4cda0db8115ac7293aa87cb27c821161777cdb1b6d969dfcbe0a91b0",
+      "original_sha256": "06bfed64d4cfa5c7da5bda57fc1df3178afc97960c353935b2f8e57d569cc36c",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_82.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "3aa4b990039a1f561cfef842bff8fa8675116c4e749e32a77fdd2cd3ce97d66b",
+      "original_sha256": "5437bc6c1fff4ee7f8f075a52d3f855094ce2e8f9ab129f22f9609198114bdab",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_83.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "07c72794fae7d1e4606663c6751af7dd9fcf6574323b281c97de4d184c721218",
+      "original_sha256": "21eb557f36fe6fd76800f4c26326e93a8ebf8c65d151c6ae8eafe03cb76599b3",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_84.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "572f1bb5a72498280686421ea62c719d16cdea3161459a84f273b1466dc142da",
+      "original_sha256": "093bc8dcb57cf0985c112fea4332951a972beed2047a518f1cc3d30dee0c6bf7",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_85.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "80c27faa2d6aa7c3c9119688598df93b39aed9bacd82a341618cbbc166527b81",
+      "original_sha256": "d2d16809c6667672718681e3cbe1da949446a3db872e30a241dd1117fb6dd052",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_86.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "7081efda9570f0a160b28b6cd846aca2c50936459b998503bf727c6ccd5016bf",
+      "original_sha256": "0d22a493202b4d4a228331d3138d29bfe469915ff3face9a53e20c30d7cf7ede",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_87.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "4511e403db12403f277dfb4a2d2337fda91292b29bf507211240a9e0dbd618e0",
+      "original_sha256": "2f176bb78472bea6eb530128b1ee656005f12c261e7f94c2c2a5762ec258555f",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_88.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "e2b7df9607de23bfcb4f16830b9f8a14a7f6947baf2ecda2346f2d7c130609cd",
+      "original_sha256": "8ec2d479ed8018119917ae6cfa51e0d18b8e2af0757c45097b5cf6364def8b02",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_89.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "6c21f1bd63972cbc56e877ba1968ff9193a5cad955c8c1f6d20bc154399de0ae",
+      "original_sha256": "698a5fc90ed17602836f8b60a2a5583ec374483fc92cc6edf15a39a4a99f5ba3",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/Curve_Gamma_90.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "13e0aa10e229b515b4c604c05b5039ae670859efb36f64a15363001399bfcc11",
+      "original_sha256": "dc6d9c8788e03935608bc71da035f4e40cc6bc13e58a1177da3ed94fa316bad5",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/RGB888_YCbCr_cnn.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "9f6b76aa99c05a1cd6e6736192277b815807bb6e2e957d94b0e0f2fde653aa64",
+      "original_sha256": "3d11460805e6e280c814ef441ededa901e6f0411a9ee3fb6574d509d1979126a",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/cnn_top.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "c18109e6fb42577b687f03c6e90e1ca7da03d4651f55ecc38e13c7497b16fbef",
+      "original_sha256": "b7dfb1753d30df0552368830698302baed2f5e5ad05d43dc5d1a2e98740da3b3",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/conv1.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "e2fe6d71f8c8e74555bfab96a7ed15bd45d89f5926ed05248adf79664a9b3d2d",
+      "original_sha256": "cc6b959c5a129f13e854175067825a2f1036e262ce7601e88cbbc733fbaab9bb",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/conv2.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "6bafb78c83af1345b515c0bf91b6753e947c0e21274ee1306d678cb313784d08",
+      "original_sha256": "361d90a76c2c893cd99a2a63bc63db7c5d88010e1ccbcf28ce0d81b23df88fcb",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/conv2d.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "6ef96b4abb074894035088c45364dd934fa4b738505b6f9f6bc0587fd3d52c8f",
+      "original_sha256": "d6e7e122e511316f1683f09767d70e3ae3da653fc7f5352a9faf80c06ccf3a55",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/conv3.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "80c0a69d3d6010cbe8f96f617d44a425f22208476bb4e7937d964b47fe445557",
+      "original_sha256": "61a3d30b8f6c412dc104483ae284f0935fd60f6da890982bedca6ad5a6535c8d",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/conv4.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "0173a6a7701ec233ae8fab051f166e086f2b7e37cacb1485a31b9b02dd7245e6",
+      "original_sha256": "f0bcb1ff8448dd1e98d6ca977fcb98980d1f312a1f5ecc5232bda6de6641f369",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/conv5.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "ca24dfdc13b84256aeabfdc81b2908703d9a02477d369ad3191d3305e70163f4",
+      "original_sha256": "97c32f2388dadb2aeec498815cebf73e3a9b879384a3320f3b85609018d73741",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/conv6.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "b94f80cbb7fa8aa2f8d62b0a0f86d4dfa2fe529a7feec4d71e6dc93cbf672fcf",
+      "original_sha256": "1a9ab34f2ce8d7d20b395b13a47db062df3f0df2dc137342c73ef641975065ee",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/conv7.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "211f2bb141735dba9b2573cae13db2f95b5e1d68b17a45fb0d9843ecb70ca34c",
+      "original_sha256": "0d788c2c58cf4d3ecfe9c423e439f47d61723d72c1c5664096168fadfefa75ba",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/conv_2channel.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "7a92a7c56c47a28a2e6993315d8eb5598f18a762f91dfdd46e0ebf23e0bacd04",
+      "original_sha256": "de3176b55891d39f14030bb2db8824023c6e8257d16dcc6ecdf265daae8f1b27",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/conv_2channel_7.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "089e6dc950c016a2a52d6222c99a914be339989cf2d2fa1c90a9a4268cff82d0",
+      "original_sha256": "51bc890fb2dd4cfba7e0105fe40e3cc9b6d2aaf757caae07196034c7f4b9bddf",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/conv_4channel_delay.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "d6cd12ce2918adaf6841250e1031f42ae69d1c07fbc89995682670f6a1a19a29",
+      "original_sha256": "c912f0d8cdc3e4c6781db82ac88cd7d5f24a4f86be35229d67ea121f8fe7726a",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/conv_example.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "3a960986d1599145655ef8f5f6eb3cc36986aa060b1d4bbe0fe03ca91e63fe25",
+      "original_sha256": "24b7d74798cf454d15d5d545c2e42605f482a08e76294e1f434351201fd3150f",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/conv_example_1_1.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "2b4b3f12900f9ed8bbad684f84c16becf25b4e75b34996229eac578e4d88e074",
+      "original_sha256": "e9a15afaea88b0a5e6d46d8319ce5352f355cb3139da80fff97df96a376a6d9e",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/conv_example_rgb_delay.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "255de2dbf670c7409fe50d70be81f823dd2861aaf0b22665f40bdb59fb59829d",
+      "original_sha256": "13b7d2b9c0cc97548fe27f38b1638db700f56df95266fa69e05eebeb0cead48b",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/conv_top.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "0d553d68eea57ebaaad12d726e5f2d1ab2a264c1deb7311371a16da18ba77a76",
+      "original_sha256": "7159678d528e7ad31469c49a1033b9d0b717c1081a184cd31a79a35dd09e3eab",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/gamma_judge.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "24a8a105925ee8ecc3ae3cc3ef28af9b3f1dcd9d0388980efba145009c997c28",
+      "original_sha256": "314df5cd3f5863d72a18fdf4048989065f61b56b1cd009976524651fdd9bc0f3",
+      "state": "expanded_refactored"
+    },
+    "source/cnn/rgb_end.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "26e2f80f57f4060383581bb028f151fbb6a0f45abcb2a03a75470f56610b58cd",
+      "original_sha256": "bbfac0317cdc74baca760d1c99198cee84e701877f6ade66a7ee03d1eecfe941",
+      "state": "expanded_refactored"
+    },
+    "source/fspi/fspi_slave.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "efaf3478d63ede6178a6eb16362e24d7da27bad418d132c5f3716ad9f66fe432",
+      "original_sha256": "806b57abcc7453ced35eea7a824bd4938af077c1bc7219cd8e230a680ec70c18",
+      "state": "expanded_refactored"
+    },
+    "source/fspi/fspi_slave_top.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "6a63d5a27cbe83e1e5704af6ea61ed9911199f9eb93b64aa6c1e05c1c3e01cb5",
+      "original_sha256": "afbbf29cf0e356ddee94e52d1624b41755f284bcef4b8da208a3b2f08826596e",
+      "state": "expanded_refactored"
+    },
+    "source/fspi/spi_ram_crtl.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "e1492ebae3d49d9116e379cad10e9b99bb521476e9329e9212239b2c90dce0de",
+      "original_sha256": "eaf7cec0a388d5bf5939848faf99f6127a7bbb6d21aac640b7a8be466449e756",
+      "state": "expanded_refactored"
+    },
+    "source/image_pcie_capture.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "8baf9a72066b83f2c234025d894c073e2ad5137ffc3ef78a968b644d91780c33",
+      "original_sha256": "5e5863b51de4db002ce3de619b2e4e3f9cd6051a3ed20a3bbd14ab382e79b8f8",
+      "state": "expanded_refactored"
+    },
+    "source/isp/Classifier.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "5cc502f236b6e4b07457f350b105cdda5a5063fe2e114384fccce4f6900885d7",
+      "original_sha256": "eb7c2097184dacc58fe694a683e5dab461e0f3ba70b3dcae0cf7526a8b6c372d",
+      "state": "expanded_refactored"
+    },
+    "source/isp/ISP/ISP.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "12510bd89384753f6b7887f315e1598aab68fe80995228b134f1f20a454dc120",
+      "original_sha256": "1859f3be330be878e11fa1c4eb5ad9a9287c1ed8f5f8384d8a154749614edd7a",
+      "state": "expanded_refactored"
+    },
+    "source/isp/ISP/color_binary.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "9cb7068d7168ad8f74e3512c0bb9a2a1404ef99f9b01d55940ea91f5e28bfea4",
+      "original_sha256": "85622576ccaa0c04ff19437ef96c4efede25209bf7315b5b48f3c5470cf67b46",
+      "state": "expanded_refactored"
+    },
+    "source/isp/ISP/color_display.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "ec80335d46a56cb8fee595ee3c9cbb04fbcce1470658aaf29d24c3258341ed96",
+      "state": "retained_attributed_upstream_rtl",
+      "provenance": "Copyright header, \u6b63\u70b9\u539f\u5b50"
+    },
+    "source/isp/ISP/color_dt.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "17b646ff6f48e666c577843c506be7b617410336b821982889772ff82519d323",
+      "original_sha256": "98ef7b69519fad19d047f4d84444828ad2fb3bdd71f79c255e6e7f5d2b170221",
+      "state": "expanded_refactored"
+    },
+    "source/isp/ISP/color_en_generate.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "5136f550c2f784a7888e46b68fb42e688abd9a4f72cc413be013eb15a3f138e4",
+      "original_sha256": "8f6cf6d329950bd73f9db710838896b0e0ca2b19bebca2796ef8f61c9f0330ac",
+      "state": "expanded_refactored"
+    },
+    "source/isp/ISP/color_projection.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "6c624571846cbed416e17747e79a46cebf577ff662cbff196940eed85ca9f702",
+      "state": "retained_attributed_upstream_rtl",
+      "provenance": "Copyright header, \u6b63\u70b9\u539f\u5b50"
+    },
+    "source/isp/ISP/matrix_3x3_1bit.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "6d1f82dc178afb3ce9513bf2b2de77866a6a2274436ea6e42d1338fd85651f96",
+      "original_sha256": "4ea924dcb5370ebd13539eb191eb2443d704342b9d0704d1ea2c85476d04ad57",
+      "state": "expanded_refactored"
+    },
+    "source/isp/ISP/rgb2hsv.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "3216fdb5a6ff49f607bce1ace4f9e444c3f7f4e5f0628c31754d84a4e13a6b45",
+      "original_sha256": "e6c435cd880bf0f3678a8e5399c987126096192f2e37fa8c7ef0ac3e2204d442",
+      "state": "expanded_refactored"
+    },
+    "source/isp/ISP/rgb2ycbcr.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "28f897223202f6d9d50ee9511edad4d2eb77c25b2aca538c873d3543435767f2",
+      "original_sha256": "0a45d092ac1cf069c392c46ff58942195c22c45a9a13a7af5bc98f469c0142e4",
+      "state": "expanded_refactored"
+    },
+    "source/isp/dialate.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "bba7427bfdfa5182c961d94ec65569297a1c36656cfc1a9182ff40df42abc1b7",
+      "original_sha256": "85bf132c63aa2a5005b5db9488308ae51f191c3ce57a0b38ac51acdfdd1949f2",
+      "state": "expanded_refactored"
+    },
+    "source/isp/erode.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "33fc8dc9af656495c0abd41bc1cfaf210e3f124ecbb0dee4ea0790057eefee8e",
+      "original_sha256": "13d0dae619d175490e2adde1abefea0f1567195463aec944e7b7c7ef15d77b3a",
+      "state": "expanded_refactored"
+    },
+    "source/isp/fps/fps_calculation.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "8cd983a1493456cea65c359b9694b36fae6f6a4b79887612ae2255a23623e14d",
+      "original_sha256": "9fc5ab9fb88adfc0252211d5d39ae0cc1cc898e07f4a6d6554d147d540db4afb",
+      "state": "expanded_refactored"
+    },
+    "source/isp/fps/fps_count.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "b29ccac4b1cebf5b8f31fb503152bb7a45ea831b40a38b9dcfd71be6b74cdc78",
+      "original_sha256": "684adb330e96dc9de5be0a2d5670e49ab6d6eb7eddf8def18c182ce4e69a9d2f",
+      "state": "expanded_refactored"
+    },
+    "source/isp/fps/fps_display.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "7a74163200eb27dc75699f52adcf5704f4eb53c57be7599212286e74b3c06538",
+      "original_sha256": "30bf04799ec7c839c29a91b15374c172b5d25ac47e1f239654f35d8538aea16e",
+      "state": "expanded_refactored"
+    },
+    "source/isp/image_gaussian.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "7e07835f1d9953728dff5bff7018b744557dbefe01f35ec16a3d8ebf4dd0ce73",
+      "state": "retained_attributed_upstream_rtl",
+      "provenance": "External author header"
+    },
+    "source/isp/isp_ctrl.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "a82ffe4d6a58e861099ff7f20bb907680b5266b1ae17a0e432db83e071e4e3f1",
+      "original_sha256": "4bb703ab2bb321a07b2dc4a7a8f89b39a6951fa579e8fd5d2b9fc826bf299c65",
+      "state": "expanded_refactored"
+    },
+    "source/isp/matrix_3x3_8bit.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "0c45d3e035838558a550873714df3b583ba1edf1dd8dbafc95a1d319bb1023a9",
+      "original_sha256": "698e00ee1f714db340046c289bd78b6aac5a6a41434113e5fb97d8304cf78e3b",
+      "state": "expanded_refactored"
+    },
+    "source/isp/middle_filter.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "a83210213340be83543c60ce359a2fa586cb2e262a3e9cddc2ee580ebbda119f",
+      "original_sha256": "f431f8ffab639fb3097d8bcecda753d34f7895ad8f9f2844d75e3ad785ad3dcf",
+      "state": "expanded_refactored"
+    },
+    "source/isp/shape/image_rgb2hsv.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "33f3dbd28024fcfa585decd97c3a9c31d7950235f977a954bccab333d9604ca4",
+      "original_sha256": "fa6cdeb0c5f3a0e488399a71a497a5bd30e2616f802dc4aa963f51cfa2709a7f",
+      "state": "expanded_refactored"
+    },
+    "source/isp/shape/image_rgb2ycbcr.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "6f6a15b8b39bd3937be42268aabdc21203033657a90f336224e665dd7da77618",
+      "original_sha256": "c8167ae3ae08d5f951d64010d3dccccd9855390477e682efd99e74f8b68dc7de",
+      "state": "expanded_refactored"
+    },
+    "source/isp/shape/shape.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "2abc4e7b52d84b74de242623dfeb2c2b471da5937b3c793cf784825b40e04c15",
+      "original_sha256": "06a6f05b7b17d7c2068549468ac03afa097eac2a509264615d1752ed5c470472",
+      "state": "expanded_refactored"
+    },
+    "source/isp/shape/shape_display.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "b443cfe99c07f4755ae052ea0bbc7cb4c39f0ab6287e95432368d745754da344",
+      "state": "retained_attributed_upstream_rtl",
+      "provenance": "Copyright header, \u6b63\u70b9\u539f\u5b50"
+    },
+    "source/isp/shape/shape_projection.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "110fa0a62ee68d321cb0dabe939e424bf9448a1c01dd535823bfeac123c7296a",
+      "state": "retained_attributed_upstream_rtl",
+      "provenance": "Copyright header, \u6b63\u70b9\u539f\u5b50"
+    },
+    "source/isp/shape/threshold_binary.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "e8d08461588861dfd8ee98751033d1a6f3fe09f760680d8c25c63eda6f55c0ee",
+      "original_sha256": "79451fadd34b4a3751de59a2550ddf2ef96014813ac33d5bfc0b6ad7a6636f4b",
+      "state": "expanded_refactored"
+    },
+    "source/isp/sort.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "6ebcf257c6b70aea3baaa66ae24f52fda9a336d82039dd91dfe63e927ae3610d",
+      "original_sha256": "c04f0c9a05b1029611872ed5446845668c3cf5a54b9c3ff0a30e4d383f2ce6a3",
+      "state": "expanded_refactored"
+    },
+    "source/isp/vip/binarization.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "1f7489d1512638ad71063105b91158a80bc87b8dcf5ca80e5d7b6858f58cc134",
+      "state": "retained_attributed_upstream_rtl",
+      "provenance": "Copyright header, \u6b63\u70b9\u539f\u5b50"
+    },
+    "source/isp/vip/digital_recognition.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "2372b2aea7afebc05e8cd7554fc0c1960efe533aebf37f858295fec5c6be2840",
+      "state": "retained_attributed_upstream_rtl",
+      "provenance": "Copyright header, \u6b63\u70b9\u539f\u5b50"
+    },
+    "source/isp/vip/myram.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "4943110f8f35d139ef4ccc95c6693d06dd16a19f6547f2351a8b29996f47652a",
+      "state": "retained_attributed_upstream_rtl",
+      "provenance": "Copyright header, \u6b63\u70b9\u539f\u5b50"
+    },
+    "source/isp/vip/projection.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "59fa9b00e3ec1c7cc4fc27fe728738440856728bf08cf526f53e9243d182383f",
+      "state": "retained_attributed_upstream_rtl",
+      "provenance": "Copyright header, \u6b63\u70b9\u539f\u5b50"
+    },
+    "source/isp/vip/vip.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "f4f530b385995acc8ee580819a1b6c55135c664116770277d1da5d694a9bfec7",
+      "state": "retained_attributed_upstream_rtl",
+      "provenance": "Copyright header, \u6b63\u70b9\u539f\u5b50"
+    },
+    "source/martix/Line_Shift_RAM.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "b6c61da0fc5ee01ad77ebc7b617188e1c361caee4050d9c5d59f1939ca7f7868",
+      "original_sha256": "02c02a2f1ca79a0845bdb4c19c8eb1858589c3fcd54029da52678741a9f93fe2",
+      "state": "expanded_refactored"
+    },
+    "source/martix/Matrix_Generate_3X3_Buf.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "316b3111b5d98569f17783dbdede97731ecb9a810cbe5cfb39e7660702a1a87d",
+      "original_sha256": "ed1f7ec0ae4adacf969f1f9e8323defd42376efa989744e4bda930c79593e38a",
+      "state": "expanded_refactored"
+    },
+    "source/martix/RAMshift_taps.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "af4120043862b71b9c10553d27d22ca2de44005df4b0c231e36eba937b519f70",
+      "original_sha256": "d1a72a9abbb63f304b4fd2596d4e94384dde0108796d984641dfb3021cc78c8f",
+      "state": "expanded_refactored"
+    },
+    "source/martix/line_shift_ram_8bit_new.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "dc44b036f9a32037860673318d58734ff7e886359a4fb28294dc6ec544851d7d",
+      "original_sha256": "371b4a04d81cceb6b9bbe28a6070d9b2d09d88c18c46ecac7de9571ab2952898",
+      "state": "expanded_refactored"
+    },
+    "source/mpu9250/fspi_slave_m_imu.v": {
+      "boards": [
+        "M"
+      ],
+      "current_sha256": "ccb3a804aa002ab3930c2fc7e69d59abdbfcf1f9480b9993efc2c2af8ca40ddb",
+      "original_sha256": "9d4f60c1837042dc109863c2ffa0fb70905d39373722ab205d574e5366c9557f",
+      "state": "expanded_refactored"
+    },
+    "source/mpu9250/fspi_slave_top_m_imu.v": {
+      "boards": [
+        "M"
+      ],
+      "current_sha256": "917e269de10b1209fffa6d05162a499079a53b189b51726a912f9ec7480a8013",
+      "original_sha256": "ad390edf5cd7cfeef5e4c12204fe3776c88e4ffb8cd88f8075d1aecb0d1e4cb5",
+      "state": "expanded_refactored"
+    },
+    "source/mpu9250/image_pcie_capture_m_imu.v": {
+      "boards": [
+        "M"
+      ],
+      "current_sha256": "7f5ee0528e7fc173da8b95a12a3cce2d91ef36f246cffeb71c9f68bd05639172",
+      "original_sha256": "063d4c0b79a169f5c91eeede8b0330c87b2565855c89202a33ce576d9c0f41b9",
+      "state": "expanded_refactored"
+    },
+    "source/mpu9250/imu_i2c_master.v": {
+      "boards": [
+        "M"
+      ],
+      "current_sha256": "c4eeb26490121b74fe86861e3b0ff29b9b6c3d192c8217c71f422296b664c384",
+      "original_sha256": "7da63a7fe81f306982bab8a5f963a37436eea8df28687c2b43a79124f4a7f054",
+      "state": "expanded_refactored"
+    },
+    "source/mpu9250/mpu9250_sampler.v": {
+      "boards": [
+        "M"
+      ],
+      "current_sha256": "2d78880585876c088fcdd970b99491d71dfff719358d2f71a25be0d9d31d2f8f",
+      "original_sha256": "e3b56bbd9e390186439204fc28a619482311db4a4589ab169eb590699ea02441",
+      "state": "expanded_refactored"
+    },
+    "source/ov5640/rtl/cmos_capture_data.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "0df4fef01bf2a213ed7e6d424e829268ffbb8cb85a52c49fca3a71e2a34be2c9",
+      "original_sha256": "50baa64d96bc17e1129c6d7f3bdd00051df0864bd9838f2a9d5341b83063884a",
+      "state": "expanded_refactored"
+    },
+    "source/ov5640/rtl/i2c_com.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "eafd44ff075434de3e3830856b3e34b6df064ea2f5df662d4db98d389cdb60be",
+      "state": "retained_attributed_upstream_rtl",
+      "provenance": "Meyesemi, Will"
+    },
+    "source/ov5640/rtl/ov5640_top.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "f298555710d6b847e91345ba7b8ab72669c0da5553f9acdf420a0e9bf2ec53a7",
+      "original_sha256": "39a24e2da02cf3027c887c5bd1cbfd037c8259de10eb04d796141b76929b75d5",
+      "state": "expanded_refactored"
+    },
+    "source/ov5640/rtl/power_on_delay.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "aef5935a13607ba54e597c01269289cf9888325eeb892bd68c2a3a384c534fee",
+      "state": "retained_attributed_upstream_rtl",
+      "provenance": "Meyesemi, Will"
+    },
+    "source/ov5640/rtl/reg_config.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "c380b6af226cbf8bafe3642acf65ce3cf2b27745ad0aa333f59fda76622680f4",
+      "original_sha256": "862eed1328b8bf95121bc5832bd00ef492355bc797c44ac1ad428ad85068d443",
+      "state": "expanded_refactored"
+    },
+    "source/pcie/pcie_dma_ctrl/fifo/ipm_distributed_sdpram_v1_2_distributed_fifo.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "0fe90c9c82183dcf40fbd7a2ad8fd493aad057bce05055542482aead8459875b",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/fifo/pgs_pciex4_fifo_ctrl.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "dd0d5d0b46d5dadf5b6478cd181385e47cc1ac0c89fb6c4b6af3d75827cad8b4",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/fifo/pgs_pciex4_fifo_v1_2.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "d6bc0cb14764a9f86ec313bae0a9a3080d461ccd8b7c7a679fb4442df6558adb",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ipm_distributed_sdpram_v1_2.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "58b3fa2b8f756c84e57333acc2c91700c4dea52f46943a53275ae03dbd0da10c",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ips2l_pcie_dma.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "1722419093a2d4d1043ff2497106401e876355ef760f673ce4e9858cc5e9412f",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ips2l_pcie_dma_controller.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "b5db30e71eaf065d67a89e8956f548f3e36b669221755081a1673f21cbb5bfa3",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ips2l_pcie_dma_cpld_tx_ctrl.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "36bddf82f0d12840f0eb5f068f0e3b1c84ddb5223282c8cec64bd36a98bddbdb",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ips2l_pcie_dma_mrd_tx_ctrl.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "2f814fd090d5cf28ada2fe0d4912f117a41ce709487afad713176ba7909cb28e",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ips2l_pcie_dma_mwr_tx_ctrl.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "18c0287dbf999fa55adcbe53b8b3e75c324caf5c19e27e27020ec82451547ab7",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ips2l_pcie_dma_ram/ips2l_pcie_dma_ram.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "2619fccdd56692121da3e19e7490873a4061f30bead31cfd9ed3f28a99b45e23",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ips2l_pcie_dma_ram/rtl/ipm2l_sdpram_v1_1_ips2l_pcie_dma_ram.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "cd000003e91e1c8b345c82b1973ab8825bcd0b9b97f4c2db854056c2a797fb29",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ips2l_pcie_dma_rd_ctrl.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "cec633039efa96da8efe3defaa8e19b8297c78a51bcf6e1c9a3c202c62901314",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ips2l_pcie_dma_rx_cpld_wr_ctrl.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "0a8d8106c4722b18872f04c237a4d0574bcb42c82d08cfeaebd8808dbaa8f632",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ips2l_pcie_dma_rx_mwr_wr_ctrl.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "b3a5f0c3d52f7c04e9c95e07bd56194083db68b71a9cecde409cdb1f998c784d",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ips2l_pcie_dma_rx_top.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "4767e14fed64e2ba0bcee89c3d4fae0bf33e4a31f164e581417f4d203fa4695e",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ips2l_pcie_dma_tlp_rcv.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "9bcbf5972efaac344d120ca838be16fa9a53cc4afe14c35bc07a7af5a35acef6",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ips2l_pcie_dma_tlp_tx_mux.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "68f3b2366dcefe2146cb64a7093f4d44b64e5e6f4272791d6191fac54f48279c",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ips2l_pcie_dma_tx_cpld_rd_ctrl.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "65cc18bfb67200922b7d610e987b110f57e390ae091848b9636fadf8d22dbff2",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ips2l_pcie_dma_tx_mwr_rd_ctrl.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "6eba1289ea4509bc43f598f840a9fad93226517c0be64e509d966ac7685c480d",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ips2l_pcie_dma_tx_top.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "ba4f1147739f61a34e638a75cc6bbc4ef9947c3fb721b168ead66a09e8d9e2c1",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/ips2l_pcie_dma_wr_ctrl.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "36901b12a0a47299299c667196b0d8116a696f042fd55b8d65d57fea05ada423",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/pcie/pcie_dma_ctrl/pgs_pciex4_prefetch_fifo_v1_2.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "f932bd4e87dd1ee41248f1c8d4582bdbf18b2e9d92a5540f7e9d912ab2b9b2b2",
+      "state": "retained_vendor_pcie_support"
+    },
+    "source/remote_vehicle_control.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "94d22993a48ffd5a36dd5ebe7ad6d8ac88503178c1b71daa878fd1fc3aeaf981",
+      "original_sha256": "cc8e9ea9cd99722ae7176d6a7c9e67bb8cc900d69c16b14a2d860fa60257eece",
+      "state": "expanded_refactored"
+    },
+    "source/uart_lcd/uart_lcd.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "d3df333188fdc4aec43162fe1e370f77b192214ee3652d7ab7c4a0cecd90ddbd",
+      "original_sha256": "8db172c38a77acd1f7281e4f13c36d0021204e260c8b7c11ed79d2ce091ffa47",
+      "state": "expanded_refactored"
+    },
+    "source/uart_lcd/uart_loopback.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "47469ac0ad07e0a772ce38c105f692a67b974d418f1eafe465727bbadec27c70",
+      "state": "retained_attributed_upstream_rtl",
+      "provenance": "Copyright header, \u6b63\u70b9\u539f\u5b50"
+    },
+    "source/uart_lcd/uart_rx.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "5a2f46084dfc1d8070a486ab654b1aa25468a458243cfc56ee5b30a9e6b891af",
+      "original_sha256": "f951499a58811bcee8c498e72d4e47ba1575b635aba1490cd9db73a7db6bcf50",
+      "state": "expanded_refactored"
+    },
+    "source/uart_lcd/uart_tx.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "d5a32eb2eebb8daf95796f5364450c48b04b1cb4065f83e5efc854817c6a5c59",
+      "original_sha256": "9035dbef9b02ac63eba294c8d122104f56c54171e85a6d4c94a02b9faff492c8",
+      "state": "expanded_refactored"
+    },
+    "source/vga_ctrl.v": {
+      "boards": [
+        "S",
+        "M"
+      ],
+      "current_sha256": "f87f52a53eee19839bc7d2939f571154af9a2974db9857ecfa990d52828d0702",
+      "state": "retained_attributed_upstream_rtl",
+      "provenance": "Author header, EmbedFire"
+    }
+  }
+}

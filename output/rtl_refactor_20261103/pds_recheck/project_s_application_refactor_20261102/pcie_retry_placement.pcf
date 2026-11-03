@@ -1,0 +1,10 @@
+
+###### DRM constraint ########
+def_inst_site {u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_PCIE_HARD_CTRL/pcie2_iip_exretry_rams/U_ipml_spram_retry_data_ram/ADDR_LOOP[0].DATA_LOOP[0].U_GTP_DRM18K/gopdrm_18k} DRM_322_1194 DRM0 -no_check
+def_inst_site {u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_PCIE_HARD_CTRL/pcie2_iip_exretry_rams/U_ipml_spram_retry_data_ram/ADDR_LOOP[0].DATA_LOOP[1].U_GTP_DRM18K/gopdrm_18k} DRM_322_858 DRM1 -no_check
+def_inst_site {u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_PCIE_HARD_CTRL/pcie2_iip_exretry_rams/U_ipml_spram_retry_data_ram/ADDR_LOOP[0].DATA_LOOP[2].U_GTP_DRM18K/gopdrm_18k} DRM_322_1134 DRM0 -no_check
+def_inst_site {u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_PCIE_HARD_CTRL/pcie2_iip_exretry_rams/U_ipml_spram_retry_data_ram/ADDR_LOOP[0].DATA_LOOP[3].U_GTP_DRM18K/gopdrm_18k} DRM_322_1164 DRM1 -no_check
+def_inst_site {u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_PCIE_HARD_CTRL/pcie2_iip_exretry_rams/U_ipml_spram_retry_data_ram/ADDR_LOOP[0].DATA_LOOP[4].U_GTP_DRM18K/gopdrm_18k} DRM_322_1164 DRM0 -no_check
+def_inst_site {u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_PCIE_HARD_CTRL/pcie2_iip_exretry_rams/U_ipml_spram_retry_data_ram/ADDR_LOOP[0].DATA_LOOP[5].U_GTP_DRM18K/gopdrm_18k} DRM_322_858 DRM0 -no_check
+def_inst_site {u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_PCIE_HARD_CTRL/pcie2_iip_exretry_rams/U_ipml_spram_retry_data_ram/ADDR_LOOP[0].DATA_LOOP[6].U_GTP_DRM18K/gopdrm_18k} DRM_322_1134 DRM1 -no_check
+def_inst_site {u_ips2l_pcie_wrap/U_IPS2L_PCIE_TOP/U_IPS2L_PCIE_HARD_CTRL/pcie2_iip_exretry_rams/U_ipml_spram_retry_data_ram/ADDR_LOOP[0].DATA_LOOP[7].U_GTP_DRM18K/gopdrm_18k} DRM_298_918 DRM0 -no_check

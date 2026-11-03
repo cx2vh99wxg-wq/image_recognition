@@ -1,50 +1,91 @@
-// 采用四线 SPI 接口。
+// 2026-11-03 注释校订。共用四线 SPI 传输引擎。输入在上升沿采样，返回半字节在下降沿更新。
 module	fspi_slave
 (
 	input	wire			spi_clk			,
 	input	wire			spi_cs			,
 	inout	wire	[3:0]	spi_data		,
 	input	wire			rst_n			,
-	input	wire	[3:0]		select_rearview	,	// 本信号用于从顶层传入的select_rearview。
+	input	wire	[3:0]		select_rearview	,
     input   wire            auto_brake_enable,
     input   wire [5:0]      speed_status_async,
     input   wire [15:0]     control_status_async,
 
-	// user：本节对应的标识或作用域。
-	output	wire	[1:0]	cmd				,	// 寄存器访问：2'b10:写 2'b01:读
+	output	wire	[1:0]	cmd				,
 	output	wire	[7:0]	rx_data			,
 	output	wire			rx_data_valid	,
 
 	input	wire	[7:0]	tx_data			,
-	output	wire			tx_data_valid	
+	output	wire			tx_data_valid
 
 );
-// reg_define。
+
+    wire status_tx_started;
+    fspi_transport #(.HAS_IMU(1'b0)) u_transport (
+        .spi_clk(spi_clk),
+        .spi_cs(spi_cs),
+        .spi_data(spi_data),
+        .rst_n(rst_n),
+        .select_rearview(select_rearview),
+        .auto_brake_enable(auto_brake_enable),
+        .speed_status_async(speed_status_async),
+        .control_status_async(control_status_async),
+        .cmd(cmd),
+        .rx_data(rx_data),
+        .rx_data_valid(rx_data_valid),
+        .tx_data(tx_data),
+        .tx_data_valid(tx_data_valid),
+        .imu_snapshot(512'd0), .status_tx_started_dbg(status_tx_started)
+    );
+endmodule
+
+module fspi_transport #(
+    parameter HAS_IMU = 1'b0
+) (
+    input wire [511:0] imu_snapshot,
+    output wire status_tx_started_dbg,
+	input	wire			spi_clk			,
+	input	wire			spi_cs			,
+	inout	wire	[3:0]	spi_data		,
+	input	wire			rst_n			,
+	input	wire	[3:0]		select_rearview	,
+    input   wire            auto_brake_enable,
+    input   wire [5:0]      speed_status_async,
+    input   wire [15:0]     control_status_async,
+
+	output	wire	[1:0]	cmd				,
+	output	wire	[7:0]	rx_data			,
+	output	wire			rx_data_valid	,
+
+	input	wire	[7:0]	tx_data			,
+	output	wire			tx_data_valid
+
+);
+
 reg			recv_flag	;
 reg	[7:0]	recv_data	;
 reg			recv_valid	;
 reg	[1:0]	cmd_reg		;
-reg			cmd_lock	;	// 保证不会被数据误判操作
+reg			cmd_lock	;
 reg [3:0] tx_data_reg;
 reg tx_valid_reg;
 
-// 寄存器访问：Dedicated addressed status read. Legacy 00 writes and 80 reads below keep
-// 寄存器访问：their existing behavior; only 81 00 05 selects the new switch register.
 (* ASYNC_REG = "TRUE" *) reg auto_enable_meta;
 (* ASYNC_REG = "TRUE" *) reg auto_enable_sync;
+// 地址状态读按六个半字节接收命令与地址，随后锁存返回字节。
 reg [23:0] status_header;
 reg [2:0] status_nibble_count;
 reg status_read_ready;
 reg [7:0] status_read_data;
 reg status_tx_started;
+assign status_tx_started_dbg = status_tx_started;
 reg [3:0] status_tx_nibble;
 wire [23:0] next_status_header = {status_header[19:0], spi_data};
 
-// 寄存器访问：The proven SMDT RX-only transaction supplies opcode 80 automatically.
-// 寄存器访问：Byte 0 remains the exact legacy repeated HMI nibble. A four-byte read adds
-// 寄存器访问：A7, a coherent gear snapshot, and CRC8. No addressed-81 read is required.
 (* ASYNC_REG="TRUE" *) reg [5:0] speed_meta,speed_sync;
-reg [4:0] extended_index;
+localparam EXT_INDEX_WIDTH = HAS_IMU ? 8 : 5;
+localparam [EXT_INDEX_WIDTH-1:0] EXT_END = HAS_IMU ? 144 : 16;
+reg [EXT_INDEX_WIDTH-1:0] extended_index;
+reg [511:0] imu_latched;
 reg [3:0] extended_nibble;
 reg [3:0] hmi_snapshot;
 reg [7:0] speed_snapshot,speed_crc;
@@ -89,14 +130,15 @@ end
 always @(negedge spi_clk or negedge rst_n or posedge spi_cs) begin
     if(!rst_n||spi_cs) begin
       extended_index<=0;extended_nibble<=4'hf;extended_active<=0;
-      hmi_snapshot<=0;speed_snapshot<=0;speed_crc<=0;
+      hmi_snapshot<=0;speed_snapshot<=0;speed_crc<=0;imu_latched<=0;
       control_snapshot<=0;control_crc<=0;
     end else if(cmd_reg==2'b10) begin
       extended_active<=1;
-      if(extended_index<16)extended_index<=extended_index+1'b1;
+      if (extended_index < EXT_END)extended_index<=extended_index+1'b1;
       case(extended_index)
         0:begin
           extended_nibble<=select_rearview;hmi_snapshot<=select_rearview;
+          imu_latched<=imu_snapshot;
           speed_snapshot<=sampled_speed;speed_crc<=speed_crc8(sampled_speed);
           control_snapshot<=control_sync;control_crc<=sampled_control_crc;
         end
@@ -107,8 +149,7 @@ always @(negedge spi_clk or negedge rst_n or posedge spi_cs) begin
         5:extended_nibble<=speed_snapshot[3:0];
         6:extended_nibble<=speed_crc[7:4];
         7:extended_nibble<=speed_crc[3:0];
-        // 寄存器访问：Optional bytes 4..7 expose logical contacts and gates. The first
-        // 寄存器访问：four bytes and legacy one-byte reads remain byte-for-byte intact.
+
         8:extended_nibble<=4'hd;
         9:extended_nibble<=4'h7;
         10:extended_nibble<=control_snapshot[7:4];
@@ -117,7 +158,8 @@ always @(negedge spi_clk or negedge rst_n or posedge spi_cs) begin
         13:extended_nibble<=control_snapshot[11:8];
         14:extended_nibble<=control_crc[7:4];
         15:extended_nibble<=control_crc[3:0];
-        default:extended_nibble<=4'hf;
+        default:extended_nibble <= (HAS_IMU && extended_index < EXT_END) ?
+          imu_latched[511-(extended_index-16)*4 -: 4] : 4'hf;
       endcase
     end
 end
@@ -132,8 +174,6 @@ always @(posedge spi_clk or negedge rst_n) begin
     end
 end
 
-// 参数记录为 Six quad-clock samples collect opcode and a 16-bit address. Latch one。
-// 寄存器访问：response byte so an enable transition cannot tear its two output nibbles.
 always @(posedge spi_clk or negedge rst_n or posedge spi_cs) begin
     if (!rst_n || spi_cs) begin
         status_header <= 24'd0;
@@ -151,8 +191,6 @@ always @(posedge spi_clk or negedge rst_n or posedge spi_cs) begin
     end
 end
 
-// 寄存器访问：SPI mode 3: change the outgoing nibble on the falling edge, sample it on
-// 寄存器访问：the rising edge. Keep the bus released during every command/address edge.
 always @(negedge spi_clk or negedge rst_n or posedge spi_cs) begin
     if (!rst_n || spi_cs) begin
         status_tx_started <= 1'b0;
@@ -167,9 +205,6 @@ always @(negedge spi_clk or negedge rst_n or posedge spi_cs) begin
     end
 end
 
-
-// assign。
-// 寄存器访问：当片选拉低，且是写操作的时候数据发送给到RK。
 assign 	spi_data = (!spi_cs && status_tx_started) ? status_tx_nibble :
                    ((!spi_cs && (cmd == 2'b10) && extended_active) ? extended_nibble :
                    ((!spi_cs && (cmd == 2'b10)) ? {select_rearview} : 4'bzzzz));
@@ -177,10 +212,10 @@ assign	tx_data_valid	=	tx_valid_reg;
 assign	cmd	=	cmd_reg;
 assign	rx_data	=	recv_data;
 assign	rx_data_valid	=	recv_valid;
-// 接收部分。
+
 always@(posedge spi_clk or negedge rst_n) begin
-	if ((rst_n == 1'b0) || spi_cs) 
-	begin	
+	if ((rst_n == 1'b0) || spi_cs)
+	begin
 		recv_flag	<=	1'd0	;
 		recv_data	<=	8'hff	;
 	end
@@ -199,9 +234,8 @@ always@(posedge spi_clk or negedge rst_n) begin
 	end
 end
 
-// 寄存器访问：cmd_lock 需要锁住 避免和数据冲突，需要在下次cs到来置0
 always@(posedge spi_clk or negedge rst_n or posedge spi_cs) begin
-	if ((rst_n == 1'b0) || spi_cs) 
+	if ((rst_n == 1'b0) || spi_cs)
 	begin
 		cmd_lock	<=	1'd0;
 		cmd_reg		<=	2'd0;
@@ -219,9 +253,8 @@ always@(posedge spi_clk or negedge rst_n or posedge spi_cs) begin
 	end
 end
 
-// 本轮接收已结束。
 always@(posedge spi_clk or negedge rst_n) begin
-	if ((rst_n == 1'b0) || spi_cs) 
+	if ((rst_n == 1'b0) || spi_cs)
 		recv_valid	<=	1'd0;
 	else	if(!spi_cs)
 	begin
@@ -232,11 +265,8 @@ always@(posedge spi_clk or negedge rst_n) begin
 	end
 end
 
-// 发送部分。
-
-// 在下降沿推出发送位。
 always@(negedge spi_clk or negedge rst_n) begin
-	if ((rst_n == 1'b0) || spi_cs) 
+	if ((rst_n == 1'b0) || spi_cs)
 	begin
 		tx_data_reg		<=	4'hf;
 		tx_valid_reg	<=	1'd0;
@@ -258,8 +288,5 @@ always@(negedge spi_clk or negedge rst_n) begin
 		end
 	end
 end
-
-
-
 
 endmodule

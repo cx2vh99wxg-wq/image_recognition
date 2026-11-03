@@ -1,28 +1,28 @@
-# PCIE + YOLO + UDP 整合项目 Makefile
-# 编译PCIE视频流、YOLO目标检测和UDP网络传输整合系统
+# 说明：PCIE + YOLO + UDP 整合项目 Makefile
+# 构建PCIE视频流、YOLO目标识别和UDP网络传输整合系统
 
-# 编译器设置
+# 选择 C 和 C++ 工具链
 CC = gcc
 CXX = g++
 
-# 模型路径定义
-# 编译时使用（相对于pcie目录，因为主Makefile在pcie目录下运行程序）
+# 说明：模型路径定义
+# 构建时使用（相对于pcie目录，因为主Makefile在pcie目录下运行应用）
 MODEL_PATH_COMPILE = "model/RK3566_RK3568/yolov5s-640-640.rknn"
 LABELS_PATH_COMPILE = "model/coco_80_labels_list.txt"
 
-# 编译选项 (高性能优化)
+# 构建选项 (高性能优化)
 CFLAGS = -Wall -O3 -march=native -std=c11 -DYOLO_MODEL_PATH=\"$(MODEL_PATH_COMPILE)\" -DYOLO_LABELS_PATH=\"$(LABELS_PATH_COMPILE)\" -MMD -MP
 CXXFLAGS = -Wall -O3 -march=native -std=c++11 -DYOLO_MODEL_PATH=\"$(MODEL_PATH_COMPILE)\" -DYOLO_LABELS_PATH=\"$(LABELS_PATH_COMPILE)\" -MMD -MP
 
-# 项目目录
+# 工程目录
 SRCDIR = csrc
 INCDIR = include
 BUILDDIR = build
 
-# 目标程序名
+# 说明：目标程序名
 TARGET = $(BUILDDIR)/app
 
-# 源文件
+# 选择需要编译的源码
 C_SOURCES = $(SRCDIR)/yolo_integration.c \
             $(SRCDIR)/preprocess.c \
             $(SRCDIR)/person_alert_effects.c
@@ -30,138 +30,138 @@ C_SOURCES = $(SRCDIR)/yolo_integration.c \
 CXX_SOURCES = $(SRCDIR)/main.cpp \
               $(SRCDIR)/postprocess.cpp
 
-# 对象文件
+# 说明：对象文件
 C_OBJECTS = $(C_SOURCES:$(SRCDIR)/%.c=$(BUILDDIR)/%.o)
 CXX_OBJECTS = $(CXX_SOURCES:$(SRCDIR)/%.cpp=$(BUILDDIR)/%.o)
 OBJECTS = $(C_OBJECTS) $(CXX_OBJECTS)
 
-# 包含路径
+# 头文件搜索范围
 INCLUDES = -I$(INCDIR) \
            -I../include \
            -I../rknn_yolov5_demo/include
 
-# 库路径
+# 说明：库路径
 LIBDIRS = -L./lib \
           -L../build
 
-# 链接库
+# 说明：链接库
 LIBS = -lrknnrt \
        -lshared \
        -lpthread \
        -lm \
        -lrt
 
-# 编译规则
+# 各类输入的产物生成步骤
 .PHONY: all clean
 
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS) | $(BUILDDIR)
-	@echo "链接目标程序: $@"
+	@echo "生成目标程序文件: $@"
 	$(CXX) $(OBJECTS) $(LIBDIRS) $(LIBS) -o $@
-	@echo "编译完成!"
+	@echo "构建结束!"
 
-# C源文件编译规则
+# C源文件构建规则
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c | $(BUILDDIR)
-	@echo "编译C文件: $<"
+	@echo "构建C文件: $<"
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-# C++源文件编译规则
+# C++源文件构建规则
 $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp | $(BUILDDIR)
-	@echo "编译C++文件: $<"
+	@echo "构建C++文件: $<"
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-$(BUILDDIR)/main.o: $(INCDIR)/camera_orientation.h $(INCDIR)/yolo_integration.h \
+$(BUILDDIR)/main.o: ../../common/image/frame_pixels.h $(INCDIR)/camera_orientation.h $(INCDIR)/yolo_integration.h \
                    $(INCDIR)/postprocess.h ../include/person_brake_trigger.h
 $(BUILDDIR)/postprocess.o: $(INCDIR)/postprocess.h ../include/person_brake_trigger.h
-$(BUILDDIR)/yolo_integration.o: $(INCDIR)/yolo_integration.h $(INCDIR)/postprocess.h
+$(BUILDDIR)/yolo_integration.o: ../../common/image/frame_pixels.h $(INCDIR)/yolo_integration.h $(INCDIR)/postprocess.h
 $(BUILDDIR)/person_alert_effects.o: $(INCDIR)/person_alert_effects.h $(INCDIR)/postprocess.h
 
-# 创建build目录
+# 建立build目录
 $(BUILDDIR):
-	@echo "创建build目录"
+	@echo "建立build目录"
 	mkdir -p $(BUILDDIR)
 
-# 清理
+# 回收编译产物
 clean:
-	@echo "清理编译文件"
+	@echo "移除构建文件"
 	rm -rf $(BUILDDIR)
 
-# 清理所有（包括FSPI库）
+# 移除所有（包括FSPI库）
 clean-all: clean
-	@echo "清理FSPI库"
+	@echo "移除FSPI库"
 	$(MAKE) -C ../fspi clean
 
-# 运行程序 (使用默认模型路径)
+# 运行应用 (使用默认模型路径)
 run: $(TARGET)
-	@echo "=== 检查FSPI库依赖 ==="
+	@echo "=== 说明：检查FSPI库依赖 ==="
 	@if [ ! -f "../fspi/lib/libfspi.a" ]; then \
-		echo "错误: FSPI库不存在，请先编译FSPI模块:"; \
+		echo "异常: FSPI库不存在，请先构建FSPI模块:"; \
 		echo "  cd ../fspi && make lib"; \
 		exit 1; \
 	else \
-		echo "FSPI库依赖检查通过"; \
+		echo "说明：FSPI库依赖检查通过"; \
 	fi
-	@echo "=== 检查PCIE驱动 ==="
+	@echo "=== 说明：检查PCIE驱动 ==="
 	@if [ ! -e "/dev/pango_pci_driver" ]; then \
-		echo "警告: PCIE驱动设备文件不存在，尝试加载驱动..."; \
+		echo "注意: PCIE驱动设备文件不存在，尝试加载驱动..."; \
 		if [ -f "../debian_pcie/pango_pci_driver.ko" ]; then \
-			sudo insmod ../debian_pcie/pango_pci_driver.ko || { echo "PCIE驱动加载失败"; exit 1; }; \
-			echo "PCIE驱动加载成功"; \
+			sudo insmod ../debian_pcie/pango_pci_driver.ko || { echo "PCIE驱动加载未成功"; exit 1; }; \
+			echo "PCIE驱动加载已完成"; \
 		else \
-			echo "错误: 找不到PCIE驱动文件"; exit 1; \
+			echo "异常: 找不到PCIE驱动文件"; exit 1; \
 		fi; \
 	else \
-		echo "PCIE驱动设备文件已存在"; \
+		echo "说明：PCIE驱动设备文件已存在"; \
 	fi
-	@echo "=== 检查YOLO模型文件 ==="
+	@echo "=== 说明：检查YOLO模型文件 ==="
 	@if [ ! -f "model/RK3566_RK3568/yolov5s-640-640.rknn" ]; then \
-		echo "错误: YOLO模型文件不存在: model/RK3566_RK3568/yolov5s-640-640.rknn"; exit 1; \
+		echo "异常: YOLO模型文件不存在: model/RK3566_RK3568/yolov5s-640-640.rknn"; exit 1; \
 	fi
 	@if [ ! -f "model/coco_80_labels_list.txt" ]; then \
-		echo "错误: YOLO标签文件不存在: model/coco_80_labels_list.txt"; exit 1; \
+		echo "异常: YOLO标签文件不存在: model/coco_80_labels_list.txt"; exit 1; \
 	fi
 	@if [ ! -f "lib/librknnrt.so" ]; then \
-		echo "错误: RKNN运行时库不存在: lib/librknnrt.so"; exit 1; \
+		echo "异常: RKNN运行时库不存在: lib/librknnrt.so"; exit 1; \
 	fi
-	@echo "所有依赖检查通过"
-	@echo "=== 运行程序 ==="
-	@echo "程序启动中..."
-	@echo "按任意键或点击窗口退出程序"
+	@echo "说明：所有依赖检查通过"
+	@echo "=== 运行应用 ==="
+	@echo "程序运行中..."
+	@echo "说明：按任意键或点击窗口退出程序"
 	cd $(BUILDDIR) && sudo ./$(notdir $(TARGET))
 
-# 调试信息
+# 说明：调试信息
 debug: CFLAGS += -g -DDEBUG
 debug: CXXFLAGS += -g -DDEBUG
 debug: $(TARGET)
 
-# 安装（可选）
+# 说明：安装（可选）
 install: $(TARGET)
-	@echo "安装程序到 /usr/local/bin"
+	@echo "说明：安装程序到 /usr/local/bin"
 	sudo cp $(TARGET) /usr/local/bin/
 
-# 帮助信息
+# 用法信息
 help:
-	@echo "=== PCIE + YOLO 整合系统 Makefile ==="
-	@echo "可用的make目标:"
-	@echo "  run     - 编译并运行程序 (推荐使用)"
-	@echo "  all     - 仅编译程序"
-	@echo "  clean   - 清理编译文件"
-	@echo "  debug   - 编译调试版本"
-	@echo "  install - 安装程序到系统"
-	@echo "  help    - 显示此帮助信息"
+	@echo "=== 说明：PCIE + YOLO 整合系统 Makefile ==="
+	@echo "说明：可用的make目标:"
+	@echo "  run     - 构建并运行应用 (推荐使用)"
+	@echo "  all     - 仅构建程序"
+	@echo "  clean   - 移除构建文件"
+	@echo "  debug   - 构建调试版本"
+	@echo "  说明：install - 安装程序到系统"
+	@echo "  help    - 呈现此用法信息"
 	@echo ""
-	@echo "快速开始: make run"
+	@echo "说明：快速开始: make run"
 
-# 显示编译信息
+# 呈现构建信息
 info:
-	@echo "项目信息:"
-	@echo "  目标程序: $(TARGET)"
-	@echo "  C源文件: $(C_SOURCES)"
-	@echo "  C++源文件: $(CXX_SOURCES)"
-	@echo "  包含路径: $(INCLUDES)"
-	@echo "  库路径: $(LIBDIRS)"
-	@echo "  链接库: $(LIBS)"
+	@echo "说明：项目信息:"
+	@echo "  说明：目标程序: $(TARGET)"
+	@echo "  说明：C源文件: $(C_SOURCES)"
+	@echo "  说明：C++源文件: $(CXX_SOURCES)"
+	@echo "  说明：包含路径: $(INCLUDES)"
+	@echo "  说明：库路径: $(LIBDIRS)"
+	@echo "  说明：链接库: $(LIBS)"
 
-# Shared headers are authoritative; rebuild their consumers when they change.
+# 说明：Shared headers are authoritative; rebuild their consumers when they change.
 -include $(OBJECTS:.o=.d)

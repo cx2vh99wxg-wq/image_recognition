@@ -1,0 +1,70 @@
+mingw32-make: Entering directory 'D:/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/M'
+echo "======================================"
+echo "M-End_FPGA_System Build System"
+echo "======================================"
+echo "Author: 科研轮转"
+echo "Date: 2025年10月17日"
+echo "======================================"
+echo "Modules:"
+echo "  - Shared Memory Module (csrc/)"
+echo "  - PCIe Capture Module (pcie/)"
+echo "  - UDP Network Module (udp/)"
+echo "Rendering Support: 1"
+echo "YOLO Detection: Enabled"
+echo "======================================"
+echo "Building Shared Memory Module..."
+gcc -Wall -Wextra -std=c99 -O3 -march=native -pthread -fPIC -MMD -MP -Iinclude -c csrc/shared_memory.c -o build/shared_memory.o
+echo "Shared Memory module build complete"
+echo "Building PCIe Capture Module..."
+D:/zheliVScode/mingw64/bin/mingw32-make.exe -C pcie ENABLE_RENDERING=1 TOPDIR=
+process_begin: CreateProcess(NULL, pwd, ...) failed.
+Makefile:79: pipe: No such file or directory
+mingw32-make[1]: Entering directory 'D:/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/M/pcie'
+A subdirectory or file build already exists.
+Error occurred while processing: build.
+A subdirectory or file -p already exists.
+Error occurred while processing: -p.
+A subdirectory or file build already exists.
+Error occurred while processing: build.
+A subdirectory or file -p already exists.
+Error occurred while processing: -p.
+A subdirectory or file build already exists.
+Error occurred while processing: build.
+A subdirectory or file -p already exists.
+Error occurred while processing: -p.
+A subdirectory or file build already exists.
+Error occurred while processing: build.
+A subdirectory or file -p already exists.
+Error occurred while processing: -p.
+A subdirectory or file build already exists.
+Error occurred while processing: build.
+A subdirectory or file -p already exists.
+Error occurred while processing: -p.
+A subdirectory or file build already exists.
+Error occurred while processing: build.
+A subdirectory or file -p already exists.
+Error occurred while processing: -p.
+A subdirectory or file build already exists.
+Error occurred while processing: build.
+echo "======================================"
+echo "PCIe Capture Module Build System"
+echo "======================================"
+echo "Target: pcie_capture"
+echo "Build Directory: build"
+echo "Rendering Support: 1"
+echo "YOLO Detection: Enabled"
+echo "Compiler: gcc / g++"
+echo "======================================"
+echo "Compiling C: csrc/fspi_module.c"
+mkdir -p build
+gcc -std=c99 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/usr/include/X11 -c csrc/fspi_module.c -o build/fspi_module.o
+echo "Compiling C: csrc/preprocess.c"
+mkdir -p build
+gcc -std=c99 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/usr/include/X11 -c csrc/preprocess.c -o build/preprocess.o
+echo "Compiling C: csrc/yolo_integration.c"
+mkdir -p build
+gcc -std=c99 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -I/usr/include/X11 -c csrc/yolo_integration.c -o build/yolo_integration.o
+mingw32-make[1]: *** No rule to make target '/home/linaro/M/include/shared_memory.h', needed by 'build/main.o'.  Stop.
+mingw32-make[1]: Leaving directory 'D:/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/M/pcie'
+mingw32-make: *** [Makefile:79: pcie] Error 2
+mingw32-make: Leaving directory 'D:/Study_Object/image_recognition/image_recognition/udp_rk_rk_yolo/M'

@@ -1,0 +1,18 @@
+{
+  "remote_vehicle_control.v": {
+    "original": "cc8e9ea9cd99722ae7176d6a7c9e67bb8cc900d69c16b14a2d860fa60257eece",
+    "replacement": "f929606a7878f678ac6e49d3597a11d30e18d8bf8df23c6be161e4efb226406e"
+  },
+  "cnn/gamma_judge.v": {
+    "original": "314df5cd3f5863d72a18fdf4048989065f61b56b1cd009976524651fdd9bc0f3",
+    "replacement": "5279cffb2655fd2506005b345a1a2d0eaf0f6e9bdf555d93f4cb41ce357db08b"
+  },
+  "fspi/spi_ram_crtl.v": {
+    "original": "eaf7cec0a388d5bf5939848faf99f6127a7bbb6d21aac640b7a8be466449e756",
+    "replacement": "5802e834d2369ca364143d741960078f3f1cffc586385ebd0ff00fefcdc4eff0"
+  },
+  "ov5640/rtl/cmos_capture_data.v": {
+    "original": "50baa64d96bc17e1129c6d7f3bdd00051df0864bd9838f2a9d5341b83063884a",
+    "replacement": "6f438f7e2f4d22a4abf03aeeb119a531e137194ee60e3610c9986b9d27aaf11c"
+  }
+}

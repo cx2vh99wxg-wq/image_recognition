@@ -1,55 +1,55 @@
-# ~/.bashrc: executed by bash(1) for non-login shells.
-# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
-# for examples
+# 非登录 Bash 会读取此文件以配置会话。
+# 说明：see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+# 说明：for examples
 
-# If not running interactively, don't do anything
+# 仅在交互会话中初始化终端。
 case $- in
     *i*) ;;
       *) return;;
 esac
 
-# don't put duplicate lines or lines starting with space in the history.
-# See bash(1) for more options
+# 说明：don't put duplicate lines or lines starting with space in the history.
+# 说明：See bash(1) for more options
 HISTCONTROL=ignoreboth
 
-# append to the history file, don't overwrite it
+# 会话历史追加到已有文件。
 shopt -s histappend
 
-# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+# 说明：for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
 HISTSIZE=1000
 HISTFILESIZE=2000
 
-# check the window size after each command and, if necessary,
-# update the values of LINES and COLUMNS.
+# 说明：check the window size after each command and, if necessary,
+# 说明：update the values of LINES and COLUMNS.
 shopt -s checkwinsize
 
-# If set, the pattern "**" used in a pathname expansion context will
-# match all files and zero or more directories and subdirectories.
+# 说明：If set, the pattern "**" used in a pathname expansion context will
+# 说明：match all files and zero or more directories and subdirectories.
 #shopt -s globstar
 
-# make less more friendly for non-text input files, see lesspipe(1)
+# 说明：make less more friendly for non-text input files, see lesspipe(1)
 #[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
-# set variable identifying the chroot you work in (used in the prompt below)
+# 说明：set variable identifying the chroot you work in (used in the prompt below)
 if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
     debian_chroot=$(cat /etc/debian_chroot)
 fi
 
-# set a fancy prompt (non-color, unless we know we "want" color)
+# 说明：set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
     xterm-color|*-256color) color_prompt=yes;;
 esac
 
-# uncomment for a colored prompt, if the terminal has the capability; turned
-# off by default to not distract the user: the focus in a terminal window
-# should be on the output of commands, not on the prompt
+# 说明：uncomment for a colored prompt, if the terminal has the capability; turned
+# 说明：off by default to not distract the user: the focus in a terminal window
+# 说明：should be on the output of commands, not on the prompt
 #force_color_prompt=yes
 
 if [ -n "$force_color_prompt" ]; then
     if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-	# We have color support; assume it's compliant with Ecma-48
-	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-	# a case would tend to support setf rather than setaf.)
+	# 说明：We have color support; assume it's compliant with Ecma-48
+	# 说明：(ISO/IEC-6429). (Lack of such support is extremely rare, and such
+	# 说明：a case would tend to support setf rather than setaf.)
 	color_prompt=yes
     else
 	color_prompt=
@@ -63,7 +63,7 @@ else
 fi
 unset color_prompt force_color_prompt
 
-# If this is an xterm set the title to user@host:dir
+# 说明：If this is an xterm set the title to user@host:dir
 case "$TERM" in
 xterm*|rxvt*)
     PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
@@ -72,7 +72,7 @@ xterm*|rxvt*)
     ;;
 esac
 
-# enable color support of ls and also add handy aliases
+# 说明：enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
     alias ls='ls --color=auto'
@@ -84,26 +84,26 @@ if [ -x /usr/bin/dircolors ]; then
     #alias egrep='egrep --color=auto'
 fi
 
-# colored GCC warnings and errors
+# 说明：colored GCC warnings and errors
 #export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
 
-# some more ls aliases
+# 说明：some more ls aliases
 #alias ll='ls -l'
 #alias la='ls -A'
 #alias l='ls -CF'
 
-# Alias definitions.
-# You may want to put all your additions into a separate file like
-# ~/.bash_aliases, instead of adding them here directly.
-# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+# 说明：Alias definitions.
+# 说明：You may want to put all your additions into a separate file like
+# 说明：~/.bash_aliases, instead of adding them here directly.
+# 说明：See /usr/share/doc/bash-doc/examples in the bash-doc package.
 
 if [ -f ~/.bash_aliases ]; then
     . ~/.bash_aliases
 fi
 
-# enable programmable completion features (you don't need to enable
-# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
-# sources /etc/bash.bashrc).
+# 说明：enable programmable completion features (you don't need to enable
+# 说明：this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# 说明：sources /etc/bash.bashrc).
 if ! shopt -oq posix; then
   if [ -f /usr/share/bash-completion/bash_completion ]; then
     . /usr/share/bash-completion/bash_completion
@@ -118,59 +118,59 @@ if [ -f ~/pango_pci_driver.ko ]; then
     sudo insmod ~/pango_pci_driver.ko
 fi
 
-# Auto-start M-End FPGA System on login
-# 开机自动启动M端FPGA系统
+# 交互登录后按 M 端流程运行。
+# 发送端启动段。
 echo "======================================"
-echo "Welcome to M-End FPGA System"
+echo "Console for M-End FPGA System"
 echo "======================================"
-echo "Author: 科研轮转"
-echo "Time: $(date)"
+echo "Maintainer: 科研轮转"
+echo "Local time: $(date)"
 echo "======================================"
 
-# 检查是否在交互式终端中
+# 自动运行仅由交互终端触发。
 if [[ $- == *i* ]]; then
-    echo "检测到交互式登录，准备启动M端系统..."
+    echo "交互终端就绪，即将运行M端系统..."
     echo ""
     
-    # 检查当前目录，如果不在正确目录则自动切换
+    # 检查此时目录，如果不在正确目录则自动切换
     if [[ "$(pwd)" != */M ]] && [[ "$(pwd)" != */M/ ]]; then
-        echo "切换到M端工作目录..."
+        echo "进入M端工作目录..."
         cd ~/M 2>/dev/null || cd /home/$(whoami)/M 2>/dev/null || {
-            echo "警告: 未找到M端工作目录 ~/M"
-            echo "请手动切换到包含Makefile的目录"
-            echo "然后运行: make run"
+            echo "注意: 未定位到M端工作目录 ~/M"
+            echo "请手动进入包含Makefile的目录"
+            echo "接着执行: make run"
             return
         }
     fi
     
-    echo "当前工作目录: $(pwd)"
+    echo "项目所在目录: $(pwd)"
     
-    # 检查Makefile是否存在
+    # 说明：检查Makefile是否存在
     if [[ -f "Makefile" ]]; then
-        echo "检测到Makefile，准备启动系统..."
+        echo "构建入口已就绪，即将运行..."
         echo ""
-        echo "提示: 系统将在3秒后自动启动 'make run'"
-        echo "如需取消，请按 Ctrl+C"
+        echo "提示: 等待三秒后将执行 'make run'"
+        echo "可使用下列按键取消 Ctrl+C"
         echo ""
         
-        # 3秒倒计时
+        # 启动前留出三秒取消窗口。
         for i in 3 2 1; do
-            echo -n "倒计时: $i 秒..."
+            echo -n "剩余等待: $i 秒…"
             sleep 1
-            echo -e "\r清除行内容\033[K"
+            echo -e "\r刷新倒计时\033[K"
         done
         
-        echo "正在启动M端FPGA系统..."
+        echo "开始运行M端FPGA系统..."
         echo "======================================"
         
-        # 执行make run
+        # 进入 Makefile 的运行入口。
         make run
         
     else
-        echo "错误: 当前目录中未找到Makefile"
-        echo "请确认您在正确的M端项目目录中"
+        echo "异常: 此时目录中未定位到Makefile"
+        echo "请核对此时路径是否为M端工程目录中"
         echo ""
-        echo "如果需要手动启动，请执行:"
+        echo "可按下面的方式手动运行:"
         echo "  cd path/to/M-End/directory"
         echo "  make run"
     fi

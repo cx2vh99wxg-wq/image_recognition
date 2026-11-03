@@ -1,0 +1,47 @@
+`timescale 1ns / 1ps
+
+module conv_4channel_delay
+#(
+    parameter   [10:0]  IMG_HDISP   = 11'd640,                      // 参数记录为 640*480。
+    parameter   [10:0]  IMG_VDISP   = 11'd480,
+    parameter                           core_witdh                = 4'd8  
+)
+(
+    input  wire                         clk                        ,
+    input  wire                         rst_n                      ,
+    
+    input              [   7: 0]        per_img_r                  ,
+    input              [   7: 0]        per_img_g                  ,
+    input              [   7: 0]        per_img_b                  ,
+    output             [   7: 0]        post_img_r                 ,
+    output             [   7: 0]        post_img_g                 ,
+    output             [   7: 0]        post_img_b                 ,
+    input              [   7: 0]        per_img_Y                  ,
+    output             [   7: 0]        post_img_Y                 ,
+    // 卷积流水线：Image data prepared to be processed
+    input  wire                         per_img_vsync              ,// 卷积流水线：Prepared Image data vsync valid signal
+    input  wire                         per_img_href               // 卷积流水线：Prepared Image data href vaild signal
+
+    
+);
+
+
+// rgb Y ，延迟。
+// 2026-11-03: reuse the RGB/Y lane alignment and keep the red lane timing taps.
+wire post_img_vsync;
+wire post_img_href;
+conv_rgb_y_alignment #(
+    .IMG_HDISP(IMG_HDISP),
+    .IMG_VDISP(IMG_VDISP),
+    .core_witdh(core_witdh)
+) u_rgb_y_alignment (
+    .clk(clk),
+    .rst_n(rst_n),
+    .per_img_vsync(per_img_vsync),
+    .per_img_href(per_img_href),
+    .pixels_in({per_img_r, per_img_g, per_img_b, per_img_Y}),
+    .pixels_out({post_img_r, post_img_g, post_img_b, post_img_Y}),
+    .post_img_vsync(post_img_vsync),
+    .post_img_href(post_img_href)
+);
+endmodule

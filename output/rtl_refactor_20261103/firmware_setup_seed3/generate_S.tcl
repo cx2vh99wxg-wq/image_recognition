@@ -1,0 +1,3 @@
+open_project "D:/Study_Object/image_recognition/image_recognition/output/rtl_refactor_20261103/pds_setup_seed3/project_s_application_refactor_20261102/project_s_refactor.pds"
+gen_bit_stream -force_to_run -compress_bitstream true -master_configuration_clock_frequency {40M}
+puts "PINEAPPLE_BITSTREAM_DONE"

@@ -1,0 +1,59 @@
+正在初始化弯道检测共享内存 (key=0x1111, size=56 bytes)
+get 4369 56 438
+attach
+result 0 0 0 1431655765 1431655765 1431655765
+detach 1431655765
+cleanup complete
+正在初始化弯道检测共享内存 (key=0x1111, size=56 bytes)
+get 4369 56 438
+attach
+result 0 1 0 1431655765 1431655765 1431655765
+detach 1431655765
+cleanup complete
+正在初始化弯道检测共享内存 (key=0x1111, size=56 bytes)
+get 4369 56 438
+result 0 2 -1 1431655765 1431655765 1431655765
+cleanup complete
+正在初始化弯道检测共享内存 (key=0x1111, size=56 bytes)
+get 4369 56 438
+result 0 3 -1 1431655765 1431655765 1431655765
+cleanup complete
+正在初始化弯道检测共享内存 (key=0x1111, size=56 bytes)
+get 4369 56 438
+attach
+result 0 4 -1 1431655765 1431655765 1431655765
+cleanup complete
+正在初始化弯道检测共享内存 (key=0x1111, size=56 bytes)
+get 4369 56 1974
+attach
+初始化弯道检测控制结构
+result 1 0 0 1 0 1129469491
+detach 0
+remove
+cleanup complete
+正在初始化弯道检测共享内存 (key=0x1111, size=56 bytes)
+get 4369 56 1974
+弯道检测共享内存已存在，尝试连接...
+get 4369 56 438
+attach
+初始化弯道检测控制结构
+result 1 1 0 1 0 1129469491
+detach 0
+remove
+cleanup complete
+正在初始化弯道检测共享内存 (key=0x1111, size=56 bytes)
+get 4369 56 1974
+result 1 2 -1 1431655765 1431655765 1431655765
+cleanup complete
+正在初始化弯道检测共享内存 (key=0x1111, size=56 bytes)
+get 4369 56 1974
+弯道检测共享内存已存在，尝试连接...
+get 4369 56 438
+result 1 3 -1 1431655765 1431655765 1431655765
+cleanup complete
+正在初始化弯道检测共享内存 (key=0x1111, size=56 bytes)
+get 4369 56 1974
+attach
+result 1 4 -1 1431655765 1431655765 1431655765
+remove
+cleanup complete

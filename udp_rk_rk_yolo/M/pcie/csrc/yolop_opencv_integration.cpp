@@ -1,4 +1,5 @@
 #include "yolop_opencv_integration.h"
+#include "../../../common/perception/include/rknn_model_file.h"
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -8,18 +9,6 @@
 using namespace std;
 
 // 简单图像处理函数（替代OpenCV）。
-
-// 用四边坐标描述矩形区域。
-struct SimpleRect
-{
-    int x, y, width, height;
-    SimpleRect() : x(0), y(0), width(0), height(0)
-    {
-    }
-    SimpleRect(int x_, int y_, int w_, int h_) : x(x_), y(y_), width(w_), height(h_)
-    {
-    }
-};
 
 // 以最近邻快速适配目标尺寸。
 void fast_resize_rgb888(const uint8_t *src, int src_w, int src_h, uint8_t *dst, int dst_w,
@@ -41,72 +30,14 @@ void fast_resize_rgb888(const uint8_t *src, int src_w, int src_h, uint8_t *dst, 
             int src_idx = (src_y * src_w + src_x) * 3;
             int dst_idx = (y * dst_w + x) * 3;
 
-            dst[dst_idx] = src[src_idx];         // R：红色分量。
-            dst[dst_idx + 1] = src[src_idx + 1]; // G：绿色分量。
-            dst[dst_idx + 2] = src[src_idx + 2]; // B：蓝色分量。
+            dst[dst_idx] = src[src_idx];
+            dst[dst_idx + 1] = src[src_idx + 1];
+            dst[dst_idx + 2] = src[src_idx + 2];
         }
     }
 }
 
 // 计算两个候选框的交并比。
-float calculate_iou(const SimpleRect &a, const SimpleRect &b)
-{
-    int x1 = max(a.x, b.x);
-    int y1 = max(a.y, b.y);
-    int x2 = min(a.x + a.width, b.x + b.width);
-    int y2 = min(a.y + a.height, b.y + b.height);
-
-    if (x2 <= x1 || y2 <= y1)
-        return 0.0f;
-
-    int intersection = (x2 - x1) * (y2 - y1);
-    int area_a = a.width * a.height;
-    int area_b = b.width * b.height;
-    int union_area = area_a + area_b - intersection;
-
-    return (float)intersection / union_area;
-}
-
-// 以精简的非极大值抑制筛选候选框。
-void simple_nms(vector<SimpleRect> &boxes, vector<float> &confidences, vector<int> &class_ids,
-                vector<int> &indices, float nms_threshold)
-{
-    // 根据候选分数确定处理顺序。
-    vector<int> sorted_indices(confidences.size());
-    for (size_t i = 0; i < confidences.size(); i++)
-    {
-        sorted_indices[i] = i;
-    }
-
-    sort(sorted_indices.begin(), sorted_indices.end(),
-         [&](int a, int b) { return confidences[a] > confidences[b]; });
-
-    vector<bool> suppressed(boxes.size(), false);
-
-    for (size_t i = 0; i < sorted_indices.size(); i++)
-    {
-        int idx = sorted_indices[i];
-        if (suppressed[idx])
-            continue;
-
-        indices.push_back(idx);
-
-        // 去除已选框附近的重复候选。
-        for (size_t j = i + 1; j < sorted_indices.size(); j++)
-        {
-            int idx2 = sorted_indices[j];
-            if (suppressed[idx2])
-                continue;
-
-            if (calculate_iou(boxes[idx], boxes[idx2]) > nms_threshold)
-            {
-                suppressed[idx2] = true;
-            }
-        }
-    }
-}
-
-// 图像处理：简单的5x7像素字体（位图字体）
 static uint8_t font_5x7[128][7];
 static bool font_initialized = false;
 
@@ -167,16 +98,16 @@ void draw_text(uint8_t *rgb_data, int img_width, int img_height, const char *tex
     // 保证字体已初始化
     init_font();
 
-    int char_width = 6; // 图像处理：5像素宽度 + 1像素间距
+    int char_width = 6; // 5像素宽度 + 1像素间距
     int char_height = 7;
 
     for (int i = 0; text[i] != '\0'; i++)
     {
         char c = text[i];
         if (c < 0 || c >= 128)
-            continue; // 图像处理：跳过非ASCII字符
+            continue; // 跳过非ASCII字符
 
-        // 求出字符起始位置。
+
         int start_x = x + i * char_width;
         int start_y = y;
 
@@ -189,7 +120,7 @@ void draw_text(uint8_t *rgb_data, int img_width, int img_height, const char *tex
             uint8_t bitmap_row = font_5x7[(int)c][row];
 
             for (int col = 0; col < 5; col++)
-            { // 图像处理：5像素宽度
+            { // 字形宽 5 像素。
                 if (start_x + col >= img_width)
                     break;
 
@@ -202,9 +133,9 @@ void draw_text(uint8_t *rgb_data, int img_width, int img_height, const char *tex
                     if (pixel_x >= 0 && pixel_x < img_width && pixel_y >= 0 && pixel_y < img_height)
                     {
                         int idx = (pixel_y * img_width + pixel_x) * 3;
-                        rgb_data[idx] = r;     // R：红色分量。
-                        rgb_data[idx + 1] = g; // G：绿色分量。
-                        rgb_data[idx + 2] = b; // B：蓝色分量。
+                        rgb_data[idx] = r;
+                        rgb_data[idx + 1] = g;
+                        rgb_data[idx + 2] = b;
                     }
                 }
             }
@@ -219,9 +150,9 @@ void draw_text(uint8_t *rgb_data, int img_width, int img_height, const char *tex
 
 // YOLOP Anchor配置 (基于YOLOv5架构，优化用来交通场景)
 const float ANCHORS[3][6] = {
-    {3, 9, 5, 11, 4, 20},     // 图像处理：8x stride - 检测小目标(行人、自行车)
-    {7, 18, 6, 39, 12, 31},   // 图像处理：16x stride - 检测中等目标(轿车)
-    {19, 50, 38, 81, 68, 157} // 图像处理：32x stride - 检测大目标(卡车、公交车)
+    {3, 9, 5, 11, 4, 20},     // 8x stride - 检测小目标(行人、自行车)
+    {7, 18, 6, 39, 12, 31},   // 16x stride - 检测中等目标(轿车)
+    {19, 50, 38, 81, 68, 157} // 32x stride - 检测大目标(卡车、公交车)
 };
 const float STRIDES[3] = {8.0f, 16.0f, 32.0f};
 
@@ -311,7 +242,7 @@ bool YOLOPEngine::loadLabels(const string &label_path)
 
 bool YOLOPEngine::initModel(const string &model_path)
 {
-    // 图像处理：加载RKNN模型
+    // 加载RKNN模型
     FILE *fp = fopen(model_path.c_str(), "rb");
     if (!fp)
     {
@@ -319,24 +250,10 @@ bool YOLOPEngine::initModel(const string &model_path)
         return false;
     }
 
-    fseek(fp, 0, SEEK_END);
-    size_t model_size = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-
-    void *model_data = malloc(model_size);
+    size_t model_size;
+    void *model_data = read_rknn_model(fp, &model_size, 0);
     if (!model_data)
-    {
-        fclose(fp);
         return false;
-    }
-
-    if (fread(model_data, 1, model_size, fp) != model_size)
-    {
-        free(model_data);
-        fclose(fp);
-        return false;
-    }
-    fclose(fp);
 
     // 为RKNN上下文建立初始状态。
     int ret = rknn_init(&ctx, model_data, model_size, 0, nullptr);
@@ -348,7 +265,7 @@ bool YOLOPEngine::initModel(const string &model_path)
         return false;
     }
 
-    // 图像处理：查询输入输出数量
+    // 查询输入输出数量
     ret = rknn_query(ctx, RKNN_QUERY_IN_OUT_NUM, &io_num, sizeof(io_num));
     if (ret != RKNN_SUCC)
     {
@@ -385,7 +302,7 @@ bool YOLOPEngine::initModel(const string &model_path)
             return false;
         }
 
-        // 图像处理：打印输出维度信息
+        // 打印输出维度信息
         cout << "[YOLOP] 输出[" << i << "] 维度: ";
         for (uint32_t j = 0; j < output_attrs[i].n_dims; j++)
         {
@@ -406,7 +323,7 @@ void YOLOPEngine::preprocessImage(const uint8_t *rgb_data, int width, int height
 
     if (width == inpWidth && height == inpHeight)
     {
-        // 图像处理：尺寸匹配，直接拷贝
+        // 尺寸匹配，直接拷贝
         memcpy(input_data.data(), rgb_data, input_data.size());
     }
     else
@@ -414,6 +331,64 @@ void YOLOPEngine::preprocessImage(const uint8_t *rgb_data, int width, int height
         // 采用快速路径适配图像尺寸。
         fast_resize_rgb888(rgb_data, width, height, input_data.data(), inpWidth, inpHeight);
     }
+}
+
+namespace
+{
+struct CandidateBox
+{
+    int x, y, width, height;
+    float confidence;
+    int class_id;
+};
+
+static float candidate_iou(const CandidateBox &a, const CandidateBox &b)
+{
+    int x1 = max(a.x, b.x);
+    int y1 = max(a.y, b.y);
+    int x2 = min(a.x + a.width, b.x + b.width);
+    int y2 = min(a.y + a.height, b.y + b.height);
+
+    if (x2 <= x1 || y2 <= y1)
+        return 0.0f;
+
+    int intersection = (x2 - x1) * (y2 - y1);
+    int area_a = a.width * a.height;
+    int area_b = b.width * b.height;
+    int union_area = area_a + area_b - intersection;
+
+    return (float)intersection / union_area;
+}
+
+// 按置信度排序。重叠抑制对所有类别统一执行。
+vector<int> select_candidates(const vector<CandidateBox> &candidates)
+{
+    vector<int> order(candidates.size());
+    for (size_t i = 0; i < order.size(); ++i)
+        order[i] = i;
+
+    sort(order.begin(), order.end(), [&](int a, int b) {
+        return candidates[a].confidence > candidates[b].confidence;
+    });
+
+    vector<bool> suppressed(candidates.size(), false);
+    vector<int> selected;
+    for (size_t i = 0; i < order.size(); ++i)
+    {
+        const int winner = order[i];
+        if (suppressed[winner])
+            continue;
+
+        selected.push_back(winner);
+        for (size_t j = i + 1; j < order.size(); ++j)
+        {
+            const int next = order[j];
+            if (!suppressed[next] && candidate_iou(candidates[winner], candidates[next]) > NMS_THRESHOLD)
+                suppressed[next] = true;
+        }
+    }
+    return selected;
+}
 }
 
 void YOLOPEngine::postprocessDetection(rknn_output *outputs, int img_width, int img_height,
@@ -432,21 +407,19 @@ void YOLOPEngine::postprocessDetection(rknn_output *outputs, int img_width, int 
         return;
     }
 
-    vector<SimpleRect> boxes;
-    vector<float> confidences;
-    vector<int> class_ids;
+    vector<CandidateBox> candidates;
 
     // 求出缩放比例（假设没有padding，直接缩放）。
     float scale_x = (float)img_width / inpWidth;
     float scale_y = (float)img_height / inpHeight;
 
     int num_classes = (int)class_names.size();
-    int nout = num_classes + 5; // 图像处理：x,y,w,h,conf + classes
+    int nout = num_classes + 5; // x,y,w,h,conf + classes
 
     cout << "[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=" << num_classes << ", nout=" << nout
          << endl;
 
-    // 图像处理：遍历三个尺度的输出（8x, 16x, 32x stride）
+    // 遍历三个尺度的输出（8x, 16x, 32x stride）
     for (int n = 0; n < 3; n++)
     {
         const int num_grid_x = (int)(inpWidth / STRIDES[n]);
@@ -456,7 +429,7 @@ void YOLOPEngine::postprocessDetection(rknn_output *outputs, int img_width, int 
         cout << "[YOLOP] 处理尺度 " << n << ": stride=" << current_stride << ", grid=" << num_grid_x
              << "x" << num_grid_y << endl;
 
-        // 图像处理：遍历3个anchor
+        // 遍历3个anchor
         for (int q = 0; q < 3; q++)
         {
             const float anchor_w = ANCHORS[n][q * 2];
@@ -465,18 +438,13 @@ void YOLOPEngine::postprocessDetection(rknn_output *outputs, int img_width, int 
             // 按网格位置逐项扫描。
             for (int i = 0; i < num_grid_y; i++)
             {
-                for (int j = 0; j < num_grid_x; j++)
+                for (int j = 0; j < num_grid_x; ++j, pdata += nout)
                 {
                     const float box_score = pdata[4];
-
-                    // 条件不满足时尽早结束本轮处理。
                     if (box_score <= OBJ_THRESHOLD)
-                    {
-                        pdata += nout;
                         continue;
-                    }
 
-                    // 图像处理：找到最大类别分数
+                    // 找到最大类别分数
                     float max_class_score = pdata[5];
                     int class_idx = 0;
                     for (int k = 1; k < num_classes; k++)
@@ -492,56 +460,46 @@ void YOLOPEngine::postprocessDetection(rknn_output *outputs, int img_width, int 
 
                     if (final_score > CONF_THRESHOLD)
                     {
-                        // 图像处理：YOLOP边界框解码（使用YOLOv5格式）
+                        // YOLOP边界框解码（使用YOLOv5格式）
                         float cx = (pdata[0] * 2.0f - 0.5f + j) * current_stride;
                         float cy = (pdata[1] * 2.0f - 0.5f + i) * current_stride;
                         float w = powf(pdata[2] * 2.0f, 2.0f) * anchor_w;
                         float h = powf(pdata[3] * 2.0f, 2.0f) * anchor_h;
 
-                        // 按缩放关系还原为源图坐标。
+                        // 将模型坐标映射回采集帧。
                         int left = (int)((cx - 0.5f * w) * scale_x);
                         int top = (int)((cy - 0.5f * h) * scale_y);
                         int width = (int)(w * scale_x);
                         int height = (int)(h * scale_y);
 
-                        boxes.push_back(SimpleRect(left, top, width, height));
-                        confidences.push_back(final_score);
-                        class_ids.push_back(class_idx);
+                        candidates.push_back({left, top, width, height, final_score, class_idx});
                     }
-
-                    pdata += nout;
                 }
             }
         }
     }
 
-    cout << "[YOLOP] 检测到 " << boxes.size() << " 个候选框" << endl;
+    cout << "[YOLOP] 检测到 " << candidates.size() << " 个候选框" << endl;
 
-    // 用精简 NMS 排除重叠候选。
-    vector<int> indices;
-    simple_nms(boxes, confidences, class_ids, indices, NMS_THRESHOLD);
+    const vector<int> indices = select_candidates(candidates);
 
     cout << "[YOLOP] NMS后保留 " << indices.size() << " 个目标" << endl;
 
-    // 把保留项写入返回结果。
+    // 按抑制后的顺序填充输出列表。
     for (size_t i = 0; i < indices.size(); i++)
     {
         if (results->count >= OBJ_NUMB_MAX_SIZE)
             break;
-        int idx = indices[i];
+        const CandidateBox &candidate = candidates[indices[i]];
         detect_result_t &obj = results->results[results->count];
 
-        obj.box.left = (boxes[idx].x > 0) ? boxes[idx].x : 0;
-        obj.box.top = (boxes[idx].y > 0) ? boxes[idx].y : 0;
-        obj.box.right = (boxes[idx].x + boxes[idx].width < img_width)
-                            ? boxes[idx].x + boxes[idx].width
-                            : img_width - 1;
-        obj.box.bottom = (boxes[idx].y + boxes[idx].height < img_height)
-                             ? boxes[idx].y + boxes[idx].height
-                             : img_height - 1;
-        obj.prop = confidences[idx];
+        obj.box.left = max(candidate.x, 0);
+        obj.box.top = max(candidate.y, 0);
+        obj.box.right = min(candidate.x + candidate.width, img_width - 1);
+        obj.box.bottom = min(candidate.y + candidate.height, img_height - 1);
+        obj.prop = candidate.confidence;
 
-        int class_id = class_ids[idx];
+        const int class_id = candidate.class_id;
         if (class_id >= 0 && class_id < (int)class_names.size())
         {
             strncpy(obj.name, class_names[class_id].c_str(), sizeof(obj.name) - 1);
@@ -567,81 +525,17 @@ void YOLOPEngine::drawBoundingBoxes(uint8_t *rgb_data, int width, int height,
     if (!rgb_data || !results)
         return;
 
-    // 图像处理：简化绘制：直接在RGB888数据上绘制红色边界框
+    // 简化绘制：直接在RGB888数据上绘制红色边界框
     for (int i = 0; i < results->count; i++)
     {
         const detect_result_t &obj = results->results[i];
 
-        int left = obj.box.left;
-        int top = obj.box.top;
-        int right = obj.box.right;
-        int bottom = obj.box.bottom;
+        const auto edges = yolop_overlay::draw_outline(rgb_data, width, height, obj.box, 255, 0);
 
-        // 访问前校验坐标是否位于有效范围。
-        if (left < 0)
-            left = 0;
-        if (top < 0)
-            top = 0;
-        if (right >= width)
-            right = width - 1;
-        if (bottom >= height)
-            bottom = height - 1;
-
-        // 图像处理：绘制红色边界框（线宽2像素）
-        int thickness = 2;
-
-        // 矩形轮廓的顶部边。
-        for (int y = top; y < top + thickness && y < height; y++)
-        {
-            for (int x = left; x <= right && x < width; x++)
-            {
-                int idx = (y * width + x) * 3;
-                rgb_data[idx] = 0;       // R：红色分量。
-                rgb_data[idx + 1] = 255; // 图像处理：G (绿色)
-                rgb_data[idx + 2] = 0;   // B：蓝色分量。
-            }
-        }
-
-        // 矩形轮廓的底部边。
-        for (int y = bottom - thickness + 1; y <= bottom && y >= 0; y++)
-        {
-            for (int x = left; x <= right && x < width; x++)
-            {
-                int idx = (y * width + x) * 3;
-                rgb_data[idx] = 0;
-                rgb_data[idx + 1] = 255;
-                rgb_data[idx + 2] = 0;
-            }
-        }
-
-        // 矩形轮廓的左侧边。
-        for (int x = left; x < left + thickness && x < width; x++)
-        {
-            for (int y = top; y <= bottom && y < height; y++)
-            {
-                int idx = (y * width + x) * 3;
-                rgb_data[idx] = 0;
-                rgb_data[idx + 1] = 255;
-                rgb_data[idx + 2] = 0;
-            }
-        }
-
-        // 矩形轮廓的右侧边。
-        for (int x = right - thickness + 1; x <= right && x >= 0; x++)
-        {
-            for (int y = top; y <= bottom && y < height; y++)
-            {
-                int idx = (y * width + x) * 3;
-                rgb_data[idx] = 0;
-                rgb_data[idx + 1] = 255;
-                rgb_data[idx + 2] = 0;
-            }
-        }
-
-        // 图像处理：绘制简单的类别标记（数字ID或固定文字）
+        // 绘制简单的类别标记（数字ID或固定文字）
         char simple_label[16];
 
-        // 图像处理：根据YOLOP交通场景类别显示标签
+        // 根据YOLOP交通场景类别显示标签
         if (strstr(obj.name, "car") || strstr(obj.name, "CAR"))
         {
             strcpy(simple_label, "CAR");
@@ -665,16 +559,16 @@ void YOLOPEngine::drawBoundingBoxes(uint8_t *rgb_data, int width, int height,
         }
         else
         {
-            // 图像处理：对于其他交通相关目标，显示置信度百分比
+            // 对于其他交通相关目标，显示置信度百分比
             int confidence = (int)(obj.prop * 100);
             snprintf(simple_label, sizeof(simple_label), "%d%%", confidence);
         }
 
-        // 图像处理：绘制标签背景（黑色矩形）
-        int label_x = left;
-        int label_y = (top > 10) ? top - 10 : top + 15;      // 计算标签在图像中的放置位置。
-        int label_width = (int)strlen(simple_label) * 6 + 4; // 图像处理：6像素每字符 + 边距
-        int label_height = 9;                                // 图像处理：字体高度 + 边距
+        // 绘制标签背景（黑色矩形）
+        int label_x = edges.left;
+        int label_y = (edges.top > 10) ? edges.top - 10 : edges.top + 15;      // 计算标签在图像中的放置位置。
+        int label_width = (int)strlen(simple_label) * 6 + 4; // 6像素每字符 + 边距
+        int label_height = 9;                                // 字体高度 + 边距
 
         // 先铺设文字标签的背景区域。
         for (int ly = label_y; ly < label_y + label_height && ly < height; ly++)
@@ -704,74 +598,43 @@ void YOLOPEngine::drawSegmentation(uint8_t *rgb_data, int width, int height)
         return;
     }
 
-    // 求出输入与目标的缩放关系。
-    float scale_x = (float)cached_seg_width / width;
-    float scale_y = (float)cached_seg_height / height;
+    const float scale_x = (float)cached_seg_width / width;
+    const float scale_y = (float)cached_seg_height / height;
+    const int area = cached_seg_width * cached_seg_height;
+    const int step = 2;
 
-    int area = cached_seg_width * cached_seg_height;
-
-    // 图像处理：优化：降采样绘制以提高性能
-    int step = 2; // 图像处理：每2个像素采样一次
-
-    // 图像处理：第一步：绘制可行驶区域（绿色半透明）
-    for (int i = 0; i < height; i += step)
+    // 每个采样点覆盖互不重叠的 2×2 像素块。车道线覆盖通行区底色。
+    for (int y = 0; y < height; y += step)
     {
-        for (int j = 0; j < width; j += step)
+        for (int x = 0; x < width; x += step)
         {
-            int x = (int)(j * scale_x);
-            int y = (int)(i * scale_y);
+            const int sx = (int)(x * scale_x);
+            const int sy = (int)(y * scale_y);
+            if (sx >= cached_seg_width || sy >= cached_seg_height)
+                continue;
 
-            if (x < cached_seg_width && y < cached_seg_height)
+            const int index = sy * cached_seg_width + sx;
+            const bool lane = cached_lane_seg[index] < cached_lane_seg[area + index];
+            const bool drivable = cached_drivable_seg[index] < cached_drivable_seg[area + index];
+            if (!lane && !drivable)
+                continue;
+
+            for (int row = y; row < y + step && row < height; ++row)
             {
-                int idx = y * cached_seg_width + x;
-                // 图像处理：比较两个通道（背景 vs 前景）
-                if (cached_drivable_seg[idx] < cached_drivable_seg[area + idx])
+                for (int col = x; col < x + step && col < width; ++col)
                 {
-                    // 图像处理：绘制小方块区域（绿色）
-                    for (int dy = 0; dy < step && (i + dy) < height; dy++)
+                    uint8_t *pixel = rgb_data + (row * width + col) * 3;
+                    if (lane)
                     {
-                        for (int dx = 0; dx < step && (j + dx) < width; dx++)
-                        {
-                            int pixel_idx = ((i + dy) * width + (j + dx)) * 3;
-                            rgb_data[pixel_idx] =
-                                (uint8_t)((int)rgb_data[pixel_idx] * 0.7 + 0 * 0.3); // R：红色分量。
-                            rgb_data[pixel_idx + 1] =
-                                (uint8_t)((int)rgb_data[pixel_idx + 1] * 0.7 + 255 * 0.3); // G：绿色分量。
-                            rgb_data[pixel_idx + 2] =
-                                (uint8_t)((int)rgb_data[pixel_idx + 2] * 0.7 + 0 * 0.3); // B：蓝色分量。
-                        }
+                        pixel[0] = 0;
+                        pixel[1] = 0;
+                        pixel[2] = 255;
                     }
-                }
-            }
-        }
-    }
-
-    // 图像处理：第二步：绘制车道线（深红色，覆盖在可行驶区域之上）
-    for (int i = 0; i < height; i += step)
-    {
-        for (int j = 0; j < width; j += step)
-        {
-            int x = (int)(j * scale_x);
-            int y = (int)(i * scale_y);
-
-            if (x < cached_seg_width && y < cached_seg_height)
-            {
-                int idx = y * cached_seg_width + x;
-                // 图像处理：比较两个通道（背景 vs 前景）
-                if (cached_lane_seg[idx] < cached_lane_seg[area + idx])
-                {
-                    // 图像处理：绘制小方块区域（荧光黄色 - 超级显眼）
-                    for (int dy = 0; dy < step && (i + dy) < height; dy++)
+                    else
                     {
-                        for (int dx = 0; dx < step && (j + dx) < width; dx++)
-                        {
-                            int pixel_idx = ((i + dy) * width + (j + dx)) * 3;
-                            // 图像处理：荧光红色：BGR格式 = (0, 0, 255)
-                            rgb_data[pixel_idx] = 0;     // 图像处理：第一个通道 = B(蓝) = 0
-                            rgb_data[pixel_idx + 1] = 0; // 图像处理：第二个通道 = G(绿) = 0
-                            rgb_data[pixel_idx + 2] =
-                                255; // 图像处理：第三个通道 = R(红) = 255 = BGR(0,0,255) = 荧光红
-                        }
+                        pixel[0] = (uint8_t)(pixel[0] * 0.7);
+                        pixel[1] = (uint8_t)(pixel[1] * 0.7 + 255 * 0.3);
+                        pixel[2] = (uint8_t)(pixel[2] * 0.7);
                     }
                 }
             }
@@ -779,6 +642,37 @@ void YOLOPEngine::drawSegmentation(uint8_t *rgb_data, int width, int height)
     }
 
     cout << "[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=" << step << "）" << endl;
+}
+
+bool YOLOPEngine::runInference(const uint8_t *rgb_data, int width, int height,
+                              vector<uint8_t> &input_data, bool verbose)
+{
+    preprocessImage(rgb_data, width, height, input_data);
+
+    if (verbose)
+        cout << "[YOLOP] 预处理完成，输入数据大小: " << input_data.size() << " bytes" << endl;
+
+    rknn_input input = {};
+    input.type = RKNN_TENSOR_UINT8;
+    input.size = input_data.size();
+    input.fmt = RKNN_TENSOR_NHWC;
+    input.buf = input_data.data();
+
+    int ret = rknn_inputs_set(ctx, io_num.n_input, &input);
+    if (ret != RKNN_SUCC)
+    {
+        if (verbose)
+            cerr << "[YOLOP] 设置输入失败: " << ret << endl;
+        return false;
+    }
+
+    if (verbose)
+        cout << "[YOLOP] 开始推理..." << endl;
+
+    ret = rknn_run(ctx, nullptr);
+    if (ret != RKNN_SUCC && verbose)
+        cerr << "[YOLOP] 推理失败: " << ret << endl;
+    return ret == RKNN_SUCC;
 }
 
 int YOLOPEngine::detect(const uint8_t *rgb_data, int width, int height,
@@ -791,37 +685,9 @@ int YOLOPEngine::detect(const uint8_t *rgb_data, int width, int height,
 
     cout << "[YOLOP] 开始检测，图像尺寸: " << width << "x" << height << endl;
 
-    // 把图像整理为模型输入格式。
     vector<uint8_t> input_data;
-    preprocessImage(rgb_data, width, height, input_data);
-
-    cout << "[YOLOP] 预处理完成，输入数据大小: " << input_data.size() << " bytes" << endl;
-
-    // 向推理上下文提交输入。
-    rknn_input inputs[1];
-    memset(inputs, 0, sizeof(inputs));
-    inputs[0].index = 0;
-    inputs[0].type = RKNN_TENSOR_UINT8;
-    inputs[0].size = input_data.size();
-    inputs[0].fmt = RKNN_TENSOR_NHWC;
-    inputs[0].buf = input_data.data();
-
-    int ret = rknn_inputs_set(ctx, io_num.n_input, inputs);
-    if (ret != RKNN_SUCC)
-    {
-        cerr << "[YOLOP] 设置输入失败: " << ret << endl;
+    if (!runInference(rgb_data, width, height, input_data, true))
         return -1;
-    }
-
-    cout << "[YOLOP] 开始推理..." << endl;
-
-    // 提交本次模型计算。
-    ret = rknn_run(ctx, nullptr);
-    if (ret != RKNN_SUCC)
-    {
-        cerr << "[YOLOP] 推理失败: " << ret << endl;
-        return -1;
-    }
 
     cout << "[YOLOP] 推理完成，获取输出..." << endl;
 
@@ -833,7 +699,7 @@ int YOLOPEngine::detect(const uint8_t *rgb_data, int width, int height,
         outputs[i].want_float = 1; // 要求运行时返回浮点格式的输出。
     }
 
-    ret = rknn_outputs_get(ctx, io_num.n_output, outputs, nullptr);
+    int ret = rknn_outputs_get(ctx, io_num.n_output, outputs, nullptr);
     if (ret != RKNN_SUCC)
     {
         cerr << "[YOLOP] 获取输出失败: " << ret << endl;
@@ -850,7 +716,7 @@ int YOLOPEngine::detect(const uint8_t *rgb_data, int width, int height,
              << " bytes, 是否有效: " << (outputs[i].buf != nullptr) << endl;
     }
 
-    // 解码推理输出并形成检测结果。
+    // 把模型张量转换为调用方使用的检测列表。
     postprocessDetection(outputs, width, height, results);
 
     // 把分割输出用于后续绘制保存在本地。
@@ -860,7 +726,7 @@ int YOLOPEngine::detect(const uint8_t *rgb_data, int width, int height,
         cached_seg_height = inpHeight;
 
         // 把可行驶区域分割（output[1]）保存在本地。
-        int seg_size = inpWidth * inpHeight * 2; // 图像处理：2通道
+        int seg_size = inpWidth * inpHeight * 2; // 2通道
         float *drivable_data = (float *)outputs[1].buf;
         cached_drivable_seg.assign(drivable_data, drivable_data + seg_size);
 
@@ -872,7 +738,7 @@ int YOLOPEngine::detect(const uint8_t *rgb_data, int width, int height,
              << endl;
     }
 
-    // 归还当前推理的输出资源。
+    // 解码完成后向 RKNN 归还输出缓冲区。
     rknn_outputs_release(ctx, io_num.n_output, outputs);
     delete[] outputs;
 
@@ -885,23 +751,23 @@ void YOLOPEngine::drawResults(uint8_t *rgb_data, int width, int height,
                               const detect_result_group_t *results)
 {
 #ifdef PURE_CAPTURE_MODE
-    // 图像处理：纯采集模式：完全跳过所有绘制操作
+    // 纯采集模式：完全跳过所有绘制操作
     return;
 #else
     if (!rgb_data || !results)
         return;
 
-    // 图像处理：先绘制分割结果（作为底层）
+    // 先把分割掩码叠加到源图。
     drawSegmentation(rgb_data, width, height);
 
-    // 图像处理：再绘制检测框（在分割之上）
+    // 检测框覆盖分割底图。
     drawBoundingBoxes(rgb_data, width, height, results);
 
     cout << "[YOLOP] 已绘制完整结果（分割+检测框）" << endl;
 #endif
 }
 
-// 图像处理：添加纯检测模式（无绘制，提高性能）
+// 添加纯检测模式（无绘制，提高性能）
 int YOLOPEngine::detectOnly(const uint8_t *rgb_data, int width, int height,
                             detect_result_group_t *results)
 {
@@ -910,42 +776,24 @@ int YOLOPEngine::detectOnly(const uint8_t *rgb_data, int width, int height,
         return -1;
     }
 
-    // 把图像整理为模型输入格式。
     vector<uint8_t> input_data;
-    preprocessImage(rgb_data, width, height, input_data);
-
-    // 向推理上下文提交输入。
-    rknn_input inputs[1];
-    memset(inputs, 0, sizeof(inputs));
-    inputs[0].index = 0;
-    inputs[0].type = RKNN_TENSOR_UINT8;
-    inputs[0].size = input_data.size();
-    inputs[0].fmt = RKNN_TENSOR_NHWC;
-    inputs[0].buf = input_data.data();
-
-    int ret = rknn_inputs_set(ctx, io_num.n_input, inputs);
-    if (ret != RKNN_SUCC)
+    if (!runInference(rgb_data, width, height, input_data, false))
         return -1;
 
-    // 提交本次模型计算。
-    ret = rknn_run(ctx, nullptr);
-    if (ret != RKNN_SUCC)
-        return -1;
-
-    // 图像处理：只获取检测输出（跳过分割输出以提高性能）
+    // 纯检测模式只请求编号为 0 的输出张量。
     rknn_output outputs[1];
     memset(outputs, 0, sizeof(outputs));
     outputs[0].want_float = 1;
     outputs[0].index = 0; // 本路径只取得目标检测输出。
 
-    ret = rknn_outputs_get(ctx, 1, outputs, nullptr);
+    int ret = rknn_outputs_get(ctx, 1, outputs, nullptr);
     if (ret != RKNN_SUCC)
         return -1;
 
-    // 解码推理输出并形成检测结果。
+    // 把模型张量转换为调用方使用的检测列表。
     postprocessDetection(outputs, width, height, results);
 
-    // 归还当前推理的输出资源。
+    // 解码完成后向 RKNN 归还输出缓冲区。
     rknn_outputs_release(ctx, 1, outputs);
 
     return 0;

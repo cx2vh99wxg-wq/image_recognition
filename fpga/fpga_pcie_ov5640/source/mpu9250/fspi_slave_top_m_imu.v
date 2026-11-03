@@ -1,18 +1,15 @@
-
-// 旧说明含编码损坏，原记录为：Ŀǰram�������2048
-// 旧说明含编码损坏，原记录为：��дʱ����400MHZ
-// 旧说明含编码损坏，原记录为：��� RK�����д��ͨ������ҪС��100mhz ��д��СҪС��2048
+// 2026-11-03 注释校订。连接 M 端 FSPI、控制寄存器和 IMU 快照输入，保留板级时钟路径。
 module fspi_slave_top_m_imu
     (input wire [511 : 0] imu_snapshot,
      input wire sys_clk,
-     // 参数记录为 25mhz。
+
      input wire rst_n,
 
      input wire spi_clk,
      input wire spi_cs,
      inout wire [3 : 0] spi_data,
      input wire [3 : 0] select_rearview,
-     // GPIO接收到的一位值：本节对应的标识或作用域。
+
      input wire auto_brake_enable,
      input wire [5 : 0] speed_status_async,
      input wire [15 : 0] control_status_async,
@@ -24,51 +21,25 @@ module fspi_slave_top_m_imu
      output wire [7 : 0] mem5_out,
      output wire [7 : 0] mem6_out);
 
-    wire [1 : 0] cmd;
-    wire tx_data_valid;
-    wire [7 : 0] tx_data;
-    wire rx_data_valid;
-    wire [7 : 0] rx_data;
-    wire wr_clk; // 旧说明含编码损坏，原记录为：��Ҫ�������ʵ�4������������spiͨ������ 100MHZʱ����ʱ��������Ҫ400mhz ��Ϊ��4��
-
-    clk_fspi clk_gen_inst(.clkout0(wr_clk),
-                          // 停用示例，仅供对照：output
-                          .lock(),
-                          // 停用示例，仅供对照：output
-                          .clkin1(sys_clk) // 停用示例，仅供对照：input
-             );
-
-    // 选择 RAM 读写方向及使能。
-    spi_ram_crtl u_spi_ram_crtl(.wr_clk(wr_clk),
-                                .rst_n(rst_n),
-                                .spi_cs(spi_cs),
-                                .cmd(cmd),
-                                .tx_done(tx_data_valid),
-                                .wr_data(rx_data),
-                                .rx_valid(rx_data_valid),
-                                .select_rearview(select_rearview),
-                                // 本信号用于传递select_rearview。
-                                .rd_data(tx_data),
-                                .mem0_out(mem0_out),
-                                .mem1_out(mem1_out),
-                                .mem2_out(mem2_out),
-                                .mem3_out(mem3_out),
-                                .mem4_out(mem4_out),
-                                .mem5_out(mem5_out),
-                                .mem6_out(mem6_out));
-
-    fspi_slave_m_imu u_fspi_slave(.imu_snapshot(imu_snapshot),
-                                  .spi_clk(spi_clk),
-                                  .spi_cs(spi_cs),
-                                  .spi_data(spi_data),
-                                  .rst_n(rst_n),
-                                  .select_rearview(select_rearview),
-                                  .auto_brake_enable(auto_brake_enable),
-                                  .speed_status_async(speed_status_async),
-                                  .control_status_async(control_status_async),
-                                  .cmd(cmd),
-                                  .rx_data(rx_data),
-                                  .rx_data_valid(rx_data_valid),
-                                  .tx_data(tx_data),
-                                  .tx_data_valid(tx_data_valid));
+    wire wr_clk;
+    clk_fspi clk_gen_inst(.clkout0(wr_clk), .lock(), .clkin1(sys_clk));
+    fspi_register_endpoint #(.HAS_IMU(1'b1)) u_register_endpoint (
+        .wr_clk(wr_clk),
+        .rst_n(rst_n),
+        .spi_clk(spi_clk),
+        .spi_cs(spi_cs),
+        .spi_data(spi_data),
+        .select_rearview(select_rearview),
+        .auto_brake_enable(auto_brake_enable),
+        .speed_status_async(speed_status_async),
+        .control_status_async(control_status_async),
+        .mem0_out(mem0_out),
+        .mem1_out(mem1_out),
+        .mem2_out(mem2_out),
+        .mem3_out(mem3_out),
+        .mem4_out(mem4_out),
+        .mem5_out(mem5_out),
+        .mem6_out(mem6_out),
+        .imu_snapshot(imu_snapshot)
+    );
 endmodule

@@ -1,0 +1,22 @@
+[
+  "M/.bashrc",
+  "M/Makefile",
+  "M/imu/Makefile",
+  "M/pcie/Makefile",
+  "M/pcie/csrc/main.cpp",
+  "M/udp/Makefile",
+  "M/udp/csrc/main.cpp",
+  "S/.bashrc",
+  "S/Makefile",
+  "S/fspi/Makefile",
+  "S/fspi/csrc/main.c",
+  "S/pcie/Makefile",
+  "S/pcie/csrc/main.cpp",
+  "S/steering/Makefile",
+  "S/steering/actuator/Makefile",
+  "S/udp/Makefile",
+  "S/udp/csrc/main.cpp",
+  "S/x11/csrc/Makefile",
+  "S/x11/csrc/main.cpp",
+  "common/steering/Makefile"
+]

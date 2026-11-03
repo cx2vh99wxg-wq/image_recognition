@@ -1015,6 +1015,6 @@ class Dashboard
     }
 };
 
-} // perception_ui：本节对应的标识或作用域。
+}
 
 #endif

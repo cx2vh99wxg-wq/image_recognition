@@ -1,0 +1,5 @@
+PASS 7 modules x 20000 observations
+- /tmp/pineapple-expanded-os7mi_ze/compare_expanded.sv:364: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 200us; walltime 0.070 s; speed 2.846 ms/s
+- Verilator: cpu 0.070 s on 1 threads; allocated 7 MB

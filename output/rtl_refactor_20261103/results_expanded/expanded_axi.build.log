@@ -1,0 +1,394 @@
+%Warning-IMPLICIT: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:262:11: Signal definition not found, creating implicitly: 'wframe_data'
+                                                                                                                                   : ... Suggested alternative: 'wframe_data0'
+  262 |  .wr_data(wframe_data),
+      |           ^~~~~~~~~~~
+                   ... For warning description see https://verilator.org/warn/IMPLICIT?v=5.048
+                   ... Use "/* verilator lint_off IMPLICIT */" and lint_on around source to disable this message.
+%Warning-IMPLICIT: /tmp/pineapple-expanded-g6qhap8o/original.v:283:11: Signal definition not found, creating implicitly: 'wframe_data'
+                                                                     : ... Suggested alternative: 'wframe_data0'
+  283 |  .wr_data(wframe_data),                   
+      |           ^~~~~~~~~~~
+%Warning-WIDTHEXPAND: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:322:58: Operator ADD expects 32 bits on the LHS, but LHS's ARRAYSEL generates 10 bits.
+                                                                                                                                          : ... note: In instance 'compare_expanded.u_1.dut_new'
+  322 |     if (cur_ch[1]) row_base_addr = (row_line_cnt[cur_ch] + 240) * LINE_STRIDE;
+      |                                                          ^
+                      ... For warning description see https://verilator.org/warn/WIDTHEXPAND?v=5.048
+                      ... Use "/* verilator lint_off WIDTHEXPAND */" and lint_on around source to disable this message.
+%Warning-WIDTHTRUNC: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:328:21: Operator ASSIGNW expects 28 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                                                                                                         : ... note: In instance 'compare_expanded.u_1.dut_new'
+  328 |   assign axi_awaddr = C_BASE_ADDR + addr_offset_ch + row_base_addr + col_offset_addr;
+      |                     ^
+                     ... For warning description see https://verilator.org/warn/WIDTHTRUNC?v=5.048
+                     ... Use "/* verilator lint_off WIDTHTRUNC */" and lint_on around source to disable this message.
+%Warning-WIDTHEXPAND: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:432:74: Operator ADD expects 32 bits on the RHS, but RHS's VARREF 'araddr_offset' generates 22 bits.
+                                                                                                                                          : ... note: In instance 'compare_expanded.u_1.dut_new'
+  432 |   assign axi_araddr = C_BASE_ADDR + (rc_rframe_index * FRAME_SIZE_BYTES) + araddr_offset;
+      |                                                                          ^
+%Warning-WIDTHEXPAND: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:438:15: Operator ASSIGNW expects 32 bits on the Assign RHS, but Assign RHS's REPLICATE generates 15 bits.
+                                                                                                                                          : ... note: In instance 'compare_expanded.u_1.dut_new'
+  438 |   assign tp_o = {ws_state, cur_ch, min_abs_cnt[3:0], wr_idx[0], wr_idx[1], wr_idx[2]};
+      |               ^
+%Warning-WIDTHTRUNC: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:87:21: Operator ASSIGNW expects 4 bits on the Assign RHS, but Assign RHS's SUB generates 32 or 5 bits.
+                                                                                                                                    : ... note: In instance 'compare_expanded.u_0.dut_new'
+   87 |  assign axi_awlen   = C_BURST_LEN - 1'b1;
+      |                     ^
+%Warning-WIDTHTRUNC: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:94:21: Operator ASSIGNW expects 16 bits on the Assign RHS, but Assign RHS's CONST '32'hffffffff' generates 32 bits.
+                                                                                                                                    : ... note: In instance 'compare_expanded.u_0.dut_new'
+   94 |  assign axi_wstrb   = 32'hFFFFFFFF;
+      |                     ^
+%Warning-WIDTHTRUNC: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:98:21: Operator ASSIGNW expects 4 bits on the Assign RHS, but Assign RHS's SUB generates 32 or 5 bits.
+                                                                                                                                    : ... note: In instance 'compare_expanded.u_0.dut_new'
+   98 |  assign axi_arlen   = C_BURST_LEN - 1'b1;
+      |                     ^
+%Warning-WIDTHTRUNC: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:173:27: Operator ASSIGNDLY expects 2 bits on the Assign RHS, but Assign RHS's REPLICATE generates 5 bits.
+                                                                                                                                     : ... note: In instance 'compare_expanded.u_0.dut_new'
+  173 |             r_wframe_sync <= {r_wframe_sync, wframe_vsync};
+      |                           ^~
+%Warning-WIDTHEXPAND: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:248:34: Operator ADD expects 32 bits on the RHS, but RHS's REPLICATE generates 24 bits.
+                                                                                                                                      : ... note: In instance 'compare_expanded.u_0.dut_new'
+  248 |  assign axi_awaddr = C_BASE_ADDR + {rc_wframe_index, rc_w_ptr};
+      |                                  ^
+%Warning-WIDTHTRUNC: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:248:20: Operator ASSIGNW expects 28 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                                                                                                     : ... note: In instance 'compare_expanded.u_0.dut_new'
+  248 |  assign axi_awaddr = C_BASE_ADDR + {rc_wframe_index, rc_w_ptr};
+      |                    ^
+%Warning-WIDTHTRUNC: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:256:17: Operator ASSIGNW expects 1 bits on the Assign RHS, but Assign RHS's VARREF 'wframe_data_en' generates 3 bits.
+                                                                                                                                     : ... note: In instance 'compare_expanded.u_0.dut_new'
+  256 |  assign tp_o[3] = wframe_data_en;
+      |                 ^
+%Warning-WIDTHTRUNC: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:259:3: Input port connection 'wr_clk' expects 1 bits on the pin connection, but pin connection's VARREF 'wframe_pclk' generates 3 bits.
+                                                                                                                                    : ... note: In instance 'compare_expanded.u_0.dut_new'
+  259 |  .wr_clk(wframe_pclk),
+      |   ^~~~~~
+%Warning-WIDTHTRUNC: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:261:3: Input port connection 'wr_en' expects 1 bits on the pin connection, but pin connection's VARREF 'wframe_data_en' generates 3 bits.
+                                                                                                                                    : ... note: In instance 'compare_expanded.u_0.dut_new'
+  261 |  .wr_en(wframe_data_en),
+      |   ^~~~~
+%Warning-WIDTHEXPAND: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:262:3: Input port connection 'wr_data' expects 16 bits on the pin connection, but pin connection's VARREF 'wframe_data' generates 1 bits.
+                                                                                                                                     : ... note: In instance 'compare_expanded.u_0.dut_new'
+  262 |  .wr_data(wframe_data),
+      |   ^~~~~~~
+%Warning-WIDTHEXPAND: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:357:62: Operator ASSIGN expects 16 bits on the Assign RHS, but Assign RHS's CONST '2'h0' generates 2 bits.
+                                                                                                                                      : ... note: In instance 'compare_expanded.u_0.dut_new'
+  357 | reg             [15:0]               rfifo_wr_rst_busy_dly = 2'b0;
+      |                                                              ^~~~
+%Warning-WIDTHTRUNC: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:364:31: Operator ASSIGNDLY expects 16 bits on the Assign RHS, but Assign RHS's REPLICATE generates 17 bits.
+                                                                                                                                     : ... note: In instance 'compare_expanded.u_0.dut_new'
+  364 |         rfifo_wr_rst_busy_dly <= {rfifo_wr_rst_busy_dly,1'b1};
+      |                               ^~
+%Warning-WIDTHEXPAND: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:470:33: Operator ADD expects 32 bits on the RHS, but RHS's REPLICATE generates 24 bits.
+                                                                                                                                      : ... note: In instance 'compare_expanded.u_0.dut_new'
+  470 | assign axi_araddr = C_BASE_ADDR + {rc_rframe_index, araddr};
+      |                                 ^
+%Warning-WIDTHEXPAND: /tmp/pineapple-expanded-g6qhap8o/original.v:939:58: Operator ADD expects 32 bits on the LHS, but LHS's ARRAYSEL generates 10 bits.
+                                                                        : ... note: In instance 'compare_expanded.u_1.dut_old'
+  939 |     if (cur_ch[1]) row_base_addr = (row_line_cnt[cur_ch] + 240) * LINE_STRIDE;
+      |                                                          ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/original.v:945:21: Operator ASSIGNW expects 28 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                                       : ... note: In instance 'compare_expanded.u_1.dut_old'
+  945 |   assign axi_awaddr = C_BASE_ADDR + addr_offset_ch + row_base_addr + col_offset_addr;
+      |                     ^
+%Warning-WIDTHEXPAND: /tmp/pineapple-expanded-g6qhap8o/original.v:1055:74: Operator ADD expects 32 bits on the RHS, but RHS's VARREF 'araddr_offset' generates 22 bits.
+                                                                         : ... note: In instance 'compare_expanded.u_1.dut_old'
+ 1055 |   assign axi_araddr = C_BASE_ADDR + (rc_rframe_index * FRAME_SIZE_BYTES) + araddr_offset;
+      |                                                                          ^
+%Warning-WIDTHEXPAND: /tmp/pineapple-expanded-g6qhap8o/original.v:1061:15: Operator ASSIGNW expects 32 bits on the Assign RHS, but Assign RHS's REPLICATE generates 15 bits.
+                                                                         : ... note: In instance 'compare_expanded.u_1.dut_old'
+ 1061 |   assign tp_o = {ws_state, cur_ch, min_abs_cnt[3:0], wr_idx[0], wr_idx[1], wr_idx[2]};
+      |               ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/original.v:86:21: Operator ASSIGNW expects 4 bits on the Assign RHS, but Assign RHS's SUB generates 32 or 5 bits.
+                                                                      : ... note: In instance 'compare_expanded.u_0.dut_old'
+   86 |  assign axi_awlen   = C_BURST_LEN - 1'b1;
+      |                     ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/original.v:93:21: Operator ASSIGNW expects 16 bits on the Assign RHS, but Assign RHS's CONST '32'hffffffff' generates 32 bits.
+                                                                      : ... note: In instance 'compare_expanded.u_0.dut_old'
+   93 |  assign axi_wstrb   = 32'hFFFFFFFF;
+      |                     ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/original.v:97:21: Operator ASSIGNW expects 4 bits on the Assign RHS, but Assign RHS's SUB generates 32 or 5 bits.
+                                                                      : ... note: In instance 'compare_expanded.u_0.dut_old'
+   97 |  assign axi_arlen   = C_BURST_LEN - 1'b1;
+      |                     ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/original.v:198:18: Operator ASSIGNDLY expects 2 bits on the Assign RHS, but Assign RHS's REPLICATE generates 5 bits.
+                                                                       : ... note: In instance 'compare_expanded.u_0.dut_old'
+  198 |    r_wframe_sync <= {r_wframe_sync, wframe_vsync}; 
+      |                  ^~
+%Warning-WIDTHEXPAND: /tmp/pineapple-expanded-g6qhap8o/original.v:265:34: Operator ADD expects 32 bits on the RHS, but RHS's REPLICATE generates 24 bits.
+                                                                        : ... note: In instance 'compare_expanded.u_0.dut_old'
+  265 |  assign axi_awaddr = C_BASE_ADDR + {rc_wframe_index, rc_w_ptr}; 
+      |                                  ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/original.v:265:20: Operator ASSIGNW expects 28 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                                       : ... note: In instance 'compare_expanded.u_0.dut_old'
+  265 |  assign axi_awaddr = C_BASE_ADDR + {rc_wframe_index, rc_w_ptr}; 
+      |                    ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/original.v:274:17: Operator ASSIGNW expects 1 bits on the Assign RHS, but Assign RHS's VARREF 'wframe_data_en' generates 3 bits.
+                                                                       : ... note: In instance 'compare_expanded.u_0.dut_old'
+  274 |  assign tp_o[3] = wframe_data_en; 
+      |                 ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/original.v:280:3: Input port connection 'wr_clk' expects 1 bits on the pin connection, but pin connection's VARREF 'wframe_pclk' generates 3 bits.
+                                                                      : ... note: In instance 'compare_expanded.u_0.dut_old'
+  280 |  .wr_clk(wframe_pclk),                     
+      |   ^~~~~~
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/original.v:282:3: Input port connection 'wr_en' expects 1 bits on the pin connection, but pin connection's VARREF 'wframe_data_en' generates 3 bits.
+                                                                      : ... note: In instance 'compare_expanded.u_0.dut_old'
+  282 |  .wr_en(wframe_data_en),                       
+      |   ^~~~~
+%Warning-WIDTHEXPAND: /tmp/pineapple-expanded-g6qhap8o/original.v:283:3: Input port connection 'wr_data' expects 16 bits on the pin connection, but pin connection's VARREF 'wframe_data' generates 1 bits.
+                                                                       : ... note: In instance 'compare_expanded.u_0.dut_old'
+  283 |  .wr_data(wframe_data),                   
+      |   ^~~~~~~
+%Warning-WIDTHEXPAND: /tmp/pineapple-expanded-g6qhap8o/original.v:404:62: Operator ASSIGN expects 16 bits on the Assign RHS, but Assign RHS's CONST '2'h0' generates 2 bits.
+                                                                        : ... note: In instance 'compare_expanded.u_0.dut_old'
+  404 | reg             [15:0]               rfifo_wr_rst_busy_dly = 2'b0;
+      |                                                              ^~~~
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/original.v:411:31: Operator ASSIGNDLY expects 16 bits on the Assign RHS, but Assign RHS's REPLICATE generates 17 bits.
+                                                                       : ... note: In instance 'compare_expanded.u_0.dut_old'
+  411 |         rfifo_wr_rst_busy_dly <= {rfifo_wr_rst_busy_dly,1'b1};
+      |                               ^~
+%Warning-WIDTHEXPAND: /tmp/pineapple-expanded-g6qhap8o/original.v:527:33: Operator ADD expects 32 bits on the RHS, but RHS's REPLICATE generates 24 bits.
+                                                                        : ... note: In instance 'compare_expanded.u_0.dut_old'
+  527 | assign axi_araddr = C_BASE_ADDR + {rc_rframe_index, araddr};
+      |                                 ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:210:17: Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                                : ... note: In instance 'compare_expanded.u_1'
+  210 |     axi_awready = $urandom;
+      |                 ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:211:16: Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                                : ... note: In instance 'compare_expanded.u_1'
+  211 |     axi_wready = $urandom;
+      |                ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:212:13: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                                : ... note: In instance 'compare_expanded.u_1'
+  212 |     axi_bid = $urandom;
+      |             ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:213:15: Operator ASSIGN expects 2 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                                : ... note: In instance 'compare_expanded.u_1'
+  213 |     axi_bresp = $urandom;
+      |               ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:214:16: Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                                : ... note: In instance 'compare_expanded.u_1'
+  214 |     axi_bvalid = $urandom;
+      |                ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:215:17: Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                                : ... note: In instance 'compare_expanded.u_1'
+  215 |     axi_arready = $urandom;
+      |                 ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:216:13: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                                : ... note: In instance 'compare_expanded.u_1'
+  216 |     axi_rid = $urandom;
+      |             ^
+%Warning-WIDTHEXPAND: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:217:15: Operator ASSIGN expects 128 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                                 : ... note: In instance 'compare_expanded.u_1'
+  217 |     axi_rdata = $urandom;
+      |               ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:218:15: Operator ASSIGN expects 2 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                                : ... note: In instance 'compare_expanded.u_1'
+  218 |     axi_rresp = $urandom;
+      |               ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:219:15: Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                                : ... note: In instance 'compare_expanded.u_1'
+  219 |     axi_rlast = $urandom;
+      |               ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:220:16: Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                                : ... note: In instance 'compare_expanded.u_1'
+  220 |     axi_rvalid = $urandom;
+      |                ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:223:18: Operator ASSIGN expects 16 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                                : ... note: In instance 'compare_expanded.u_1'
+  223 |     wframe_data0 = $urandom;
+      |                  ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:224:18: Operator ASSIGN expects 16 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                                : ... note: In instance 'compare_expanded.u_1'
+  224 |     wframe_data1 = $urandom;
+      |                  ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:225:18: Operator ASSIGN expects 16 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                                : ... note: In instance 'compare_expanded.u_1'
+  225 |     wframe_data2 = $urandom;
+      |                  ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:227:20: Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                                : ... note: In instance 'compare_expanded.u_1'
+  227 |     rframe_data_en = $urandom;
+      |                    ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:64:17: Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                               : ... note: In instance 'compare_expanded.u_0'
+   64 |     axi_awready = $urandom;
+      |                 ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:65:16: Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                               : ... note: In instance 'compare_expanded.u_0'
+   65 |     axi_wready = $urandom;
+      |                ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:66:13: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                               : ... note: In instance 'compare_expanded.u_0'
+   66 |     axi_bid = $urandom;
+      |             ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:67:15: Operator ASSIGN expects 2 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                               : ... note: In instance 'compare_expanded.u_0'
+   67 |     axi_bresp = $urandom;
+      |               ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:68:16: Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                               : ... note: In instance 'compare_expanded.u_0'
+   68 |     axi_bvalid = $urandom;
+      |                ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:69:17: Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                               : ... note: In instance 'compare_expanded.u_0'
+   69 |     axi_arready = $urandom;
+      |                 ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:70:13: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                               : ... note: In instance 'compare_expanded.u_0'
+   70 |     axi_rid = $urandom;
+      |             ^
+%Warning-WIDTHEXPAND: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:71:15: Operator ASSIGN expects 128 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                                : ... note: In instance 'compare_expanded.u_0'
+   71 |     axi_rdata = $urandom;
+      |               ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:72:15: Operator ASSIGN expects 2 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                               : ... note: In instance 'compare_expanded.u_0'
+   72 |     axi_rresp = $urandom;
+      |               ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:73:15: Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                               : ... note: In instance 'compare_expanded.u_0'
+   73 |     axi_rlast = $urandom;
+      |               ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:74:16: Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                               : ... note: In instance 'compare_expanded.u_0'
+   74 |     axi_rvalid = $urandom;
+      |                ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:77:18: Operator ASSIGN expects 16 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                               : ... note: In instance 'compare_expanded.u_0'
+   77 |     wframe_data0 = $urandom;
+      |                  ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:78:18: Operator ASSIGN expects 16 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                               : ... note: In instance 'compare_expanded.u_0'
+   78 |     wframe_data1 = $urandom;
+      |                  ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:79:18: Operator ASSIGN expects 16 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                               : ... note: In instance 'compare_expanded.u_0'
+   79 |     wframe_data2 = $urandom;
+      |                  ^
+%Warning-WIDTHTRUNC: /tmp/pineapple-expanded-g6qhap8o/compare_expanded.sv:81:20: Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's RAND generates 32 bits.
+                                                                               : ... note: In instance 'compare_expanded.u_0'
+   81 |     rframe_data_en = $urandom;
+      |                    ^
+%Warning-CASEINCOMPLETE: /tmp/pineapple-expanded-g6qhap8o/original.v:133:4: Case values incompletely covered (example pattern 0x0)
+  133 |    case ({r_rframe_inc, r_wframe_inc})
+      |    ^~~~
+                         ... For warning description see https://verilator.org/warn/CASEINCOMPLETE?v=5.048
+                         ... Use "/* verilator lint_off CASEINCOMPLETE */" and lint_on around source to disable this message.
+%Warning-CASEINCOMPLETE: /tmp/pineapple-expanded-g6qhap8o/original.v:209:4: Case values incompletely covered (example pattern 0x4)
+  209 |    case (rs_w)
+      |    ^~~~
+%Warning-CASEINCOMPLETE: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:127:4: Case values incompletely covered (example pattern 0x0)
+  127 |    case ({r_rframe_inc, r_wframe_inc})
+      |    ^~~~
+%Warning-CASEINCOMPLETE: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:201:4: Case values incompletely covered (example pattern 0x4)
+  201 |    case (rs_w)
+      |    ^~~~
+%Warning-INITIALDLY: /tmp/pineapple-expanded-g6qhap8o/original.v:80:15: Non-blocking assignment '<=' in initial/final block
+                                                                      : ... This will be executed as a blocking assignment '='!
+   80 |   axi_awvalid <= 0; 
+      |               ^~
+                     ... For warning description see https://verilator.org/warn/INITIALDLY?v=5.048
+                     ... Use "/* verilator lint_off INITIALDLY */" and lint_on around source to disable this message.
+%Warning-INITIALDLY: /tmp/pineapple-expanded-g6qhap8o/original.v:81:14: Non-blocking assignment '<=' in initial/final block
+                                                                      : ... This will be executed as a blocking assignment '='!
+   81 |   axi_wvalid <= 0; 
+      |              ^~
+%Warning-INITIALDLY: /tmp/pineapple-expanded-g6qhap8o/original.v:82:15: Non-blocking assignment '<=' in initial/final block
+                                                                      : ... This will be executed as a blocking assignment '='!
+   82 |   axi_arvalid <= 0; 
+      |               ^~
+%Warning-INITIALDLY: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:81:15: Non-blocking assignment '<=' in initial/final block
+                                                                                                                                    : ... This will be executed as a blocking assignment '='!
+   81 |   axi_awvalid <= 0;
+      |               ^~
+%Warning-INITIALDLY: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:82:14: Non-blocking assignment '<=' in initial/final block
+                                                                                                                                    : ... This will be executed as a blocking assignment '='!
+   82 |   axi_wvalid <= 0;
+      |              ^~
+%Warning-INITIALDLY: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl.v:83:15: Non-blocking assignment '<=' in initial/final block
+                                                                                                                                    : ... This will be executed as a blocking assignment '='!
+   83 |   axi_arvalid <= 0;
+      |               ^~
+%Warning-MULTIDRIVEN: /tmp/pineapple-expanded-g6qhap8o/original.v:684:13: Signal has multiple driving blocks with different clocking: 'compare_expanded.u_1.dut_old.fifo_wr_rst_cnt'
+                      /tmp/pineapple-expanded-g6qhap8o/original.v:694:13: ... Location of first driving block
+  694 |             fifo_wr_rst_cnt[gi] <= 5'd31;
+      |             ^~~~~~~~~~~~~~~
+                      /tmp/pineapple-expanded-g6qhap8o/original.v:694:13: ... Location of other driving block
+  694 |             fifo_wr_rst_cnt[gi] <= 5'd31;
+      |             ^~~~~~~~~~~~~~~
+                      ... For warning description see https://verilator.org/warn/MULTIDRIVEN?v=5.048
+                      ... Use "/* verilator lint_off MULTIDRIVEN */" and lint_on around source to disable this message.
+%Warning-MULTIDRIVEN: /tmp/pineapple-expanded-g6qhap8o/original.v:688:13: Signal has multiple driving blocks with different clocking: 'compare_expanded.u_1.dut_old.r_wr_vsync_edge'
+                      /tmp/pineapple-expanded-g6qhap8o/original.v:695:13: ... Location of first driving block
+  695 |             r_wr_vsync_edge[gi] <= 2'b00;
+      |             ^~~~~~~~~~~~~~~
+                      /tmp/pineapple-expanded-g6qhap8o/original.v:695:13: ... Location of other driving block
+  695 |             r_wr_vsync_edge[gi] <= 2'b00;
+      |             ^~~~~~~~~~~~~~~
+%Warning-MULTIDRIVEN: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:109:13: Signal has multiple driving blocks with different clocking: 'compare_expanded.u_1.dut_new.fifo_wr_rst_cnt'
+                      /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:119:13: ... Location of first driving block
+  119 |             fifo_wr_rst_cnt[gi] <= 5'd31;
+      |             ^~~~~~~~~~~~~~~
+                      /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:119:13: ... Location of other driving block
+  119 |             fifo_wr_rst_cnt[gi] <= 5'd31;
+      |             ^~~~~~~~~~~~~~~
+%Warning-MULTIDRIVEN: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:113:13: Signal has multiple driving blocks with different clocking: 'compare_expanded.u_1.dut_new.r_wr_vsync_edge'
+                      /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:120:13: ... Location of first driving block
+  120 |             r_wr_vsync_edge[gi] <= 2'b00;
+      |             ^~~~~~~~~~~~~~~
+                      /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:120:13: ... Location of other driving block
+  120 |             r_wr_vsync_edge[gi] <= 2'b00;
+      |             ^~~~~~~~~~~~~~~
+%Warning-MULTIDRIVEN: /tmp/pineapple-expanded-g6qhap8o/original.v:717:14: Signal has multiple driving blocks with different clocking: 'compare_expanded.u_1.dut_old.r_vsync_d'
+                      /tmp/pineapple-expanded-g6qhap8o/original.v:731:9: ... Location of first driving block
+  731 |         r_vsync_d[gi] <= {r_vsync_d[gi][0], wframe_vsync[gi]};
+      |         ^~~~~~~~~
+                      /tmp/pineapple-expanded-g6qhap8o/original.v:731:9: ... Location of other driving block
+  731 |         r_vsync_d[gi] <= {r_vsync_d[gi][0], wframe_vsync[gi]};
+      |         ^~~~~~~~~
+%Warning-MULTIDRIVEN: /tmp/pineapple-expanded-g6qhap8o/original.v:716:13: Signal has multiple driving blocks with different clocking: 'compare_expanded.u_1.dut_old.pix_h'
+                      /tmp/pineapple-expanded-g6qhap8o/original.v:733:11: ... Location of first driving block
+  733 |           pix_h[gi] <= 0;
+      |           ^~~~~
+                      /tmp/pineapple-expanded-g6qhap8o/original.v:733:11: ... Location of other driving block
+  733 |           pix_h[gi] <= 0;
+      |           ^~~~~
+%Warning-MULTIDRIVEN: /tmp/pineapple-expanded-g6qhap8o/original.v:716:25: Signal has multiple driving blocks with different clocking: 'compare_expanded.u_1.dut_old.pix_v'
+                      /tmp/pineapple-expanded-g6qhap8o/original.v:734:11: ... Location of first driving block
+  734 |           pix_v[gi] <= 0;
+      |           ^~~~~
+                      /tmp/pineapple-expanded-g6qhap8o/original.v:734:11: ... Location of other driving block
+  734 |           pix_v[gi] <= 0;
+      |           ^~~~~
+%Warning-MULTIDRIVEN: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:141:14: Signal has multiple driving blocks with different clocking: 'compare_expanded.u_1.dut_new.r_vsync_d'
+                      /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:155:9: ... Location of first driving block
+  155 |         r_vsync_d[gi] <= {r_vsync_d[gi][0], wframe_vsync[gi]};
+      |         ^~~~~~~~~
+                      /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:155:9: ... Location of other driving block
+  155 |         r_vsync_d[gi] <= {r_vsync_d[gi][0], wframe_vsync[gi]};
+      |         ^~~~~~~~~
+%Warning-MULTIDRIVEN: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:140:13: Signal has multiple driving blocks with different clocking: 'compare_expanded.u_1.dut_new.pix_h'
+                      /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:157:11: ... Location of first driving block
+  157 |           pix_h[gi] <= 0;
+      |           ^~~~~
+                      /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:157:11: ... Location of other driving block
+  157 |           pix_h[gi] <= 0;
+      |           ^~~~~
+%Warning-MULTIDRIVEN: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:140:25: Signal has multiple driving blocks with different clocking: 'compare_expanded.u_1.dut_new.pix_v'
+                      /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:158:11: ... Location of first driving block
+  158 |           pix_v[gi] <= 0;
+      |           ^~~~~
+                      /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/axi_ctrl/axi4_ctrl_3ch.v:158:11: ... Location of other driving block
+  158 |           pix_v[gi] <= 0;
+      |           ^~~~~
+make: Entering directory '/tmp/pineapple-expanded-g6qhap8o/obj'
+g++ -Os  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated.o /usr/local/share/verilator/include/verilated.cpp
+g++ -Os  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_timing.o /usr/local/share/verilator/include/verilated_timing.cpp
+g++ -Os  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_threads.o /usr/local/share/verilator/include/verilated_threads.cpp
+python3 /usr/local/share/verilator/bin/verilator_includer -DVL_INCLUDE_OPT=include Vcompare_expanded.cpp Vcompare_expanded___024root__0.cpp Vcompare_expanded__main.cpp Vcompare_expanded__ConstPool__0__Slow.cpp Vcompare_expanded___024root__Slow.cpp Vcompare_expanded___024root__0__Slow.cpp Vcompare_expanded__Syms__Slow.cpp > Vcompare_expanded__ALL.cpp
+g++ -Os  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o Vcompare_expanded__ALL.o Vcompare_expanded__ALL.cpp
+g++    verilated.o verilated_timing.o verilated_threads.o Vcompare_expanded__ALL.a    -pthread -lpthread -latomic   -o Vcompare_expanded
+rm Vcompare_expanded__ALL.verilator_deplist.tmp
+make: Leaving directory '/tmp/pineapple-expanded-g6qhap8o/obj'
+- V e r i l a t i o n   R e p o r t: Verilator 5.048 2026-04-26 rev v5.048-56-gc233a3905
+- Verilator: Built from 0.315 MB sources in 10 modules, into 0.705 MB in 7 C++ files needing 0.001 MB
+- Verilator: Walltime 2.934 s (elab=0.022, cvt=0.054, bld=2.804); cpu 0.102 s on 3 threads; allocated 224.227 MB

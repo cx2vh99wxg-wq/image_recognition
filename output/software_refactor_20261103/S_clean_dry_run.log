@@ -1,0 +1,113 @@
+mingw32-make: Entering directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/S'
+process_begin: CreateProcess(NULL, uname -s, ...) failed.
+Makefile:36: pipe: No error
+process_begin: CreateProcess(NULL, uname -m, ...) failed.
+Makefile:37: pipe: No error
+mkdir -p build
+echo "编译共享库: csrc/shared_memory.c"
+gcc -Iinclude -std=c99 -O3 -march=native -funroll-loops -pthread -fPIC -MMD -MP -c csrc/shared_memory.c -o build/shared_memory.o
+echo "创建共享库: build/libshared.a"
+ar rcs build/libshared.a build/shared_memory.o
+echo "=== 编译PCIe图像采集程序 ==="
+# 将共享库复制到pcie目录
+cp build/libshared.a pcie/libshared.a
+# 创建include软链接
+if [ ! -L pcie/include ]; then \
+	cd pcie && ln -sf ../include include; \
+fi
+# 编译PCIe程序
+D:/zheliVScode/mingw64/bin/mingw32-make.exe -C pcie SHARED_LIB=../build/libshared.a
+mingw32-make[1]: Entering directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/S/pcie'
+echo "创建build目录"
+mkdir -p build
+echo "编译C文件: csrc/yolo_integration.c"
+gcc -Wall -O3 -march=native -std=c11 -DYOLO_MODEL_PATH=\""model/RK3566_RK3568/yolov5s-640-640.rknn"\" -DYOLO_LABELS_PATH=\""model/coco_80_labels_list.txt"\" -MMD -MP -Iinclude -I../include -I../rknn_yolov5_demo/include -c csrc/yolo_integration.c -o build/yolo_integration.o
+echo "编译C文件: csrc/preprocess.c"
+gcc -Wall -O3 -march=native -std=c11 -DYOLO_MODEL_PATH=\""model/RK3566_RK3568/yolov5s-640-640.rknn"\" -DYOLO_LABELS_PATH=\""model/coco_80_labels_list.txt"\" -MMD -MP -Iinclude -I../include -I../rknn_yolov5_demo/include -c csrc/preprocess.c -o build/preprocess.o
+echo "编译C文件: csrc/person_alert_effects.c"
+gcc -Wall -O3 -march=native -std=c11 -DYOLO_MODEL_PATH=\""model/RK3566_RK3568/yolov5s-640-640.rknn"\" -DYOLO_LABELS_PATH=\""model/coco_80_labels_list.txt"\" -MMD -MP -Iinclude -I../include -I../rknn_yolov5_demo/include -c csrc/person_alert_effects.c -o build/person_alert_effects.o
+echo "编译C++文件: csrc/main.cpp"
+g++ -Wall -O3 -march=native -std=c++11 -DYOLO_MODEL_PATH=\""model/RK3566_RK3568/yolov5s-640-640.rknn"\" -DYOLO_LABELS_PATH=\""model/coco_80_labels_list.txt"\" -MMD -MP -Iinclude -I../include -I../rknn_yolov5_demo/include -c csrc/main.cpp -o build/main.o
+echo "编译C++文件: csrc/postprocess.cpp"
+g++ -Wall -O3 -march=native -std=c++11 -DYOLO_MODEL_PATH=\""model/RK3566_RK3568/yolov5s-640-640.rknn"\" -DYOLO_LABELS_PATH=\""model/coco_80_labels_list.txt"\" -MMD -MP -Iinclude -I../include -I../rknn_yolov5_demo/include -c csrc/postprocess.cpp -o build/postprocess.o
+echo "链接目标程序: build/app"
+g++ build/yolo_integration.o build/preprocess.o build/person_alert_effects.o build/main.o build/postprocess.o -L./lib -L../build -lrknnrt -lshared -lpthread -lm -lrt -o build/app
+echo "编译完成!"
+mingw32-make[1]: Leaving directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/S/pcie'
+echo "PCIe程序编译完成: pcie/build/app"
+echo "=== 编译UDP网络接收后台程序 ==="
+# 将共享库复制到udp目录
+cp build/libshared.a udp/libshared.a
+# 创建include软链接
+if [ ! -L udp/include ]; then \
+	cd udp && ln -sf ../include include; \
+fi
+# 编译UDP程序
+D:/zheliVScode/mingw64/bin/mingw32-make.exe -C udp SHARED_LIB=../build/libshared.a
+mingw32-make[1]: Entering directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/S/udp'
+mkdir -p build
+g++ -c -Iinclude -I../include -std=c++14 -O3 -march=native -funroll-loops -pthread -MMD -MP csrc/main.cpp -o build/main.o
+mkdir -p build
+mkdir -p ../build/
+gcc -Iinclude -I../include -std=c99 -O3 -march=native -funroll-loops -pthread -MMD -MP -c ../csrc/shared_memory.c -o build/shared_memory.o
+ar rcs ../build/libshared.a build/shared_memory.o
+g++ build/main.o  -o build/video_receiver ../build/libshared.a -lrt -lpthread
+mingw32-make[1]: Leaving directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/S/udp'
+echo "UDP程序编译完成: udp/build/video_receiver"
+echo "=== 编译X11六摄像头渲染程序 ==="
+# 编译X11程序
+D:/zheliVScode/mingw64/bin/mingw32-make.exe -C x11/csrc SHARED_LIB=../../build/libshared.a
+mingw32-make[1]: Entering directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/S/x11/csrc'
+The system cannot find the path specified.
+The system cannot find the path specified.
+echo "创建构建目录: build"
+mkdir -p build
+echo "编译C++: main.cpp"
+g++ -I../../include -Iinclude -std=c++14 -O3 -march=native -funroll-loops -pthread -c main.cpp -o build/main.o
+echo "编译共享内存C文件: ../../csrc/shared_memory.c"
+gcc -I../../include -Iinclude -std=c99 -O3 -march=native -funroll-loops -pthread -c ../../csrc/shared_memory.c -o build/shared_memory.o
+echo "链接可执行文件: build/eight_camera_renderer"
+g++ build/main.o build/shared_memory.o -o build/eight_camera_renderer -lX11 -lXext -lrt -lpthread
+echo "编译完成: eight_camera_renderer - Perception Engine 全景界面"
+mingw32-make[1]: Leaving directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/S/x11/csrc'
+echo "X11程序编译完成: x11/csrc/build/eight_camera_renderer"
+echo "=== 编译FSPI车辆控制程序 ==="
+# FSPI程序是独立的，不需要共享库
+D:/zheliVScode/mingw64/bin/mingw32-make.exe -C fspi
+mingw32-make[1]: Entering directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/S/fspi'
+echo "创建build目录"
+mkdir -p build
+echo "编译C文件: csrc/fspi_module.c"
+gcc -Wall -O2 -std=c11 -MMD -MP -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts -c csrc/fspi_module.c -o build/fspi_module.o
+echo "编译C文件: csrc/main.c"
+gcc -Wall -O2 -std=c11 -MMD -MP -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts -c csrc/main.c -o build/main.o
+echo "编译共享内存文件: ../csrc/shared_memory.c"
+gcc -Wall -O2 -std=c11 -MMD -MP -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts -c ../csrc/shared_memory.c -o build/shared_memory.o
+gcc -Wall -O2 -std=c11 -MMD -MP -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts -c ../steering/controller/steering_controller.c -o build/controller_steering_controller.o
+gcc -Wall -O2 -std=c11 -MMD -MP -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts -c ../steering/controller/steering_response.c -o build/controller_steering_response.o
+gcc -Wall -O2 -std=c11 -MMD -MP -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts -c ../steering/controller/steering_keepalive.c -o build/controller_steering_keepalive.o
+gcc -Wall -O2 -std=c11 -MMD -MP -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts -c ../steering/controller/steering_runtime.c -o build/controller_steering_runtime.o
+gcc -Wall -O2 -std=c11 -MMD -MP -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts -c ../steering/feedback/steering_feedback.c -o build/feedback_steering_feedback.o
+gcc -Wall -O2 -std=c11 -MMD -MP -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts -c ../steering/feedback/feedback_tracker.c -o build/feedback_feedback_tracker.o
+gcc -Wall -O2 -std=c11 -MMD -MP -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts -c ../steering/actuator/steering_actuator.c -o build/steering_actuator.o
+gcc -Wall -O2 -std=c11 -MMD -MP -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts -c ../../common/steering/contracts/steering_feedback_wire.c -o build/steering_wire.o
+echo "链接应用程序: build/vehicle_control"
+gcc build/fspi_module.o build/main.o build/shared_memory.o build/controller_steering_controller.o build/controller_steering_response.o build/controller_steering_keepalive.o build/controller_steering_runtime.o build/feedback_steering_feedback.o build/feedback_feedback_tracker.o build/steering_actuator.o build/steering_wire.o -lm -lpthread -lrt -o build/vehicle_control
+echo "应用程序编译完成: build/vehicle_control"
+gcc -Wall -O2 -std=c11 -MMD -MP -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts csrc/speed_gear_status.c build/fspi_module.o -lm -lpthread -lrt -o build/speed_gear_status
+gcc -Wall -O2 -std=c11 -MMD -MP -Iinclude -I../include -I../steering/controller -I../steering/actuator -I../steering/feedback -I../../common/steering/contracts csrc/control_link_status.c build/fspi_module.o -lm -lpthread -lrt -o build/control_link_status
+mingw32-make[1]: Leaving directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/S/fspi'
+echo "FSPI程序编译完成: fspi/build/vehicle_control"
+echo "=== 编译完成 ==="
+echo "PCIe程序:  pcie/build/app"
+echo "UDP程序:   udp/build/video_receiver"
+echo "X11程序:   x11/csrc/build/eight_camera_renderer"
+echo "FSPI程序:  fspi/build/vehicle_control"
+echo "共享库:    build/libshared.a"
+echo ""
+echo "使用 'make run-background' 启动后台程序 (PCIe + UDP)"
+echo "使用 'make run-display' 启动显示程序 (X11)"
+echo "使用 'make run-fspi' 启动车辆控制程序 (FSPI)"
+echo "使用 'make run' 启动完整系统"
+echo "使用 'make stop' 停止系统"
+mingw32-make: Leaving directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/S'

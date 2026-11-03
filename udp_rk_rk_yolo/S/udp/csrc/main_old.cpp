@@ -28,17 +28,17 @@
 
 // ── 网络传输 ──
 // *作   者：科研轮转（C语言重构版：更好的函数封装）
-// 网络传输：*完成时间：2025年10月1日
+// 网络传输：本版更新：2026年10月23日
 // 网络传输：*实现功能：480p视频流UDP接收与实时渲染（网络接收端）
 // 网络传输：*性能优化：移除PCIE采集，专注网络接收和显示刷新
 // ── 网络传输 ──
 
 // ── 网络传输 ──
-// UDP网络接收配置：本节对应的标识或作用域。
+
 // ── 网络传输 ──
 #define UDP_PORT 8888
 #define MAX_PACKET_SIZE 1400
-#define UDP_FRAME_BUFFER_SIZE (UDP_IMAGE_WIDTH * UDP_IMAGE_HEIGHT * 2) // RGB565格式：本节对应的标识或作用域。
+#define UDP_FRAME_BUFFER_SIZE (UDP_IMAGE_WIDTH * UDP_IMAGE_HEIGHT * 2)
 #define COMBINED_FRAME_BUFFER_SIZE                                                                 \
     (COMBINED_IMAGE_WIDTH * COMBINED_IMAGE_HEIGHT * 2) // 网络传输：拼接后的图像大小
 #define RECEIVE_TIMEOUT_SEC 5
@@ -123,7 +123,7 @@ typedef struct
 // 本节给出删除了行同步传输相关的结构体的定义。
 
 // ── 网络传输 ──
-// PCIE管理结构体和渲染引擎结构体的定义：本节对应的标识或作用域。
+
 // ── 网络传输 ──
 typedef struct
 {
@@ -165,7 +165,7 @@ typedef struct
 // ── 网络传输 ──
 // 供后续实现调用的接口声明。
 // ── 网络传输 ──
-// PCIE管理函数：本节对应的标识或作用域。
+
 int pcie_manager_init(PCIEManager *manager);
 void pcie_manager_get_device_info(PCIEManager *manager);
 int pcie_manager_capture_frame(PCIEManager *manager, uint8_t *image_buffer, size_t buffer_size);
@@ -1190,9 +1190,9 @@ void rgb565_to_bgra_direct(const uint16_t *image565, uint32_t *bgra_data, size_t
         uint16_t p3 = image565[3];
 
         /* 网络传输：直接转换为BGRA格式: 0xAABBGGRR */
-        bgra_data[0] = 0xFF000000 | ((((p0 & 0x001F) << 3) | ((p0 & 0x001F) >> 2)) << 16) | /* R：红色分量。 */
-                       ((((p0 & 0x07E0) >> 3) | ((p0 & 0x07E0) >> 9)) << 8) |               /* G：绿色分量。 */
-                       (((p0 & 0xF800) >> 8) | ((p0 & 0xF800) >> 13));                      /* B：蓝色分量。 */
+        bgra_data[0] = 0xFF000000 | ((((p0 & 0x001F) << 3) | ((p0 & 0x001F) >> 2)) << 16) |
+                       ((((p0 & 0x07E0) >> 3) | ((p0 & 0x07E0) >> 9)) << 8) |
+                       (((p0 & 0xF800) >> 8) | ((p0 & 0xF800) >> 13));
 
         bgra_data[1] = 0xFF000000 | ((((p1 & 0x001F) << 3) | ((p1 & 0x001F) >> 2)) << 16) |
                        ((((p1 & 0x07E0) >> 3) | ((p1 & 0x07E0) >> 9)) << 8) |
@@ -1249,9 +1249,9 @@ void scale_image_simple(const uint8_t *src_rgb888, uint8_t *dst_rgb888, int src_
             dst_idx = (dst_y * dst_width + dst_x) * 3;
 
             /* 网络传输：复制RGB值 */
-            dst_rgb888[dst_idx + 0] = src_rgb888[src_idx + 0]; /* R：红色分量。 */
-            dst_rgb888[dst_idx + 1] = src_rgb888[src_idx + 1]; /* G：绿色分量。 */
-            dst_rgb888[dst_idx + 2] = src_rgb888[src_idx + 2]; /* B：蓝色分量。 */
+            dst_rgb888[dst_idx + 0] = src_rgb888[src_idx + 0];
+            dst_rgb888[dst_idx + 1] = src_rgb888[src_idx + 1];
+            dst_rgb888[dst_idx + 2] = src_rgb888[src_idx + 2];
         }
     }
 }
@@ -1835,11 +1835,11 @@ void render_engine_cleanup(RenderEngine *engine)
 // ── 网络传输 ──
 int main(void)
 {
-    NetworkReceiver network_receiver; // UDP网络接收器：本节对应的标识或作用域。
+    NetworkReceiver network_receiver;
     SharedMemoryManager shm_manager;  // 本对象管理共享段及本地映射。
     RenderEngine render_engine;
-    uint8_t *udp_image_buf;      // UDP接收的图像缓冲区：本节对应的标识或作用域。
-    uint8_t *pcie_image_buf;     // PCIe共享内存读取的图像缓冲区：本节对应的标识或作用域。
+    uint8_t *udp_image_buf;
+    uint8_t *pcie_image_buf;
     uint8_t *combined_image_buf; // 网络传输：拼接后的图像缓冲区
     uint8_t *display_buf_888;    // 用来显示的RGB888缓冲区
     int frame_count = 0;
@@ -1847,7 +1847,7 @@ int main(void)
     double total_time;
     uint32_t last_pcie_frame_id = 0;
     int udp_protocol_mode = 0; // 网络传输：0=分包传输模式, 1=简单UDP模式
-    int no_udp_count = 0;      // UDP无数据计数器：本节对应的标识或作用域。
+    int no_udp_count = 0;
 
     printf("=== FPGA 视频流双通道显示系统 ===\n");
     printf("版本: v3.0 (UDP+PCIe拼接显示版)\n");
@@ -1891,7 +1891,7 @@ int main(void)
     memset(combined_image_buf, 0, COMBINED_FRAME_BUFFER_SIZE);
 
     // ── 网络传输 ──
-    // UDP网络接收初始化区域：本节对应的标识或作用域。
+
     // ── 网络传输 ──
     /* 网络传输：1. UDP网络接收初始化 */
     printf("=== 第一步：UDP网络接收初始化 ===\n");

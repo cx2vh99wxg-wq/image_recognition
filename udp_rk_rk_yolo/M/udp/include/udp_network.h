@@ -6,7 +6,7 @@
 #include <netinet/in.h>
 
 // ── 网络传输 ──
-// UDP网络传输模块头文件：本节对应的标识或作用域。
+
 // ── 网络传输 ──
 
 #define IMAGE_WIDTH 640
@@ -99,4 +99,4 @@ uint32_t calculate_checksum(const uint8_t *data, size_t size);
  * num_pixels 像素数量 */
 void rgb888_to_rgb565(const uint8_t *rgb888_data, uint16_t *rgb565_data, size_t num_pixels);
 
-#endif // UDP_NETWORK_H：本节对应的标识或作用域。
+#endif

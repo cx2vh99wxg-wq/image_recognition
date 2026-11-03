@@ -1,3 +1,4 @@
+// 2026-11-03 注释校订。先排序三行，再对行极值和中值做列归约，最后选取邻域中值。
 module middle_filter
 #(
 	parameter U_COL = 640,
@@ -6,10 +7,10 @@ module middle_filter
 (
 	input clk,
 	input rst_n,
-	
+
 	input in_vs,
 	input in_hs,
-	input in_de,   
+	input in_de,
 	input [7:0] in_data,
     input [23:0] in_rgb,
 
@@ -45,73 +46,36 @@ matrix_3x3_8bit #(
 	.rst_n    (rst_n),
 	.valid_in (in_de),
 	.din      (in_data),
-	
+
 	.matrix_11(matrix_11),
 	.matrix_12(matrix_12),
 	.matrix_13(matrix_13),
 	.matrix_21(matrix_21),
-	.matrix_22(matrix_22), 
+	.matrix_22(matrix_22),
 	.matrix_23(matrix_23),
 	.matrix_31(matrix_31),
 	.matrix_32(matrix_32),
 	.matrix_33(matrix_33)
 );
 
-wire [7:0] max_data1;
-wire [7:0] mid_data1;
-wire [7:0] min_data1;
+wire [71:0] taps = {matrix_33, matrix_32, matrix_31, matrix_23, matrix_22,
+                     matrix_21, matrix_13, matrix_12, matrix_11};
+wire [23:0] row_max, row_mid, row_min;
+genvar row;
+generate
+    for (row = 0; row < 3; row = row + 1) begin : sort_row
+        sort u_sort (
+            .clk(clk), .rst_n(rst_n),
+            .data1(taps[row*24 +: 8]),
+            .data2(taps[row*24+8 +: 8]),
+            .data3(taps[row*24+16 +: 8]),
+            .max_data(row_max[row*8 +: 8]),
+            .mid_data(row_mid[row*8 +: 8]),
+            .min_data(row_min[row*8 +: 8])
+        );
+    end
+endgenerate
 
-sort u1
-(
-    .clk                    (clk                    ),
-    .rst_n                  (rst_n                  ),
-    .data1                  (matrix_11              ), 
-    .data2                  (matrix_12              ), 
-    .data3                  (matrix_13              ),
-    .max_data               (max_data1              ),
-    .mid_data               (mid_data1              ),
-    .min_data               (min_data1              )
-);
-
-wire [7:0] max_data2;
-wire [7:0] mid_data2;
-wire [7:0] min_data2;
-
-// 对应矩阵的第二行。
-sort u2
-(
-    .clk                    (clk                    ),
-    .rst_n                  (rst_n                  ),
-    .data1                  (matrix_21              ),
-    .data2                  (matrix_22              ),
-    .data3                  (matrix_23              ),
-    .max_data               (max_data2              ),
-    .mid_data               (mid_data2              ),
-    .min_data               (min_data2              )
-);
-
-wire [7:0] max_data3;
-wire [7:0] mid_data3;
-wire [7:0] min_data3;
-
-// 对应矩阵的第三行。
-sort u3
-(
-    .clk                    (clk                    ),
-    .rst_n                  (rst_n                  ),
-    .data1                  (matrix_31              ),
-    .data2                  (matrix_32              ),
-    .data3                  (matrix_33              ),
-    .max_data               (max_data3              ),
-    .mid_data               (mid_data3              ),
-    .min_data               (min_data3              )
-);
-
-// 图像流水线：三行的最小值取最大值
-// 图像流水线：三行的中间值取中间值
-// 图像流水线：三行的最大值取最小值，clk2
-// ── 图像流水线 ──
-// 图像流水线：min-max
 wire [7:0] min_max_data;
 wire [7:0] mid_mid_data;
 wire [7:0] max_min_data;
@@ -123,102 +87,53 @@ sort u4
 (
     .clk                    (clk                    ),
     .rst_n                  (rst_n                  ),
-    .data1                  (min_data1              ),
-    .data2                  (min_data2              ),
-    .data3                  (min_data3              ),
+    .data1                  (row_min[0 +: 8]              ),
+    .data2                  (row_min[8 +: 8]              ),
+    .data3                  (row_min[16 +: 8]              ),
     .max_data               (min_max_data           ),
     .mid_data               (                       ),
     .min_data               (                       )
 );
 
-// 图像流水线：mid-mid
 sort u5
 (
     .clk                    (clk                    ),
     .rst_n                  (rst_n                  ),
-    .data1                  (mid_data1              ),
-    .data2                  (mid_data2              ),
-    .data3                  (mid_data3              ),
+    .data1                  (row_mid[0 +: 8]              ),
+    .data2                  (row_mid[8 +: 8]              ),
+    .data3                  (row_mid[16 +: 8]              ),
     .max_data               (                       ),
     .mid_data               (mid_mid_data           ),
     .min_data               (                       )
 );
 
-// 图像流水线：max-min
 sort u6
 (
     .clk                    (clk                    ),
     .rst_n                  (rst_n                  ),
-    .data1                  (max_data1              ), 
-    .data2                  (max_data2              ), 
-    .data3                  (max_data3              ),
+    .data1                  (row_max[0 +: 8]              ),
+    .data2                  (row_max[8 +: 8]              ),
+    .data3                  (row_max[16 +: 8]              ),
     .max_data               (                       ),
     .mid_data               (                       ),
     .min_data               (max_min_data           )
 );
 
-// 图像流水线：前面的三个值再取中间值，clk3
-// ── 图像流水线 ──
 sort u7
 (
     .clk                    (clk                    ),
     .rst_n                  (rst_n                  ),
     .data1                  (max_min_data           ),
-    .data2                  (mid_mid_data           ), 
+    .data2                  (mid_mid_data           ),
     .data3                  (min_max_data           ),
     .max_data               (                       ),
     .mid_data               (median_data            ),
     .min_data               (                       )
 );
 
-reg [3:0] Y_vs_r;
-reg [3:0] Y_hs_r;
-reg [3:0] Y_de_r;
-reg [39:0] Y_x_r;
-reg [39:0] Y_y_r;
-
-always @(posedge clk or negedge rst_n) begin
-    if(!rst_n) begin
-        Y_vs_r    <= 4'b0;
-        Y_hs_r    <= 4'b0;
-        Y_de_r    <= 4'b0;
-        Y_x_r     <= 40'b0;
-        Y_y_r     <= 40'b0;
-    end
-    else begin  
-        Y_vs_r    <= {Y_vs_r[2:0],    in_vs};
-        Y_hs_r    <= {Y_hs_r[2:0],    in_hs};
-        Y_de_r    <= {Y_de_r[2:0],    in_de};
-        Y_x_r     <= {Y_x_r[29:0],    in_x };
-        Y_y_r     <= {Y_y_r[29:0],    in_y };
-    end
-end
-
-reg [23:0] in_rgb_r0;
-reg [23:0] in_rgb_r1;
-reg [23:0] in_rgb_r2;
-reg [23:0] in_rgb_r3;
-
-always @(posedge clk or negedge rst_n)begin
-	if(!rst_n)begin
-		in_rgb_r0    <= 23'b0;
-		in_rgb_r1    <= 23'b0;
-		in_rgb_r2    <= 23'b0;
-		in_rgb_r3    <= 23'b0;
-	end
-	else begin
-		in_rgb_r0    <= in_rgb;
-		in_rgb_r1    <= in_rgb_r0;
-		in_rgb_r2    <= in_rgb_r1;
-		in_rgb_r3    <= in_rgb_r2;
-	end
-end
-
-assign out_vs    = Y_vs_r[3];
-assign out_hs    = Y_hs_r[3];
-assign out_de    = Y_de_r[3];
-assign out_x     = Y_x_r[39:30];
-assign out_y     = Y_y_r[39:30];
-assign out_rgb   = in_rgb_r3;
-
+isp_pixel_delay #(.CYCLES(4)) u_metadata (
+    .clk(clk), .rst_n(rst_n),
+    .pixel_in({in_vs, in_hs, in_de, in_x, in_y, in_rgb}),
+    .pixel_out({out_vs, out_hs, out_de, out_x, out_y, out_rgb})
+);
 endmodule

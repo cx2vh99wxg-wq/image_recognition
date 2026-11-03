@@ -60,148 +60,92 @@ void update_blink_state(AlertEffectState *state)
     }
 }
 
-/* 图像处理：框内返回到最近边界的负距离，框外返回到矩形的欧氏距离。 */
+// Negative within the interval, positive outside. Keep the low-edge check
+// first for reversed bounds, as in the original box distance calculation.
+static int axis_distance(int pixel, int low, int high)
+{
+    if (pixel < low)
+        return low - pixel;
+    if (pixel > high)
+        return pixel - high;
+    const int from_low = pixel - low;
+    const int from_high = high - pixel;
+    return -(from_low < from_high ? from_low : from_high);
+}
+
 static float calculate_distance_to_box(int pixel_x, int pixel_y, const BOX_RECT *box)
 {
     if (!box)
         return 1000.0f;
 
-    int box_left = box->left;
-    int box_right = box->right;
-    int box_top = box->top;
-    int box_bottom = box->bottom;
+    const int x = axis_distance(pixel_x, box->left, box->right);
+    const int y = axis_distance(pixel_y, box->top, box->bottom);
+    if (x <= 0 && y <= 0)
+        return -(float)(x > y ? -x : -y);
 
-    if (pixel_x >= box_left && pixel_x <= box_right && pixel_y >= box_top && pixel_y <= box_bottom)
-    {
-
-        float dist_left = pixel_x - box_left;
-        float dist_right = box_right - pixel_x;
-        float dist_top = pixel_y - box_top;
-        float dist_bottom = box_bottom - pixel_y;
-
-        float min_dist = dist_left;
-        if (dist_right < min_dist)
-            min_dist = dist_right;
-        if (dist_top < min_dist)
-            min_dist = dist_top;
-        if (dist_bottom < min_dist)
-            min_dist = dist_bottom;
-
-        return -min_dist;
-    }
-
-    float dx = 0.0f, dy = 0.0f;
-
-    if (pixel_x < box_left)
-    {
-        dx = box_left - pixel_x;
-    }
-    else if (pixel_x > box_right)
-    {
-        dx = pixel_x - box_right;
-    }
-
-    if (pixel_y < box_top)
-    {
-        dy = box_top - pixel_y;
-    }
-    else if (pixel_y > box_bottom)
-    {
-        dy = pixel_y - box_bottom;
-    }
-
+    const float dx = x > 0 ? (float)x : 0.0f;
+    const float dy = y > 0 ? (float)y : 0.0f;
     return sqrtf(dx * dx + dy * dy);
 }
 
-/* 图像处理：以检测框中心到四个画布角的距离决定特效作用区域；并列时保留先遇到的角。 */
+static int corner_is_left(CornerType corner)
+{
+    return (corner & 1) == 0;
+}
+
+static int corner_is_top(CornerType corner)
+{
+    return (corner & 2) == 0;
+}
+
+static int corner_edge_x(int x, CornerType corner)
+{
+    return corner_is_left(corner) ? x : SCREEN_WIDTH - 1 - x;
+}
+
+static int corner_edge_y(int y, CornerType corner)
+{
+    return corner_is_top(corner) ? y : SCREEN_HEIGHT - 1 - y;
+}
+
 static CornerType get_nearest_corner(const BOX_RECT *box)
 {
     if (!box)
         return CORNER_NONE;
 
-    float box_center_x = (box->left + box->right) / 2.0f;
-    float box_center_y = (box->top + box->bottom) / 2.0f;
-
-    float dist_top_left = sqrtf(box_center_x * box_center_x + box_center_y * box_center_y);
-    float dist_top_right = sqrtf((SCREEN_WIDTH - box_center_x) * (SCREEN_WIDTH - box_center_x) +
-                                 box_center_y * box_center_y);
-    float dist_bottom_left = sqrtf(box_center_x * box_center_x +
-                                   (SCREEN_HEIGHT - box_center_y) * (SCREEN_HEIGHT - box_center_y));
-    float dist_bottom_right =
-        sqrtf((SCREEN_WIDTH - box_center_x) * (SCREEN_WIDTH - box_center_x) +
-              (SCREEN_HEIGHT - box_center_y) * (SCREEN_HEIGHT - box_center_y));
-
-    float min_dist = dist_top_left;
-    CornerType nearest_corner = CORNER_TOP_LEFT;
-
-    if (dist_top_right < min_dist)
+    const float center_x = (box->left + box->right) / 2.0f;
+    const float center_y = (box->top + box->bottom) / 2.0f;
+    CornerType nearest = CORNER_TOP_LEFT;
+    float shortest = sqrtf(center_x * center_x + center_y * center_y);
+    // Strict comparison preserves the original tie order.
+    for (int i = CORNER_TOP_RIGHT; i <= CORNER_BOTTOM_RIGHT; ++i)
     {
-        min_dist = dist_top_right;
-        nearest_corner = CORNER_TOP_RIGHT;
+        const CornerType corner = (CornerType)i;
+        const float dx = corner_is_left(corner) ? center_x : SCREEN_WIDTH - center_x;
+        const float dy = corner_is_top(corner) ? center_y : SCREEN_HEIGHT - center_y;
+        const float distance = sqrtf(dx * dx + dy * dy);
+        if (distance < shortest)
+        {
+            shortest = distance;
+            nearest = corner;
+        }
     }
-    if (dist_bottom_left < min_dist)
-    {
-        min_dist = dist_bottom_left;
-        nearest_corner = CORNER_BOTTOM_LEFT;
-    }
-    if (dist_bottom_right < min_dist)
-    {
-        min_dist = dist_bottom_right;
-        nearest_corner = CORNER_BOTTOM_RIGHT;
-    }
-
-    return nearest_corner;
+    return nearest;
 }
 
-/* 图像处理：判定像素是否处于所选的 320×240 角区域。 */
-static int is_pixel_in_corner(int pixel_x, int pixel_y, CornerType corner)
+static int is_pixel_in_corner(int x, int y, CornerType corner)
 {
-    switch (corner)
-    {
-    case CORNER_TOP_LEFT:
-        return (pixel_x < CORNER_WIDTH && pixel_y < CORNER_HEIGHT);
-    case CORNER_TOP_RIGHT:
-        return (pixel_x >= (SCREEN_WIDTH - CORNER_WIDTH) && pixel_y < CORNER_HEIGHT);
-    case CORNER_BOTTOM_LEFT:
-        return (pixel_x < CORNER_WIDTH && pixel_y >= (SCREEN_HEIGHT - CORNER_HEIGHT));
-    case CORNER_BOTTOM_RIGHT:
-        return (pixel_x >= (SCREEN_WIDTH - CORNER_WIDTH) &&
-                pixel_y >= (SCREEN_HEIGHT - CORNER_HEIGHT));
-    default:
-        return 0;
-    }
+    return corner != CORNER_NONE &&
+           corner_edge_x(x, corner) < CORNER_WIDTH && corner_edge_y(y, corner) < CORNER_HEIGHT;
 }
 
-/* 图像处理：返回像素到该角邻接的两条屏幕边中较近的一条的距离。 */
-static float calculate_distance_to_corner_edge(int pixel_x, int pixel_y, CornerType corner)
+static float calculate_distance_to_corner_edge(int x, int y, CornerType corner)
 {
-    float min_dist = 1000.0f;
-
-    switch (corner)
-    {
-    case CORNER_TOP_LEFT:
-
-        min_dist = (pixel_x < pixel_y ? pixel_x : pixel_y);
-        break;
-    case CORNER_TOP_RIGHT:
-
-        min_dist = (SCREEN_WIDTH - 1 - pixel_x < pixel_y ? SCREEN_WIDTH - 1 - pixel_x : pixel_y);
-        break;
-    case CORNER_BOTTOM_LEFT:
-
-        min_dist = (pixel_x < SCREEN_HEIGHT - 1 - pixel_y ? pixel_x : SCREEN_HEIGHT - 1 - pixel_y);
-        break;
-    case CORNER_BOTTOM_RIGHT:
-
-        min_dist = (SCREEN_WIDTH - 1 - pixel_x < SCREEN_HEIGHT - 1 - pixel_y
-                        ? SCREEN_WIDTH - 1 - pixel_x
-                        : SCREEN_HEIGHT - 1 - pixel_y);
-        break;
-    default:
-        break;
-    }
-
-    return min_dist;
+    if (corner == CORNER_NONE)
+        return 1000.0f;
+    const int dx = corner_edge_x(x, corner);
+    const int dy = corner_edge_y(y, corner);
+    return (float)(dx < dy ? dx : dy);
 }
 
 /* 图像处理：合成框内、框外及角边缘的红色强度，并夹在原有的 0..0.8 范围内。 */
@@ -385,9 +329,8 @@ void draw_person_alert_effect(uint8_t *rgb_data, int width, int height, const BO
     if (box_bottom >= height)
         box_bottom = height - 1;
 
-    const int left_corner =
-        nearest_corner == CORNER_TOP_LEFT || nearest_corner == CORNER_BOTTOM_LEFT;
-    const int top_corner = nearest_corner == CORNER_TOP_LEFT || nearest_corner == CORNER_TOP_RIGHT;
+    const int left_corner = corner_is_left(nearest_corner);
+    const int top_corner = corner_is_top(nearest_corner);
     const int inner_left = person_box->left + BOX_INNER_GRADIENT_WIDTH;
     const int inner_right = person_box->right - BOX_INNER_GRADIENT_WIDTH;
     for (int y = box_top; y <= box_bottom; ++y)
@@ -406,7 +349,7 @@ void draw_person_alert_effect(uint8_t *rgb_data, int width, int height, const BO
             int in_corner_row = top_corner ? y < CORNER_HEIGHT : y >= SCREEN_HEIGHT - CORNER_HEIGHT;
             if (in_corner_row)
             {
-                int edge_y = top_corner ? y : SCREEN_HEIGHT - 1 - y;
+                int edge_y = corner_edge_y(y, nearest_corner);
                 if (left_corner)
                 {
                     int last_edge_x = edge_y < SCREEN_EDGE_GRADIENT_WIDTH
@@ -443,42 +386,15 @@ void draw_person_alert_effect(uint8_t *rgb_data, int width, int height, const BO
         }
     }
 
-    int corner_left, corner_right, corner_top, corner_bottom;
-
-    switch (nearest_corner)
-    {
-    case CORNER_TOP_LEFT:
-        corner_left = 0;
-        corner_right = CORNER_WIDTH - 1;
-        corner_top = 0;
-        corner_bottom = CORNER_HEIGHT - 1;
-        break;
-    case CORNER_TOP_RIGHT:
-        corner_left = width - CORNER_WIDTH;
-        corner_right = width - 1;
-        corner_top = 0;
-        corner_bottom = CORNER_HEIGHT - 1;
-        break;
-    case CORNER_BOTTOM_LEFT:
-        corner_left = 0;
-        corner_right = CORNER_WIDTH - 1;
-        corner_top = height - CORNER_HEIGHT;
-        corner_bottom = height - 1;
-        break;
-    case CORNER_BOTTOM_RIGHT:
-        corner_left = width - CORNER_WIDTH;
-        corner_right = width - 1;
-        corner_top = height - CORNER_HEIGHT;
-        corner_bottom = height - 1;
-        break;
-    default:
-        return;
-    }
+    const int corner_left = left_corner ? 0 : width - CORNER_WIDTH;
+    const int corner_top = top_corner ? 0 : height - CORNER_HEIGHT;
+    const int corner_right = corner_left + CORNER_WIDTH - 1;
+    const int corner_bottom = corner_top + CORNER_HEIGHT - 1;
 
     for (int y = corner_top; y <= corner_bottom; ++y)
     {
         int left = corner_left, right = corner_right;
-        int edge_y = top_corner ? y : SCREEN_HEIGHT - 1 - y;
+        int edge_y = corner_edge_y(y, nearest_corner);
         if (edge_y >= SCREEN_EDGE_GRADIENT_WIDTH)
         {
             /* 距离达到 80 或更大时，原发光强度严格为零。 */

@@ -1,14 +1,13 @@
+// 2026-11-03 注释校订。串联色彩转换、卷积、Gamma 和 RGB 恢复。RGBY 作为同一组像素侧带传递。
 `timescale 1ns / 1ps
 
-
 module cnn_top#(
-    parameter   [10:0]  IMG_HDISP   = 11'd640,                      // 参数记录为 640*480。
+    parameter   [10:0]  IMG_HDISP   = 11'd640,
     parameter   [10:0]  IMG_VDISP   = 11'd480,
-    parameter                           core_witdh                = 4'd11   // 卷积流水线：对的
+    parameter                           core_witdh                = 4'd11
 )(
     input                               clk                        ,
     input                               rst_n                      ,
-    
 
     input              [   7: 0]        per_img_r_1                  ,
     input              [   7: 0]        per_img_g_1                  ,
@@ -19,19 +18,21 @@ module cnn_top#(
 
     input                               per_img_vsync_1              ,
     input                               per_img_href_1               ,
-    // 停用示例，仅供对照：input [ 7: 0] per_img_Y_1 ,
 
     output                              post_img_vsync             ,
     output                              post_img_href              ,
-  input [5:0] level 
+  input [5:0] level
 
 );
-    wire              [   7: 0]        per_img_r                  ;
-    wire              [   7: 0]        per_img_g                  ;
-    wire              [   7: 0]        per_img_b                  ;
+
+wire [31:0] converted_pixel;
+wire [31:0] convolved_pixel;
+wire [31:0] scored_pixel;
+wire [31:0] adjusted_pixel;
+
     wire                               per_img_vsync              ;
     wire                               per_img_href               ;
-    wire              [   7: 0]        per_img_Y                  ;
+
 RGB888_YCbCr_cnn RGB888_YCbCr_cnn(
     .clk                                (clk                       ),
     .rst_n                              (rst_n                     ),
@@ -42,37 +43,25 @@ RGB888_YCbCr_cnn RGB888_YCbCr_cnn(
     .per_img_blue                       (per_img_b_1               ),
     .post_img_vsync                     (per_img_vsync             ),
     .post_img_href                      (per_img_href              ),
-    .post_img_Y                         (per_img_Y                 ),
-    .post_img_r                         (per_img_r                 ),
-    .post_img_g                         (per_img_g                 ),
-    .post_img_b                         (per_img_b                 ) 
+    .post_img_Y                         (converted_pixel[0 +: 8]                 ),
+    .post_img_r                         (converted_pixel[24 +: 8]                 ),
+    .post_img_g                         (converted_pixel[16 +: 8]                 ),
+    .post_img_b                         (converted_pixel[8 +: 8]                 )
 );
-
-
-
-
-
-
-
-
 
     wire               [   7: 0]        conv_1_Data                ;
     wire               [   7: 0]        conv_2_Data                ;
     wire               [   7: 0]        conv_3_Data                ;
     wire               [   7: 0]        conv_4_Data                ;
 
-    wire               [   7: 0]        conv_post_img_r            ;
-    wire               [   7: 0]        conv_post_img_g            ;
-    wire               [   7: 0]        conv_post_img_b            ;
-
     wire                                conv_post_img_vsync        ;
     wire                                conv_post_img_href         ;
-    wire               [   7: 0]        conv_post_img_Y            ;
+
 conv_top
 #(
     .IMG_HDISP                          (IMG_HDISP                 ),
     .IMG_VDISP                          (IMG_VDISP                 ),
-    .core_witdh                         (core_witdh                ) 
+    .core_witdh                         (core_witdh                )
 )
 conv_top(
     .clk                                (clk                       ),
@@ -83,38 +72,32 @@ conv_top(
     .conv7_3_Data                       (conv_3_Data               ),
     .conv7_4_Data                       (conv_4_Data               ),
 
-    .per_img_r                          (per_img_r                 ),
-    .per_img_g                          (per_img_g                 ),
-    .per_img_b                          (per_img_b                 ),
-    .post_img_r                         (conv_post_img_r           ),
-    .post_img_g                         (conv_post_img_g           ),
-    .post_img_b                         (conv_post_img_b           ),
+    .per_img_r                          (converted_pixel[24 +: 8]                 ),
+    .per_img_g                          (converted_pixel[16 +: 8]                 ),
+    .per_img_b                          (converted_pixel[8 +: 8]                 ),
+    .post_img_r                         (convolved_pixel[24 +: 8]           ),
+    .post_img_g                         (convolved_pixel[16 +: 8]           ),
+    .post_img_b                         (convolved_pixel[8 +: 8]           ),
 
     .per_img_vsync                      (per_img_vsync             ),
     .per_img_href                       (per_img_href              ),
-    .per_img_Y                          (per_img_Y                 ),
+    .per_img_Y                          (converted_pixel[0 +: 8]                 ),
 
     .post_img_vsync                     (conv_post_img_vsync       ),
     .post_img_href                      (conv_post_img_href        ),
-    .post_img_Y                         (conv_post_img_Y           ) 
+    .post_img_Y                         (convolved_pixel[0 +: 8]           )
 );
 
-
-
 wire [9:0] conv2d_data_out;
-    wire               [   7: 0]        conv2d_post_img_r            ;
-    wire               [   7: 0]        conv2d_post_img_g            ;
-    wire               [   7: 0]        conv2d_post_img_b            ;
 
     wire                                conv2d_post_img_vsync      ;
     wire                                conv2d_post_img_href       ;
-    wire               [   7: 0]        conv2d_post_img_Y          ;
 
-conv2d                                                              // 卷积流水线：//卷积核在模块内部
+conv2d
 #(
     .IMG_HDISP                          (IMG_HDISP                 ),
     .IMG_VDISP                          (IMG_VDISP                 ),
-    .core_witdh                         (core_witdh                ) 
+    .core_witdh                         (core_witdh                )
 )
 conv2d(
     .clk                                (clk                       ),
@@ -126,73 +109,60 @@ conv2d(
     .conv2d_4_Data                      (conv_4_Data               ),
     .conv2d_data_out                    (conv2d_data_out           ),
 
-    .per_img_r                          (conv_post_img_r           ),
-    .per_img_g                          (conv_post_img_g           ),
-    .per_img_b                          (conv_post_img_b           ),
-    .per_img_Y                          (conv_post_img_Y           ),
-    .post_img_r                         (conv2d_post_img_r         ),
-    .post_img_g                         (conv2d_post_img_g         ),
-    .post_img_b                         (conv2d_post_img_b         ),
-    .post_img_Y                         (conv2d_post_img_Y         ), 
+    .per_img_r                          (convolved_pixel[24 +: 8]           ),
+    .per_img_g                          (convolved_pixel[16 +: 8]           ),
+    .per_img_b                          (convolved_pixel[8 +: 8]           ),
+    .per_img_Y                          (convolved_pixel[0 +: 8]           ),
+    .post_img_r                         (scored_pixel[24 +: 8]         ),
+    .post_img_g                         (scored_pixel[16 +: 8]         ),
+    .post_img_b                         (scored_pixel[8 +: 8]         ),
+    .post_img_Y                         (scored_pixel[0 +: 8]         ),
 
     .per_img_vsync                      (conv_post_img_vsync       ),
     .per_img_href                       (conv_post_img_href        ),
-
 
     .post_img_vsync                     (conv2d_post_img_vsync     ),
     .post_img_href                      (conv2d_post_img_href      ),
      .level                             (level                     )
 );
 
-    wire               [   7: 0]        gamma_judge_post_img_r     ;
-    wire               [   7: 0]        gamma_judge_post_img_g     ;
-    wire               [   7: 0]        gamma_judge_post_img_b     ;
-
     wire                                gamma_judge_post_img_vsync  ;
     wire                                gamma_judge_post_img_href  ;
-    wire               [   7: 0]        gamma_judge_post_img_Y     ;
+
     wire [7:0] gamma_judge_post_img_Y_delay;
 
 gamma_judge u_gamma_judge(
     .clk                                (clk                       ),
     .rst_n                              (rst_n                     ),
-    .per_img_r                          (conv2d_post_img_r         ),
-    .per_img_g                          (conv2d_post_img_g         ),
-    .per_img_b                          (conv2d_post_img_b         ),
-    .post_img_r                         (gamma_judge_post_img_r    ),
-    .post_img_g                         (gamma_judge_post_img_g    ),
-    .post_img_b                         (gamma_judge_post_img_b    ),
+    .per_img_r                          (scored_pixel[24 +: 8]         ),
+    .per_img_g                          (scored_pixel[16 +: 8]         ),
+    .per_img_b                          (scored_pixel[8 +: 8]         ),
+    .post_img_r                         (adjusted_pixel[24 +: 8]    ),
+    .post_img_g                         (adjusted_pixel[16 +: 8]    ),
+    .post_img_b                         (adjusted_pixel[8 +: 8]    ),
     .per_img_vsync                      (conv2d_post_img_vsync     ),
     .per_img_href                       (conv2d_post_img_href      ),
-    .per_img_Y                          (conv2d_post_img_Y           ),
+    .per_img_Y                          (scored_pixel[0 +: 8]           ),
     .post_img_vsync                     (gamma_judge_post_img_vsync),
     .post_img_href                      (gamma_judge_post_img_href ),
-    .post_img_Y                         (gamma_judge_post_img_Y    ),
+    .post_img_Y                         (adjusted_pixel[0 +: 8]    ),
     .per_data                           (conv2d_data_out           ),
-    .post_img_Y_dalay                   (gamma_judge_post_img_Y_delay) 
+    .post_img_Y_dalay                   (gamma_judge_post_img_Y_delay)
 );
-// 停用示例，仅供对照：reg href_delay_1 ;
-// 停用示例，仅供对照：reg vsync_delay_1;
-// 停用示例，仅供对照：always @(posedge clk )
-// begin：本节对应的标识或作用域。
-// 停用示例，仅供对照：href_delay_1<= gamma_judge_post_img_href;
-// 停用示例，仅供对照：vsync_delay_1<= gamma_judge_post_img_vsync;
-// end：本节对应的标识或作用域。
 
 rgb_end u_rgb_end(
     .clk             	( clk              ),
     .rst_n           	( rst_n            ),
-    .per_img_r       	( gamma_judge_post_img_r        ),
-    .per_img_g       	( gamma_judge_post_img_g        ),
-    .per_img_b       	( gamma_judge_post_img_b        ),
-    .per_img_Y       	( gamma_judge_post_img_Y        ),
+    .per_img_r       	( adjusted_pixel[24 +: 8]        ),
+    .per_img_g       	( adjusted_pixel[16 +: 8]        ),
+    .per_img_b       	( adjusted_pixel[8 +: 8]        ),
+    .per_img_Y       	( adjusted_pixel[0 +: 8]        ),
     .per_img_Y_delay 	( gamma_judge_post_img_Y_delay  ),
 
     .post_img_out_r  	( post_img_r   ),
     .post_img_out_g  	( post_img_g   ),
     .post_img_out_b  	( post_img_b   ),
-    // 停用示例，仅供对照：.per_img_href ( href_delay_1 ),
-    // 停用示例，仅供对照：.per_img_vsync ( vsync_delay_1 ),
+
     .per_img_href    	( gamma_judge_post_img_href    ),
     .per_img_vsync   	( gamma_judge_post_img_vsync     ),
     .post_img_href   	( post_img_href   ),

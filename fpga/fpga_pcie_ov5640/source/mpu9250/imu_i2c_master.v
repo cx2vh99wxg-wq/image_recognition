@@ -1,5 +1,6 @@
+// 2026-11-03 注释校订。开漏 I²C 事务引擎。四分之一周期控制位相，超时释放总线并报告完成。
 `timescale 1ns/1ps
-// IMU 硬件：Independent open-drain register transaction engine. No camera bus is reused.
+
 module imu_i2c_master #(
     parameter CLK_HZ=25000000, parameter I2C_HZ=100000,
     parameter TIMEOUT_CYCLES=1250000
@@ -31,31 +32,49 @@ module imu_i2c_master #(
     always @(posedge clk or negedge rst_n)
       if(!rst_n)begin scl_sync<=3;sda_sync<=3;end
       else begin scl_sync<={scl_sync[0],scl};sda_sync<={sda_sync[0],sda};end
+
+    // 主机等待从机放开 SCL 时仍计算事务超时，避免总线被长期占用。
+    wire timeout_reached = timeout_count >= TIMEOUT_CYCLES;
+    always @(posedge clk or negedge rst_n) begin
+      if (!rst_n) begin
+        divider <= 0;
+        timeout_count <= 0;
+      end else if (!busy) begin
+        divider <= 0;
+        timeout_count <= 0;
+      end else if (timeout_reached) begin
+
+      end else begin
+        timeout_count <= timeout_count + 1'b1;
+        if (divider < DIV-1)
+          divider <= divider + 1'b1;
+        else
+          divider <= 0;
+      end
+    end
+
     always @(posedge clk or negedge rst_n) begin
       if(!rst_n) begin
         state<=IDLE;busy<=0;done<=0;error<=0;read_data<=0;
-        scl_low<=0;sda_low<=0;divider<=0;timeout_count<=0;
+        scl_low<=0;sda_low<=0;
         phase<=0;bit_index<=7;stage<=0;reading<=0;ack_bit<=0;
         byte_index<=0;length_latched<=0;shift<=0;register_latched<=0;
         value_latched<=0;address_latched<=0;read_latched<=0;recovery_count<=0;
       end else begin
         done<=0;
         if(!busy) begin
-          divider<=0;timeout_count<=0;
           if(start) begin
             address_latched<=address;register_latched<=reg_address;
             value_latched<=write_value;length_latched<=read_length;
             read_latched<=read_op;busy<=1;error<=0;read_data<=0;
             scl_low<=0;sda_low<=0;state<=FREE;recovery_count<=0;
           end
-        end else if(timeout_count>=TIMEOUT_CYCLES) begin
-          // IMU 硬件：Releasing the pins is always possible, even if a slave holds SCL.
+        end else if(timeout_reached) begin
+
           busy<=0;done<=1;error<=2;state<=IDLE;scl_low<=0;sda_low<=0;
+        end else if (divider < DIV-1) begin
+
         end else begin
-          timeout_count<=timeout_count+1'b1;
-          if(divider<DIV-1)divider<=divider+1'b1;
-          else begin
-            divider<=0;
             case(state)
               FREE:if(scl_sync[1])begin
                 if(sda_sync[1])begin sda_low<=1;state<=START;end
@@ -126,7 +145,6 @@ module imu_i2c_master #(
               STOP2:begin sda_low<=0;busy<=0;done<=1;state<=IDLE;end
               default:begin error<=2;state<=STOP0;end
             endcase
-          end
         end
       end
     end

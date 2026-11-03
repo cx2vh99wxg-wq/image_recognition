@@ -1,0 +1,5 @@
+PASS gamma 263172 cycles, 1024 scores x 256 luminances plus blanking/reset
+- /mnt/d/Study_Object/image_recognition/image_recognition/output/rtl_refactor_20261103/tests/compare_gamma.sv:36: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 3ms; walltime 0.088 s; speed 30.162 ms/s
+- Verilator: cpu 0.087 s on 1 threads; allocated 6 MB

@@ -1,6 +1,6 @@
+// 2026-11-03 注释校订。独立探测、配置和采集 IMU。主机请求冻结快照，CRC 在采集时钟域计算。
 `timescale 1ns/1ps
-// IMU 硬件：M-only autonomous sensor sampler; disabled until 00 4D 00 A5 arrives.
-// IMU 硬件：A snapshot request (00 4D 01 A5) freezes all fields + FPGA acquisition time.
+
 module mpu9250_sampler #(parameter CLK_HZ=25000000)(
     input wire clk,rst_n,spi_clk,spi_cs,
     input wire [3:0] spi_data,
@@ -25,6 +25,10 @@ module mpu9250_sampler #(parameter CLK_HZ=25000000)(
     always @(posedge clk or negedge rst_n)
       if(!rst_n)command_sync<=0;else command_sync<={command_sync[1:0],command_toggle};
     wire new_command=command_sync[2]^command_sync[1];
+
+    wire configure_command = new_command && command_address == 16'h4d00;
+    wire snapshot_command = new_command && command_address == 16'h4d01 &&
+                            command_value == 8'ha5;
     reg enabled,identified,valid_sample,capture_pending;
     reg [7:0] who,error_code;
     reg [6:0] device_address;
@@ -49,30 +53,40 @@ module mpu9250_sampler #(parameter CLK_HZ=25000000)(
       .scl(mpu_scl),.sda(mpu_sda),.busy(busy),.done(done),.error(bus_error),.read_data(read_data));
     function [15:0] configuration(input [4:0] n);
       case(n)
-        0:configuration=16'h6b80; // 参数记录为 device reset; wait 100ms。
-        1:configuration=16'h6b01; // 参数记录为 PLL X gyro; wait 100ms。
+        0:configuration=16'h6b80;
+        1:configuration=16'h6b01;
         2:configuration=16'h6c00;
-        3:configuration=16'h1a03; // IMU 硬件：41Hz gyro DLPF, internal sample clock 1kHz
-        4:configuration=16'h1909; // 参数记录为 100Hz。
-        5:configuration=16'h1b00; // 参数记录为 +/-250 dps, 131 LSB/dps。
-        6:configuration=16'h1c00; // 参数记录为 +/-2g, 16384 LSB/g。
-        7:configuration=16'h1d03; // 参数记录为 41Hz accel DLPF。
-        8:configuration=16'h3700; // IMU 硬件：clear data-ready by INT_STATUS read
+        3:configuration=16'h1a03;
+        4:configuration=16'h1909;
+        5:configuration=16'h1b00;
+        6:configuration=16'h1c00;
+        7:configuration=16'h1d03;
+        8:configuration=16'h3700;
         default:configuration=16'h3801;
       endcase
     endfunction
+    always @(posedge clk or negedge rst_n) begin
+      if (!rst_n) begin
+        now_us <= 0;
+        micro_div <= 0;
+      end else if (micro_div == CLK_HZ / 1000000 - 1) begin
+        micro_div <= 0;
+        now_us <= now_us + 1'b1;
+      end else begin
+        micro_div <= micro_div + 1'b1;
+      end
+    end
+
     always @(posedge clk or negedge rst_n)begin
       if(!rst_n)begin
         enabled<=0;identified<=0;valid_sample<=0;who<=8'hff;error_code<=0;
         device_address<=7'h68;sample_sequence<=0;errors<=0;generation<=0;raw_sample<=0;
-        now_us<=0;sample_us<=0;transaction_us<=0;micro_div<=0;
+        sample_us<=0;transaction_us<=0;
         delay_count<=0;state<=PROBE;config_index<=0;sample_nack_retries<=0;start<=0;read_op<=0;
         reg_address<=0;write_value<=0;read_length<=1;
       end else begin
         start<=0;
-        if(micro_div==CLK_HZ/1000000-1)begin micro_div<=0;now_us<=now_us+1'b1;end
-        else micro_div<=micro_div+1'b1;
-        if(new_command&&command_address==16'h4d00)begin
+        if(configure_command)begin
           enabled<=command_value==8'ha5;identified<=0;valid_sample<=0;
           sample_sequence<=0;generation<=generation+1'b1;who<=8'hff;error_code<=0;
           sample_nack_retries<=0;
@@ -98,11 +112,7 @@ module mpu9250_sampler #(parameter CLK_HZ=25000000)(
         if(done&&enabled)begin
           if(bus_error!=0)begin
             error_code<=bus_error;errors<=errors+1'b1;valid_sample<=0;
-            // IMU 硬件：A NACK before a sample read returns no usable bytes. Retry
-            // IMU 硬件：that transaction twice without resetting the identified MPU,
-            // IMU 硬件：timestamps or sequence. Invalidity remains visible until a
-            // IMU 硬件：genuinely new successful sample; persistent/other faults keep
-            // IMU 硬件：the original slow recovery and host freshness protection.
+
             if(state==SAMPLE_WAIT&&identified&&bus_error==1&&sample_nack_retries<2)begin
               sample_nack_retries<=sample_nack_retries+1'b1;
               state<=SAMPLE;delay_count<=CLK_HZ/1000;
@@ -123,18 +133,19 @@ module mpu9250_sampler #(parameter CLK_HZ=25000000)(
             end
             SAMPLE_WAIT:begin
               sample_nack_retries<=0;
-              if(read_data[112])begin // IMU 硬件：INT_STATUS.RAW_DATA_RDY_INT, not a repeat
+              if(read_data[112])begin
                 raw_sample<=read_data[111:0];sample_us<=transaction_us;
                 sample_sequence<=sample_sequence+1'b1;valid_sample<=1;error_code<=0;
               end
-              state<=SAMPLE;delay_count<=CLK_HZ/10000; // IMU 硬件：0.1ms gap, ~2ms polling period
+              state<=SAMPLE;delay_count<=CLK_HZ/10000;
             end
             default:begin end
           endcase
         end
       end
     end
-    // IMU 硬件：CRC is computed sequentially away from the SPI/400MHz datapath.
+
+    // 快照字段在开始 CRC 前一次锁存，计算完毕才更新对外数据。
     reg [511:0] staging;
     reg [31:0] crc;
     reg [6:0] crc_index;
@@ -147,7 +158,7 @@ module mpu9250_sampler #(parameter CLK_HZ=25000000)(
       if(!rst_n)begin
         snapshot<=0;staging<=0;crc<=32'hffffffff;crc_index<=0;crc_busy<=0;capture_pending<=1;
       end else begin
-        if(new_command&&command_address==16'h4d01&&command_value==8'ha5)capture_pending<=1;
+        if(snapshot_command)capture_pending<=1;
         if(capture_pending&&!crc_busy)begin
           staging<={32'h494d5531,8'd1,8'd64,{5'd0,valid_sample,identified,enabled},error_code,
             who,1'b0,device_address,8'd100,8'd0,sample_sequence,sample_us,now_us,raw_sample,

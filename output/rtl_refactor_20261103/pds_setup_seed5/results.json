@@ -1,0 +1,28 @@
+[
+  {
+    "board": "S",
+    "seed": 5,
+    "exit_code": 0,
+    "completed": [
+      "compile",
+      "synthesize",
+      "device_map",
+      "place_route",
+      "timing"
+    ],
+    "log": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\rtl_refactor_20261103\\pds_setup_seed5\\build_S.log"
+  },
+  {
+    "board": "M",
+    "seed": 5,
+    "exit_code": 0,
+    "completed": [
+      "compile",
+      "synthesize",
+      "device_map",
+      "place_route",
+      "timing"
+    ],
+    "log": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\rtl_refactor_20261103\\pds_setup_seed5\\build_M.log"
+  }
+]

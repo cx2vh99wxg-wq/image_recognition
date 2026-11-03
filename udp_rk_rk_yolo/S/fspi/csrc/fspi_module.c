@@ -37,24 +37,7 @@
 #define WRITE_RETRY_COUNT 15
 #define READ_RETRY_COUNT 10
 
-typedef enum
-{
-    SPI_MODE_SINGLE = 1,
-    SPI_MODE_DUAL,
-    SPI_MODE_QUAD
-} SpiTransferMode;
-
-typedef struct
-{
-    char device[MAX_DEVICE_PATH];
-    uint32_t speed_hz;
-    uint32_t transfer_size;
-    uint32_t cycle_count;
-    uint32_t spi_mode;
-    uint8_t bits_per_word;
-    uint16_t delay_us;
-    SpiTransferMode protocol_mode;
-} SpiTestConfig;
+#include "../../../common/transport/include/fspi_register_io.h"
 
 typedef struct
 {
@@ -73,7 +56,6 @@ static int g_auto_brake_errno;
 static int g_auto_brake_transfer_result = -1;
 static uint8_t g_auto_brake_raw_status = 0xff;
 
-static int configure_spi_interface(int fd, SpiTestConfig *config);
 static int perform_transfer(int fd, uint8_t *tx_buf, uint8_t *rx_buf, SpiTestConfig *config);
 static int spi_write_register(int fd, uint16_t addr, uint8_t data);
 static int spi_read_addr_data(int fd, uint16_t addr, uint8_t *data);
@@ -82,59 +64,10 @@ static int spi_write_reliable(int fd, uint16_t addr, uint8_t data);
 static int spi_read_reliable(int fd, uint16_t addr, uint8_t *data);
 static int spi_read_direct_reliable(int fd, uint8_t *data);
 
-/* 寄存器访问：依次写入 SPI 模式、每字位数及最大时钟；任一 ioctl 失败立即返回。 */
-static int configure_spi_interface(int fd, SpiTestConfig *config)
-{
-
-    if (ioctl(fd, SPI_IOC_WR_MODE32, &config->spi_mode) == -1)
-    {
-        perror("Failed to set SPI mode");
-        return -1;
-    }
-
-    if (ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &config->bits_per_word) == -1)
-    {
-        perror("Failed to set bits per word");
-        return -1;
-    }
-
-    if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &config->speed_hz) == -1)
-    {
-        perror("Failed to set SPI speed");
-        return -1;
-    }
-
-    return 0;
-}
-
 /* 寄存器访问：按当前配置建立单次 SPI 事务，分别设置单线、双线或四线传输宽度。 */
 static int perform_transfer(int fd, uint8_t *tx_buf, uint8_t *rx_buf, SpiTestConfig *config)
 {
-    struct spi_ioc_transfer tr = {
-        .tx_buf = (unsigned long)tx_buf,
-        .rx_buf = (unsigned long)rx_buf,
-        .len = config->transfer_size,
-        .delay_usecs = config->delay_us,
-        .speed_hz = config->speed_hz,
-        .bits_per_word = config->bits_per_word,
-    };
-
-    switch (config->protocol_mode)
-    {
-    case SPI_MODE_DUAL:
-        tr.tx_nbits = tx_buf ? 2 : 0;
-        tr.rx_nbits = rx_buf ? 2 : 0;
-        break;
-    case SPI_MODE_QUAD:
-        tr.tx_nbits = tx_buf ? 4 : 0;
-        tr.rx_nbits = rx_buf ? 4 : 0;
-        break;
-    default:
-        tr.tx_nbits = tx_buf ? 1 : 0;
-        tr.rx_nbits = rx_buf ? 1 : 0;
-    }
-
-    return ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
+    return fspi_transfer(fd, tx_buf, rx_buf, config, 0);
 }
 
 /* 寄存器访问：本板SMDT控制器会在写事务前自动发送00命令。
@@ -177,44 +110,9 @@ static int spi_read_addr_data(int fd, uint16_t addr, uint8_t *data)
         errno = EINVAL;
         return -1;
     }
-
     if (addr == 0)
         return spi_read_direct(fd, data);
-
-    {
-        uint8_t tx_buffer[2] = {(uint8_t)(addr >> 8), (uint8_t)addr};
-        uint8_t rx_data = 0;
-        g_config.spi_mode |= SPI_TX_QUAD;
-        g_config.spi_mode &= ~SPI_RX_QUAD;
-        if (configure_spi_interface(fd, &g_config) != 0)
-            return -1;
-
-        uint32_t original_size = g_config.transfer_size;
-        g_config.transfer_size = 2;
-        if (perform_transfer(fd, tx_buffer, NULL, &g_config) < 0)
-        {
-            perror("Send address failed");
-            g_config.transfer_size = original_size;
-            return -1;
-        }
-
-        g_config.spi_mode = (g_config.spi_mode & ~SPI_TX_QUAD) | SPI_RX_QUAD;
-        g_config.transfer_size = 1;
-        if (configure_spi_interface(fd, &g_config) != 0)
-        {
-            g_config.transfer_size = original_size;
-            return -1;
-        }
-        if (perform_transfer(fd, NULL, &rx_data, &g_config) < 0)
-        {
-            perror("Read data failed");
-            g_config.transfer_size = original_size;
-            return -1;
-        }
-        g_config.transfer_size = original_size;
-        *data = rx_data;
-        return 0;
-    }
+    return fspi_read_addressed(fd, addr, data, &g_config, 0, 0);
 }
 
 /* 寄存器访问：无需地址阶段，直接切换到四线接收并读取一字节。 */
@@ -251,115 +149,19 @@ static int spi_read_direct(int fd, uint8_t *data)
 /* 寄存器访问：最多尝试十五次写入，只有需要继续重试时才等待一毫秒。 */
 static int spi_write_reliable(int fd, uint16_t addr, uint8_t data)
 {
-    int retry_count = 0;
-    int ret;
-
-    for (retry_count = 0; retry_count < WRITE_RETRY_COUNT; retry_count++)
-    {
-        ret = spi_write_register(fd, addr, data);
-
-        if (ret == 0)
-        {
-            return 0;
-        }
-
-        if (retry_count < WRITE_RETRY_COUNT - 1)
-        {
-            usleep(1000);
-        }
-    }
-
-    return -1;
-}
-
-/* 寄存器访问：逐项扫描成功读值的计数；并列时沿用原有的最小字节值优先规则。 */
-static uint8_t select_most_frequent_byte(const int counts[256])
-{
-    uint8_t selected = 0;
-    int highest_count = 0;
-    for (int value = 0; value < 256; ++value)
-    {
-        if (counts[value] > highest_count)
-        {
-            highest_count = counts[value];
-            selected = (uint8_t)value;
-        }
-    }
-    return selected;
+    return fspi_retry_write(spi_write_register, WRITE_RETRY_COUNT, fd, addr, data);
 }
 
 /* 寄存器访问：采样指定寄存器十次，每次后间隔半毫秒，再选取成功读值中的众数。 */
 static int spi_read_reliable(int fd, uint16_t addr, uint8_t *data)
 {
-    int retry_count = 0;
-    int ret;
-    uint8_t read_data = 0;
-
-    int data_count[256] = {0};
-    int successful_reads = 0;
-
-    for (retry_count = 0; retry_count < READ_RETRY_COUNT; retry_count++)
-    {
-        ret = spi_read_addr_data(fd, addr, &read_data);
-
-        if (ret == 0)
-        {
-            data_count[read_data]++;
-            successful_reads++;
-        }
-
-        usleep(500);
-    }
-
-    if (successful_reads > 0)
-    {
-
-        uint8_t most_frequent_data = select_most_frequent_byte(data_count);
-
-        *data = most_frequent_data;
-        return 0;
-    }
-    else
-    {
-        return -1;
-    }
+    return fspi_vote_read(spi_read_addr_data, READ_RETRY_COUNT, fd, addr, data);
 }
 
 /* 寄存器访问：无地址采样十次；失败样本不参与计数，并列众数选择较小值。 */
 static int spi_read_direct_reliable(int fd, uint8_t *data)
 {
-    int retry_count = 0;
-    int ret;
-    uint8_t read_data = 0;
-
-    int data_count[256] = {0};
-    int successful_reads = 0;
-
-    for (retry_count = 0; retry_count < READ_RETRY_COUNT; retry_count++)
-    {
-        ret = spi_read_direct(fd, &read_data);
-
-        if (ret == 0)
-        {
-            data_count[read_data]++;
-            successful_reads++;
-        }
-
-        usleep(500);
-    }
-
-    if (successful_reads > 0)
-    {
-
-        uint8_t most_frequent_data = select_most_frequent_byte(data_count);
-
-        *data = most_frequent_data;
-        return 0;
-    }
-    else
-    {
-        return -1;
-    }
+    return fspi_vote_read(spi_read_addr_data, READ_RETRY_COUNT, fd, 0, data);
 }
 
 /* 寄存器访问：装载固定配置，打开 SPI 设备并设置总线参数；配置失败时关闭句柄。 */

@@ -1,22 +1,22 @@
+// 2026-11-03 注释校订。多路帧缓存控制。写通道轮询共享 AXI，位置计数在帧同步时优先清零。
 module axi4_ctrl_3ch #(
     parameter C_ID_LEN      = 4,
     parameter C_DATA_LEN    = 128,
-    parameter C_DATA_SIZE   = 3'b100,                    
-    parameter C_BURST_LEN   = 10,                        
+    parameter C_DATA_SIZE   = 3'b100,
+    parameter C_BURST_LEN   = 10,
     parameter C_STRB_LEN    = C_DATA_LEN / 8,
-    parameter C_ADDR_INC    = C_BURST_LEN * C_STRB_LEN,  
+    parameter C_ADDR_INC    = C_BURST_LEN * C_STRB_LEN,
     parameter C_BASE_ADDR   = 32'h00000000,
     parameter C_BUF_SIZE    = 22,
     parameter C_RD_END_ADDR = 640 * 480 * 2,
     parameter C_W_WIDTH     = 16,
     parameter C_R_WIDTH     = 128,
-    
-    // 配置右移像素数（仅第一行填黑，全图延迟）。
-    parameter C_START_MASK  = 623// 存储接口：623是最完美的
+
+    parameter C_START_MASK  = 623
 ) (
     input wire axi_clk,
     input wire axi_reset,
-    // ... (接口保持原样)
+
     output      [C_ID_LEN-1:0] axi_awid,
     output      [        27:0] axi_awaddr,
     output      [         3:0] axi_awlen,
@@ -68,14 +68,13 @@ module axi4_ctrl_3ch #(
     output [31:0] tp_o
 );
 
-  // 存储接口：... Parameters & Fixed Assignments (UNCHANGED) ...
-  localparam FRAME_SIZE_BYTES = 640 * 480 * 2; 
+  localparam FRAME_SIZE_BYTES = 640 * 480 * 2;
   localparam LINE_STRIDE = 640 * 2;
 
   assign axi_awid    = {C_ID_LEN{1'b0}};
   assign axi_awlen   = C_BURST_LEN - 1'b1;
   assign axi_awsize  = C_DATA_SIZE;
-  assign axi_awburst = 2'b01; 
+  assign axi_awburst = 2'b01;
   assign axi_awlock  = 1'b0;
   assign axi_awcache = 0;
   assign axi_awprot  = 3'b0;
@@ -91,9 +90,6 @@ module axi4_ctrl_3ch #(
   assign axi_arqos   = 4'b0;
   assign axi_rready  = 1;
 
-  // ── 存储接口 ──
-  // 存储接口：[FIXED SECTION START]: Reset & VSYNC Synchronization (UNCHANGED)
-  // ── 存储接口 ──
   wire [3:0] vsync_pulse_axi;
   reg [2:0] vsync_sync_r[3:0];
   wire [3:0] raw_vsync_in;
@@ -114,7 +110,7 @@ module axi4_ctrl_3ch #(
   reg [4:0] fifo_rd_rst_cnt [2:0];
   wire [2:0] fifo_wr_rst_out;
   wire [2:0] fifo_rd_rst_out;
-  reg [1:0] r_wr_vsync_edge [2:0]; 
+  reg [1:0] r_wr_vsync_edge [2:0];
 
   generate
     for (gi = 0; gi < 3; gi = gi + 1) begin : rst_gen_loop
@@ -124,7 +120,7 @@ module axi4_ctrl_3ch #(
             r_wr_vsync_edge[gi] <= 2'b00;
         end else begin
             r_wr_vsync_edge[gi] <= {r_wr_vsync_edge[gi][0], wframe_vsync[gi]};
-            if (r_wr_vsync_edge[gi] == 2'b01) fifo_wr_rst_cnt[gi] <= 5'd31; 
+            if (r_wr_vsync_edge[gi] == 2'b01) fifo_wr_rst_cnt[gi] <= 5'd31;
             else if (fifo_wr_rst_cnt[gi] > 0) fifo_wr_rst_cnt[gi] <= fifo_wr_rst_cnt[gi] - 1;
         end
       end
@@ -141,24 +137,23 @@ module axi4_ctrl_3ch #(
     end
   endgenerate
 
-  // 存储接口：... Input Processing ...
   reg [9:0] pix_h[2:0], pix_v[2:0];
   reg  [1:0] r_vsync_d[2:0];
   wire [2:0] wr_en_ds;
-  
+
   wire [C_W_WIDTH-1:0] raw_data_in [2:0];
   assign raw_data_in[0] = wframe_data0;
   assign raw_data_in[1] = wframe_data1;
   assign raw_data_in[2] = wframe_data2;
-  
+
   wire [C_W_WIDTH-1:0] final_fifo_data [2:0];
 
   generate
     for (gi = 0; gi < 3; gi = gi + 1) begin : pix_cnt_loop
-      
+
       always @(posedge wframe_pclk[gi]) begin
         r_vsync_d[gi] <= {r_vsync_d[gi][0], wframe_vsync[gi]};
-        if (r_vsync_d[gi] == 2'b10) begin 
+        if (r_vsync_d[gi] == 2'b10) begin
           pix_h[gi] <= 0;
           pix_v[gi] <= 0;
         end else if (wframe_data_en[gi]) begin
@@ -168,18 +163,14 @@ module axi4_ctrl_3ch #(
           end else pix_h[gi] <= pix_h[gi] + 1;
         end
       end
-      
+
       assign wr_en_ds[gi] = wframe_data_en[gi] && (pix_h[gi][0] == 0) && (pix_v[gi][0] == 0) && !fifo_wr_rst_out[gi];
 
-      // ── 存储接口 ──
-      // 存储接口：[修改后]: 移位寄存器 + 仅第一行Mask逻辑
-      // ── 存储接口 ──
       if (C_START_MASK > 0) begin : gen_shift
-          
+
           reg [C_W_WIDTH-1:0] pipe_r [C_START_MASK-1:0];
           integer k;
 
-          // 存储接口：移位逻辑：每一帧、每一行都在移位，保证所有像素都延迟 N 拍
           always @(posedge wframe_pclk[gi]) begin
               if (wframe_data_en[gi]) begin
                   pipe_r[0] <= raw_data_in[gi];
@@ -188,84 +179,42 @@ module axi4_ctrl_3ch #(
                   end
               end
           end
-          
+
           wire [C_W_WIDTH-1:0] delayed_pixel = pipe_r[C_START_MASK-1];
-          
-          // 下面给出输入屏蔽的条件。
-          // 存储接口：仅在 第0行 (pix_v == 0) 且 前 N 个像素时，强制输出 0 (黑)。
-          // 其他行、以及第0行 N 像素以后，都输出 delayed_pixel (即右移后的真实图像)。
+
           assign final_fifo_data[gi] = (pix_v[gi] == 0 && pix_h[gi] < C_START_MASK) ? {C_W_WIDTH{1'b0}} : delayed_pixel;
 
       end else begin : gen_no_shift
           assign final_fifo_data[gi] = raw_data_in[gi];
       end
-      // ── 存储接口 ──
 
     end
   endgenerate
-
-  // ── 存储接口 ──
-  // 存储接口：4. FIFO Instantiation (使用 final_fifo_data)
-  // ── 存储接口 ──
 
   wire [3:0] w_fifo_empty, w_fifo_prog_empty;
   wire [3:0] w_fifo_ren;
   wire [C_DATA_LEN-1:0] w_fifo_rdata[3:0];
 
-  W_FIFO_16i_128o u_fifo_ch0 (
-      .wr_clk(wframe_pclk[0]),
-      .wr_rst(fifo_wr_rst_out[0]),
-      .wr_en(wr_en_ds[0]),
-      .wr_data(final_fifo_data[0]),  
-      .rd_clk(axi_clk),
-      .rd_rst(fifo_rd_rst_out[0]),
-      .rd_en(w_fifo_ren[0]),
-      .rd_data(w_fifo_rdata[0]),
-      .rd_empty(w_fifo_empty[0]),       
-      .almost_empty(w_fifo_prog_empty[0]) 
-  );
+  // 第四个缓存仍使用相机 0 的写端，AXI 读端保留独立通道。
+  genvar fifo_channel;
+  generate
+    for (fifo_channel = 0; fifo_channel < 4; fifo_channel = fifo_channel + 1) begin : camera_fifo
+      localparam CAMERA = fifo_channel == 3 ? 0 : fifo_channel;
+      W_FIFO_16i_128o u_fifo (
+          .wr_clk(wframe_pclk[CAMERA]),
+          .wr_rst(fifo_wr_rst_out[CAMERA]),
+          .wr_en(wr_en_ds[CAMERA]),
+          .wr_data(final_fifo_data[CAMERA]),
+          .rd_clk(axi_clk),
+          .rd_rst(fifo_rd_rst_out[CAMERA]),
+          .rd_en(w_fifo_ren[fifo_channel]),
+          .rd_data(w_fifo_rdata[fifo_channel]),
+          .rd_empty(w_fifo_empty[fifo_channel]),
+          .almost_empty(w_fifo_prog_empty[fifo_channel])
+      );
+    end
+  endgenerate
 
-  W_FIFO_16i_128o u_fifo_ch1 (
-      .wr_clk(wframe_pclk[1]),
-      .wr_rst(fifo_wr_rst_out[1]),
-      .wr_en(wr_en_ds[1]),
-      .wr_data(final_fifo_data[1]),  
-      .rd_clk(axi_clk),
-      .rd_rst(fifo_rd_rst_out[1]),
-      .rd_en(w_fifo_ren[1]),
-      .rd_data(w_fifo_rdata[1]),
-      .rd_empty(w_fifo_empty[1]),
-      .almost_empty(w_fifo_prog_empty[1])
-  );
-
-  W_FIFO_16i_128o u_fifo_ch2 (
-      .wr_clk(wframe_pclk[2]),
-      .wr_rst(fifo_wr_rst_out[2]),
-      .wr_en(wr_en_ds[2]),
-      .wr_data(final_fifo_data[2]),  
-      .rd_clk(axi_clk),
-      .rd_rst(fifo_rd_rst_out[2]),
-      .rd_en(w_fifo_ren[2]),
-      .rd_data(w_fifo_rdata[2]),
-      .rd_empty(w_fifo_empty[2]),
-      .almost_empty(w_fifo_prog_empty[2])
-  );
-
-  W_FIFO_16i_128o u_fifo_ch3 (
-      .wr_clk(wframe_pclk[0]),
-      .wr_rst(fifo_wr_rst_out[0]),
-      .wr_en(wr_en_ds[0]),
-      .wr_data(final_fifo_data[0]),  
-      .rd_clk(axi_clk),
-      .rd_rst(fifo_rd_rst_out[0]),
-      .rd_en(w_fifo_ren[3]),
-      .rd_data(w_fifo_rdata[3]),
-      .rd_empty(w_fifo_empty[3]),
-      .almost_empty(w_fifo_prog_empty[3])
-  );
-
-  // 存储接口：... 后续逻辑保持完全不变 ...
-  // 参数记录为 5. AXI Write Logic。
   reg [ 1:0] wr_idx       [3:0];
   reg [63:0] abs_frame_cnt[3:0];
   reg [ 9:0] col_burst_cnt[3:0];
@@ -281,9 +230,39 @@ module axi4_ctrl_3ch #(
   reg [7:0] burst_cnt;
 
   wire [1:0] next_ch = (cur_ch == 3) ? 2'b0 : cur_ch + 1;
-  wire ch_ready = !w_fifo_prog_empty[cur_ch] && !fifo_rd_rst_out[cur_ch != 3 ? cur_ch : 0]; 
+  wire ch_ready = !w_fifo_prog_empty[cur_ch] && !fifo_rd_rst_out[cur_ch != 3 ? cur_ch : 0];
 
-  integer i;
+  // 仅最后一个被接收的写拍推进列位置。同拍帧同步覆盖该更新。
+  wire last_write_beat = (ws_state == S_DATA) && axi_wready &&
+                         (burst_cnt == C_BURST_LEN - 1);
+  genvar write_ch;
+  generate
+    for (write_ch = 0; write_ch < 4; write_ch = write_ch + 1) begin : write_position
+      always @(posedge axi_clk or posedge axi_reset) begin
+        if (axi_reset) begin
+          wr_idx[write_ch] <= 0;
+          abs_frame_cnt[write_ch] <= 0;
+          col_burst_cnt[write_ch] <= 0;
+          row_line_cnt[write_ch] <= 0;
+        end else if (vsync_pulse_axi[write_ch]) begin
+          wr_idx[write_ch] <= wr_idx[write_ch] + 1;
+          abs_frame_cnt[write_ch] <= abs_frame_cnt[write_ch] + 1;
+          col_burst_cnt[write_ch] <= 0;
+          row_line_cnt[write_ch] <= 0;
+        end else if (last_write_beat && cur_ch == write_ch && !vsync_pulse_axi[write_ch]) begin
+          if (col_burst_cnt[write_ch] == 3) begin
+            col_burst_cnt[write_ch] <= 0;
+            row_line_cnt[write_ch] <= row_line_cnt[write_ch] + 1;
+          end else begin
+            col_burst_cnt[write_ch] <= col_burst_cnt[write_ch] + 1;
+          end
+        end
+      end
+
+      assign w_fifo_ren[write_ch] = (cur_ch == write_ch) && (ws_state == S_DATA) && axi_wready;
+    end
+  endgenerate
+
   always @(posedge axi_clk or posedge axi_reset) begin
     if (axi_reset) begin
       ws_state <= S_IDLE;
@@ -292,23 +271,7 @@ module axi4_ctrl_3ch #(
       axi_wvalid <= 0;
       axi_bready <= 0;
       burst_cnt <= 0;
-      for (i = 0; i < 4; i = i + 1) begin
-        wr_idx[i] <= 0;
-        abs_frame_cnt[i] <= 0;
-        col_burst_cnt[i] <= 0;
-        row_line_cnt[i] <= 0;
-      end
     end else begin
-      
-      for (i = 0; i < 4; i = i + 1) begin
-        if (vsync_pulse_axi[i]) begin
-          wr_idx[i]        <= wr_idx[i] + 1;
-          abs_frame_cnt[i] <= abs_frame_cnt[i] + 1;
-          col_burst_cnt[i] <= 0;
-          row_line_cnt[i]  <= 0;
-        end
-      end
-
       case (ws_state)
         S_IDLE: begin
           axi_bready <= 0;
@@ -337,14 +300,6 @@ module axi4_ctrl_3ch #(
               axi_bready <= 1;
               ws_state   <= S_RESP;
 
-              if (!vsync_pulse_axi[cur_ch]) begin
-                  if (col_burst_cnt[cur_ch] == 3) begin 
-                    col_burst_cnt[cur_ch] <= 0;
-                    row_line_cnt[cur_ch]  <= row_line_cnt[cur_ch] + 1;
-                  end else begin
-                    col_burst_cnt[cur_ch] <= col_burst_cnt[cur_ch] + 1;
-                  end
-              end
             end
           end
         end
@@ -361,7 +316,6 @@ module axi4_ctrl_3ch #(
     end
   end
 
-  // 存储接口：... Address Calculation Logic (UNCHANGED) ...
   reg [31:0] addr_offset_ch, row_base_addr, col_offset_addr;
   always @(*) begin
     addr_offset_ch = wr_idx[cur_ch] * FRAME_SIZE_BYTES;
@@ -375,13 +329,7 @@ module axi4_ctrl_3ch #(
 
   assign axi_wdata = w_fifo_rdata[cur_ch];
   assign axi_wlast = (burst_cnt == C_BURST_LEN - 1);
-  
-  assign w_fifo_ren[0] = (cur_ch == 0) && (ws_state == S_DATA) && axi_wready;
-  assign w_fifo_ren[1] = (cur_ch == 1) && (ws_state == S_DATA) && axi_wready;
-  assign w_fifo_ren[2] = (cur_ch == 2) && (ws_state == S_DATA) && axi_wready;
-  assign w_fifo_ren[3] = (cur_ch == 3) && (ws_state == S_DATA) && axi_wready;
 
-  // 存储接口：... Read Logic (UNCHANGED) ...
   reg [ 1:0] rc_rframe_index;
   reg [63:0] min_abs_cnt;
   always @(*) begin
@@ -404,7 +352,7 @@ module axi4_ctrl_3ch #(
     else rframe_vsync_dly <= rframe_vsync;
   end
   assign rframe_vsync_neg = rframe_vsync_dly & ~rframe_vsync;
-  
+
   reg [4:0] rfifo_cnt;
   reg rfifo_rst;
   always @(posedge rframe_pclk) begin
@@ -437,7 +385,7 @@ module axi4_ctrl_3ch #(
     if (w_rfifo_rst) rframe_data_valid <= 0;
     else rframe_data_valid <= rframe_data_en;
   end
-  
+
   reg [1:0] rd_state;
   reg [C_BUF_SIZE-1:0] araddr_offset;
   reg r_rd_pend;
@@ -463,15 +411,15 @@ module axi4_ctrl_3ch #(
         if (axi_rvalid && axi_rlast) r_rd_pend <= 0;
 
         case (rd_state)
-          0: begin 
+          0: begin
             if ((araddr_offset < C_RD_END_ADDR) && !rfifo_wfull) rd_state <= 1;
           end
-          1: begin 
+          1: begin
             axi_arvalid <= 1;
             r_rd_pend <= 1;
             rd_state <= 2;
           end
-          2: begin 
+          2: begin
             if (!axi_arvalid && !r_rd_pend) begin
               araddr_offset <= araddr_offset + C_ADDR_INC;
               rd_state <= 0;

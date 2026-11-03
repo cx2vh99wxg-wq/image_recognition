@@ -1,3 +1,4 @@
+// 2026-11-03 注释校订。计算 HSV，同时将原 RGB 与同步信号延迟三拍交给后级。
 module rgb2hsv(
 input clk,
 input reset_n,
@@ -15,13 +16,11 @@ output hsv_vs,
 output hsv_hs,
 output hsv_de);
 
-
 reg [7:0]max;
 reg	[7:0]min;
 reg	[13:0]rgb_r_r;
 reg	[13:0]rgb_g_r;
 reg	[13:0]rgb_b_r;
-
 
 reg [13:0]rgb_r_r2;
 reg	[13:0]rgb_g_r2;
@@ -41,12 +40,10 @@ assign	g_b=(rgb_g_r>=rgb_b_r)?(rgb_g_r-rgb_b_r):(rgb_b_r-rgb_g_r);
 assign  b_r=(rgb_b_r>=rgb_r_r)?(rgb_b_r-rgb_r_r):(rgb_r_r-rgb_b_r);
 assign  r_g=(rgb_r_r>=rgb_g_r)?(rgb_r_r-rgb_g_r):(rgb_g_r-rgb_r_r);
 
-
 reg [13:0]temp;
 reg	[13:0]hsv_h_r;
 reg	[15:0]hsv_s_r;
 reg	[7:0]hsv_v_r;
-
 
 always@(posedge clk or negedge reset_n)begin
 	if(!reset_n)begin
@@ -59,7 +56,7 @@ always@(posedge clk or negedge reset_n)begin
         rgb_g_r<=60*rgb_g;
         rgb_b_r<=60*rgb_b;
 	end
-end	
+end
 
 always@(posedge clk or negedge reset_n)begin
 	if(!reset_n)begin
@@ -73,7 +70,7 @@ always@(posedge clk or negedge reset_n)begin
 	    rgb_b_r2<=rgb_b_r;
 	end
 end
-	
+
 always@(posedge clk or negedge reset_n)begin
 	if(!reset_n)
 		max<=0;
@@ -147,53 +144,21 @@ always@(posedge clk or negedge reset_n)begin
 		hsv_s_r<={max_min_r,8'b0}/{8'b0,max_r};
 end
 
-
 always@(posedge clk or negedge reset_n)begin
 	if(!reset_n)
 		hsv_v_r<=0;
 	else
 		hsv_v_r<=max_r;
 end
-	
-reg [2:0]vs_delay;
-reg	[2:0]hs_delay;
-reg	[2:0]de_delay;
-wire [23:0]rgb = {rgb_r,rgb_g,rgb_b};
-reg [23:0]rgb_d0;
-reg [23:0]rgb_d1;
-reg [23:0]rgb_d2;
 
-always@(posedge clk or negedge reset_n)begin
-    if(!reset_n)begin
-        rgb_d0 <= 24'd0;
-        rgb_d1 <= 24'd0;
-        rgb_d2 <= 24'd0;
-    end
-    else begin
-        rgb_d0 <= rgb;
-        rgb_d1 <= rgb_d0;
-        rgb_d2 <= rgb_d1;
-    end
+reg [80:0] video_history;
+always @(posedge clk or negedge reset_n) begin
+    if (!reset_n)
+        video_history <= 0;
+    else
+        video_history <= {video_history[53:0], vs, hs, de, rgb_r, rgb_g, rgb_b};
 end
-assign o_rgb = rgb_d2;
-	
-always@(posedge clk or negedge reset_n)begin
-	if(!reset_n)begin
-		vs_delay<=0;
-        hs_delay<=0;
-        de_delay<=0;
-	end
-	else begin
-		vs_delay <= { vs_delay[1:0],vs};
-        hs_delay <= { hs_delay[1:0],hs};
-        de_delay <= { de_delay[1:0],de};
-	end
-end
-
-assign hsv_vs=vs_delay[2];
-assign hsv_hs=hs_delay[2];
-assign hsv_de=de_delay[2];
-
+assign {hsv_vs, hsv_hs, hsv_de, o_rgb} = video_history[80 -: 27];
 
 assign hsv_h=hsv_h_r[8:0];
 assign hsv_s=hsv_s_r[8:0];

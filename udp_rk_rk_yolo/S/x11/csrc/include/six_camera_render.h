@@ -60,5 +60,5 @@ static inline void focus(uint32_t *pixels, const uint16_t *pcie, const uint16_t 
             row[x] = argb(source[x / 2]);
     }
 }
-} // six_camera：本节对应的标识或作用域。
+}
 #endif

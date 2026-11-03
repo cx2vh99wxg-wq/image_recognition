@@ -1,0 +1,6 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/isp/fps/fps_display.v" into library work
+INFO: [VRFC 10-311] analyzing module char_display
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/isp/fps/fps_count.v" into library work
+INFO: [VRFC 10-311] analyzing module fps_count
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/isp/fps/fps_calculation.v" into library work
+INFO: [VRFC 10-311] analyzing module fps_calculation

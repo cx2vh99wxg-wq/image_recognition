@@ -41,24 +41,7 @@
 
 #define TEST_LOOP_COUNT 100
 
-typedef enum
-{
-    SPI_MODE_SINGLE = 1,
-    SPI_MODE_DUAL,
-    SPI_MODE_QUAD
-} SpiTransferMode;
-
-typedef struct
-{
-    char device[MAX_DEVICE_PATH];
-    uint32_t speed_hz;
-    uint32_t transfer_size;
-    uint32_t cycle_count;
-    uint32_t spi_mode;
-    uint8_t bits_per_word;
-    uint16_t delay_us;
-    SpiTransferMode protocol_mode;
-} SpiTestConfig;
+#include "../../../common/transport/include/fspi_register_io.h"
 
 typedef struct
 {
@@ -73,7 +56,6 @@ typedef struct
 static SpiTestConfig g_config;
 static int g_spi_fd = -1;
 
-static int configure_spi_interface(int fd, SpiTestConfig *config);
 static int perform_transfer(int fd, uint8_t *tx_buf, uint8_t *rx_buf, SpiTestConfig *config);
 static int spi_write_3bytes(int fd, uint16_t addr, uint8_t data);
 static int spi_read_addr_data(int fd, uint16_t addr, uint8_t *data);
@@ -81,56 +63,10 @@ static int spi_write_reliable(int fd, uint16_t addr, uint8_t data);
 static int spi_read_reliable(int fd, uint16_t addr, uint8_t *data);
 static void run_rw_test_loop(int fd) __attribute__((unused));
 
-/* 依次写入 SPI 模式、位宽和频率，任一步失败即结束本轮设置。 */
-static int configure_spi_interface(int fd, SpiTestConfig *config)
-{
-
-    if (ioctl(fd, SPI_IOC_WR_MODE32, &config->spi_mode) == -1)
-    {
-        perror("Failed to set SPI mode");
-        return -1;
-    }
-
-    if (ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &config->bits_per_word) == -1)
-    {
-        perror("Failed to set bits per word");
-        return -1;
-    }
-
-    if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &config->speed_hz) == -1)
-    {
-        perror("Failed to set SPI speed");
-        return -1;
-    }
-
-    return 0;
-}
-
 /* 根据传输方向确定总线宽度，再完成一次 SPI 事务。 */
 static int perform_transfer(int fd, uint8_t *tx_buf, uint8_t *rx_buf, SpiTestConfig *config)
 {
-    struct spi_ioc_transfer tr = {
-        .tx_buf = (unsigned long)tx_buf,
-        .rx_buf = (unsigned long)rx_buf,
-        .len = config->transfer_size,
-        .delay_usecs = config->delay_us,
-        .speed_hz = config->speed_hz,
-        .bits_per_word = config->bits_per_word,
-    };
-
-    switch (config->protocol_mode)
-    {
-    case SPI_MODE_DUAL:
-        tr.tx_nbits = tr.rx_nbits = 2;
-        break;
-    case SPI_MODE_QUAD:
-        tr.tx_nbits = tr.rx_nbits = 4;
-        break;
-    default:
-        tr.tx_nbits = tr.rx_nbits = 1;
-    }
-
-    return ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
+    return fspi_transfer(fd, tx_buf, rx_buf, config, 1);
 }
 
 /* 16 位地址拆为高、低字节，与数据字节按原线协议一同发送。 */
@@ -164,138 +100,26 @@ static int spi_write_3bytes(int fd, uint16_t addr, uint8_t data)
 /* 先发送两个地址字节，再切换接收模式读入一个数据字节。 */
 static int spi_read_addr_data(int fd, uint16_t addr, uint8_t *data)
 {
-    uint8_t tx_buffer[2];
-    uint8_t rx_data = 0;
-
-    tx_buffer[0] = (addr >> 8) & 0xFF;
-    tx_buffer[1] = addr & 0xFF;
-
-    printf("TX Address: [0x%02X] [0x%02X]\n", tx_buffer[0], tx_buffer[1]);
-
-    g_config.spi_mode |= SPI_TX_QUAD;
-    g_config.spi_mode &= ~SPI_RX_QUAD;
-
-    if (configure_spi_interface(fd, &g_config) != 0)
-    {
-        return -1;
-    }
-
-    uint32_t original_size = g_config.transfer_size;
-    g_config.transfer_size = 2;
-
-    if (perform_transfer(fd, tx_buffer, NULL, &g_config) < 0)
-    {
-        perror("Send address failed");
-        g_config.transfer_size = original_size;
-        return -1;
-    }
-
-    g_config.spi_mode = (g_config.spi_mode & ~SPI_TX_QUAD) | SPI_RX_QUAD;
-    g_config.transfer_size = 1;
-
-    if (configure_spi_interface(fd, &g_config) != 0)
-    {
-        g_config.transfer_size = original_size;
-        return -1;
-    }
-
-    if (perform_transfer(fd, NULL, &rx_data, &g_config) < 0)
-    {
-        perror("Read data failed");
-        g_config.transfer_size = original_size;
-        return -1;
-    }
-
-    g_config.transfer_size = original_size;
-
-    *data = rx_data;
-    printf("RX Data: [0x%02X]\n", *data);
-
-    return 0;
+    return fspi_read_addressed(fd, addr, data, &g_config, 1, 1);
 }
 
 /* 写请求最多三轮，仍可继续重试的失败之间等待一毫秒。 */
 static int spi_write_reliable(int fd, uint16_t addr, uint8_t data)
 {
-    int retry_count = 0;
-    int ret;
-
     printf("    [WRITE] 地址: 0x%04X, 数据: 0x%02X\n", addr, data);
-
-    for (retry_count = 0; retry_count < WRITE_RETRY_COUNT; retry_count++)
-    {
-        ret = spi_write_3bytes(fd, addr, data);
-
-        if (ret == 0)
-        {
-            return 0;
-        }
-
-        if (retry_count < WRITE_RETRY_COUNT - 1)
-        {
-            usleep(1000);
-        }
-    }
-
-    return -1;
+    return fspi_retry_write(spi_write_3bytes, WRITE_RETRY_COUNT, fd, addr, data);
 }
 
-/* 多轮采样按字节计数，出现更多时更新候选；票数相同取较小值。 */
-static uint8_t select_most_frequent_byte(const int counts[256])
-{
-    uint8_t result = 0;
-    int highest_count = 0;
-    for (int value = 0; value < 256; ++value)
-    {
-        if (counts[value] > highest_count)
-        {
-            highest_count = counts[value];
-            result = (uint8_t)value;
-        }
-    }
-    return result;
-}
-
-/* 尝试三次寄存器读取并统计成功样本，以最高票读值作为结果。 */
+/* 按本端读重试次数采样，输出成功读值的众数。 */
 static int spi_read_reliable(int fd, uint16_t addr, uint8_t *data)
 {
-    int retry_count = 0;
-    int ret;
-    uint8_t read_data = 0;
-
-    int data_count[256] = {0};
-    int successful_reads = 0;
-
     printf("    [READ]  地址: 0x%04X\n", addr);
-
-    for (retry_count = 0; retry_count < READ_RETRY_COUNT; retry_count++)
-    {
-        ret = spi_read_addr_data(fd, addr, &read_data);
-
-        if (ret == 0)
-        {
-            data_count[read_data]++;
-            successful_reads++;
-        }
-
-        usleep(500);
-    }
-
-    if (successful_reads > 0)
-    {
-
-        uint8_t most_frequent_data = select_most_frequent_byte(data_count);
-
-        printf("    [READ]  结果: 0x%02X\n", most_frequent_data);
-
-        *data = most_frequent_data;
-        return 0;
-    }
+    const int result = fspi_vote_read(spi_read_addr_data, READ_RETRY_COUNT, fd, addr, data);
+    if (result == 0)
+        printf("    [READ]  结果: 0x%02X\n", *data);
     else
-    {
         printf("    [READ]  读取失败\n");
-        return -1;
-    }
+    return result;
 }
 
 /* 保留原寄存器循环测试，写随机值、读回核对并统计；正式主流程不调用。 */

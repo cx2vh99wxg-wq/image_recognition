@@ -1,0 +1,111 @@
+mingw32-make: Entering directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M'
+echo "======================================"
+echo "M-End_FPGA_System Build System"
+echo "======================================"
+echo "Author: 科研轮转"
+echo "Date: 2025年10月17日"
+echo "======================================"
+echo "Modules:"
+echo "  - Shared Memory Module (csrc/)"
+echo "  - PCIe Capture Module (pcie/)"
+echo "  - UDP Network Module (udp/)"
+echo "Rendering Support: 1"
+echo "YOLO Detection: Enabled"
+echo "======================================"
+echo "Building Shared Memory Module..."
+gcc -Wall -Wextra -std=c99 -O3 -march=native -pthread -fPIC -MMD -MP -Iinclude -c csrc/shared_memory.c -o build/shared_memory.o
+echo "Shared Memory module build complete"
+echo "Building PCIe Capture Module..."
+D:/zheliVScode/mingw64/bin/mingw32-make.exe -C pcie ENABLE_RENDERING=1 TOPDIR=D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M
+mingw32-make[1]: Entering directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/pcie'
+A subdirectory or file -p already exists.
+Error occurred while processing: -p.
+A subdirectory or file build already exists.
+Error occurred while processing: build.
+A subdirectory or file -p already exists.
+Error occurred while processing: -p.
+A subdirectory or file build already exists.
+Error occurred while processing: build.
+A subdirectory or file -p already exists.
+Error occurred while processing: -p.
+A subdirectory or file build already exists.
+Error occurred while processing: build.
+A subdirectory or file -p already exists.
+Error occurred while processing: -p.
+A subdirectory or file build already exists.
+Error occurred while processing: build.
+A subdirectory or file -p already exists.
+Error occurred while processing: -p.
+A subdirectory or file build already exists.
+Error occurred while processing: build.
+A subdirectory or file -p already exists.
+Error occurred while processing: -p.
+A subdirectory or file build already exists.
+Error occurred while processing: build.
+A subdirectory or file -p already exists.
+Error occurred while processing: -p.
+A subdirectory or file build already exists.
+Error occurred while processing: build.
+echo "======================================"
+echo "PCIe Capture Module Build System"
+echo "======================================"
+echo "Target: pcie_capture"
+echo "Build Directory: build"
+echo "Rendering Support: 1"
+echo "YOLO Detection: Enabled"
+echo "Compiler: gcc / g++"
+echo "======================================"
+echo "Compiling C: csrc/fspi_module.c"
+mkdir -p build
+gcc -std=c99 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -ID:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/include -I/usr/include/X11 -c csrc/fspi_module.c -o build/fspi_module.o
+echo "Compiling C: csrc/preprocess.c"
+mkdir -p build
+gcc -std=c99 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -ID:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/include -I/usr/include/X11 -c csrc/preprocess.c -o build/preprocess.o
+echo "Compiling C: csrc/yolo_integration.c"
+mkdir -p build
+gcc -std=c99 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -ID:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/include -I/usr/include/X11 -c csrc/yolo_integration.c -o build/yolo_integration.o
+echo "Compiling C++: csrc/main.cpp"
+mkdir -p build
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -ID:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/include -I/usr/include/X11 -c csrc/main.cpp -o build/main.o
+echo "Compiling C++: csrc/postprocess.cpp"
+mkdir -p build
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -ID:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/include -I/usr/include/X11 -c csrc/postprocess.cpp -o build/postprocess.o
+echo "Compiling C++: csrc/traffic_detector.cpp"
+mkdir -p build
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -ID:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/include -I/usr/include/X11 -c csrc/traffic_detector.cpp -o build/traffic_detector.o
+echo "Compiling C++: csrc/traffic_service.cpp"
+mkdir -p build
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -ID:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/include -I/usr/include/X11 -c csrc/traffic_service.cpp -o build/traffic_service.o
+echo "Compiling C++: csrc/yolop_opencv_integration.cpp"
+mkdir -p build
+g++ -std=c++11 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -ID:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/include -I/usr/include/X11 -c csrc/yolop_opencv_integration.cpp -o build/yolop_opencv_integration.o
+mkdir -p D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/build/
+gcc -std=c99 -Wall -O3 -g -MMD -MP -DENABLE_RENDERING=1 -Iinclude -I../include -ID:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/include -I/usr/include/X11 -c D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/csrc/shared_memory.c -o D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/build/shared_memory.o
+echo "Linking: build/pcie_capture"
+mkdir -p build
+g++  build/fspi_module.o  build/preprocess.o  build/yolo_integration.o  build/main.o  build/postprocess.o  build/traffic_detector.o  build/traffic_service.o  build/yolop_opencv_integration.o D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/build/shared_memory.o -o build/pcie_capture -Llib -L../lib -lrknnrt -pthread -lm -ldl -lX11 -lXext
+echo "Build successful: build/pcie_capture"
+mingw32-make[1]: Leaving directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/pcie'
+echo "PCIe module build complete"
+echo "Building UDP Network Module..."
+D:/zheliVScode/mingw64/bin/mingw32-make.exe -C udp TOPDIR=D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M
+mingw32-make[1]: Entering directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/udp'
+echo "======================================"
+echo "UDP Network Module Build System"
+echo "======================================"
+echo "Target: udp_sender"
+echo "Build Directory: build"
+echo "Compiler: gcc / g++"
+echo "======================================"
+echo "Compiling C++: csrc/main.cpp"
+mkdir -p build
+g++ -std=c++11 -Wall -O3 -march=native -MMD -MP -Iinclude -ID:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/include -c csrc/main.cpp -o build/main.o
+mkdir -p D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/build/
+gcc -std=c99 -Wall -O3 -march=native -MMD -MP -ID:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/include -c D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/csrc/shared_memory.c -o D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/build/shared_memory.o
+echo "Linking: build/udp_sender"
+mkdir -p build
+g++   build/main.o D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/build/shared_memory.o -o build/udp_sender -pthread -lm
+echo "Build successful: build/udp_sender"
+mingw32-make[1]: Leaving directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M/udp'
+echo "UDP module build complete"
+mingw32-make: Leaving directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M'

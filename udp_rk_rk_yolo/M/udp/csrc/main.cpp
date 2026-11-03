@@ -20,8 +20,8 @@
 
 // ── 网络传输 ──
 // *作   者：科研轮转（UDP模块）
-// 网络传输：*完成时间：2025年10月17日
-// 网络传输：*实现功能：UDP网络传输模块，负责将图像数据发送到S端
+// 网络传输：本版更新：2026年10月5日
+// 网络传输：*实现功能：UDP网络传输模块，负责将图像数据发出到S端
 // 网络传输：*传输格式：支持同步的帧传输，包含帧头、行头、行数据、帧尾
 // ── 网络传输 ──
 
@@ -30,7 +30,7 @@ static_assert(sizeof(CurveDetectionSharedMemory) == 72, "Curve shared ABI must r
 #define IMAGE_WIDTH 640
 #define IMAGE_HEIGHT 480
 #define UDP_PORT 8888
-#define TARGET_IP "192.168.100.20" // S端接收IP地址：本节对应的标识或作用域。
+#define TARGET_IP "192.168.100.20"
 #define MAX_PACKET_SIZE 1400
 
 // ── 网络传输 ──
@@ -46,12 +46,12 @@ typedef struct
     uint32_t frame_id;         /* 用于区分视频帧的编号。 */
     uint32_t width;            /* 有效图像的水平尺寸。 */
     uint32_t height;           /* 有效图像的垂直尺寸。 */
-    uint32_t data_size;        /* 当前图像帧占用的字节总数。 */
-    uint32_t line_count;       /* 当前区域包含的行数量。 */
-    uint32_t checksum;         /* 当前完整帧的累加校验值。 */
+    uint32_t data_size;        /* 此时图像帧占用的字节总数。 */
+    uint32_t line_count;       /* 此时区域包含的行数量。 */
+    uint32_t checksum;         /* 此时完整帧的累加校验值。 */
     uint32_t timestamp;        /* 该项记录对应事件的时刻。 */
     uint32_t curve_type;       /* 网络传输：弯道类型: 0=无, 1=左弯, 2=右弯, 3=左右弯 */
-    uint32_t curve_confidence; /* 网络传输：弯道检测置信度 (0-100) */
+    uint32_t curve_confidence; /* 网络传输：弯道识别置信度 (0-100) */
     uint32_t curve_angle;      /* 网络传输：弯道角度 (度数) */
     uint32_t reserved;         /* 字段空间保留，暂不另作解释。 */
 } FrameHeader;
@@ -60,16 +60,16 @@ typedef struct
 {
     uint32_t magic;       /* 网络传输：魔数: FRAME_TRAILER_MAGIC */
     uint32_t frame_id;    /* 用于区分视频帧的编号。 */
-    uint32_t checksum;    /* 当前完整帧的累加校验值。 */
+    uint32_t checksum;    /* 此时完整帧的累加校验值。 */
     uint32_t total_lines; /* 整帧包含的图像行数量。 */
 } FrameTrailer;
 
 typedef struct
 {
     uint32_t magic;         /* 网络传输：魔数: LINE_HEADER_MAGIC */
-    uint16_t line_id;       /* 当前图像行的索引。 */
+    uint16_t line_id;       /* 此时图像行的索引。 */
     uint16_t line_size;     /* 网络传输：行数据大小 */
-    uint32_t line_checksum; /* 当前图像行的累加校验值。 */
+    uint32_t line_checksum; /* 此时图像行的累加校验值。 */
 } LineHeader;
 
 typedef struct
@@ -147,9 +147,9 @@ int network_manager_init(NetworkManager *net_mgr, const char *target_ip)
         if (end && !*end && value <= 1000)
             net_mgr->bitrate_mbit = (unsigned)value;
     }
-    printf("正在初始化UDP网络传输...\n");
+    printf("开始初始化UDP网络传输...\n");
 
-    // 网络传输：创建UDP socket
+    // 网络传输：建立UDP socket
     net_mgr->socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
     if (net_mgr->socket_fd < 0)
     {
@@ -157,7 +157,7 @@ int network_manager_init(NetworkManager *net_mgr, const char *target_ip)
         return -1;
     }
 
-    // 配置socket选项。
+    // 设置socket选项。
     int broadcast = 1;
     if (setsockopt(net_mgr->socket_fd, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast)) < 0)
     {
@@ -166,8 +166,8 @@ int network_manager_init(NetworkManager *net_mgr, const char *target_ip)
         return -1;
     }
 
-    // 配置发送缓冲区大小。
-    int send_buf_size = 256 * 1024; // 队列容量受限，按节奏分批发送，不能积压旧帧。
+    // 设置发出缓冲区大小。
+    int send_buf_size = 256 * 1024; // 队列容量受限，按节奏分批发出，不能积压旧帧。
     if (setsockopt(net_mgr->socket_fd, SOL_SOCKET, SO_SNDBUF, &send_buf_size,
                    sizeof(send_buf_size)) < 0)
     {
@@ -177,7 +177,7 @@ int network_manager_init(NetworkManager *net_mgr, const char *target_ip)
     struct timeval timeout = {0, 10000};
     setsockopt(net_mgr->socket_fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
 
-    // 写入网络发送的目标地址。
+    // 写入网络发出的目标地址。
     memset(&net_mgr->target_addr, 0, sizeof(net_mgr->target_addr));
     net_mgr->target_addr.sin_family = AF_INET;
     net_mgr->target_addr.sin_port = htons(UDP_PORT);
@@ -189,9 +189,9 @@ int network_manager_init(NetworkManager *net_mgr, const char *target_ip)
         return -1;
     }
 
-    printf("UDP网络传输初始化成功\n");
+    printf("UDP网络传输初始化完成\n");
     printf("目标地址: %s:%d\n", target_ip, UDP_PORT);
-    printf("发送缓冲区: %d字节\n", send_buf_size);
+    printf("发出缓冲区: %d字节\n", send_buf_size);
 
     return 0;
 }
@@ -211,7 +211,7 @@ uint32_t calculate_checksum(const uint8_t *data, size_t size)
 
 /** * 接口:
 * network_send_frame_with_sync
-* - 发送带同步的640*480帧 */
+* - 发出带同步的640*480帧 */
 static int network_send_legacy(NetworkManager *net_mgr, const uint8_t *frame_data,
                                uint32_t frame_id, uint32_t curve_type, uint32_t curve_confidence,
                                uint32_t curve_angle)
@@ -387,23 +387,23 @@ int network_send_frame_with_sync(NetworkManager *net_mgr, const uint8_t *frame_d
 
 /** * 接口:
 * network_manager_cleanup
-* - 清理网络资源 */
+* - 移除网络资源 */
 void network_manager_cleanup(NetworkManager *net_mgr)
 {
     if (net_mgr && net_mgr->socket_fd >= 0)
     {
         close(net_mgr->socket_fd);
         net_mgr->socket_fd = -1;
-        printf("UDP网络连接已关闭\n");
+        printf("UDP网络接入已关闭\n");
     }
 }
 
 // ── 网络传输 ──
-// 网络传输：主函数 - UDP传输测试
+// 网络传输：主函数 - UDP传输验证
 // ── 网络传输 ──
 
-// 单独重启采集后，图像和弯道生产者句柄必须作为一组重新连接。
-// 即使 SysV 段号重用，同名信号量也可能已经重新创建。
+// 单独重启采集后，图像和弯道生产者句柄必须作为一组重新接入。
+// 即使 SysV 段号重用，同名信号量也可能已经重新建立。
 struct SourceConnection
 {
     SharedMemoryManager image = {};

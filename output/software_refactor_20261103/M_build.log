@@ -1,0 +1,25 @@
+mingw32-make: Entering directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M'
+"======================================"
+"M-End_FPGA_System Build System"
+"======================================"
+"Author: 科研轮转"
+"Date: 2025年10月17日"
+"======================================"
+"Modules:"
+"  - Shared Memory Module (csrc/)"
+"  - PCIe Capture Module (pcie/)"
+"  - UDP Network Module (udp/)"
+"Rendering Support: 1"
+"YOLO Detection: Enabled"
+"======================================"
+"Creating build directory"
+mkdir -p build
+"Building Shared Memory Module..."
+gcc -Wall -Wextra -std=c99 -O3 -march=native -pthread -fPIC -MMD -MP -Iinclude -c csrc/shared_memory.c -o build/shared_memory.o
+In file included from csrc/shared_memory.c:3:
+include/shared_memory.h:5:10: fatal error: sys/ipc.h: No such file or directory
+    5 | #include <sys/ipc.h>
+      |          ^~~~~~~~~~~
+compilation terminated.
+mingw32-make: *** [Makefile:74: shared_memory] Error 1
+mingw32-make: Leaving directory 'D:/Study_Object/image_recognition/image_recognition/output/software_refactor_20261103/clean_build/M'

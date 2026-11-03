@@ -1,4 +1,4 @@
-/* 旧报文头路径继续可用，线布局及组帧实现统一来自公共模块。 */
+/* 通过原头文件路径引入公共的报文布局和组帧实现。 */
 #ifndef FPGA_M_VIDEO_TRANSPORT_FORWARD_H
 #define FPGA_M_VIDEO_TRANSPORT_FORWARD_H
 #include "../../../common/transport/include/video_transport_v2.h"

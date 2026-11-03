@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #define _GNU_SOURCE
 #include "shared_memory.h"
+#include "../../common/perception/include/curve_shm_attach.h"
 #include "brake_release_policy.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -825,40 +826,9 @@ int curve_detection_shm_init(int is_writer)
 
     g_curve_is_writer = is_writer;
 
-    if (is_writer)
-    {
-
-        g_curve_shm_id = shmget(shm_key, shm_size, IPC_CREAT | IPC_EXCL | 0666);
-        if (g_curve_shm_id == -1)
-        {
-            if (errno == EEXIST)
-            {
-
-                printf("弯道检测共享内存已存在，尝试连接...\n");
-                g_curve_shm_id = shmget(shm_key, shm_size, 0666);
-                if (g_curve_shm_id == -1)
-                {
-                    perror("连接弯道检测共享内存失败");
-                    return -1;
-                }
-            }
-            else
-            {
-                perror("创建弯道检测共享内存失败");
-                return -1;
-            }
-        }
-    }
-    else
-    {
-
-        g_curve_shm_id = shmget(shm_key, shm_size, 0666);
-        if (g_curve_shm_id == -1)
-        {
-            perror("连接弯道检测共享内存失败");
-            return -1;
-        }
-    }
+    g_curve_shm_id = curve_shm_open(shm_key, shm_size, is_writer);
+    if (g_curve_shm_id == -1)
+        return -1;
 
     g_curve_shm_ptr = (CurveDetectionSharedMemory *)shmat(g_curve_shm_id, NULL, 0);
     if (g_curve_shm_ptr == (void *)-1)

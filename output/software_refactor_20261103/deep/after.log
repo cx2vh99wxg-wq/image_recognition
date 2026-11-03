@@ -1,0 +1,2851 @@
+[YOLOP] 加载 2 个类别标签: car, person
+[YOLOP] 模型输入数: 1, 输出数: 3
+[YOLOP] 输出[0] 维度: , 元素数: 0
+[YOLOP] 输出[1] 维度: , 元素数: 0
+[YOLOP] 输出[2] 维度: , 元素数: 0
+[YOLOP] 引擎初始化成功
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 173 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 1x1
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 输出获取成功，共 3 个输出
+  输出[0] 大小: 705600 bytes, 是否有效: 1
+  输出[1] 大小: 3276800 bytes, 是否有效: 1
+  输出[2] 大小: 3276800 bytes, 是否有效: 1
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 173 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 已缓存分割输出，尺寸: 640x640
+[YOLOP] 检测完成，找到 64 个目标
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 1x1
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 设置输入失败: -11
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 1x1
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理失败: -12
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 1x1
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 获取输出失败: -13
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 173 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 1x29
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 输出获取成功，共 3 个输出
+  输出[0] 大小: 705600 bytes, 是否有效: 1
+  输出[1] 大小: 3276800 bytes, 是否有效: 1
+  输出[2] 大小: 3276800 bytes, 是否有效: 1
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 173 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 已缓存分割输出，尺寸: 640x640
+[YOLOP] 检测完成，找到 64 个目标
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 1x29
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 设置输入失败: -11
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 1x29
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理失败: -12
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 1x29
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 获取输出失败: -13
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 173 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 1x239
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 输出获取成功，共 3 个输出
+  输出[0] 大小: 705600 bytes, 是否有效: 1
+  输出[1] 大小: 3276800 bytes, 是否有效: 1
+  输出[2] 大小: 3276800 bytes, 是否有效: 1
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 173 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 已缓存分割输出，尺寸: 640x640
+[YOLOP] 检测完成，找到 64 个目标
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 1x239
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 设置输入失败: -11
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 1x239
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理失败: -12
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 1x239
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 获取输出失败: -13
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 173 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 1x640
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 输出获取成功，共 3 个输出
+  输出[0] 大小: 705600 bytes, 是否有效: 1
+  输出[1] 大小: 3276800 bytes, 是否有效: 1
+  输出[2] 大小: 3276800 bytes, 是否有效: 1
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 173 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 已缓存分割输出，尺寸: 640x640
+[YOLOP] 检测完成，找到 64 个目标
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 1x640
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 设置输入失败: -11
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 1x640
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理失败: -12
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 1x640
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 获取输出失败: -13
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 172 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 17x1
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 输出获取成功，共 3 个输出
+  输出[0] 大小: 705600 bytes, 是否有效: 1
+  输出[1] 大小: 3276800 bytes, 是否有效: 1
+  输出[2] 大小: 3276800 bytes, 是否有效: 1
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 172 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 已缓存分割输出，尺寸: 640x640
+[YOLOP] 检测完成，找到 64 个目标
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 17x1
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 设置输入失败: -11
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 17x1
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理失败: -12
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 17x1
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 获取输出失败: -13
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 158 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #47: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #48: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #51: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #52: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #62: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #63: car (类别ID=0, 置信度=0.63)
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 17x29
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 输出获取成功，共 3 个输出
+  输出[0] 大小: 705600 bytes, 是否有效: 1
+  输出[1] 大小: 3276800 bytes, 是否有效: 1
+  输出[2] 大小: 3276800 bytes, 是否有效: 1
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 158 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #47: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #48: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #51: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #52: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #62: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #63: car (类别ID=0, 置信度=0.63)
+[YOLOP] 已缓存分割输出，尺寸: 640x640
+[YOLOP] 检测完成，找到 64 个目标
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 17x29
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 设置输入失败: -11
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 17x29
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理失败: -12
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 17x29
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 获取输出失败: -13
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 162 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 17x239
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 输出获取成功，共 3 个输出
+  输出[0] 大小: 705600 bytes, 是否有效: 1
+  输出[1] 大小: 3276800 bytes, 是否有效: 1
+  输出[2] 大小: 3276800 bytes, 是否有效: 1
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 162 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 已缓存分割输出，尺寸: 640x640
+[YOLOP] 检测完成，找到 64 个目标
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 17x239
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 设置输入失败: -11
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 17x239
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理失败: -12
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 17x239
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 获取输出失败: -13
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 161 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 17x640
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 输出获取成功，共 3 个输出
+  输出[0] 大小: 705600 bytes, 是否有效: 1
+  输出[1] 大小: 3276800 bytes, 是否有效: 1
+  输出[2] 大小: 3276800 bytes, 是否有效: 1
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 161 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 已缓存分割输出，尺寸: 640x640
+[YOLOP] 检测完成，找到 64 个目标
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 17x640
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 设置输入失败: -11
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 17x640
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理失败: -12
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 17x640
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 获取输出失败: -13
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 172 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 321x1
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 输出获取成功，共 3 个输出
+  输出[0] 大小: 705600 bytes, 是否有效: 1
+  输出[1] 大小: 3276800 bytes, 是否有效: 1
+  输出[2] 大小: 3276800 bytes, 是否有效: 1
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 172 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 已缓存分割输出，尺寸: 640x640
+[YOLOP] 检测完成，找到 64 个目标
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 321x1
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 设置输入失败: -11
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 321x1
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理失败: -12
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 321x1
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 获取输出失败: -13
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 163 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #47: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #48: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #51: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #52: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #62: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #63: car (类别ID=0, 置信度=0.63)
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 321x29
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 输出获取成功，共 3 个输出
+  输出[0] 大小: 705600 bytes, 是否有效: 1
+  输出[1] 大小: 3276800 bytes, 是否有效: 1
+  输出[2] 大小: 3276800 bytes, 是否有效: 1
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 163 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #47: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #48: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #51: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #52: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #62: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #63: car (类别ID=0, 置信度=0.63)
+[YOLOP] 已缓存分割输出，尺寸: 640x640
+[YOLOP] 检测完成，找到 64 个目标
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 321x29
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 设置输入失败: -11
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 321x29
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理失败: -12
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 321x29
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 获取输出失败: -13
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 171 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 321x239
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 输出获取成功，共 3 个输出
+  输出[0] 大小: 705600 bytes, 是否有效: 1
+  输出[1] 大小: 3276800 bytes, 是否有效: 1
+  输出[2] 大小: 3276800 bytes, 是否有效: 1
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 171 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 已缓存分割输出，尺寸: 640x640
+[YOLOP] 检测完成，找到 64 个目标
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 321x239
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 设置输入失败: -11
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 321x239
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理失败: -12
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 321x239
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 获取输出失败: -13
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 171 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 321x640
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 输出获取成功，共 3 个输出
+  输出[0] 大小: 705600 bytes, 是否有效: 1
+  输出[1] 大小: 3276800 bytes, 是否有效: 1
+  输出[2] 大小: 3276800 bytes, 是否有效: 1
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 171 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 已缓存分割输出，尺寸: 640x640
+[YOLOP] 检测完成，找到 64 个目标
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 321x640
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 设置输入失败: -11
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 321x640
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理失败: -12
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 321x640
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 获取输出失败: -13
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 172 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 640x1
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 输出获取成功，共 3 个输出
+  输出[0] 大小: 705600 bytes, 是否有效: 1
+  输出[1] 大小: 3276800 bytes, 是否有效: 1
+  输出[2] 大小: 3276800 bytes, 是否有效: 1
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 172 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 已缓存分割输出，尺寸: 640x640
+[YOLOP] 检测完成，找到 64 个目标
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 640x1
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 设置输入失败: -11
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 640x1
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理失败: -12
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 640x1
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 获取输出失败: -13
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 163 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #47: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #48: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #51: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #52: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #62: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #63: car (类别ID=0, 置信度=0.63)
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 640x29
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 输出获取成功，共 3 个输出
+  输出[0] 大小: 705600 bytes, 是否有效: 1
+  输出[1] 大小: 3276800 bytes, 是否有效: 1
+  输出[2] 大小: 3276800 bytes, 是否有效: 1
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 163 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #47: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #48: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #51: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #52: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #62: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #63: car (类别ID=0, 置信度=0.63)
+[YOLOP] 已缓存分割输出，尺寸: 640x640
+[YOLOP] 检测完成，找到 64 个目标
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 640x29
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 设置输入失败: -11
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 640x29
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理失败: -12
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 640x29
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 获取输出失败: -13
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 171 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 640x239
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 输出获取成功，共 3 个输出
+  输出[0] 大小: 705600 bytes, 是否有效: 1
+  输出[1] 大小: 3276800 bytes, 是否有效: 1
+  输出[2] 大小: 3276800 bytes, 是否有效: 1
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 171 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 已缓存分割输出，尺寸: 640x640
+[YOLOP] 检测完成，找到 64 个目标
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 640x239
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 设置输入失败: -11
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 640x239
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理失败: -12
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 640x239
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 获取输出失败: -13
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 171 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 640x640
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 输出获取成功，共 3 个输出
+  输出[0] 大小: 705600 bytes, 是否有效: 1
+  输出[1] 大小: 3276800 bytes, 是否有效: 1
+  输出[2] 大小: 3276800 bytes, 是否有效: 1
+[YOLOP] 开始解析YOLOP检测输出，YOLOP类别数=2, nout=7
+[YOLOP] 处理尺度 0: stride=8, grid=80x80
+[YOLOP] 处理尺度 1: stride=16, grid=40x40
+[YOLOP] 处理尺度 2: stride=32, grid=20x20
+[YOLOP] 检测到 173 个候选框
+[YOLOP] NMS后保留 171 个目标
+[YOLOP] 检测结果 #0: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #1: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #2: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #3: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #4: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #5: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #6: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #7: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #8: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #9: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #10: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #11: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #12: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #13: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #14: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #15: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #16: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #17: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #18: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #19: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #20: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #21: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #22: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #23: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #24: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #25: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #26: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #27: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #28: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #29: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #30: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #31: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #32: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #33: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #34: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #35: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #36: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #37: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #38: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #39: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #40: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #41: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #42: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #43: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #44: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #45: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #46: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #47: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #48: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #49: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #50: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #51: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #52: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #53: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #54: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #55: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #56: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #57: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #58: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #59: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #60: person (类别ID=1, 置信度=0.63)
+[YOLOP] 检测结果 #61: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #62: car (类别ID=0, 置信度=0.63)
+[YOLOP] 检测结果 #63: person (类别ID=1, 置信度=0.63)
+[YOLOP] 已缓存分割输出，尺寸: 640x640
+[YOLOP] 检测完成，找到 64 个目标
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 640x640
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 设置输入失败: -11
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 640x640
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理失败: -12
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 开始检测，图像尺寸: 640x640
+[YOLOP] 预处理完成，输入数据大小: 1228800 bytes
+[YOLOP] 开始推理...
+[YOLOP] 推理完成，获取输出...
+[YOLOP] 获取输出失败: -13
+[YOLOP] 优化绘制完成（绿色=可行驶区域，荧光红=车道线，步长=2）
+[YOLOP] 已绘制完整结果（分割+检测框）
+[YOLOP] 引擎已销毁

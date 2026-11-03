@@ -1,0 +1,5 @@
+compare_camera PASS
+compare_gamma PASS
+compare_m_imu PASS
+compare_spi PASS
+compare_vehicle PASS

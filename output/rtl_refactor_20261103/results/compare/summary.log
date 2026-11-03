@@ -1,0 +1,17 @@
+compare_camera PASS
+compare_gamma PASS
+compare_spi PASS
+compare_vehicle RUN_FAIL_1
+compare_camera PASS
+compare_gamma PASS
+compare_m_imu PASS
+compare_spi PASS
+compare_vehicle RUN_FAIL_1
+compare_vehicle PASS
+compare_camera PASS
+compare_camera PASS
+compare_gamma PASS
+compare_m_imu PASS
+compare_spi PASS
+compare_vehicle PASS
+compare_spi PASS

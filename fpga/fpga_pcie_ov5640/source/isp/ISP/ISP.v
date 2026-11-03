@@ -1,3 +1,4 @@
+// 2026-11-03 æ³¨é‡Šæ ¡è®¢ã€‚é¢œè‰²è¯†åˆ«é€šè·¯ã€‚è½¬æ¢åçš„åƒç´ ç»è¿‡äºŒå€¼ç­›é€‰ã€å…ˆè†¨èƒ€åè…èš€å’ŒåŒºåŸŸå åŠ ã€‚
 module ISP #(
 	parameter       H_PIXEL = 640,
 	parameter       V_PIXEL = 480
@@ -15,18 +16,17 @@ module ISP #(
     output          VGA_hsync    ,
     output          VGA_vsync    ,
     output          VGA_de       ,
-	
+
 	output [9:0]	o_x          ,
 	output [9:0]	o_y          ,
 	output [10:0]	row_high     ,
 	output [10:0]	col_left     ,
-	
+
 	output 			red_en       ,
 	output 			blue_en      ,
 	output			yellow_en
 );
 
-//rgb_change
 wire [8:0]hsv_h;
 wire [8:0]hsv_s;
 wire [7:0]hsv_v;
@@ -44,17 +44,16 @@ rgb2hsv rgb2hsv(
     .vs          (i_vsync         ),
     .hs          (i_hsync         ),
     .de          (i_de            ),
-    
+
     .o_rgb       (hsv_rgb         ),
     .hsv_h       (hsv_h           ),
     .hsv_s       (hsv_s           ),
     .hsv_v       (hsv_v           ),
     .hsv_vs      (hsv_vsync       ),
     .hsv_hs      (hsv_hsync       ),
-    .hsv_de      (hsv_de          )  
+    .hsv_de      (hsv_de          )
 );
 
-//ycbcr×ª»¯Ä£¿é
 wire [23:0] o_rgb;
 wire [9:0] ycbcr_o_y;
 wire [9:0] ycbcr_o_x;
@@ -73,21 +72,20 @@ rgb2ycbcr rgb2ycbcr(
 	.x			  (i_x            ),
 	.y			  (i_y            ),
     .i_de0        (),
-  
+
     .o_rgb        (o_rgb          ),
 	.o_x		  (ycbcr_o_x      ),
 	.o_y		  (ycbcr_o_y      ),
     .o_ycbcr      (o_ycbcr        ),
     .o_hsync      (o_hsync        ),
-    .o_vsync      (o_vsync        ),    
-    .o_de0        (),                          
-    .o_de         (o_de           )                                                                                        
+    .o_vsync      (o_vsync        ),
+    .o_de0        (),
+    .o_de         (o_de           )
 );
 
-//Ê¹ÄÜÉú³ÉÄ£¿é
 wire green_en;
 
-color_en_generate 
+color_en_generate
 #(
     .H_PIXEL      (H_PIXEL        ),
     .V_PIXEL      (V_PIXEL        )
@@ -100,14 +98,13 @@ color_en_generate(
     .i_ycbcr      (o_ycbcr        ),
 	.x		      (ycbcr_o_x      ),
 	.y		      (ycbcr_o_y      ),
-	
+
     .red_en       (red_en         ),
     .blue_en      (blue_en        ),
     .yellow_en    (yellow_en      ),
     .green_en     (green_en       )
 );
 
-//¶şÖµ»¯Ä£¿é
 wire post_frame_vsync,post_frame_de,post_frame_hsync;
 wire monoc;
 wire [9:0] binary_x;
@@ -115,13 +112,13 @@ wire [9:0] binary_y;
 wire [23:0] binary_rgb;
 
 color_binary color_binary(
-    //module clock
-    .pixelclk     (pixelclk        ),// Ê±ÖÓĞÅºÅ
-    .reset_n      (rst_n           ), // ¸´Î»ĞÅºÅ£¨µÍÓĞĞ§£©
-    //Í¼Ïñ´¦ÀíÇ°µÄÊı¾İ½Ó¿Ú
-    .i_vsync      (o_vsync         ),// vsyncĞÅºÅ
-    .i_hsync      (o_hsync         ),// hrefĞÅºÅ
-    .i_de         (o_de            ), // data enableĞÅºÅ
+
+    .pixelclk     (pixelclk        ),
+    .reset_n      (rst_n           ),
+
+    .i_vsync      (o_vsync         ),
+    .i_hsync      (o_hsync         ),
+    .i_de         (o_de            ),
 	.i_x		  (ycbcr_o_x       ),
 	.i_y		  (ycbcr_o_y       ),
     .i_ycbcr      (o_ycbcr         ),
@@ -129,56 +126,18 @@ color_binary color_binary(
 	.i_hsv_h	  (hsv_h           ),
 	.i_hsv_v	  (hsv_v           ),
 	.i_hsv_s	  (hsv_s           ),
-    //Í¼Ïñ´¦ÀíºóµÄÊı¾İ½Ó¿Ú
-    .o_vsync   	  (post_frame_vsync), // vsyncĞÅºÅ
-    .o_hsync   	  (post_frame_hsync), // hrefĞÅºÅ
-    .o_de      	  (post_frame_de   ), // data enableĞÅºÅ
-    .o_monoc      (monoc           ), // µ¥É«Í¼ÏñÏñËØÊı¾İ
+
+    .o_vsync   	  (post_frame_vsync),
+    .o_hsync   	  (post_frame_hsync),
+    .o_de      	  (post_frame_de   ),
+    .o_monoc      (monoc           ),
 	.o_x		  (binary_x	       ),
 	.o_y		  (binary_y		   ),
 	.o_rgb		  (binary_rgb	   ),
     .monoc_fall   ()
-    //user interface
+
 );
 
-//¸¯Ê´
-wire dia_vs;
-wire dia_hs;
-wire dia_de;
-wire dia_bit;
-wire [23:0] dia_rgb;
-wire [9:0] dia_x;
-wire [9:0] dia_y;
-
-dialate
-#(
-	.U_COL        (H_PIXEL       ),
-	.U_ROW        (V_PIXEL       )
-)u_dialate
-(
-	.clk          (pixelclk	     ),
-	.rst_n        (rst_n		 ),
-	
-	.in_vs        (post_frame_vsync),
-	.in_hs        (post_frame_hsync),
-	.in_de        (post_frame_de ),  
-	.in_data      (monoc         ),   
-	.in_rgb		  (binary_rgb    ),  
-                                     
-	.in_x		  (binary_x      ),  
-	.in_y		  (binary_y      ),  
-	
-	.out_vs       (dia_vs		 ),
-	.out_hs       (dia_hs		 ),	
-	.out_de       (dia_de		 ),
-	.out_data     (dia_bit	     ),
-	.out_rgb	  (dia_rgb	     ),
-
-	.out_x		  (dia_x		 ),
-	.out_y		  (dia_y		 )
-);
-
-//ÅòÕÍ
 wire ero_vs;
 wire ero_hs;
 wire ero_de;
@@ -186,33 +145,12 @@ wire ero_bit;
 wire [23:0] ero_rgb;
 wire [9:0] ero_x;
 wire [9:0] ero_y;
-
-erode
-#(
-	.U_COL        (H_PIXEL       ),
-	.U_ROW        (V_PIXEL       )
-)u_erode
-(
-	.clk          (pixelclk	     ),
-	.rst_n        (rst_n		 ),
-	
-	.in_vs        (dia_vs		 ),
-	.in_hs        (dia_hs		 ),	
-	.in_de        (dia_de		 ),
-	.in_data      (dia_bit	     ),
-	.in_rgb		  (dia_rgb	     ),
-                                 
-	.in_x		  (dia_x		 ),
-	.in_y		  (dia_y		 ),
-	
-	.out_vs       (ero_vs		 ),
-	.out_hs       (ero_hs		 ),	
-	.out_de       (ero_de		 ),
-	.out_data     (ero_bit	     ),
-	.out_rgb	  (ero_rgb	     ),
-
-	.out_x		  (ero_x		 ),
-	.out_y		  (ero_y		 )
+isp_morphology_pair #(
+    .U_COL(H_PIXEL), .U_ROW(V_PIXEL), .ERODE_FIRST(1'b0)
+) u_morphology_pair (
+    .clk(pixelclk), .rst_n(rst_n),
+    .pixel_in({post_frame_vsync, post_frame_hsync, post_frame_de, monoc, binary_x, binary_y, binary_rgb}),
+    .pixel_out({ero_vs, ero_hs, ero_de, ero_bit, ero_x, ero_y, ero_rgb})
 );
 
 wire edge_bit;
@@ -233,7 +171,7 @@ color_dt #(
 
 	.red_en		  (red_en    ),
 	.blue_en	  (blue_en   ),
-	.yellow_en	  (yellow_en ),    
+	.yellow_en	  (yellow_en ),
 
     .out_up       (row_high  ),
     .out_down     (),
@@ -243,9 +181,5 @@ color_dt #(
     .out_valid    (VGA_de    ),
     .out_data     (VGA_rgb   )
 );
-
-//assign VGA_rgb = {24{edge_bit}};
-//assign VGA_vsync = ero_vs;
-//assign VGA_de = ero_de;
 
 endmodule

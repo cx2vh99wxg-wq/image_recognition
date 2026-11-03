@@ -1,0 +1,69 @@
+{
+  "origin": "D:\\Study_Object\\image_recognition\\image_recognition_origin\\fpga\\fpga_pcie_ov5640",
+  "minimum_match_tokens": 40,
+  "files": {
+    "remote_vehicle_control.v": {
+      "origin_counterpart": null
+    },
+    "cnn/gamma_judge.v": {
+      "origin_counterpart": "source\\cnn\\gamma_judge.v",
+      "before": {
+        "tokens": 3089,
+        "matched_tokens": 3089,
+        "coverage_percent": 100.0
+      },
+      "after": {
+        "tokens": 3315,
+        "matched_tokens": 2438,
+        "coverage_percent": 73.54
+      }
+    },
+    "fspi/spi_ram_crtl.v": {
+      "origin_counterpart": "source\\fspi\\spi_ram_crtl.v",
+      "before": {
+        "tokens": 869,
+        "matched_tokens": 689,
+        "coverage_percent": 79.29
+      },
+      "after": {
+        "tokens": 916,
+        "matched_tokens": 458,
+        "coverage_percent": 50.0
+      }
+    },
+    "ov5640/rtl/cmos_capture_data.v": {
+      "origin_counterpart": "source\\ov5640\\rtl\\cmos_capture_data.v",
+      "before": {
+        "tokens": 492,
+        "matched_tokens": 492,
+        "coverage_percent": 100.0
+      },
+      "after": {
+        "tokens": 434,
+        "matched_tokens": 236,
+        "coverage_percent": 54.38
+      }
+    }
+  },
+  "active_pds_application": {
+    "boards": {
+      "S": {
+        "files": 145,
+        "tokens": 200097,
+        "matched_tokens": 188720,
+        "coverage_percent": 94.31,
+        "matched_tokens_outside_four_target_files": 185588,
+        "outside_targets_share_of_all_tokens_percent": 92.75
+      },
+      "M": {
+        "files": 150,
+        "tokens": 210098,
+        "matched_tokens": 193712,
+        "coverage_percent": 92.2,
+        "matched_tokens_outside_four_target_files": 190580,
+        "outside_targets_share_of_all_tokens_percent": 90.71
+      }
+    },
+    "unreadable": []
+  }
+}

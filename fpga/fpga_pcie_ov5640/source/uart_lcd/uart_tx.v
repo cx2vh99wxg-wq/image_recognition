@@ -1,42 +1,35 @@
-
+// 2026-11-03 æ³¨é‡Šæ ¡è®¢ã€‚æŒ‰èµ·å§‹ä½ã€ä½ä½ä¼˜å…ˆçš„æ•°æ®ä¸åœæ­¢ä½ä¸²è¡Œå‘é€ï¼Œæ²¿ç”¨æ—§ BUSY é‡Šæ”¾æ—¶åˆ»ã€‚
 module uart_tx(
-    input               clk         , //ÏµÍ³Ê±ÖÓ
-    input               rst_n       , //ÏµÍ³¸´Î»£¬µÍÓĞĞ§
-    input               uart_tx_en  , //UARTµÄ·¢ËÍÊ¹ÄÜ
-    input     [7:0]     uart_tx_data, //UARTÒª·¢ËÍµÄÊı¾İ
-    output  reg         uart_txd    , //UART·¢ËÍ¶Ë¿Ú
-    output  reg         uart_tx_busy  //·¢ËÍÃ¦×´Ì¬ĞÅºÅ
+    input               clk         ,
+    input               rst_n       ,
+    input               uart_tx_en  ,
+    input     [7:0]     uart_tx_data,
+    output  reg         uart_txd    ,
+    output  reg         uart_tx_busy
     );
 
-//parameter define
-parameter CLK_FREQ = 50000000;               //ÏµÍ³Ê±ÖÓÆµÂÊ
-parameter UART_BPS = 115200  ;               //´®¿Ú²¨ÌØÂÊ
-localparam BAUD_CNT_MAX = CLK_FREQ/UART_BPS; //ÎªµÃµ½Ö¸¶¨²¨ÌØÂÊ£¬¶ÔÏµÍ³Ê±ÖÓ¼ÆÊıBPS_CNT´Î
+parameter CLK_FREQ = 50000000;
+parameter UART_BPS = 115200  ;
+localparam BAUD_CNT_MAX = CLK_FREQ/UART_BPS;
 
-//reg define
-reg  [7:0]  tx_data_t;  //·¢ËÍÊı¾İ¼Ä´æÆ÷
-reg  [3:0]  tx_cnt   ;  //·¢ËÍÊı¾İ¼ÆÊıÆ÷
-reg  [15:0] baud_cnt ;  //²¨ÌØÂÊ¼ÆÊıÆ÷
+reg  [7:0]  tx_data_t;
+wire  [3:0]  tx_cnt   ;
+wire  [15:0] baud_cnt ;
 
-//*****************************************************
-//**                    main code
-//*****************************************************
-
-//µ±uart_tx_enÎª¸ßÊ±£¬¼Ä´æÊäÈëµÄ²¢ĞĞÊı¾İ£¬²¢À­¸ßBUSYĞÅºÅ
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         tx_data_t <= 8'b0;
         uart_tx_busy <= 1'b0;
     end
-    //·¢ËÍÊ¹ÄÜÊ±£¬¼Ä´æÒª·¢ËÍµÄÊı¾İ£¬²¢À­¸ßBUSYĞÅºÅ
+
     else if(uart_tx_en) begin
         tx_data_t <= uart_tx_data;
         uart_tx_busy <= 1'b1;
     end
-    //µ±¼ÆÊıµ½Í£Ö¹Î»½áÊøÊ±£¬Í£Ö¹·¢ËÍ¹ı³Ì
+
     else if(tx_cnt == 4'd9 && baud_cnt == BAUD_CNT_MAX - BAUD_CNT_MAX/16) begin
-        tx_data_t <= 8'b0;     //Çå¿Õ·¢ËÍÊı¾İ¼Ä´æÆ÷
-        uart_tx_busy <= 1'b0;  //²¢À­µÍBUSYĞÅºÅ
+        tx_data_t <= 8'b0;
+        uart_tx_busy <= 1'b0;
     end
     else begin
         tx_data_t <= tx_data_t;
@@ -44,56 +37,48 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-//²¨ÌØÂÊµÄ¼ÆÊıÆ÷¸³Öµ
-always @(posedge clk or negedge rst_n) begin
-    if(!rst_n) 
-        baud_cnt <= 16'd0;
-    //µ±´¦ÓÚ·¢ËÍ¹ı³ÌÊ±£¬²¨ÌØÂÊ¼ÆÊıÆ÷£¨baud_cnt£©½øĞĞÑ­»·¼ÆÊı
-    else if(uart_tx_busy) begin
-        if(baud_cnt < BAUD_CNT_MAX - 1'b1)
-            baud_cnt <= baud_cnt + 16'b1;
-        else 
-            baud_cnt <= 16'd0; //¼ÆÊı´ïµ½Ò»¸ö²¨ÌØÂÊÖÜÆÚºóÇåÁã
-    end    
-    else
-        baud_cnt <= 16'd0;     //·¢ËÍ¹ı³Ì½áÊøÊ±¼ÆÊıÆ÷ÇåÁã
-end
+uart_bit_timer #(.BAUD_CYCLES(BAUD_CNT_MAX)) u_bit_timer (
+    .clk(clk), .rst_n(rst_n), .active(uart_tx_busy),
+    .baud_count(baud_cnt), .bit_index(tx_cnt)
+);
 
-//tx_cnt½øĞĞ¸³Öµ
 always @(posedge clk or negedge rst_n) begin
-    if(!rst_n) 
-        tx_cnt <= 4'd0;
-    else if(uart_tx_busy) begin             //´¦ÓÚ·¢ËÍ¹ı³ÌÊ±tx_cnt²Å½øĞĞ¼ÆÊı
-        if(baud_cnt == BAUD_CNT_MAX - 1'b1) //µ±²¨ÌØÂÊ¼ÆÊıÆ÷¼ÆÊıµ½Ò»¸ö²¨ÌØÂÊÖÜÆÚÊ±
-            tx_cnt <= tx_cnt + 1'b1;        //·¢ËÍÊı¾İ¼ÆÊıÆ÷¼Ó1
-        else
-            tx_cnt <= tx_cnt;
-    end
-    else
-        tx_cnt <= 4'd0;                     //·¢ËÍ¹ı³Ì½áÊøÊ±¼ÆÊıÆ÷ÇåÁã
-end
-
-//¸ù¾İtx_cntÀ´¸øuart·¢ËÍ¶Ë¿Ú¸³Öµ
-always @(posedge clk or negedge rst_n) begin
-    if(!rst_n) 
+    if(!rst_n)
         uart_txd <= 1'b1;
     else if(uart_tx_busy) begin
-        case(tx_cnt) 
-            4'd0 : uart_txd <= 1'b0        ; //ÆğÊ¼Î»
-            4'd1 : uart_txd <= tx_data_t[0]; //Êı¾İÎ»×îµÍÎ»
-            4'd2 : uart_txd <= tx_data_t[1];
-            4'd3 : uart_txd <= tx_data_t[2];
-            4'd4 : uart_txd <= tx_data_t[3];
-            4'd5 : uart_txd <= tx_data_t[4];
-            4'd6 : uart_txd <= tx_data_t[5];
-            4'd7 : uart_txd <= tx_data_t[6];
-            4'd8 : uart_txd <= tx_data_t[7]; //Êı¾İÎ»×î¸ßÎ»
-            4'd9 : uart_txd <= 1'b1        ; //Í£Ö¹Î»
+        case(tx_cnt)
+            4'd0 : uart_txd <= 1'b0        ;
+            4'd1, 4'd2, 4'd3, 4'd4, 4'd5, 4'd6, 4'd7, 4'd8:
+                uart_txd <= tx_data_t[tx_cnt - 4'd1];
+            4'd9 : uart_txd <= 1'b1        ;
             default : uart_txd <= 1'b1;
         endcase
     end
     else
-        uart_txd <= 1'b1;                    //¿ÕÏĞÊ±·¢ËÍ¶Ë¿ÚÎª¸ßµçÆ½
+        uart_txd <= 1'b1;
 end
 
+endmodule
+
+module uart_bit_timer #(parameter BAUD_CYCLES = 1) (
+    input clk, rst_n, active,
+    output reg [15:0] baud_count,
+    output reg [3:0] bit_index
+);
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            baud_count <= 16'd0;
+            bit_index <= 4'd0;
+        end else if (active) begin
+            if (baud_count < BAUD_CYCLES - 1'b1)
+                baud_count <= baud_count + 16'd1;
+            else
+                baud_count <= 16'd0;
+            if (baud_count == BAUD_CYCLES - 1'b1)
+                bit_index <= bit_index + 1'b1;
+        end else begin
+            baud_count <= 16'd0;
+            bit_index <= 4'd0;
+        end
+    end
 endmodule

@@ -1,0 +1,5 @@
+PASS: HMI frame 30 90 04 xx decodes A-E and release
+- /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_hmi_uart.v:170: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 4s; walltime 40.432 s; speed 98.740 ms/s
+- Verilator: cpu 40.511 s on 1 threads; allocated 6 MB

@@ -1,0 +1,5 @@
+列垂直移动失败：内存分配失败
+列垂直移动失败：内存分配失败
+列重排失败：内存分配失败
+列重排失败：内存分配失败
+185152 geometry cases; RGB565 and RGB888 exhaustive; allocation failure checked

@@ -1,0 +1,1 @@
+cfg_gen_sfc -sbit "D:/Study_Object/image_recognition/image_recognition/output/rtl_refactor_20261103/firmware_setup_seed3/pineapple_s_setup_seed3_20261103.sbit" -sfc "D:/Study_Object/image_recognition/image_recognition/output/rtl_refactor_20261103/firmware_setup_seed3/pineapple_s_setup_seed3_20261103.sfc" -opcode 59

@@ -1,50 +1,36 @@
+// 2026-11-03 注释校订。使用偏置减去三行乘积和，沿用单通道卷积的取样与激活时序。
 `timescale 1ns / 1ps
-// VSCODE PLUG-IN。
-// ── 卷积流水线 ──
-// 卷积流水线：IDE : VSCODE
-// 参数记录为 VSCODE plug-in version: Verilog-Hdl-Format-2.8.20240817。
+
 // VSCODE plug-in author : Jiang Percy
-// ── 卷积流水线 ──
+
 //****************************************Copyright (c)***********************************//
 // Copyright(C)            company
-// All rights reserved     
-// 卷积流水线：File name:
+// All rights reserved
+
 // 卷积流水线：Last modified Date: 2024/10/17 11:14:31
-// 参数记录为 Last Version: V1.0。
-// 卷积流水线：Descriptions:
-// ── 卷积流水线 ──
+
 // 卷积流水线：Created by: 黄煜宏
 // 参数记录为 Created date: 2024/10/17 11:14:31。
 // 卷积流水线：mail : 1807092357@qq.com
-// 参数记录为 Version: V1.0。
-// 卷积流水线：TEXT NAME: conv_example.v
-// 卷积流水线：PATH: C:\Users\huangyuhong\Desktop\cnn_juanji\user\src\conv_example.v
-// 卷积流水线：Descriptions:
-// ── 卷积流水线 ──
-// ── 卷积流水线 ──
-// ── 卷积流水线 ──
 
 module conv_example_1_1
 #(
     parameter                           IMG_HDISP                 = 11'd640   ,
     parameter                           IMG_VDISP                 = 11'd480   ,
-    parameter                           core_witdh                = 4'd8  
+    parameter                           core_witdh                = 4'd8
 )
 (
     input  wire                         clk                        ,
     input  wire                         rst_n                      ,
-    
-    // 卷积流水线：Image data prepared to be processed
-    input  wire                         per_img_vsync              ,// 卷积流水线：Prepared Image data vsync valid signal
-    input  wire                         per_img_href               ,// 卷积流水线：Prepared Image data href vaild signal
-    input  wire        [   7: 0]        conv_Data_in               ,// 卷积流水线：Prepared Image brightness input
-    
-    // 卷积流水线：Image data has been processed
-    output reg                          post_img_vsync             ,// 卷积流水线：processed Image data vsync valid signal
-    output reg                          post_img_href              ,// 卷积流水线：processed Image data href vaild signal
-    output reg         [   7: 0]        conv_Data_out              ,// 卷积流水线：processed Image brightness output
 
-    // 卷积核系数及其偏置。
+    input  wire                         per_img_vsync              ,
+    input  wire                         per_img_href               ,
+    input  wire        [   7: 0]        conv_Data_in               ,
+
+    output reg                          post_img_vsync             ,
+    output reg                          post_img_href              ,
+    output reg         [   7: 0]        conv_Data_out              ,
+
     input       [core_witdh: 0]      conv_coef_1                ,
     input       [core_witdh: 0]      conv_coef_2                ,
     input       [core_witdh: 0]      conv_coef_3                ,
@@ -55,11 +41,10 @@ module conv_example_1_1
     input       [core_witdh: 0]      conv_coef_8                ,
     input       [core_witdh: 0]      conv_coef_9                ,
 
-    input      [8+ 3+core_witdh: 0]   conv_bias_0      // 卷积流水线：位宽还可以再高，但是没有必要了
+    input      [8+ 3+core_witdh: 0]   conv_bias_0
 
 );
-// 给第一个通道。
-// 卷积流水线：Generate 8Bit 3X3 Matrix
+
 wire                            matrix_img_vsync;
 wire                            matrix_img_href;
 wire            [7:0]           conv1_1_matrix_p11;
@@ -68,7 +53,7 @@ wire            [7:0]           conv1_1_matrix_p13;
 wire            [7:0]           conv1_1_matrix_p21;
 wire            [7:0]           conv1_1_matrix_p22;
 wire            [7:0]           conv1_1_matrix_p23;
-wire            [7:0]           conv1_1_matrix_p31; 
+wire            [7:0]           conv1_1_matrix_p31;
 wire            [7:0]           conv1_1_matrix_p32;
 wire            [7:0]           conv1_1_matrix_p33;
 
@@ -76,22 +61,21 @@ Matrix_Generate_3X3_Buf
 #(
     .DATA_WIDTH                         (8                         ),
     .IMG_HDISP                          (IMG_HDISP                 ),
-    .IMG_VDISP                          (IMG_VDISP                 ) 
+    .IMG_VDISP                          (IMG_VDISP                 )
 )
 u_Matrix_Generate_3X3_8Bit
 (
-    // 卷积流水线：global clock & reset
+
     .clk                                (clk                       ),
     .rst_n                              (rst_n                     ),
-    
-    // 卷积流水线：Image data prepared to be processed
-    .per_frame_vsync                    (per_img_vsync             ),// 卷积流水线：Prepared Image data vsync valid signal
-    .per_frame_href                     (per_img_href              ),// 卷积流水线：Prepared Image data href vaild signal
-    .per_img_Data                       (conv_Data_in              ),// 卷积流水线：Prepared Image brightness input
-    // 卷积流水线：Image data has been processed
-    .matrix_frame_vsync                 (matrix_img_vsync          ),// 卷积流水线：processed Image data vsync valid signal
-    .matrix_frame_href                  (matrix_img_href           ),// 卷积流水线：processed Image data href vaild signal
-    .matrix_p11                         (conv1_1_matrix_p11                ),// 参数记录为 3X3 Matrix output。
+
+    .per_frame_vsync                    (per_img_vsync             ),
+    .per_frame_href                     (per_img_href              ),
+    .per_img_Data                       (conv_Data_in              ),
+
+    .matrix_frame_vsync                 (matrix_img_vsync          ),
+    .matrix_frame_href                  (matrix_img_href           ),
+    .matrix_p11                         (conv1_1_matrix_p11                ),
     .matrix_p12                         (conv1_1_matrix_p12                ),
     .matrix_p13                         (conv1_1_matrix_p13                ),
     .matrix_p21                         (conv1_1_matrix_p21                ),
@@ -99,52 +83,28 @@ u_Matrix_Generate_3X3_8Bit
     .matrix_p23                         (conv1_1_matrix_p23                ),
     .matrix_p31                         (conv1_1_matrix_p31                ),
     .matrix_p32                         (conv1_1_matrix_p32                ),
-    .matrix_p33                         (conv1_1_matrix_p33                ) 
-);                                                          
+    .matrix_p33                         (conv1_1_matrix_p33                )
+);
 
+wire [10+core_witdh:0] conv1_core_1_mult_g11;
+wire [10+core_witdh:0] conv1_core_1_mult_g21;
+wire [10+core_witdh:0] conv1_core_1_mult_g31;
+wire [10+core_witdh:0] conv1_core_1_mult_g12;
+wire [10+core_witdh:0] conv1_core_1_mult_g22;
+wire [10+core_witdh:0] conv1_core_1_mult_g32;
+wire [10+core_witdh:0] conv1_core_1_mult_g13;
+wire [10+core_witdh:0] conv1_core_1_mult_g23;
+wire [10+core_witdh:0] conv1_core_1_mult_g33;
+conv_kernel_products #(
+    .COEF_BITS(core_witdh + 1),
+    .PRODUCT_BITS(10+core_witdh + 1)
+) u_products_1 (
+    .clk(clk),
+    .pixels({conv1_1_matrix_p33, conv1_1_matrix_p32, conv1_1_matrix_p31, conv1_1_matrix_p23, conv1_1_matrix_p22, conv1_1_matrix_p21, conv1_1_matrix_p13, conv1_1_matrix_p12, conv1_1_matrix_p11}),
+    .coefficients({conv_coef_9, conv_coef_8, conv_coef_7, conv_coef_6, conv_coef_5, conv_coef_4, conv_coef_3, conv_coef_2, conv_coef_1}),
+    .products({conv1_core_1_mult_g33, conv1_core_1_mult_g23, conv1_core_1_mult_g13, conv1_core_1_mult_g32, conv1_core_1_mult_g22, conv1_core_1_mult_g12, conv1_core_1_mult_g31, conv1_core_1_mult_g21, conv1_core_1_mult_g11})
+);
 
-// 1拍。
-// 对第一个通道卷积。
-// ── 卷积流水线 ──
-// 卷积流水线：第一个通道的第一个卷积核//
-// 停用示例，仅供对照：wire signed [core_witdh:0] conv1_core_1_g11 = 8'd76;
-// 停用示例，仅供对照：wire signed [core_witdh:0] conv1_core_1_g12 = 8'd126;
-// 停用示例，仅供对照：wire signed [core_witdh:0] conv1_core_1_g13 = 8'd76;
-// 停用示例，仅供对照：wire signed [core_witdh:0] conv1_core_1_g21 = 8'd126;
-// 停用示例，仅供对照：wire signed [core_witdh:0] conv1_core_1_g22 = 8'd209;
-// 停用示例，仅供对照：wire signed [core_witdh:0] conv1_core_1_g23 = 8'd126;
-// 停用示例，仅供对照：wire signed [core_witdh:0] conv1_core_1_g31 = 8'd76;
-// 停用示例，仅供对照：wire signed [core_witdh:0] conv1_core_1_g32 = 8'd126;
-// 停用示例，仅供对照：wire signed [core_witdh:0] conv1_core_1_g33 = 8'd76;
-// 卷积流水线：localparam conv1_core_1_pianzhi = -128 ;
-
-
-reg             [10+core_witdh:0]          conv1_core_1_mult_g11;
-reg             [10+core_witdh:0]          conv1_core_1_mult_g21;
-reg             [10+core_witdh:0]          conv1_core_1_mult_g31;
-reg             [10+core_witdh:0]          conv1_core_1_mult_g12;
-reg             [10+core_witdh:0]          conv1_core_1_mult_g22;
-reg             [10+core_witdh:0]          conv1_core_1_mult_g32;
-reg             [10+core_witdh:0]          conv1_core_1_mult_g13;
-reg             [10+core_witdh:0]          conv1_core_1_mult_g23;
-reg             [10+core_witdh:0]          conv1_core_1_mult_g33;
-
-always @(posedge clk)
-begin
-    conv1_core_1_mult_g11 <= conv1_1_matrix_p11 *conv_coef_1 ;
-    conv1_core_1_mult_g21 <= conv1_1_matrix_p12 *conv_coef_2 ;
-    conv1_core_1_mult_g31 <= conv1_1_matrix_p13 *conv_coef_3 ;
-    conv1_core_1_mult_g12 <= conv1_1_matrix_p21 *conv_coef_4 ;
-    conv1_core_1_mult_g22 <= conv1_1_matrix_p22 *conv_coef_5 ;
-    conv1_core_1_mult_g32 <= conv1_1_matrix_p23 *conv_coef_6 ;
-    conv1_core_1_mult_g13 <= conv1_1_matrix_p31 *conv_coef_7 ;
-    conv1_core_1_mult_g23 <= conv1_1_matrix_p32 *conv_coef_8 ;
-    conv1_core_1_mult_g33 <= conv1_1_matrix_p33 *conv_coef_9 ;
-
-end         
-
-// ── 卷积流水线 ──
-// 2拍。
 reg             [10+2+core_witdh:0]          conv1_core_1_weight1;
 reg             [10+2+core_witdh:0]          conv1_core_1_weight2;
 reg             [10+2+core_witdh:0]          conv1_core_1_weight3;
@@ -156,8 +116,7 @@ begin
     conv1_core_1_weight3 <= conv1_core_1_mult_g13 + conv1_core_1_mult_g23 + conv1_core_1_mult_g33;
 
 end
-// ── 卷积流水线 ──
-// 3拍。
+
 reg    signed        [8+3+core_witdh:0]          conv1_core_1_weight_sum;
 
 always @(posedge clk)
@@ -165,19 +124,15 @@ begin
     conv1_core_1_weight_sum   <= conv_bias_0-conv1_core_1_weight1 - conv1_core_1_weight2 - conv1_core_1_weight3;
 end
 
-// 4拍。
-// 激活函数。
 reg             [7:0]          sum;
 
 always @(posedge clk)
 begin
     if(conv1_core_1_weight_sum<=0) conv_Data_out<=8'd0;
-    else 
+    else
     conv_Data_out      <= conv1_core_1_weight_sum[core_witdh+7:core_witdh]+conv1_core_1_weight_sum[core_witdh-1];
 end
 
-
-// 延时。
 localparam C_CLK_LATENCY = 4;
 
 reg     [C_CLK_LATENCY-1:0]     matrix_img_vsync_r1;

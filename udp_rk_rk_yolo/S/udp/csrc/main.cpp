@@ -512,7 +512,7 @@ int main()
         if (shared_memory_write_image(&shm_manager, receiver.frame_buffer, IMAGE_WIDTH,
                                       IMAGE_HEIGHT))
         {
-            fprintf(stderr, "UDP image publication failed\n");
+            fprintf(stderr, "Could not publish the UDP video frame\n");
             break;
         }
         ++frames;

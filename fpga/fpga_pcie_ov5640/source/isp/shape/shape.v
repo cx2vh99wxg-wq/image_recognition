@@ -1,29 +1,28 @@
+// 2026-11-03 æ³¨é‡Šæ ¡è®¢ã€‚è½®å»“è¯†åˆ«é€šè·¯ã€‚é˜ˆå€¼ç»“æœå…ˆè…èš€åè†¨èƒ€ï¼Œå†è¿›è¡ŒæŠ•å½±å’Œå½¢çŠ¶åˆ¤æ–­ã€‚
 module shape #(
 	parameter   H_PIXEL   = 640  ,
 	parameter   V_PIXEL   = 480
-) 
+)
 (
 	input                   clk			,
     input                   rst_n       ,
-     
+
 	input                   pre_vs		,
     input                   pre_hs      ,
 	input                   pre_de		,
 	input       [23:0] 	    pre_data	,
 
-	input	 	[9:0]	 	i_x			,	
+	input	 	[9:0]	 	i_x			,
 	input 	 	[9:0]	 	i_y			,
-     
-            
+
 	output                  shape_vs    ,
     output                  shape_hs    ,
 	output                  shape_de    ,
 	output      [7:0]       shape_data  ,
 
-    output      [15:0]      shape		
+    output      [15:0]      shape
 );
 
-//»Ò¶È
 wire gray_vs;
 wire gray_hs;
 wire gray_de;
@@ -54,7 +53,6 @@ image_rgb2ycbcr my_image_rgb2ycbcr (
 	.o_y	   (gray_y		)
 );
 
-//hsv
 wire hsv_vs;
 wire hsv_hs;
 wire hsv_de;
@@ -81,7 +79,6 @@ image_rgb2hsv image_rgb2hsv (
     .hsv_v     (hsv_v       )
 );
 
-//¶şÖµ»¯
 wire binary_vs;
 wire binary_hs;
 wire binary_de;
@@ -105,7 +102,7 @@ color_en_generate
     .de			(gray_de	),
 	.x			(gray_x		),
 	.y			(gray_y		),
-    
+
     .red_en		(en_r		),
     .blue_en	(en_b		),
     .yellow_en	(en_y		),
@@ -128,50 +125,18 @@ threshold_binary my_threshold_binary(
     .i_hsync_hsv(hsv_hs    ),
     .i_vsync_hsv(hsv_vs    ),
     .i_de_hsv   (hsv_de    ),
-	
+
 	.i_x	   (gray_x	   ),
 	.i_y	   (gray_y	   ),
-    
+
     .o_binary  (binary_data),
     .o_hsync   (binary_hs  ),
-    .o_vsync   (binary_vs  ),   
+    .o_vsync   (binary_vs  ),
     .o_de      (binary_de  ),
 
 	.o_x	   (binary_x   ),
 	.o_y	   (binary_y   )
-	
-);
-wire ero_vs;
-wire ero_hs;
-wire ero_de;
-wire ero_bit;
-wire [9:0] ero_x;
-wire [9:0] ero_y;
 
-erode
-#(
-	.U_COL      (H_PIXEL    ),
-	.U_ROW      (V_PIXEL    )
-)shape_erode
-(
-	.clk        (clk	    ),
-	.rst_n      (rst_n		),
-	
-	.in_vs      (binary_vs	),
-	.in_hs      (binary_hs	),	
-	.in_de      (binary_de	),
-	.in_data    (binary_data[7]	),
-	
-	.in_x		(binary_x	),
-	.in_y		(binary_y	),
-	
-	.out_vs     (ero_vs		),
-	.out_hs     (ero_hs		),	
-	.out_de     (ero_de		),
-	.out_data   (ero_bit	),
-	
-	.out_x		(ero_x		),
-	.out_y		(ero_y		)
 );
 
 wire dia_vs;
@@ -180,40 +145,21 @@ wire dia_de;
 wire dia_bit;
 wire [9:0] dia_x;
 wire [9:0] dia_y;
-
-dialate
-#(
-	.U_COL      (H_PIXEL    ),
-	.U_ROW      (V_PIXEL    )
-)shape_dialate
-(
-	.clk        (clk	    ),
-	.rst_n      (rst_n		),
-	
-	.in_vs      (ero_vs	),
-	.in_hs      (ero_hs	),	
-	.in_de      (ero_de	),
-	.in_data    (ero_bit),
-	
-	.in_x		(ero_x	),
-	.in_y		(ero_y	),
-	
-	.out_vs     (dia_vs		),
-	.out_hs     (dia_hs		),	
-	.out_de     (dia_de		),
-	.out_data   (dia_bit	),
-	
-	.out_x		(dia_x		),
-	.out_y		(dia_y		)
+wire [23:0] unused_morphology_rgb;
+isp_morphology_pair #(
+    .U_COL(H_PIXEL), .U_ROW(V_PIXEL), .ERODE_FIRST(1'b1)
+) u_morphology_pair (
+    .clk(clk), .rst_n(rst_n),
+    .pixel_in({binary_vs, binary_hs, binary_de, binary_data[7], binary_x, binary_y, {24{1'bz}}}),
+    .pixel_out({dia_vs, dia_hs, dia_de, dia_bit, dia_x, dia_y, unused_morphology_rgb})
 );
 
-//parameter define
-parameter NUM_ROW = 1  ;               // ĞèÊ¶±ğµÄÍ¼ÏñµÄĞĞÊı
-parameter NUM_COL = 1  ;               // ĞèÊ¶±ğµÄÍ¼ÏñµÄÁĞÊı
-parameter DEPBIT  = 11 ;               // Êı¾İÎ»¿í
+parameter NUM_ROW = 1  ;
+parameter NUM_COL = 1  ;
+parameter DEPBIT  = 11 ;
 
-wire  [ 3:0]  num_col  ;  
-wire  [ 1:0]  frame_cnt    ;     
+wire  [ 3:0]  num_col  ;
+wire  [ 1:0]  frame_cnt    ;
 wire [10:0]left	;
 wire [10:0]right;
 wire [10:0]top;
@@ -225,29 +171,28 @@ wire   [DEPBIT-1:0]   row_border_data;
 wire   [DEPBIT-1:0]   col_border_addr;
 wire   [DEPBIT-1:0]   col_border_data;
 
-//Í¶Ó°Ä£¿é
 shape_projection #(
     .NUM_ROW(NUM_ROW),
     .NUM_COL(NUM_COL),
     .DEPBIT (DEPBIT)
 ) u_projection(
-    //module clock
-    .clk                (clk			),          // Ê±ÖÓĞÅºÅ
-    .rst_n              (rst_n  		),          // ¸´Î»ĞÅºÅ£¨µÍÓĞĞ§£©
-    //Image data interface
-    .frame_vsync        (dia_vs		), // vsyncĞÅºÅ
-    .frame_hsync        (dia_hs		), // hrefĞÅºÅ
-    .frame_de           (dia_de	), // data enableĞÅºÅ
-    .monoc              (dia_bit  	), // µ¥É«Í¼ÏñÏñËØÊı¾İ
+
+    .clk                (clk			),
+    .rst_n              (rst_n  		),
+
+    .frame_vsync        (dia_vs		),
+    .frame_hsync        (dia_hs		),
+    .frame_de           (dia_de	),
+    .monoc              (dia_bit  	),
     .xpos               (i_x		),
     .ypos               (i_y		),
-    //project border ram interface
+
     .row_border_addr_rd (row_border_addr),
     .row_border_data_rd (row_border_data),
     .col_border_addr_rd (col_border_addr),
     .col_border_data_rd (col_border_data),
-    //user interface
-	.h_total_pexel      (640			),    
+
+	.h_total_pexel      (640			),
 	.v_total_pexel      (480			),
     .num_col            (num_col		),
     .num_row            (num_row		),
@@ -259,7 +204,6 @@ shape_projection #(
     .project_done_flag  (project_done_flag)
 );
 
-//»­¿òÊä³ö
 wire edge_vs;
 wire edge_hs;
 wire edge_de;
@@ -272,10 +216,10 @@ shape_display #(
     .NUM_COL(NUM_COL),
     .NUM_WIDTH((NUM_ROW*NUM_COL<<2)-1)
 )shape_display(
-    //module clock
-    .clk                (clk       		),        // Ê±ÖÓĞÅºÅ
-    .rst_n              (rst_n			),        // ¸´Î»ĞÅºÅ£¨µÍÓĞĞ§£©
-    //image data interface
+
+    .clk                (clk       		),
+    .rst_n              (rst_n			),
+
     .xpos               (i_x    	),
     .ypos               (i_y    	),
 	.i_rgb				({8{dia_bit}}	),
@@ -286,13 +230,12 @@ shape_display #(
 	.en_r				(en_r			),
 	.en_b				(en_b			),
 	.en_y				(en_y			),
-	
-    //project border ram interface
+
     .row_border_addr    (row_border_addr),
     .row_border_data    (row_border_data),
     .col_border_addr    (col_border_addr),
     .col_border_data    (col_border_data),
-	.color_rgb          (edge_data      ),    
+	.color_rgb          (edge_data      ),
 	.o_vs				(edge_vs		),
 	.o_hs				(edge_hs		),
 	.o_de				(edge_de		),
@@ -304,7 +247,7 @@ shape_display #(
 	.o_right			(right			),
     .num_col            (num_col		),
     .num_row            (num_row		),
-    //user interface
+
     .frame_cnt          (frame_cnt		),
     .project_done_flag  (project_done_flag),
 	.o_shape				(shape			)
@@ -314,10 +257,5 @@ assign shape_vs = edge_vs;
 assign shape_hs = edge_hs;
 assign shape_de = edge_de;
 assign shape_data = edge_data;
-/*
-assign shape_vs = dia_vs;
-assign shape_hs = dia_hs;
-assign shape_de = dia_de;
-assign shape_data = {8{dia_bit}};
-*/
+
 endmodule

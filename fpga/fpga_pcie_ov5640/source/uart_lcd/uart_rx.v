@@ -1,37 +1,29 @@
-
+// 2026-11-03 æ³¨é‡Šæ ¡è®¢ã€‚åŒæ­¥ä¸²å£è¾“å…¥ï¼Œåœ¨ä½å‘¨æœŸä¸­ç‚¹é‡‡æ ·ï¼Œç»“æŸæ—¶æ›´æ–°å¹¶è¡Œå­—èŠ‚ä¸å®Œæˆæ ‡å¿—ã€‚
 module uart_rx(
-    input               clk         ,  //ÏµÍ³Ê±ÖÓ
-    input               rst_n       ,  //ÏµÍ³¸´Î»£¬µÍÓĞĞ§
+    input               clk         ,
+    input               rst_n       ,
 
-    input               uart_rxd    ,  //UART½ÓÊÕ¶Ë¿Ú
-    output  reg         uart_rx_done,  //UART½ÓÊÕÍê³ÉĞÅºÅ
-    output  reg  [7:0]  uart_rx_data   //UART½ÓÊÕµ½µÄÊı¾İ
+    input               uart_rxd    ,
+    output  reg         uart_rx_done,
+    output  reg  [7:0]  uart_rx_data
     );
 
-//parameter define
-parameter CLK_FREQ = 50000000;               //ÏµÍ³Ê±ÖÓÆµÂÊ
-parameter UART_BPS = 115200  ;               //´®¿Ú²¨ÌØÂÊ
-localparam BAUD_CNT_MAX = CLK_FREQ/UART_BPS; //ÎªµÃµ½Ö¸¶¨²¨ÌØÂÊ£¬¶ÔÏµÍ³Ê±ÖÓ¼ÆÊıBPS_CNT´Î
+parameter CLK_FREQ = 50000000;
+parameter UART_BPS = 115200  ;
+localparam BAUD_CNT_MAX = CLK_FREQ/UART_BPS;
 
-//reg define
 reg          uart_rxd_d0;
 reg          uart_rxd_d1;
 reg          uart_rxd_d2;
-reg          rx_flag    ;  //½ÓÊÕ¹ı³Ì±êÖ¾ĞÅºÅ
-reg  [3:0 ]  rx_cnt     ;  //½ÓÊÕÊı¾İ¼ÆÊıÆ÷
-reg  [15:0]  baud_cnt   ;  //²¨ÌØÂÊ¼ÆÊıÆ÷
-reg  [7:0 ]  rx_data_t  ;  //½ÓÊÕÊı¾İ¼Ä´æÆ÷
+reg          rx_flag    ;
+wire  [3:0 ]  rx_cnt     ;
+wire  [15:0]  baud_cnt   ;
+reg  [7:0 ]  rx_data_t  ;
 
-//wire define
 wire        start_en;
 
-//*****************************************************
-//**                    main code
-//*****************************************************
-//²¶»ñ½ÓÊÕ¶Ë¿ÚÏÂ½µÑØ(ÆğÊ¼Î»)£¬µÃµ½Ò»¸öÊ±ÖÓÖÜÆÚµÄÂö³åĞÅºÅ
 assign start_en = uart_rxd_d2 & (~uart_rxd_d1) & (~rx_flag);
 
-//Õë¶ÔÒì²½ĞÅºÅµÄÍ¬²½´¦Àí
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         uart_rxd_d0 <= 1'b0;
@@ -45,83 +37,51 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-//¸ø½ÓÊÕ±êÖ¾¸³Öµ
 always @(posedge clk or negedge rst_n) begin
-    if(!rst_n) 
+    if(!rst_n)
         rx_flag <= 1'b0;
-    else if(start_en)    //¼ì²âµ½ÆğÊ¼Î»
-        rx_flag <= 1'b1; //½ÓÊÕ¹ı³ÌÖĞ£¬±êÖ¾ĞÅºÅrx_flagÀ­¸ß
-    //ÔÚÍ£Ö¹Î»Ò»°ëµÄÊ±ºò£¬¼´½ÓÊÕ¹ı³Ì½áÊø£¬±êÖ¾ĞÅºÅrx_flagÀ­µÍ
+    else if(start_en)
+        rx_flag <= 1'b1;
+
     else if((rx_cnt == 4'd9) && (baud_cnt == BAUD_CNT_MAX/2 - 1'b1))
         rx_flag <= 1'b0;
     else
         rx_flag <= rx_flag;
-end        
-
-//²¨ÌØÂÊµÄ¼ÆÊıÆ÷¸³Öµ
-always @(posedge clk or negedge rst_n) begin
-    if(!rst_n) 
-        baud_cnt <= 16'd0;
-    else if(rx_flag) begin     //´¦ÓÚ½ÓÊÕ¹ı³ÌÊ±£¬²¨ÌØÂÊ¼ÆÊıÆ÷£¨baud_cnt£©½øĞĞÑ­»·¼ÆÊı
-        if(baud_cnt < BAUD_CNT_MAX - 1'b1)
-            baud_cnt <= baud_cnt + 16'b1;
-        else 
-            baud_cnt <= 16'd0; //¼ÆÊı´ïµ½Ò»¸ö²¨ÌØÂÊÖÜÆÚºóÇåÁã
-    end    
-    else
-        baud_cnt <= 16'd0;     //½ÓÊÕ¹ı³Ì½áÊøÊ±¼ÆÊıÆ÷ÇåÁã
 end
 
-//¶Ô½ÓÊÕÊı¾İ¼ÆÊıÆ÷£¨rx_cnt£©½øĞĞ¸³Öµ
-always @(posedge clk or negedge rst_n) begin
-    if(!rst_n) 
-        rx_cnt <= 4'd0;
-    else if(rx_flag) begin                  //´¦ÓÚ½ÓÊÕ¹ı³ÌÊ±rx_cnt²Å½øĞĞ¼ÆÊı
-        if(baud_cnt == BAUD_CNT_MAX - 1'b1) //µ±²¨ÌØÂÊ¼ÆÊıÆ÷¼ÆÊıµ½Ò»¸ö²¨ÌØÂÊÖÜÆÚÊ±
-            rx_cnt <= rx_cnt + 1'b1;        //½ÓÊÕÊı¾İ¼ÆÊıÆ÷¼Ó1
-        else
-            rx_cnt <= rx_cnt;
-    end
-    else
-        rx_cnt <= 4'd0;                     //½ÓÊÕ¹ı³Ì½áÊøÊ±¼ÆÊıÆ÷ÇåÁã
-end        
+uart_bit_timer #(.BAUD_CYCLES(BAUD_CNT_MAX)) u_bit_timer (
+    .clk(clk), .rst_n(rst_n), .active(rx_flag),
+    .baud_count(baud_cnt), .bit_index(rx_cnt)
+);
 
-//¸ù¾İrx_cntÀ´¼Ä´ærxd¶Ë¿ÚµÄÊı¾İ
 always @(posedge clk or negedge rst_n) begin
-    if(!rst_n) 
+    if(!rst_n)
         rx_data_t <= 8'b0;
-    else if(rx_flag) begin                           //ÏµÍ³´¦ÓÚ½ÓÊÕ¹ı³ÌÊ±
-        if(baud_cnt == BAUD_CNT_MAX/2 - 1'b1) begin  //ÅĞ¶Ïbaud_cntÊÇ·ñ¼ÆÊıµ½Êı¾İÎ»µÄÖĞ¼ä
+    else if(rx_flag) begin
+        if(baud_cnt == BAUD_CNT_MAX/2 - 1'b1) begin
            case(rx_cnt)
-               4'd1 : rx_data_t[0] <= uart_rxd_d2;   //¼Ä´æÊı¾İµÄ×îµÍÎ»
-               4'd2 : rx_data_t[1] <= uart_rxd_d2;
-               4'd3 : rx_data_t[2] <= uart_rxd_d2;
-               4'd4 : rx_data_t[3] <= uart_rxd_d2;
-               4'd5 : rx_data_t[4] <= uart_rxd_d2;
-               4'd6 : rx_data_t[5] <= uart_rxd_d2;
-               4'd7 : rx_data_t[6] <= uart_rxd_d2;
-               4'd8 : rx_data_t[7] <= uart_rxd_d2;   //¼Ä´æÊı¾İµÄ¸ßµÍÎ»
+               4'd1, 4'd2, 4'd3, 4'd4, 4'd5, 4'd6, 4'd7, 4'd8:
+                   rx_data_t[rx_cnt - 4'd1] <= uart_rxd_d2;
                default : ;
-            endcase  
+            endcase
         end
         else
             rx_data_t <= rx_data_t;
     end
     else
         rx_data_t <= 8'b0;
-end        
+end
 
-//¸ø½ÓÊÕÍê³ÉĞÅºÅºÍ½ÓÊÕµ½µÄÊı¾İ¸³Öµ
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         uart_rx_done <= 1'b0;
         uart_rx_data <= 8'b0;
     end
-    //µ±½ÓÊÕÊı¾İ¼ÆÊıÆ÷¼ÆÊıµ½Í£Ö¹Î»£¬ÇÒbaud_cnt¼ÆÊıµ½Í£Ö¹Î»µÄÖĞ¼äÊ±
+
     else if(rx_cnt == 4'd9 && baud_cnt == BAUD_CNT_MAX/2 - 1'b1) begin
-        uart_rx_done <= 1'b1     ;  //À­¸ß½ÓÊÕÍê³ÉĞÅºÅ
-        uart_rx_data <= rx_data_t;  //²¢¶ÔUART½ÓÊÕµ½µÄÊı¾İ½øĞĞ¸³Öµ
-    end    
+        uart_rx_done <= 1'b1     ;
+        uart_rx_data <= rx_data_t;
+    end
     else begin
         uart_rx_done <= 1'b0;
         uart_rx_data <= uart_rx_data;

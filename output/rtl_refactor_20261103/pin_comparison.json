@@ -1,0 +1,12 @@
+{
+  "S": {
+    "baseline_ports": 112,
+    "revised_ports": 112,
+    "different_def_port_entries": []
+  },
+  "M": {
+    "baseline_ports": 114,
+    "revised_ports": 114,
+    "different_def_port_entries": []
+  }
+}

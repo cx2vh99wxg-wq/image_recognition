@@ -2,7 +2,7 @@
 #define YOLOP_OPENCV_INTEGRATION_H
 
 #include "rknn_api.h"
-#include "postprocess.h" // 图像处理：包含原有的后处理头文件
+#include "postprocess.h" // 包含原有的后处理头文件
 #include <cstdint>
 #include <vector>
 #include <string>
@@ -83,7 +83,7 @@ class YOLOPEngine
     YOLOPEngine(const YOLOPEngine &) = delete;
     YOLOPEngine &operator=(const YOLOPEngine &) = delete;
 
-    // RKNN上下文和模型信息：本节对应的标识或作用域。
+
     rknn_context ctx;
     std::vector<std::string> class_names;
     int inpWidth, inpHeight;
@@ -100,6 +100,8 @@ class YOLOPEngine
     // 仅供本模块内部复用的操作。
     bool loadLabels(const std::string &label_path);
     bool initModel(const std::string &model_path);
+    bool runInference(const uint8_t *rgb_data, int width, int height,
+                      std::vector<uint8_t> &input_data, bool verbose);
     void preprocessImage(const uint8_t *rgb_data, int width, int height,
                          std::vector<uint8_t> &input_data);
     void postprocessDetection(rknn_output *outputs, int img_width, int img_height,
@@ -171,85 +173,56 @@ inline int yolo_engine_detect(YOLOPEngine *engine, const uint8_t *rgb_data, int 
     return yolop_engine_detect(engine, rgb_data, width, height, results);
 }
 
+namespace yolop_overlay
+{
+struct BoxEdges
+{
+    int left, top, right, bottom;
+};
+
+inline BoxEdges draw_outline(uint8_t *rgb, int width, int height, const BOX_RECT &box,
+                             uint8_t green, uint8_t blue)
+{
+    const BoxEdges edges = {
+        box.left < 0 ? 0 : box.left,
+        box.top < 0 ? 0 : box.top,
+        box.right >= width ? width - 1 : box.right,
+        box.bottom >= height ? height - 1 : box.bottom,
+    };
+
+    const auto paint_strip = [&](int x0, int y0, int x1, int y1) {
+        for (int y = y0; y <= y1 && y < height; ++y)
+        {
+            for (int x = x0; x <= x1 && x < width; ++x)
+            {
+                uint8_t *pixel = rgb + (y * width + x) * 3;
+                pixel[0] = 0;
+                pixel[1] = green;
+                pixel[2] = blue;
+            }
+        }
+    };
+
+    paint_strip(edges.left, edges.top, edges.right, edges.top + 1);
+    paint_strip(edges.left, edges.top, edges.left + 1, edges.bottom);
+    // The far edges are skipped when their two-pixel strip starts off the canvas.
+    if (edges.bottom >= 1)
+        paint_strip(edges.left, edges.bottom - 1, edges.right, edges.bottom);
+    if (edges.right >= 1)
+        paint_strip(edges.right - 1, edges.top, edges.right, edges.bottom);
+
+    return edges;
+}
+}
+
 inline void draw_detection_results(uint8_t *rgb_data, int width, int height,
                                    const detect_result_group_t *results)
 {
-    // 图像处理：兼容性函数：绘制检测框
-    if (!rgb_data || !results || results->count == 0)
+    if (!rgb_data || !results)
         return;
 
-    // 简单的边界框绘制（无需OpenCV）
-    for (int i = 0; i < results->count; i++)
-    {
-        const detect_result_t &obj = results->results[i];
-
-        // 图像处理：绘制矩形框（使用简单的像素操作）
-        int left = obj.box.left;
-        int top = obj.box.top;
-        int right = obj.box.right;
-        int bottom = obj.box.bottom;
-
-        // 保证坐标在有效范围内
-        if (left < 0)
-            left = 0;
-        if (top < 0)
-            top = 0;
-        if (right >= width)
-            right = width - 1;
-        if (bottom >= height)
-            bottom = height - 1;
-
-        // 图像处理：绘制红色边界框（RGB888格式，线宽2像素）
-        int thickness = 2;
-
-        // 矩形轮廓的顶部边。
-        for (int y = top; y < top + thickness && y < height; y++)
-        {
-            for (int x = left; x <= right && x < width; x++)
-            {
-                int idx = (y * width + x) * 3;
-                rgb_data[idx] = 0;       // R：红色分量。
-                rgb_data[idx + 1] = 0;   // G：绿色分量。
-                rgb_data[idx + 2] = 255; // 图像处理：B (红色)
-            }
-        }
-
-        // 矩形轮廓的底部边。
-        for (int y = bottom - thickness + 1; y <= bottom && y >= 0; y++)
-        {
-            for (int x = left; x <= right && x < width; x++)
-            {
-                int idx = (y * width + x) * 3;
-                rgb_data[idx] = 0;
-                rgb_data[idx + 1] = 0;
-                rgb_data[idx + 2] = 255;
-            }
-        }
-
-        // 矩形轮廓的左侧边。
-        for (int x = left; x < left + thickness && x < width; x++)
-        {
-            for (int y = top; y <= bottom && y < height; y++)
-            {
-                int idx = (y * width + x) * 3;
-                rgb_data[idx] = 0;
-                rgb_data[idx + 1] = 0;
-                rgb_data[idx + 2] = 255;
-            }
-        }
-
-        // 矩形轮廓的右侧边。
-        for (int x = right - thickness + 1; x <= right && x >= 0; x++)
-        {
-            for (int y = top; y <= bottom && y < height; y++)
-            {
-                int idx = (y * width + x) * 3;
-                rgb_data[idx] = 0;
-                rgb_data[idx + 1] = 0;
-                rgb_data[idx + 2] = 255;
-            }
-        }
-    }
+    for (int i = 0; i < results->count; ++i)
+        yolop_overlay::draw_outline(rgb_data, width, height, results->results[i].box, 0, 255);
 }
 
-#endif // YOLOP_OPENCV_INTEGRATION_H：本节对应的标识或作用域。
+#endif

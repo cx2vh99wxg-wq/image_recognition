@@ -15,7 +15,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
-#include <X11/extensions/XShm.h> /* 显示合成：MIT-SHM共享内存扩展 */
+#include <X11/extensions/XShm.h> /* 呈现合成：MIT-SHM共享内存扩展 */
 #ifdef PERCEPTION_HAVE_XRENDER
 #include <X11/extensions/Xrender.h>
 #endif
@@ -30,60 +30,61 @@
 #include "traffic_go_rule.h"
 #include "speed_status.h"
 #include "six_camera_render.h"
+#include "../../../common/image/frame_pixels.h"
 
 /* aligned_alloc 的声明需要先启用 _ISOC11_SOURCE。 */
 #ifndef _ISOC11_SOURCE
 #define _ISOC11_SOURCE
 #endif
 
-// ── 显示合成 ──
+// ── 呈现合成 ──
 // *作   者：科研轮转（C语言重构版：X11双通道渲染程序）
-// 显示合成：*完成时间：2025年10月14日
-// 显示合成：*实现功能：读取PCIe和UDP共享内存，合成1280×480图像显示
-// 显示合成：*性能优化：专注于渲染显示，支持双缓冲和高性能显示
-// ── 显示合成 ──
+// 呈现合成：本版更新：2026年10月19日
+// 呈现合成：*实现功能：读取PCIe和UDP共享内存，合成1280×480图像呈现
+// 呈现合成：*性能优化：专注于渲染呈现，支持双缓冲和高性能呈现
+// ── 呈现合成 ──
 
-// ── 显示合成 ──
-// 本节设置显示相关选项。
-// ── 显示合成 ──
+// ── 呈现合成 ──
+// 本节设置呈现相关选项。
+// ── 呈现合成 ──
 #define PCIE_IMAGE_WIDTH 640
 #define PCIE_IMAGE_HEIGHT 480
 #define UDP_IMAGE_WIDTH 640
 #define UDP_IMAGE_HEIGHT 480
 #define COMBINED_IMAGE_WIDTH (PCIE_IMAGE_WIDTH + UDP_IMAGE_WIDTH)     // 参数记录为 1280。
 #define COMBINED_IMAGE_HEIGHT PCIE_IMAGE_HEIGHT                       // 参数记录为 480。
-#define FRAME_SIZE (COMBINED_IMAGE_WIDTH * COMBINED_IMAGE_HEIGHT * 2) // RGB565格式：本节对应的标识或作用域。
+#define FRAME_SIZE (COMBINED_IMAGE_WIDTH * COMBINED_IMAGE_HEIGHT * 2)
 
-// 显示合成：单个摄像头区块尺寸
+// 呈现合成：单个摄像头区块尺寸
 #define CAMERA_BLOCK_WIDTH 320
 #define CAMERA_BLOCK_HEIGHT 240
 
-// 显示合成：只在显示端上下翻转 S 端 PCIe 摄像头区块，保持各区块原来的位置。
-// 显示合成：采集端的识别图像与车控坐标不变。
+// 呈现合成：只在呈现端上下翻转 S 端 PCIe 摄像头区块，保持各区块原来的位置。
+// 呈现合成：采集端的识别图像与车控坐标不变。
 static inline int pcie_display_source_row(int row)
 {
     return CAMERA_BLOCK_HEIGHT - 1 - row;
 }
 
-// 显示合成：使用头文件中定义的DisplayMode枚举
+// 呈现合成：使用头文件中定义的DisplayMode枚举
 
-// ── 显示合成 ──
+// ── 呈现合成 ──
 // 本对象保存视角过渡的状态。
-// ── 显示合成 ──
+// ── 呈现合成 ──
 typedef struct
 {
-    int is_active;             /* 显示合成：是否正在播放动画 */
-    DisplayMode from_mode;     /* 进入过渡前的显示模式。 */
-    DisplayMode to_mode;       /* 显示合成：目标显示模式 */
-    float progress;            /* 显示合成：动画进度 (0.0 - 1.0) */
+    int is_active;             /* 呈现合成：是否开始播放动画 */
+    DisplayMode from_mode;     /* 进入过渡前的呈现模式。 */
+    DisplayMode to_mode;       /* 呈现合成：目标呈现模式 */
+    float progress;            /* 呈现合成：动画进度 (0.0 - 1.0) */
     int animation_frames;      /* 一次过渡需要推进的帧数量。 */
-    int current_frame;         /* 过渡动画当前推进到的帧索引。 */
-    struct timeval start_time; /* 显示合成：动画开始时间 */
-    float scale_factor;        /* 显示合成：当前缩放因子 */
-    int show_text;             /* 显示合成：是否显示文字 */
-    int text_frames;           /* 显示合成：文字显示帧数 */
-    uint64_t text_start_time;  /* 显示合成：文字显示开始时间 */
-    uint64_t text_duration_ms; /* 显示合成：文字显示持续时间(毫秒) */
+    int current_frame;         /* 过渡动画此时推进到的帧索引。 */
+    struct timeval start_time; /* 呈现合成：动画开始时间 */
+    float scale_factor;        /* 呈现合成：此时缩放因子 */
+    int show_text;             /* 呈现合成：是否呈现文字 */
+    int text_frames;           /* 呈现合成：文字呈现帧数 */
+    uint64_t text_start_time;  /* 呈现合成：文字呈现开始时间 */
+    uint64_t text_duration_ms; /* 呈现合成：文字呈现持续时间(毫秒) */
 } TransitionAnimation;
 
 // 固定车辆层的像素仅由这一份不可变快照决定。
@@ -106,9 +107,9 @@ struct VehicleLayerState
     }
 };
 
-// ── 显示合成 ──
+// ── 呈现合成 ──
 // 本对象描述窗口和图像资源。
-// ── 显示合成 ──
+// ── 呈现合成 ──
 typedef struct
 {
     Display *display;
@@ -116,13 +117,13 @@ typedef struct
     GC gc;
     XImage *ximage;
     char *display_buffer;
-    Pixmap pixmap;           /* 显示合成：双缓冲pixmap */
-    int use_fast_mode;       /* 显示合成：是否使用快速模式 */
-    int use_shm;             /* 显示合成：是否使用共享内存 */
-    XShmSegmentInfo shminfo; /* 显示合成：共享内存信息 */
+    Pixmap pixmap;           /* 呈现合成：双缓冲pixmap */
+    int use_fast_mode;       /* 呈现合成：是否使用快速模式 */
+    int use_shm;             /* 呈现合成：是否使用共享内存 */
+    XShmSegmentInfo shminfo; /* 呈现合成：共享内存信息 */
     XFontStruct *font;       /* 本对象描述字形及度量数据。 */
     int is_init;
-    TransitionAnimation transition; /* 显示合成：切换动画状态 */
+    TransitionAnimation transition; /* 呈现合成：切换动画状态 */
     // 视频画布维持 1280x480，仪表面板独立呈现。
     perception_ui::Dashboard *dashboard;
     XImage *presentation_image;
@@ -158,17 +159,17 @@ typedef struct
     perception_ui::FrameIdFps pcie_input_rate, udp_input_rate;
 } RenderEngine;
 
-// ── 显示合成 ──
+// ── 呈现合成 ──
 // 本文件共用的运行状态。
-// ── 显示合成 ──
+// ── 呈现合成 ──
 static volatile int keep_running = 1;
 static perception_ui::MotionDirection preview_motion = perception_ui::MotionDirection::Idle;
 static SharedMemoryManager pcie_shm_manager;
 static SharedMemoryManager udp_shm_manager;
-static DisplayControlSharedMemory *display_control_shm = NULL; // 显示合成：显示控制共享内存
-static EmergencyBrakeSharedMemory *emergency_brake_shm = NULL; // 显示合成：紧急制动共享内存
+static DisplayControlSharedMemory *display_control_shm = NULL; // 呈现合成：呈现控制共享内存
+static EmergencyBrakeSharedMemory *emergency_brake_shm = NULL; // 呈现合成：紧急制动共享内存
 
-// PNG图像数据：本节对应的标识或作用域。
+
 static uint8_t *car_png_data = NULL;
 static int car_png_width = 0;
 static int car_png_height = 0;
@@ -179,17 +180,17 @@ static uint64_t car_png_revision = 0;
 static uint64_t last_blink_time = 0;
 static int blink_state = 1;
 
-// 保存当前道路弯向的检测状态。
+// 保存此时道路弯向的识别状态。
 static CurveType current_curve_type = CURVE_NONE;
 static uint32_t current_curve_confidence = 0;
 static int start_fullscreen = 1;
 static int frame_limit = 0;
 static const char *snapshot_path = NULL;
 
-// ── 显示合成 ──
+// ── 呈现合成 ──
 // 供后续实现调用的接口声明。
-// ── 显示合成 ──
-// 本节实现画面显示接口。
+// ── 呈现合成 ──
+// 本节实现画面呈现接口。
 int render_engine_init(RenderEngine *engine);
 int render_engine_render_combined_frame(RenderEngine *engine, const uint8_t *pcie_data,
                                         const uint8_t *udp_data);
@@ -232,18 +233,18 @@ void set_fullscreen(RenderEngine *engine, int enabled);
 static perception_ui::Dashboard *create_dashboard_theme();
 static uint64_t display_clock_ns();
 
-// ── 显示合成 ──
+// ── 呈现合成 ──
 // 处理进程信号的回调入口。
-// ── 显示合成 ──
+// ── 呈现合成 ──
 void signal_handler(int sig)
 {
-    printf("\n接收到信号 %d，正在关闭渲染程序...\n", sig);
+    printf("\n收取到信号 %d，开始关闭渲染程序...\n", sig);
     keep_running = 0;
 }
 
-// ── 显示合成 ──
+// ── 呈现合成 ──
 // 下面实现本模块辅助函数。
-// ── 显示合成 ──
+// ── 呈现合成 ──
 double get_time_diff(struct timeval start, struct timeval end)
 {
     return (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
@@ -258,20 +259,7 @@ uint64_t get_current_time_ms(void)
 
 void rgb565_to_rgb888(const uint16_t *rgb565_data, uint8_t *rgb888_data, size_t pixel_count)
 {
-    for (size_t i = 0; i < pixel_count; i++)
-    {
-        uint16_t pixel = rgb565_data[i];
-
-        // 显示合成：提取RGB分量 (大端格式：RRRRRGGGGGGBBBBB)
-        uint8_t r = (pixel >> 11) & 0x1F;
-        uint8_t g = (pixel >> 5) & 0x3F;
-        uint8_t b = pixel & 0x1F;
-
-        // 把通道值展开至 8 位范围。
-        rgb888_data[i * 3 + 0] = (r << 3) | (r >> 2); // R：红色分量。
-        rgb888_data[i * 3 + 1] = (g << 2) | (g >> 4); // G：绿色分量。
-        rgb888_data[i * 3 + 2] = (b << 3) | (b >> 2); // B：蓝色分量。
-    }
+    frame_unpack_rgb565(rgb565_data, rgb888_data, pixel_count);
 }
 
 void save_combined_frame_to_ppm(const uint8_t *pcie_data, const uint8_t *udp_data,
@@ -295,19 +283,19 @@ void save_combined_frame_to_ppm(const uint8_t *pcie_data, const uint8_t *udp_dat
         return;
     }
 
-    // 显示合成：合成图像：PCIe在左侧，UDP在右侧
+    // 呈现合成：合成图像：PCIe在左侧，UDP在右侧
     for (int y = 0; y < COMBINED_IMAGE_HEIGHT; y++)
     {
-        // 显示合成：复制PCIe数据到左侧
+        // 呈现合成：复制PCIe数据到左侧
         memcpy(combined_rgb565 + y * COMBINED_IMAGE_WIDTH * 2, pcie_data + y * PCIE_IMAGE_WIDTH * 2,
                PCIE_IMAGE_WIDTH * 2);
 
-        // 显示合成：复制UDP数据到右侧
+        // 呈现合成：复制UDP数据到右侧
         memcpy(combined_rgb565 + y * COMBINED_IMAGE_WIDTH * 2 + PCIE_IMAGE_WIDTH * 2,
                udp_data + y * UDP_IMAGE_WIDTH * 2, UDP_IMAGE_WIDTH * 2);
     }
 
-    // 显示合成：转换为RGB888格式
+    // 呈现合成：转换为RGB888格式
     rgb565_to_rgb888((const uint16_t *)combined_rgb565, combined_rgb888,
                      COMBINED_IMAGE_WIDTH * COMBINED_IMAGE_HEIGHT);
 
@@ -323,52 +311,50 @@ void save_combined_frame_to_ppm(const uint8_t *pcie_data, const uint8_t *udp_dat
     printf("合成图像已保存为: %s\n", filename);
 }
 
+static int first_visible_pixel(int offset, int extent)
+{
+    if (offset >= 0 || extent <= 0)
+        return 0;
+    return offset < -extent ? extent : -offset;
+}
+
+template <typename Sample>
+static void paint_camera_tile(uint32_t *display, const uint16_t *source, int source_x, int source_y,
+                              int left, int top, int width, int height, Sample sample,
+                              bool check_source_bounds)
+{
+    const bool network = source_x >= PCIE_IMAGE_WIDTH;
+    const int stride = network ? UDP_IMAGE_WIDTH : PCIE_IMAGE_WIDTH;
+    const int rows = network ? UDP_IMAGE_HEIGHT : PCIE_IMAGE_HEIGHT;
+    const int first_col = source_x - (network ? PCIE_IMAGE_WIDTH : 0);
+
+    for (int y = first_visible_pixel(top, height); y < height && top + y < COMBINED_IMAGE_HEIGHT; ++y)
+    {
+        const int sample_row = sample(y);
+        const int source_row = source_y + (network ? sample_row : pcie_display_source_row(sample_row));
+        if (check_source_bounds && (source_row < 0 || source_row >= rows))
+            continue;
+        auto *destination = display + (top + y) * COMBINED_IMAGE_WIDTH;
+        for (int x = first_visible_pixel(left, width); x < width && left + x < COMBINED_IMAGE_WIDTH; ++x)
+        {
+            const int col = first_col + sample(x);
+            if (!check_source_bounds || (col >= 0 && col < stride))
+                destination[left + x] = six_camera::argb(source[source_row * stride + col]);
+        }
+    }
+}
+
 void render_camera_block(uint32_t *display_pixels, const uint16_t *source_pixels, int src_x,
                          int src_y, int dst_x, int dst_y)
 {
-    // 显示合成：缩放参数：将320x240放大到640x480 (2倍缩放)
-    const int scale_factor = 2;
-    const int scaled_width = CAMERA_BLOCK_WIDTH * scale_factor;   // 参数记录为 640。
-    const int scaled_height = CAMERA_BLOCK_HEIGHT * scale_factor; // 参数记录为 480。
-
-    // 求出居中位置 - 将放大后的640x480图像居中显示在1280x480的屏幕上。
-    int center_x = (COMBINED_IMAGE_WIDTH - scaled_width) / 2;
-    int center_y = (COMBINED_IMAGE_HEIGHT - scaled_height) / 2;
-
-    // 显示合成：使用最近邻插值进行2倍放大
-    for (int y = 0; y < scaled_height; y++)
-    {
-        for (int x = 0; x < scaled_width; x++)
-        {
-            // 求出原始图像中对应的像素位置。
-            int orig_x = x / scale_factor;
-            int orig_y = y / scale_factor;
-
-            // 显示合成：从源图像读取像素
-            int source_y =
-                src_y + (src_x < PCIE_IMAGE_WIDTH ? pcie_display_source_row(orig_y) : orig_y);
-            int source_idx = source_y * (src_x >= 640 ? UDP_IMAGE_WIDTH : PCIE_IMAGE_WIDTH) +
-                             ((src_x >= 640 ? src_x - 640 : src_x) + orig_x);
-            uint16_t pixel = source_pixels[source_idx];
-
-            // 显示合成：BGR565转RGB888 (修正颜色通道顺序)
-            uint8_t b = ((pixel >> 11) & 0x1F) << 3;
-            uint8_t g = ((pixel >> 5) & 0x3F) << 2;
-            uint8_t r = (pixel & 0x1F) << 3;
-
-            // 显示合成：组合为32位ARGB格式
-            uint32_t argb = 0xFF000000 | (r << 16) | (g << 8) | b;
-
-            // 显示合成：写入显示缓冲区（居中位置，放大后的坐标）
-            int display_x = center_x + x;
-            int display_y = center_y + y;
-            if (display_x >= 0 && display_x < COMBINED_IMAGE_WIDTH && display_y >= 0 &&
-                display_y < COMBINED_IMAGE_HEIGHT)
-            {
-                display_pixels[display_y * COMBINED_IMAGE_WIDTH + display_x] = argb;
-            }
-        }
-    }
+    // This entry point has always drawn a centered 2x tile.
+    (void)dst_x;
+    (void)dst_y;
+    const int width = CAMERA_BLOCK_WIDTH * 2;
+    const int height = CAMERA_BLOCK_HEIGHT * 2;
+    paint_camera_tile(display_pixels, source_pixels, src_x, src_y,
+                      (COMBINED_IMAGE_WIDTH - width) / 2, (COMBINED_IMAGE_HEIGHT - height) / 2,
+                      width, height, [](int pixel) { return pixel / 2; }, false);
 }
 
 void get_camera_position(DisplayMode mode, int *src_x, int *src_y)
@@ -381,65 +367,11 @@ void get_camera_position(DisplayMode mode, int *src_x, int *src_y)
 void render_scaled_camera_block(uint32_t *display_pixels, const uint16_t *source_pixels, int src_x,
                                 int src_y, float scale_factor, int center_x, int center_y)
 {
-    // 求出缩放后的尺寸。
-    int scaled_width = (int)(CAMERA_BLOCK_WIDTH * scale_factor);
-    int scaled_height = (int)(CAMERA_BLOCK_HEIGHT * scale_factor);
-
-    // 求出起始位置（居中）。
-    int start_x = center_x - scaled_width / 2;
-    int start_y = center_y - scaled_height / 2;
-
-    for (int y = 0; y < scaled_height; y++)
-    {
-        for (int x = 0; x < scaled_width; x++)
-        {
-            // 求出原始图像中对应的像素位置（双线性插值的简化版本）。
-            float orig_x = (float)x / scale_factor;
-            float orig_y = (float)y / scale_factor;
-
-            // 求出在源图像中的位置。
-            int pixel_x, pixel_y;
-            if (src_x >= 640)
-            {
-                // 显示合成：UDP摄像头：src_x是绝对位置，需要转换为相对于UDP图像的位置
-                pixel_x = (src_x - 640) + (int)orig_x;
-                pixel_y = src_y + (int)orig_y;
-            }
-            else
-            {
-                // 显示合成：PCIe摄像头：src_x已经是相对位置
-                pixel_x = src_x + (int)orig_x;
-                pixel_y = src_y + pcie_display_source_row((int)orig_y);
-            }
-
-            // 访问前校验坐标是否位于有效范围。
-            if (pixel_x >= 0 && pixel_x < (src_x >= 640 ? UDP_IMAGE_WIDTH : PCIE_IMAGE_WIDTH) &&
-                pixel_y >= 0 && pixel_y < (src_x >= 640 ? UDP_IMAGE_HEIGHT : PCIE_IMAGE_HEIGHT))
-            {
-
-                int source_idx =
-                    pixel_y * (src_x >= 640 ? UDP_IMAGE_WIDTH : PCIE_IMAGE_WIDTH) + pixel_x;
-                uint16_t pixel = source_pixels[source_idx];
-
-                // BGR565转RGB888：本节对应的标识或作用域。
-                uint8_t b = ((pixel >> 11) & 0x1F) << 3;
-                uint8_t g = ((pixel >> 5) & 0x3F) << 2;
-                uint8_t r = (pixel & 0x1F) << 3;
-
-                // 显示合成：组合为32位ARGB格式
-                uint32_t argb = 0xFF000000 | (r << 16) | (g << 8) | b;
-
-                // 将像素结果存入显示目标区。
-                int display_x = start_x + x;
-                int display_y = start_y + y;
-                if (display_x >= 0 && display_x < COMBINED_IMAGE_WIDTH && display_y >= 0 &&
-                    display_y < COMBINED_IMAGE_HEIGHT)
-                {
-                    display_pixels[display_y * COMBINED_IMAGE_WIDTH + display_x] = argb;
-                }
-            }
-        }
-    }
+    const int width = (int)(CAMERA_BLOCK_WIDTH * scale_factor);
+    const int height = (int)(CAMERA_BLOCK_HEIGHT * scale_factor);
+    paint_camera_tile(display_pixels, source_pixels, src_x, src_y, center_x - width / 2,
+                      center_y - height / 2, width, height,
+                      [scale_factor](int pixel) { return (int)((float)pixel / scale_factor); }, true);
 }
 
 const char *get_camera_mode_name(DisplayMode mode)
@@ -454,23 +386,23 @@ void draw_screen_flash(RenderEngine *engine, float alpha)
         return;
     }
 
-    // 显示合成：限制alpha值在0-1之间
+    // 呈现合成：限制alpha值在0-1之间
     if (alpha > 1.0f)
         alpha = 1.0f;
 
     uint32_t *display_pixels = (uint32_t *)engine->display_buffer;
 
-    // 显示合成：创建白色闪烁效果，alpha控制透明度
+    // 呈现合成：建立白色闪烁效果，alpha控制透明度
     uint8_t flash_intensity = (uint8_t)(255 * alpha);
     uint32_t flash_color =
         0xFF000000 | (flash_intensity << 16) | (flash_intensity << 8) | flash_intensity;
 
-    // 显示合成：在整个屏幕上叠加白色闪烁效果
+    // 呈现合成：在整个屏幕上叠加白色闪烁效果
     for (int i = 0; i < COMBINED_IMAGE_WIDTH * COMBINED_IMAGE_HEIGHT; i++)
     {
         uint32_t original = display_pixels[i];
 
-        // 显示合成：提取原始RGB分量
+        // 呈现合成：提取原始RGB分量
         uint8_t orig_r = (original >> 16) & 0xFF;
         uint8_t orig_g = (original >> 8) & 0xFF;
         uint8_t orig_b = original & 0xFF;
@@ -484,7 +416,7 @@ void draw_screen_flash(RenderEngine *engine, float alpha)
     }
 }
 
-// 显示合成：加载car.png图像
+// 呈现合成：加载car.png图像
 int load_car_png(const char *filename)
 {
     car_png_data = stbi_load(filename, &car_png_width, &car_png_height, &car_png_channels, 4);
@@ -494,47 +426,24 @@ int load_car_png(const char *filename)
         return -1;
     }
     ++car_png_revision;
-    printf("成功加载PNG图像: %s (%dx%d, %d通道)\n", filename, car_png_width, car_png_height,
+    printf("已完成加载PNG图像: %s (%dx%d, %d通道)\n", filename, car_png_width, car_png_height,
            car_png_channels);
     return 0;
 }
 
-// 求出检测框在car.png上的映射位置（车尾对应的边缘）。
+// 求出识别框在car.png上的映射位置（车尾对应的边缘）。
 void calculate_car_edge_position(int box_left, int box_top, int box_right, int box_bottom,
                                  int *edge_type, float *edge_position)
 {
-    // 显示合成：640x480的PCIe图像分为4个320x240区域
-    // 本项给出检测框的几何中心。
-    float center_x = (box_left + box_right) / 2.0f;
-    float center_y = (box_top + box_bottom) / 2.0f;
+    const float center_x = (box_left + box_right) / 2.0f;
+    const float center_y = (box_top + box_bottom) / 2.0f;
+    const bool lower_tile = center_y >= 240.0f;
+    const unsigned tile = (center_x >= 320.0f ? 1u : 0u) + (lower_tile ? 2u : 0u);
 
-    // 显示合成：判断在哪个区域：0=左上, 1=右上, 2=左下, 3=右下
-    int region = (center_x >= 320 ? 1 : 0) + (center_y >= 240 ? 2 : 0);
-
-    // 显示合成：car.png显示的是车辆俯视图，车头朝上
-    // 显示合成：PCIe后置摄像头：左上=后中, 右上=后左, 左下=后右, 右下=后中复制
-    // 显示合成：映射关系需要镜像翻转
-
-    if (region == 0)
-    {                                                // 显示合成：左上角 - 后中摄像头
-        *edge_position = 1.0f - (center_y / 240.0f); // y轴反转：本节对应的标识或作用域。
-        *edge_type = 3;                              // 显示合成：车尾边缘（下边缘）
-    }
-    else if (region == 1)
-    { // 显示合成：右上角 - 后左摄像头（实际车辆左侧）
-        *edge_position = 1.0f - (center_y / 240.0f);
-        *edge_type = 2; // 显示合成：右边缘（镜像后对应车辆左侧）
-    }
-    else if (region == 2)
-    { // 显示合成：左下角 - 后右摄像头（实际车辆右侧）
-        *edge_position = 1.0f - ((center_y - 240) / 240.0f);
-        *edge_type = 1; // 显示合成：左边缘（镜像后对应车辆右侧）
-    }
-    else
-    { // 显示合成：右下角 - 后中复制
-        *edge_position = 1.0f - ((center_y - 240) / 240.0f);
-        *edge_type = 3; // 对应车图尾端的边缘。
-    }
+    // PCIe rear-center, rear-left, rear-right, rear-center mirror.
+    const int edge_for_tile[] = {3, 2, 1, 3};
+    *edge_position = 1.0f - (center_y - (lower_tile ? 240.0f : 0.0f)) / 240.0f;
+    *edge_type = edge_for_tile[tile];
 }
 
 // 把标线分割结果叠加到图像。
@@ -542,95 +451,58 @@ void draw_lane_lines(uint32_t *display_pixels, int dst_x, int dst_y, int dst_wid
                      CurveType curve_type, uint32_t confidence)
 {
     if (confidence < 60)
-        return; // 显示合成：置信度低于60%不绘制
+        return;
 
-    const int lane_width = dst_width / 3;       // 显示合成：车道宽度为PNG宽度的1/3
-    const int center_x = dst_x + dst_width / 2; // PNG中心X坐标：本节对应的标识或作用域。
-    const int line_length = dst_height / 2;     // 显示合成：线条长度为PNG高度的一半
-    const int line_thickness = 3;               // 用于绘制轮廓的线宽。
-    const uint32_t line_color = 0xFF00FF00;     // 本条标线使用绿色显示。
-    const int start_y = dst_y + dst_height / 2; // 显示合成：从PNG中间开始
-
-    // 显示合成：根据弯道类型绘制不同的车道线
-    for (int i = 0; i < line_length; i++)
+    const int lane_width = dst_width / 3;
+    const int center = dst_x + dst_width / 2;
+    const int length = dst_height / 2;
+    const int start_y = dst_y + dst_height / 2;
+    float left_curve = 0.0f, right_curve = 0.0f;
+    if (curve_type == CURVE_LEFT)
     {
-        // 显示合成：t从0(底部中心)到1(顶部)
-        float t = (float)i / line_length;
-        int offset_left = 0, offset_right = 0;
+        left_curve = -0.5f;
+        right_curve = -0.2f;
+    }
+    else if (curve_type == CURVE_RIGHT)
+    {
+        left_curve = 0.2f;
+        right_curve = 0.5f;
+    }
 
-        if (curve_type == CURVE_LEFT)
-        {
-            // 显示合成：左弯：从底部中心向上向左弯曲
-            offset_left = -(int)(lane_width * 0.5f * t * t);
-            offset_right = -(int)(lane_width * 0.2f * t * t);
-        }
-        else if (curve_type == CURVE_RIGHT)
-        {
-            // 显示合成：右弯：从底部中心向上向右弯曲
-            offset_left = (int)(lane_width * 0.2f * t * t);
-            offset_right = (int)(lane_width * 0.5f * t * t);
-        }
-
-        int py = start_y - i; // 从中心位置向顶部扩展绘制。
-        if (py < 0 || py >= COMBINED_IMAGE_HEIGHT)
+    for (int step = 0; step < length; ++step)
+    {
+        const int y = start_y - step;
+        if (y < 0 || y >= COMBINED_IMAGE_HEIGHT)
             continue;
 
-        int left_x = center_x - lane_width / 2 + offset_left;
-        int right_x = center_x + lane_width / 2 + offset_right;
-
-        // 显示合成：绘制渐变可行驶区域（从中心向外变淡）
-        for (int px = left_x; px <= right_x; px++)
+        const float t = (float)step / length;
+        const int left_offset = (int)(lane_width * left_curve * t * t);
+        const int right_offset = (int)(lane_width * right_curve * t * t);
+        const int left = center - lane_width / 2 + left_offset;
+        const int right = center + lane_width / 2 + right_offset;
+        const int gradient_center = center + (left_offset + right_offset) / 2;
+        auto *row = display_pixels + y * COMBINED_IMAGE_WIDTH;
+        for (int x = std::max(0, left); x <= std::min(right, COMBINED_IMAGE_WIDTH - 1); ++x)
         {
-            if (px >= 0 && px < COMBINED_IMAGE_WIDTH)
-            {
-                // 求出距离中心的归一化距离 (0=中心, 1=边缘)。
-                float dist_from_center =
-                    fabsf((float)(px - center_x - (offset_left + offset_right) / 2) /
-                          (lane_width / 2.0f));
-                if (dist_from_center > 1.0f)
-                    dist_from_center = 1.0f;
-
-                // 显示合成：渐变透明度：中心最亮(0.3)，边缘最淡(0.05)
-                float alpha = 0.3f * (1.0f - dist_from_center * 0.85f);
-
-                // 将当前叠加色与源像素混合。
-                uint32_t original = display_pixels[py * COMBINED_IMAGE_WIDTH + px];
-                uint8_t orig_r = (original >> 16) & 0xFF;
-                uint8_t orig_g = (original >> 8) & 0xFF;
-                uint8_t orig_b = original & 0xFF;
-
-                uint8_t new_r = orig_r * (1.0f - alpha);
-                uint8_t new_g = orig_g * (1.0f - alpha) + 255 * alpha;
-                uint8_t new_b = orig_b * (1.0f - alpha);
-
-                display_pixels[py * COMBINED_IMAGE_WIDTH + px] =
-                    0xFF000000 | (new_r << 16) | (new_g << 8) | new_b;
-            }
+            const float distance = fabsf((float)(x - gradient_center) / (lane_width / 2.0f));
+            const float alpha = 0.3f * (1.0f - std::min(distance, 1.0f) * 0.85f);
+            const uint32_t original = row[x];
+            const uint8_t red = ((original >> 16) & 0xff) * (1.0f - alpha);
+            const uint8_t green = ((original >> 8) & 0xff) * (1.0f - alpha) + 255 * alpha;
+            const uint8_t blue = (original & 0xff) * (1.0f - alpha);
+            row[x] = 0xff000000u | (red << 16) | (green << 8) | blue;
         }
 
-        // 叠加当前左侧标线。
-        for (int thick = -line_thickness / 2; thick <= line_thickness / 2; thick++)
+        const int edges[] = {left, right};
+        for (int edge : edges)
         {
-            int px = left_x + thick;
-            if (px >= 0 && px < COMBINED_IMAGE_WIDTH)
-            {
-                display_pixels[py * COMBINED_IMAGE_WIDTH + px] = line_color;
-            }
-        }
-
-        // 叠加当前右侧标线。
-        for (int thick = -line_thickness / 2; thick <= line_thickness / 2; thick++)
-        {
-            int px = right_x + thick;
-            if (px >= 0 && px < COMBINED_IMAGE_WIDTH)
-            {
-                display_pixels[py * COMBINED_IMAGE_WIDTH + px] = line_color;
-            }
+            for (int x = std::max(0, edge - 1); x <= std::min(edge + 1, COMBINED_IMAGE_WIDTH - 1); ++x)
+                row[x] = 0xff00ff00u;
         }
     }
 }
 
-// 显示合成：渲染car.png到指定位置，带红光闪烁效果
+// 呈现合成：渲染car.png到指定位置，带红光闪烁效果
 static VehicleLayerState snapshot_vehicle_state()
 {
     uint64_t current_time = get_current_time_ms();
@@ -665,107 +537,67 @@ static void render_car_png_with_state(uint32_t *display_pixels, int dst_x, int d
     if (!state.png)
         return;
 
-    // 确定图形各边在画布上的位置。
-    int edge_type = 0;
-    float edge_position = 0.5f;
+    int glow_x = 0, glow_y = 0;
     if (state.person)
     {
+        int edge;
+        float position;
         calculate_car_edge_position(state.box_left, state.box_top, state.box_right,
-                                    state.box_bottom, &edge_type, &edge_position);
+                                    state.box_bottom, &edge, &position);
+        if (edge == 3)
+        {
+            glow_x = (int)(position * dst_width);
+            glow_y = dst_height;
+        }
+        else
+        {
+            glow_x = edge == 2 ? dst_width : 0;
+            glow_y = (int)(position * dst_height);
+        }
     }
 
-    // 求出输入与目标的缩放关系。
-    float scale_x = (float)state.png_width / dst_width;
-    float scale_y = (float)state.png_height / dst_height;
-
-    const int edge_width = 80; // 配置红色发光的渐变距离。
-    float blink_intensity = state.blink ? 0.8f : 0.3f;
-
-    for (int y = 0; y < dst_height; y++)
+    const float scale_x = (float)state.png_width / dst_width;
+    const float scale_y = (float)state.png_height / dst_height;
+    const float blink = state.blink ? 0.8f : 0.3f;
+    const int glow_radius = 80;
+    for (int y = first_visible_pixel(dst_y, dst_height); y < dst_height && dst_y + y < COMBINED_IMAGE_HEIGHT; ++y)
     {
-        for (int x = 0; x < dst_width; x++)
+        const int sy = (int)(y * scale_y);
+        if (sy < 0 || sy >= state.png_height)
+            continue;
+        auto *row = display_pixels + (dst_y + y) * COMBINED_IMAGE_WIDTH;
+        for (int x = first_visible_pixel(dst_x, dst_width); x < dst_width && dst_x + x < COMBINED_IMAGE_WIDTH; ++x)
         {
-            int src_x = (int)(x * scale_x);
-            int src_y = (int)(y * scale_y);
+            const int sx = (int)(x * scale_x);
+            if (sx < 0 || sx >= state.png_width)
+                continue;
+            const uint8_t *rgba = state.png + (sy * state.png_width + sx) * 4;
+            if (rgba[3] == 0)
+                continue;
 
-            if (src_x >= 0 && src_x < state.png_width && src_y >= 0 && src_y < state.png_height)
+            float glow = 0.0f;
+            if (state.person)
             {
-                int src_idx = (src_y * state.png_width + src_x) * 4;
-                uint8_t r = state.png[src_idx];
-                uint8_t g = state.png[src_idx + 1];
-                uint8_t b = state.png[src_idx + 2];
-                uint8_t a = state.png[src_idx + 3];
-
-                int dst_px = dst_x + x;
-                int dst_py = dst_y + y;
-
-                if (dst_px >= 0 && dst_px < COMBINED_IMAGE_WIDTH && dst_py >= 0 &&
-                    dst_py < COMBINED_IMAGE_HEIGHT)
-                {
-                    // 计算当前像素的红色发光贡献。
-                    float red_intensity = 0.0f;
-                    if (state.person)
-                    {
-                        float dist = 1000.0f;
-                        if (edge_type == 0)
-                        { // 对应车辆图形前端的上边缘。
-                            int target_x = (int)(edge_position * dst_width);
-                            dist = sqrtf((x - target_x) * (x - target_x) + y * y);
-                        }
-                        else if (edge_type == 1)
-                        { // 显示合成：左边缘
-                            int target_y = (int)(edge_position * dst_height);
-                            dist = sqrtf(x * x + (y - target_y) * (y - target_y));
-                        }
-                        else if (edge_type == 2)
-                        { // 显示合成：右边缘
-                            int target_y = (int)(edge_position * dst_height);
-                            dist = sqrtf((dst_width - x) * (dst_width - x) +
-                                         (y - target_y) * (y - target_y));
-                        }
-                        else if (edge_type == 3)
-                        { // 对应车辆图形后端的下边缘。
-                            int target_x = (int)(edge_position * dst_width);
-                            dist = sqrtf((x - target_x) * (x - target_x) +
-                                         (dst_height - y) * (dst_height - y));
-                        }
-
-                        if (dist < edge_width)
-                        {
-                            red_intensity = (1.0f - dist / edge_width) * blink_intensity;
-                        }
-                    }
-
-                    // Alpha混合：本节对应的标识或作用域。
-                    if (a == 255)
-                    {
-                        uint8_t final_r = (uint8_t)(r + (255 - r) * red_intensity);
-                        uint8_t final_g = (uint8_t)(g * (1.0f - red_intensity));
-                        uint8_t final_b = (uint8_t)(b * (1.0f - red_intensity));
-                        display_pixels[dst_py * COMBINED_IMAGE_WIDTH + dst_px] =
-                            0xFF000000 | (final_r << 16) | (final_g << 8) | final_b;
-                    }
-                    else if (a > 0)
-                    {
-                        uint32_t bg = display_pixels[dst_py * COMBINED_IMAGE_WIDTH + dst_px];
-                        uint8_t bg_r = (bg >> 16) & 0xFF;
-                        uint8_t bg_g = (bg >> 8) & 0xFF;
-                        uint8_t bg_b = bg & 0xFF;
-
-                        float alpha_f = a / 255.0f;
-                        uint8_t new_r = (uint8_t)(r * alpha_f + bg_r * (1 - alpha_f));
-                        uint8_t new_g = (uint8_t)(g * alpha_f + bg_g * (1 - alpha_f));
-                        uint8_t new_b = (uint8_t)(b * alpha_f + bg_b * (1 - alpha_f));
-
-                        uint8_t final_r = (uint8_t)(new_r + (255 - new_r) * red_intensity);
-                        uint8_t final_g = (uint8_t)(new_g * (1.0f - red_intensity));
-                        uint8_t final_b = (uint8_t)(new_b * (1.0f - red_intensity));
-
-                        display_pixels[dst_py * COMBINED_IMAGE_WIDTH + dst_px] =
-                            0xFF000000 | (final_r << 16) | (final_g << 8) | final_b;
-                    }
-                }
+                const int dx = x - glow_x, dy = y - glow_y;
+                const float distance = sqrtf(dx * dx + dy * dy);
+                if (distance < glow_radius)
+                    glow = (1.0f - distance / glow_radius) * blink;
             }
+
+            uint8_t r = rgba[0], g = rgba[1], b = rgba[2];
+            uint32_t &pixel = row[dst_x + x];
+            if (rgba[3] < 255)
+            {
+                const float alpha = rgba[3] / 255.0f;
+                r = (uint8_t)(r * alpha + ((pixel >> 16) & 0xff) * (1 - alpha));
+                g = (uint8_t)(g * alpha + ((pixel >> 8) & 0xff) * (1 - alpha));
+                b = (uint8_t)(b * alpha + (pixel & 0xff) * (1 - alpha));
+            }
+
+            r = (uint8_t)(r + (255 - r) * glow);
+            g = (uint8_t)(g * (1.0f - glow));
+            b = (uint8_t)(b * (1.0f - glow));
+            pixel = 0xff000000u | (r << 16) | (g << 8) | b;
         }
     }
 }
@@ -792,13 +624,13 @@ static bool update_vehicle_layer(RenderEngine *engine)
     return true;
 }
 
-// ── 显示合成 ──
+// ── 呈现合成 ──
 // 下面实现切换动画接口。
-// ── 显示合成 ──
+// ── 呈现合成 ──
 void transition_animation_init(TransitionAnimation *anim)
 {
     memset(anim, 0, sizeof(TransitionAnimation));
-    anim->animation_frames = 20;   // 显示合成：20帧动画，约0.33秒（60fps）- 加快动画速度
+    anim->animation_frames = 20;   // 呈现合成：20帧动画，约0.33秒（60fps）- 加快动画速度
     anim->text_duration_ms = 2000; // 文字在画面上保留 2 秒。
 }
 
@@ -808,16 +640,16 @@ void transition_animation_start(TransitionAnimation *anim, DisplayMode from_mode
     from_mode = camera_mode_or_overview(from_mode);
     to_mode = camera_mode_or_overview(to_mode);
     if (from_mode == to_mode)
-        return; // 显示合成：相同物理摄像头不重复动画
+        return; // 呈现合成：相同物理摄像头不重复动画
 
     anim->is_active = 1;
     anim->from_mode = from_mode;
     anim->to_mode = to_mode;
     anim->progress = 0.0f;
     anim->current_frame = 0;
-    anim->scale_factor = 1.0f;                     // 以常规显示尺寸作为动画起点。
-    anim->show_text = 1;                           // 显示合成：启用左上角文字显示
-    anim->text_start_time = get_current_time_ms(); // 显示合成：记录文字显示开始时间
+    anim->scale_factor = 1.0f;                     // 以常规呈现尺寸作为动画起点。
+    anim->show_text = 1;                           // 呈现合成：启用左上角文字呈现
+    anim->text_start_time = get_current_time_ms(); // 呈现合成：记录文字呈现开始时间
     gettimeofday(&anim->start_time, NULL);
 
     printf("🎬 开始切换动画: %s -> %s\n", get_camera_mode_name(from_mode),
@@ -837,9 +669,9 @@ int transition_animation_update(TransitionAnimation *anim)
         anim->current_frame++;
         anim->progress = (float)anim->current_frame / anim->animation_frames;
 
-        // 显示合成：使用快速缓出的动画曲线 (更快的感觉)
+        // 呈现合成：使用快速缓出的动画曲线 (更快的感觉)
         float eased_progress = 1.0f - (1.0f - anim->progress) * (1.0f - anim->progress);
-        anim->scale_factor = 1.0f + eased_progress * 1.0f; // 显示合成：从1倍快速放大到2倍
+        anim->scale_factor = 1.0f + eased_progress * 1.0f; // 呈现合成：从1倍快速放大到2倍
 
         // 退出过渡动画阶段。
         if (anim->current_frame >= anim->animation_frames)
@@ -849,14 +681,14 @@ int transition_animation_update(TransitionAnimation *anim)
         }
     }
 
-    // 核对文字显示时间是否到期。
+    // 核对文字呈现时间是否到期。
     if (anim->show_text && (current_time - anim->text_start_time) >= anim->text_duration_ms)
     {
         anim->show_text = 0;
-        printf("📝 左上角文字显示结束 (显示了%lu毫秒)\n", current_time - anim->text_start_time);
+        printf("📝 左上角文字呈现结束 (呈现了%lu毫秒)\n", current_time - anim->text_start_time);
     }
 
-    return anim->is_active || anim->show_text; // 显示合成：动画或文字显示继续
+    return anim->is_active || anim->show_text; // 呈现合成：动画或文字呈现继续
 }
 
 int render_engine_render_with_transition(RenderEngine *engine, const uint8_t *pcie_data,
@@ -880,7 +712,7 @@ int render_engine_render_with_transition(RenderEngine *engine, const uint8_t *pc
     }
 
     uint64_t layout_started = display_clock_ns();
-    // 根据当前进度绘制过渡效果。
+    // 根据此时进度绘制过渡效果。
     TransitionAnimation *anim = &engine->transition;
 
     // 动画与稳定总览共用相同的六个物理图像源。
@@ -894,9 +726,9 @@ int render_engine_render_with_transition(RenderEngine *engine, const uint8_t *pc
     float dimming = 1.0f - (anim->progress * 0.7f);
     six_camera::overview(display_pixels, pcie_pixels, udp_pixels, target, dimming);
 
-    // 显示合成：在背景之上渲染放大的目标摄像头区域
+    // 呈现合成：在背景之上渲染放大的目标摄像头区域
     if (anim->progress > 0.1f)
-    { // 显示合成：稍微延迟一下放大效果
+    { // 呈现合成：稍微延迟一下放大效果
         int src_x, src_y;
         get_camera_position(anim->to_mode, &src_x, &src_y);
 
@@ -912,7 +744,7 @@ int render_engine_render_with_transition(RenderEngine *engine, const uint8_t *pc
         int final_center_x = COMBINED_IMAGE_WIDTH / 2;
         int final_center_y = COMBINED_IMAGE_HEIGHT / 2;
 
-        // 显示合成：插值计算当前的中心位置
+        // 呈现合成：插值计算此时的中心位置
         float adjusted_progress = (anim->progress - 0.1f) / 0.9f; // 把过渡进度限制在允许区间。
         if (adjusted_progress > 1.0f)
             adjusted_progress = 1.0f;
@@ -924,15 +756,15 @@ int render_engine_render_with_transition(RenderEngine *engine, const uint8_t *pc
         int current_center_y =
             original_center_y + (int)((final_center_y - original_center_y) * adjusted_progress);
 
-        // 求出当前缩放比例：从1倍放大到2倍（全屏效果）。
+        // 求出此时缩放比例：从1倍放大到2倍（全屏效果）。
         float current_scale = 1.0f + adjusted_progress * 1.0f;
 
         render_scaled_camera_block(display_pixels, pixels, src_x, src_y, current_scale,
                                    current_center_x, current_center_y);
 
-        // 显示合成：添加高亮边框效果
+        // 呈现合成：添加高亮边框效果
         if (adjusted_progress < 0.8f)
-        { // 显示合成：前80%的动画时间显示边框
+        { // 呈现合成：前80%的动画时间呈现边框
             int scaled_width = (int)(CAMERA_BLOCK_WIDTH * current_scale);
             int scaled_height = (int)(CAMERA_BLOCK_HEIGHT * current_scale);
 
@@ -943,7 +775,7 @@ int render_engine_render_with_transition(RenderEngine *engine, const uint8_t *pc
                 int border_x2 = current_center_x + scaled_width / 2 + border;
                 int border_y2 = current_center_y + scaled_height / 2 + border;
 
-                // 显示合成：绘制边框（绿色边框，随着动画进度逐渐变淡）
+                // 呈现合成：绘制边框（绿色边框，随着动画进度逐渐变淡）
                 uint8_t border_alpha = (uint8_t)(255 * (1.0f - adjusted_progress));
                 uint32_t border_color = (0xFF000000) | (border_alpha << 8); // 轮廓颜色取绿色。
 
@@ -977,9 +809,9 @@ int render_engine_render_with_transition(RenderEngine *engine, const uint8_t *pc
     return present_dashboard(engine);
 }
 
-// ── 显示合成 ──
+// ── 呈现合成 ──
 // 下面实现渲染引擎接口。
-// ── 显示合成 ──
+// ── 呈现合成 ──
 
 void set_fullscreen(RenderEngine *engine, int enabled)
 {
@@ -1510,7 +1342,7 @@ int present_dashboard(RenderEngine *engine)
     if (!status.recorded)
     {
         status.motion = perception_ui::MotionDirection::Idle;
-        // 显示合成：箭头只表示最近的触摸输入；行人报警或 FPGA STOP 锁存不改变输入提示。
+        // 呈现合成：箭头只表示最近的触摸输入；行人报警或 FPGA STOP 锁存不改变输入提示。
         const uint32_t monotonic_ms = (uint32_t)(display_clock_ns() / 1000000ULL);
         if (display_control_shm && display_control_shm->valid)
         {
@@ -1622,7 +1454,7 @@ int present_dashboard(RenderEngine *engine)
             status.traffic_quality = status.traffic ? 88 : 0;
             status.traffic_detector_quality = status.traffic ? 82 : 0;
             status.traffic_live = true;
-            // 预览仅用于显示，不发布控制数据。
+            // 预览仅用于呈现，不发布控制数据。
             status.go_blocked = status.traffic == TRAFFIC_RED;
             status.go_control_live = true;
             status.go_write_ok = true;
@@ -1815,7 +1647,7 @@ int present_dashboard(RenderEngine *engine)
 static void try_gles_presentation(RenderEngine *engine)
 {
     const char *backend = getenv("VISION_RENDER_BACKEND");
-    // 目标显示驱动上的原生 GLES 曾出现性能下降及不稳定，
+    // 目标呈现驱动上的原生 GLES 曾出现性能下降及不稳定，
     // 因此仅显式选择时启用，auto 继续使用 X11 路径。
     if (!backend || strcmp(backend, "gles"))
         return;
@@ -1921,7 +1753,7 @@ int render_engine_init(RenderEngine *engine)
 int render_engine_render_combined_frame(RenderEngine *engine, const uint8_t *pcie_data,
                                         const uint8_t *udp_data)
 {
-    // 显示合成：默认使用全部摄像头显示模式
+    // 呈现合成：默认使用全部摄像头呈现模式
     return render_engine_render_camera_view(engine, pcie_data, udp_data, DISPLAY_MODE_ALL_CAMERAS);
 }
 
@@ -1961,8 +1793,8 @@ int render_engine_check_exit_event(RenderEngine *engine)
         XNextEvent(engine->display, &event);
         if (consume_shm_completion(engine, &event))
             continue;
-        // EGL/X11 可能在同一连接上为辅助窗口排入事件；
-        // 只有主窗口事件可改变视口大小或关闭显示器。
+        // EGL/X11 可能在同一接入上为辅助窗口排入事件；
+        // 只有主窗口事件可改变视口大小或关闭呈现器。
         if (event.xany.window != engine->window)
             continue;
         switch (event.type)
@@ -2023,7 +1855,7 @@ void render_engine_cleanup(RenderEngine *engine)
     {
         XDestroyImage(engine->ximage);
         engine->ximage = NULL;
-        engine->display_buffer = NULL; // XDestroyImage会释放buffer：本节对应的标识或作用域。
+        engine->display_buffer = NULL;
     }
     else if (engine->display_buffer)
     {
@@ -2063,12 +1895,12 @@ void render_engine_cleanup(RenderEngine *engine)
 
     engine->is_init = 0;
 
-    printf("X11渲染引擎已清理\n");
+    printf("X11渲染引擎已移除\n");
 }
 
-// ── 显示合成 ──
+// ── 呈现合成 ──
 // 处理主的接口。
-// ── 显示合成 ──
+// ── 呈现合成 ──
 
 static int find_display_asset(const char *name, char *output, size_t capacity)
 {
@@ -2251,7 +2083,7 @@ struct MetadataReaders
     int curve_available = 0;
 };
 
-// 可选元数据可能晚于查看器启动；这些均为只读附加，
+// 可选元数据可能晚于查看器运行；这些均为只读附加，
 // 不初始化段、不发释放请求，也不修改写端状态。
 static void maintain_metadata_readers(MetadataReaders *state, uint32_t *control_cursor)
 {
@@ -2400,53 +2232,53 @@ int main(int argc, char **argv)
     udp_buffer = (uint8_t *)aligned_alloc(64, UDP_IMAGE_WIDTH * UDP_IMAGE_HEIGHT * 2);
     if (!pcie_buffer || !udp_buffer)
     {
-        printf("图像缓冲区分配失败！\n");
+        printf("图像缓冲区分配未成功！\n");
         free(pcie_buffer);
         free(udp_buffer);
         return -1;
     }
 
-    // 显示合成：本地PCIe尚未运行时也允许远端UDP画面进入窗口。
+    // 呈现合成：本地PCIe尚未运行时也允许远端UDP画面进入窗口。
     memset(pcie_buffer, 0, PCIE_IMAGE_WIDTH * PCIE_IMAGE_HEIGHT * 2);
     memset(udp_buffer, 0, UDP_IMAGE_WIDTH * UDP_IMAGE_HEIGHT * 2);
-    printf("\n=== 初始化PCIe共享内存连接 ===\n");
+    printf("\n=== 初始化PCIe共享内存接入 ===\n");
     if (shared_memory_init_pcie(&pcie_shm_manager, 0) == 0)
     {
         pcie_available = 1;
-        printf("PCIe共享内存连接成功\n");
+        printf("PCIe共享内存接入已完成\n");
     }
     else
     {
-        printf("PCIe共享内存暂不可用，继续显示UDP图像\n");
+        printf("PCIe共享内存暂不可用，继续呈现UDP图像\n");
     }
 
-    // 显示合成：接收进程可以稍后启动；窗口持续等待UDP共享内存出现。
-    printf("\n=== 初始化UDP共享内存连接 ===\n");
+    // 呈现合成：收取进程可以稍后运行；窗口持续等待UDP共享内存出现。
+    printf("\n=== 初始化UDP共享内存接入 ===\n");
     if (shared_memory_init_udp(&udp_shm_manager, 0) == 0)
     {
         udp_available = 1;
-        printf("UDP共享内存连接成功\n");
+        printf("UDP共享内存接入已完成\n");
     }
     else
     {
-        printf("UDP共享内存暂不可用，等待网络接收进程\n");
+        printf("UDP共享内存暂不可用，等待网络收取进程\n");
     }
 
-    // 显示合成：加载car.png图像
+    // 呈现合成：加载car.png图像
     printf("\n=== 加载car.png图像 ===\n");
     if (load_vehicle_artwork() != 0)
     {
-        printf("警告: 无法加载car.png,将使用原始摄像头画面\n");
+        printf("注意: 无法加载car.png,将使用原始摄像头画面\n");
     }
 
-    printf("\n=== 连接可选显示元数据；未启动的数据源每秒重试 ===\n");
+    printf("\n=== 接入可选呈现元数据；未运行的数据源每秒重试 ===\n");
     maintain_metadata_readers(&metadata, &last_control_update);
 
     // 为渲染引擎建立初始状态。
     printf("\n=== 初始化渲染引擎 ===\n");
     if (render_engine_init(&render_engine) != 0)
     {
-        printf("渲染引擎初始化失败！\n");
+        printf("渲染引擎初始化未完成！\n");
         if (display_control_shm)
         {
             display_control_shm_cleanup(display_control_shm, 0);
@@ -2466,7 +2298,7 @@ int main(int argc, char **argv)
         return -1;
     }
     // 缓存 PPM 只用于上方显式 --preview 分支。
-    // 实时启动始终等待写者，不能自动变成录制预览。
+    // 实时运行始终等待写者，不能自动变成录制预览。
     render_engine.preview_recorded = 0;
 
     printf("\n=== 开始双通道渲染 ===\n");
@@ -2474,7 +2306,7 @@ int main(int argc, char **argv)
 
     gettimeofday(&stream_start, NULL);
 
-    // 持续获取输入并提交显示帧。
+    // 持续获取输入并提交呈现帧。
     while (keep_running)
     {
         int pcie_updated = 0, udp_updated = 0;
@@ -2482,7 +2314,7 @@ int main(int argc, char **argv)
         uint32_t udp_width, udp_height, udp_frame_id;
         maintain_metadata_readers(&metadata, &last_control_update);
 
-        // 取得弯道检测信息的当前内容。
+        // 取得弯道识别信息的此时内容。
         uint32_t curve_frame_id = 0;
         uint32_t curve_angle = 0;
         static int curve_read_count = 0;
@@ -2490,7 +2322,7 @@ int main(int argc, char **argv)
             curve_detection_read(&curve_frame_id, &current_curve_type, &current_curve_confidence,
                                  &curve_angle) == 0)
         {
-            // 显示合成：每30帧打印一次弯道信息
+            // 呈现合成：每30帧打印一次弯道信息
             if (display_verbose() && ++curve_read_count % 30 == 0)
             {
                 const char *type_name = (current_curve_type == CURVE_LEFT)    ? "LEFT"
@@ -2502,7 +2334,7 @@ int main(int argc, char **argv)
             }
         }
 
-        // 核对显示控制更新。
+        // 核对呈现控制更新。
         if (display_control_shm && display_control_shm->valid)
         {
             uint32_t control_update = display_control_shm->last_update;
@@ -2513,11 +2345,11 @@ int main(int argc, char **argv)
                 {
                     const char *mode_name = get_camera_mode_name(new_mode);
                     const char *old_mode_name = get_camera_mode_name(current_display_mode);
-                    printf("🎯 显示模式切换: %s -> %s (FSPI信号: 0x%02X, 按键次数: %d)\n",
+                    printf("🎯 呈现模式切换: %s -> %s (FSPI信号: 0x%02X, 按键次数: %d)\n",
                            old_mode_name, mode_name, new_mode, display_control_shm->button_count);
 
-                    // 显示合成：只有在切换到单个摄像头视图时才启动切换动画
-                    // 0x99模式（全部显示）直接切换，无需动画
+                    // 呈现合成：只有在进入单个摄像头视图时才运行切换动画
+                    // 0x99模式（全部呈现）直接切换，无需动画
                     if (new_mode != DISPLAY_MODE_ALL_CAMERAS)
                     {
                         transition_animation_start(&render_engine.transition, current_display_mode,
@@ -2525,7 +2357,7 @@ int main(int argc, char **argv)
                     }
                     else
                     {
-                        // 显示合成：0x99模式直接切换，停止任何正在进行的动画
+                        // 呈现合成：0x99模式直接切换，结束任何开始进行的动画
                         render_engine.transition.is_active = 0;
                     }
                     current_display_mode = new_mode;
@@ -2583,7 +2415,7 @@ int main(int argc, char **argv)
         }
 
         // 输入帧率依据源 ID 差值及单调时钟计算，
-        // 独立于当前摄像头选择及较慢的 GUI 刷新频率。
+        // 独立于此时摄像头选择及较慢的 GUI 刷新频率。
         const uint64_t input_sample_ns = display_clock_ns();
         const uint64_t input_wall_ms = get_current_time_ms();
         const bool pcie_live = pcie_available && render_engine.pcie_last_seen &&
@@ -2599,7 +2431,7 @@ int main(int argc, char **argv)
         if (pcie_rate_updated || udp_rate_updated)
             render_engine.needs_redraw = 1;
 
-        // 若有任意一个通道更新，或者正在播放动画，或者正在显示文字，就重新渲染
+        // 若有任意一个通道更新，或者开始播放动画，或者开始呈现文字，就重新渲染
         if (pcie_updated || udp_updated)
             render_engine.needs_redraw = 1;
         uint64_t render_now = get_current_time_ms();
@@ -2613,7 +2445,7 @@ int main(int argc, char **argv)
             if (render_engine_render_with_transition(&render_engine, pcie_buffer, udp_buffer,
                                                      current_display_mode) != 0)
             {
-                printf("渲染失败！\n");
+                printf("渲染未成功！\n");
                 break;
             }
 
@@ -2643,14 +2475,14 @@ int main(int argc, char **argv)
         // 查询本轮是否收到退出请求。
         if (render_engine_check_exit_event(&render_engine))
         {
-            printf("检测到退出事件\n");
+            printf("识别到退出事件\n");
             break;
         }
 
-        // 显示合成：动画期间提高渲染频率，平时降低CPU占用
+        // 呈现合成：动画期间提高渲染频率，平时降低CPU占用
         if (render_engine.transition.is_active)
         {
-            usleep(16667); // 显示合成：约60fps (16.67ms)
+            usleep(16667); // 呈现合成：约60fps (16.67ms)
         }
         else
         {
@@ -2667,7 +2499,7 @@ int main(int argc, char **argv)
     printf("平均渲染FPS: %.1f\n", frame_count / total_time);
     printf("最终PCIe帧ID: %u\n", last_pcie_frame_id);
     printf("最终UDP帧ID: %u\n", last_udp_frame_id);
-    printf("最终显示模式: %d\n", current_display_mode);
+    printf("最终呈现模式: %d\n", current_display_mode);
 
     // 保留最后一帧合成图像以供后续使用。
     if (last_pcie_frame_id > 0 || last_udp_frame_id > 0)
@@ -2677,7 +2509,7 @@ int main(int argc, char **argv)
     }
 
     // 进入系统资源回收阶段。
-    printf("\n=== 系统清理 ===\n");
+    printf("\n=== 系统移除 ===\n");
     if (snapshot_path)
         save_dashboard(&render_engine, snapshot_path);
     render_engine_cleanup(&render_engine);

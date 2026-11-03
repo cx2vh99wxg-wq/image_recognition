@@ -1,0 +1,18 @@
+[
+  {
+    "board": "S",
+    "exit_code": 4294967295,
+    "completed": [
+      "compile"
+    ],
+    "log": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\rtl_refactor_20261103\\pds_expanded\\build_S.log"
+  },
+  {
+    "board": "M",
+    "exit_code": 4294967295,
+    "completed": [
+      "compile"
+    ],
+    "log": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\rtl_refactor_20261103\\pds_expanded\\build_M.log"
+  }
+]

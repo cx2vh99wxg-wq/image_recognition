@@ -1,4 +1,6 @@
+#include "../../../common/image/frame_pixels.h"
 #include "yolo_integration.h"
+#include "../../../common/perception/include/yolo_engine_resources.h"
 #include "shared_memory.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,7 +55,7 @@ typedef enum
     TURN_RIGHT = 2     // 分类结果：向右弯曲。
 } TurnType;
 
-// 图像处理：弯道检测函数：基于绘制的红色车道线进行垂直投影分析（多区域采样+加权计算）
+// 弯道检测函数：基于绘制的红色车道线进行垂直投影分析（多区域采样+加权计算）
 static TurnType detect_turn_direction_from_image(const uint8_t *rgb_data, int width, int height)
 {
     if (!rgb_data)
@@ -63,7 +65,7 @@ static TurnType detect_turn_direction_from_image(const uint8_t *rgb_data, int wi
         return TURN_STRAIGHT;
     }
 
-    // 图像处理：只分析左上角320x240区域的下半部分
+    // 只分析左上角320x240区域的下半部分
     int roi_width = 320;
     int roi_height = 240;
     int half_start = roi_height / 2; // 120，从本处开始
@@ -77,18 +79,18 @@ static TurnType detect_turn_direction_from_image(const uint8_t *rgb_data, int wi
 // 本节声明8个采样区域（从远到近），每个区域高度8像素。
 #define NUM_REGIONS 8
     int region_y[NUM_REGIONS] = {
-        half_start + 5,  // 图像处理：Y=125 (最远，权重最大)
+        half_start + 5,  // Y=125 (最远，权重最大)
         half_start + 15, // 参数记录为 Y=135。
         half_start + 25, // 参数记录为 Y=145。
         half_start + 35, // 参数记录为 Y=155。
         half_start + 50, // 参数记录为 Y=170。
         half_start + 65, // 参数记录为 Y=185。
         half_start + 80, // 参数记录为 Y=200。
-        half_start + 95  // 图像处理：Y=215 (最近，权重最小)
+        half_start + 95  // Y=215 (最近，权重最小)
     };
-    int region_height = 8; // 图像处理：每个区域高度8像素
+    int region_height = 8; // 每个区域高度8像素
 
-    // 图像处理：权重：远处的区域权重更大（从2.0到0.5）
+    // 权重：远处的区域权重更大（从2.0到0.5）
     float weights[NUM_REGIONS] = {2.0f, 1.7f, 1.5f, 1.3f, 1.0f, 0.8f, 0.6f, 0.5f};
 
     // 保存每个区域的投影数组和重心。
@@ -104,7 +106,7 @@ static TurnType detect_turn_direction_from_image(const uint8_t *rgb_data, int wi
         totals[r] = 0;
     }
 
-    // 图像处理：对每个区域进行垂直投影
+    // 对每个区域进行垂直投影
     for (int r = 0; r < NUM_REGIONS; r++)
     {
         int y_start = region_y[r];
@@ -129,7 +131,7 @@ static TurnType detect_turn_direction_from_image(const uint8_t *rgb_data, int wi
         }
     }
 
-    // 图像处理：打印每个区域的统计信息
+    // 打印每个区域的统计信息
     LANE_TRACE(">>> 多区域采样结果:\n");
     for (int r = 0; r < NUM_REGIONS; r++)
     {
@@ -143,7 +145,7 @@ static TurnType detect_turn_direction_from_image(const uint8_t *rgb_data, int wi
     for (int r = 0; r < NUM_REGIONS; r++)
     {
         if (totals[r] > 10)
-        { // 图像处理：至少10个像素才有效
+        { // 至少10个像素才有效
             for (int x = 0; x < roi_width; x++)
             {
                 centers[r] += x * projections[r][x];
@@ -164,12 +166,12 @@ static TurnType detect_turn_direction_from_image(const uint8_t *rgb_data, int wi
         return TURN_STRAIGHT;
     }
 
-    // 图像处理：使用加权最小二乘法计算趋势
+    // 使用加权最小二乘法计算趋势
     // 求出加权偏移量：远处区域 - 近处区域，加上权重。
     float weighted_shift = 0;
     float total_weight = 0;
 
-    // 图像处理：找到最远和最近的有效区域
+    // 找到最远和最近的有效区域
     int far_region = -1, near_region = -1;
     for (int r = 0; r < NUM_REGIONS; r++)
     {
@@ -207,7 +209,7 @@ static TurnType detect_turn_direction_from_image(const uint8_t *rgb_data, int wi
     LANE_TRACE(">>> 加权偏移量: %.2f <<<\n", weighted_shift);
     LANE_FLUSH();
 
-    // 图像处理：动态阈值：根据总像素数调整
+    // 动态阈值：根据总像素数调整
     int total_pixels = 0;
     for (int r = 0; r < NUM_REGIONS; r++)
     {
@@ -217,11 +219,11 @@ static TurnType detect_turn_direction_from_image(const uint8_t *rgb_data, int wi
     float threshold = 8.0f; // 尚未加入动态修正的判定门槛。
     if (total_pixels < 100)
     {
-        threshold = 12.0f; // 图像处理：像素少时提高阈值，减少误判
+        threshold = 12.0f; // 像素少时提高阈值，减少误判
     }
     else if (total_pixels > 300)
     {
-        threshold = 6.0f; // 图像处理：像素多时降低阈值，提高灵敏度
+        threshold = 6.0f; // 像素多时降低阈值，提高灵敏度
     }
 
     LANE_TRACE(">>> 总像素: %d, 使用阈值: %.1f <<<\n", total_pixels, threshold);
@@ -240,7 +242,7 @@ static TurnType detect_turn_direction_from_image(const uint8_t *rgb_data, int wi
     return TURN_STRAIGHT;
 }
 
-// 图像处理：预处理函数：将RGB888图像转换为NHWC格式的UINT8数据
+// 预处理函数：将RGB888图像转换为NHWC格式的UINT8数据
 static void preprocess_image(const uint8_t *rgb_data, uint8_t *input_data, int src_width,
                              int src_height, int model_width, int model_height)
 {
@@ -251,7 +253,7 @@ static void preprocess_image(const uint8_t *rgb_data, uint8_t *input_data, int s
         memcpy(input_data, rgb_data, (size_t)src_width * src_height * 3);
         return;
     }
-    // 图像处理：简单的resize + RGB转换 + NHWC格式
+    // 简单的resize + RGB转换 + NHWC格式
     float scale_w = (float)src_width / model_width;
     float scale_h = (float)src_height / model_height;
 
@@ -267,13 +269,13 @@ static void preprocess_image(const uint8_t *rgb_data, uint8_t *input_data, int s
             if (src_y >= src_height)
                 src_y = src_height - 1;
 
-            // 图像处理：NHWC格式：input_data[h][w][c]
+            // NHWC格式：input_data[h][w][c]
             int dst_idx = (h * model_width + w) * 3;
             int src_idx = (src_y * src_width + src_x) * 3;
 
-            input_data[dst_idx + 0] = rgb_data[src_idx + 0]; // R：红色分量。
-            input_data[dst_idx + 1] = rgb_data[src_idx + 1]; // G：绿色分量。
-            input_data[dst_idx + 2] = rgb_data[src_idx + 2]; // B：蓝色分量。
+            input_data[dst_idx + 0] = rgb_data[src_idx + 0];
+            input_data[dst_idx + 1] = rgb_data[src_idx + 1];
+            input_data[dst_idx + 2] = rgb_data[src_idx + 2];
         }
     }
 }
@@ -293,103 +295,16 @@ int yolo_engine_init(YOLOEngine *engine, const char *model_path, const char *lab
 
     memset(engine, 0, sizeof(YOLOEngine));
 
-    // 图像处理：加载RKNN模型
-    FILE *fp = fopen(model_path, "rb");
-    if (!fp)
-    {
-        printf("无法打开模型文件: %s\n", model_path);
+    if (yolo_open_resources(engine, model_path) != 0)
         return -1;
-    }
 
-    fseek(fp, 0, SEEK_END);
-    size_t model_size = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-
-    void *model_data = malloc(model_size);
-    if (!model_data)
+    if (yolo_query_attrs(engine->ctx, engine->input_attrs, engine->io_num.n_input,
+                         RKNN_QUERY_INPUT_ATTR, 1) != 0 ||
+        yolo_query_attrs(engine->ctx, engine->output_attrs, engine->io_num.n_output,
+                         RKNN_QUERY_OUTPUT_ATTR, 1) != 0)
     {
-        printf("分配模型内存失败\n");
-        fclose(fp);
-        return -1;
-    }
-
-    if (fread(model_data, 1, model_size, fp) != model_size)
-    {
-        printf("读取模型文件失败\n");
-        free(model_data);
-        fclose(fp);
-        return -1;
-    }
-    fclose(fp);
-
-    // 为RKNN建立初始状态。
-    int ret = rknn_init(&engine->ctx, model_data, model_size, 0, NULL);
-    free(model_data);
-
-    if (ret < 0)
-    {
-        printf("RKNN初始化失败: %d\n", ret);
-        return -1;
-    }
-
-    // 读取输入输出数量。
-    ret = rknn_query(engine->ctx, RKNN_QUERY_IN_OUT_NUM, &engine->io_num, sizeof(engine->io_num));
-    if (ret < 0)
-    {
-        printf("查询输入输出数量失败: %d\n", ret);
-        rknn_destroy(engine->ctx);
-        return -1;
-    }
-
-    printf("模型输入数量: %d, 输出数量: %d\n", engine->io_num.n_input, engine->io_num.n_output);
-
-    // 为输入输出属性数组申请所需空间。
-    engine->input_attrs =
-        (rknn_tensor_attr *)malloc(engine->io_num.n_input * sizeof(rknn_tensor_attr));
-    engine->output_attrs =
-        (rknn_tensor_attr *)malloc(engine->io_num.n_output * sizeof(rknn_tensor_attr));
-    engine->inputs = (rknn_input *)malloc(engine->io_num.n_input * sizeof(rknn_input));
-    engine->outputs = (rknn_output *)malloc(engine->io_num.n_output * sizeof(rknn_output));
-
-    if (!engine->input_attrs || !engine->output_attrs || !engine->inputs || !engine->outputs)
-    {
-        printf("分配输入输出数组内存失败\n");
         yolo_engine_cleanup(engine);
         return -1;
-    }
-
-    memset(engine->input_attrs, 0, engine->io_num.n_input * sizeof(rknn_tensor_attr));
-    memset(engine->output_attrs, 0, engine->io_num.n_output * sizeof(rknn_tensor_attr));
-    memset(engine->inputs, 0, engine->io_num.n_input * sizeof(rknn_input));
-    memset(engine->outputs, 0, engine->io_num.n_output * sizeof(rknn_output));
-
-    // 读取模型各输入张量的描述。
-    for (uint32_t i = 0; i < engine->io_num.n_input; i++)
-    {
-        engine->input_attrs[i].index = i;
-        ret = rknn_query(engine->ctx, RKNN_QUERY_INPUT_ATTR, &engine->input_attrs[i],
-                         sizeof(rknn_tensor_attr));
-        if (ret < 0)
-        {
-            printf("查询输入属性%u失败: %d\n", i, ret);
-            yolo_engine_cleanup(engine);
-            return -1;
-        }
-    }
-
-    // 读取模型各输出张量的描述。
-    for (uint32_t i = 0; i < engine->io_num.n_output; i++)
-    {
-        engine->output_attrs[i].index = i;
-        ret = rknn_query(engine->ctx, RKNN_QUERY_OUTPUT_ATTR, &engine->output_attrs[i],
-                         sizeof(rknn_tensor_attr));
-        if (ret < 0)
-        {
-            printf("查询输出属性%u失败: %d\n", i, ret);
-            yolo_engine_cleanup(engine);
-            return -1;
-        }
-        printf("输出 %u: %s\n", i, engine->output_attrs[i].name);
     }
 
     // 配置模型输入尺寸。
@@ -534,41 +449,7 @@ void yolo_engine_cleanup(YOLOEngine *engine)
         engine->drivable_area_buffer = NULL;
     }
 
-    if (engine->input_data)
-    {
-        free(engine->input_data);
-        engine->input_data = NULL;
-    }
-
-    if (engine->input_attrs)
-    {
-        free(engine->input_attrs);
-        engine->input_attrs = NULL;
-    }
-
-    if (engine->output_attrs)
-    {
-        free(engine->output_attrs);
-        engine->output_attrs = NULL;
-    }
-
-    if (engine->inputs)
-    {
-        free(engine->inputs);
-        engine->inputs = NULL;
-    }
-
-    if (engine->outputs)
-    {
-        free(engine->outputs);
-        engine->outputs = NULL;
-    }
-
-    if (engine->ctx > 0)
-    {
-        rknn_destroy(engine->ctx);
-        engine->ctx = 0;
-    }
+    yolo_close_resources(engine);
 
     engine->is_initialized = 0;
 }
@@ -623,7 +504,7 @@ int yolo_analyze_annotated_curve(const uint8_t *rgb_data, int width, int height,
 {
     if (!rgb_data || !curve || width <= 0 || height <= 0 || lane_pixel_count < 0)
         return -1;
-    // 图像处理：弯道检测（基于绘制后的红色车道线）
+    // 弯道检测（基于绘制后的红色车道线）
     TurnType turn = detect_turn_direction_from_image(rgb_data, width, height);
 
     // 求出置信度：基于车道线像素数量。
@@ -647,7 +528,7 @@ int yolo_analyze_annotated_curve(const uint8_t *rgb_data, int width, int height,
 
     // 求出角度：基于弯道类型估算。
     uint32_t angle = 0;
-    uint32_t curve_type_shm = 0; // 图像处理：共享内存中的弯道类型
+    uint32_t curve_type_shm = 0; // 共享内存中的弯道类型
 
     switch (turn)
     {
@@ -691,19 +572,7 @@ void rgb565_to_rgb888_yolo(const uint16_t *rgb565_data, uint8_t *rgb888_data, in
     if (!rgb565_data || !rgb888_data)
         return;
 
-    int total_pixels = width * height;
-    for (int i = 0; i < total_pixels; i++)
-    {
-        uint16_t pixel = rgb565_data[i];
-
-        // 图像处理：提取RGB分量 (5-6-5格式)
-        uint8_t r = (pixel >> 11) & 0x1F;
-        uint8_t g = (pixel >> 5) & 0x3F;
-        uint8_t b = pixel & 0x1F;
-
-        // 把通道值展开至 8 位范围。
-        rgb888_data[i * 3] = (r << 3) | (r >> 2);     // R：红色分量。
-        rgb888_data[i * 3 + 1] = (g << 2) | (g >> 4); // G：绿色分量。
-        rgb888_data[i * 3 + 2] = (b << 3) | (b >> 2); // B：蓝色分量。
-    }
+    const int total_pixels = width * height;
+    if (total_pixels > 0)
+        frame_unpack_rgb565(rgb565_data, rgb888_data, (size_t)total_pixels);
 }

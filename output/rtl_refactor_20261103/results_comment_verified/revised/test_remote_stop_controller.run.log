@@ -1,0 +1,5 @@
+PASS: persistent automatic STOP, forced REARM, re-detection, stale FSPI and CDC
+- /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/sim/test_remote_stop_controller.v:225: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.048 2026-04-26
+- Verilator: $finish at 250ms; walltime 1.917 s; speed 130.412 ms/s
+- Verilator: cpu 1.917 s on 1 threads; allocated 6 MB

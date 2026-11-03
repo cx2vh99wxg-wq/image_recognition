@@ -1,0 +1,256 @@
+{
+  "S": {
+    "Setup_Slow": {
+      "clock_pairs": 25,
+      "worst_slack_ns": -6.961,
+      "baseline_worst_slack_ns": -8.093,
+      "fspi_self_slack_ns": 0.253,
+      "baseline_fspi_self_slack_ns": 0.243,
+      "negative_pairs": [
+        [
+          "cmos2_pclk",
+          "ddrphy_sysclk",
+          -6.83
+        ],
+        [
+          "cmos5_pclk",
+          "ddrphy_sysclk",
+          -6.961
+        ],
+        [
+          "cmos6_pclk",
+          "ddrphy_sysclk",
+          -6.695
+        ],
+        [
+          "pclk",
+          "pclk",
+          -0.312
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos2_pclk",
+          -2.95
+        ],
+        [
+          "ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred",
+          "cmos2_pclk",
+          -4.704
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos5_pclk",
+          -4.684
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos6_pclk",
+          -5.462
+        ]
+      ],
+      "new_negative_pairs": [
+        [
+          "pclk",
+          "pclk",
+          -0.312
+        ]
+      ]
+    },
+    "Hold_Slow": {
+      "clock_pairs": 25,
+      "worst_slack_ns": -0.723,
+      "baseline_worst_slack_ns": 0.076,
+      "fspi_self_slack_ns": 0.383,
+      "baseline_fspi_self_slack_ns": 0.363,
+      "negative_pairs": [
+        [
+          "ddrphy_sysclk",
+          "cmos5_pclk",
+          -0.723
+        ]
+      ],
+      "new_negative_pairs": [
+        [
+          "ddrphy_sysclk",
+          "cmos5_pclk",
+          -0.723
+        ]
+      ]
+    },
+    "Setup_Fast": {
+      "clock_pairs": 25,
+      "worst_slack_ns": -4.192,
+      "baseline_worst_slack_ns": -5.864,
+      "fspi_self_slack_ns": 1.162,
+      "baseline_fspi_self_slack_ns": 1.127,
+      "negative_pairs": [
+        [
+          "cmos2_pclk",
+          "ddrphy_sysclk",
+          -3.716
+        ],
+        [
+          "cmos5_pclk",
+          "ddrphy_sysclk",
+          -3.752
+        ],
+        [
+          "cmos6_pclk",
+          "ddrphy_sysclk",
+          -3.559
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos2_pclk",
+          -2.474
+        ],
+        [
+          "ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred",
+          "cmos2_pclk",
+          -2.921
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos5_pclk",
+          -3.727
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos6_pclk",
+          -4.192
+        ]
+      ],
+      "new_negative_pairs": []
+    },
+    "Hold_Fast": {
+      "clock_pairs": 25,
+      "worst_slack_ns": 0.099,
+      "baseline_worst_slack_ns": 0.05,
+      "fspi_self_slack_ns": 0.253,
+      "baseline_fspi_self_slack_ns": 0.251,
+      "negative_pairs": [],
+      "new_negative_pairs": []
+    }
+  },
+  "M": {
+    "Setup_Slow": {
+      "clock_pairs": 25,
+      "worst_slack_ns": -7.085,
+      "baseline_worst_slack_ns": -9.456,
+      "fspi_self_slack_ns": 0.203,
+      "baseline_fspi_self_slack_ns": 0.222,
+      "negative_pairs": [
+        [
+          "cmos2_pclk",
+          "ddrphy_sysclk",
+          -6.913
+        ],
+        [
+          "cmos6_pclk",
+          "ddrphy_sysclk",
+          -7.064
+        ],
+        [
+          "cmos5_pclk",
+          "ddrphy_sysclk",
+          -7.085
+        ],
+        [
+          "ddrphy_sysclk",
+          "phy_dq_sysclk_0",
+          -0.007
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos2_pclk",
+          -2.924
+        ],
+        [
+          "ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred",
+          "cmos2_pclk",
+          -3.636
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos5_pclk",
+          -4.667
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos6_pclk",
+          -5.451
+        ]
+      ],
+      "new_negative_pairs": [
+        [
+          "ddrphy_sysclk",
+          "phy_dq_sysclk_0",
+          -0.007
+        ]
+      ]
+    },
+    "Hold_Slow": {
+      "clock_pairs": 25,
+      "worst_slack_ns": 0.033,
+      "baseline_worst_slack_ns": 0.14,
+      "fspi_self_slack_ns": 0.381,
+      "baseline_fspi_self_slack_ns": 0.385,
+      "negative_pairs": [],
+      "new_negative_pairs": []
+    },
+    "Setup_Fast": {
+      "clock_pairs": 25,
+      "worst_slack_ns": -4.17,
+      "baseline_worst_slack_ns": -6.592,
+      "fspi_self_slack_ns": 1.087,
+      "baseline_fspi_self_slack_ns": 1.111,
+      "negative_pairs": [
+        [
+          "cmos2_pclk",
+          "ddrphy_sysclk",
+          -3.66
+        ],
+        [
+          "cmos6_pclk",
+          "ddrphy_sysclk",
+          -3.634
+        ],
+        [
+          "cmos5_pclk",
+          "ddrphy_sysclk",
+          -3.79
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos2_pclk",
+          -2.451
+        ],
+        [
+          "ref_clk|the_instance_name/u_gpll/CLKOUT0_Inferred",
+          "cmos2_pclk",
+          -2.142
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos5_pclk",
+          -3.657
+        ],
+        [
+          "ddrphy_sysclk",
+          "cmos6_pclk",
+          -4.17
+        ]
+      ],
+      "new_negative_pairs": []
+    },
+    "Hold_Fast": {
+      "clock_pairs": 25,
+      "worst_slack_ns": 0.025,
+      "baseline_worst_slack_ns": 0.099,
+      "fspi_self_slack_ns": 0.251,
+      "baseline_fspi_self_slack_ns": 0.252,
+      "negative_pairs": [],
+      "new_negative_pairs": []
+    }
+  }
+}

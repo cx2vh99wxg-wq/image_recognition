@@ -11,7 +11,7 @@
 #endif
 
 // ── 图像处理 ──
-// PCIe采集模块头文件：本节对应的标识或作用域。
+
 // ── 图像处理 ──
 
 #define IMAGE_WIDTH 640
@@ -43,12 +43,12 @@
 // 本节给出数据对象的字段布局。
 // ── 图像处理 ──
 
-// 图像处理：PCIe管理器结构体 - 需要包含原有的PCIE驱动结构
+// PCIe管理器结构体 - 需要包含原有的PCIE驱动结构
 typedef struct
 {
     int pci_driver_fd;
-    void *command_operation; // 图像处理：对应 COMMAND_OPERATION
-    void *dma_operation;     // 图像处理：对应 DMA_OPERATION
+    void *command_operation; // 对应 COMMAND_OPERATION
+    void *dma_operation;     // 对应 DMA_OPERATION
 } PCIEManager;
 
 #ifdef ENABLE_RENDERING
@@ -73,7 +73,7 @@ typedef struct
 // 供后续实现调用的接口声明。
 // ── 图像处理 ──
 
-// PCIE管理函数：本节对应的标识或作用域。
+
 /** 为PCIE设备 @param
  * manager
  * PCIE管理器
@@ -206,4 +206,4 @@ extern uint8_t *image_buf_temp;
 extern uint8_t *image_buf_888;
 extern int current_video_stream;
 
-#endif // PCIE_CAPTURE_H：本节对应的标识或作用域。
+#endif

@@ -1,0 +1,20 @@
+%Warning-PINMISSING: /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/fspi/fspi_slave_top.v:81:41: Instance has missing pin: 'status_tx_started_dbg'
+   81 |     fspi_transport #(.HAS_IMU(HAS_IMU)) u_transport (
+      |                                         ^~~~~~~~~~~
+                     /mnt/d/Study_Object/image_recognition/image_recognition/fpga/fpga_pcie_ov5640/source/fspi/fspi_slave.v:45:17: ... Location of port declaration
+   45 |     output wire status_tx_started_dbg,
+      |                 ^~~~~~~~~~~~~~~~~~~~~
+                     ... For warning description see https://verilator.org/warn/PINMISSING?v=5.048
+                     ... Use "/* verilator lint_off PINMISSING */" and lint_on around source to disable this message.
+make: Entering directory '/tmp/pineapple-compare-compare_m_imu-vmmgtc'
+g++ -Os  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated.o /usr/local/share/verilator/include/verilated.cpp
+g++ -Os  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_timing.o /usr/local/share/verilator/include/verilated_timing.cpp
+g++ -Os  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_threads.o /usr/local/share/verilator/include/verilated_threads.cpp
+python3 /usr/local/share/verilator/bin/verilator_includer -DVL_INCLUDE_OPT=include Vcompare_m_imu.cpp Vcompare_m_imu___024root__0.cpp Vcompare_m_imu__main.cpp Vcompare_m_imu__ConstPool__0__Slow.cpp Vcompare_m_imu___024root__Slow.cpp Vcompare_m_imu___024root__0__Slow.cpp Vcompare_m_imu__Syms__Slow.cpp > Vcompare_m_imu__ALL.cpp
+g++ -Os  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o Vcompare_m_imu__ALL.o Vcompare_m_imu__ALL.cpp
+g++    verilated.o verilated_timing.o verilated_threads.o Vcompare_m_imu__ALL.a    -pthread -lpthread -latomic   -o Vcompare_m_imu
+rm Vcompare_m_imu__ALL.verilator_deplist.tmp
+make: Leaving directory '/tmp/pineapple-compare-compare_m_imu-vmmgtc'
+- V e r i l a t i o n   R e p o r t: Verilator 5.048 2026-04-26 rev v5.048-56-gc233a3905
+- Verilator: Built from 17.857 MB sources in 109 modules, into 0.343 MB in 7 C++ files needing 0.001 MB
+- Verilator: Walltime 3.844 s (elab=0.022, cvt=0.033, bld=2.798); cpu 0.188 s on 3 threads; allocated 236.051 MB

@@ -10,7 +10,7 @@ extern "C"
 {
 #endif
 
-// YOLO模型相关配置：本节对应的标识或作用域。
+
 #define YOLO_MODEL_INPUT_SIZE 640
 
 // 检测结果去重配置 (若未定义则使用默认值)
@@ -22,7 +22,7 @@ extern "C"
 #define DEDUP_IOU_THRESHOLD 0.5f
 #endif
 
-// 图像处理：模型路径通过编译时宏定义传入 (相对于build目录)
+// 模型路径通过编译时宏定义传入 (相对于build目录)
 #ifndef YOLO_MODEL_PATH
 #define YOLO_MODEL_PATH "../model/RK3566_RK3568/yolov5s-640-640.rknn"
 #endif
@@ -31,7 +31,7 @@ extern "C"
 #define YOLO_LABELS_PATH "../model/coco_80_labels_list.txt"
 #endif
 
-    // YOLO引擎结构体：本节对应的标识或作用域。
+
     typedef struct
     {
         rknn_context ctx;
@@ -46,17 +46,17 @@ extern "C"
         int is_initialized;
     } YOLOEngine;
 
-    // YOLO引擎函数：本节对应的标识或作用域。
+
     int yolo_engine_init(YOLOEngine *engine, const char *model_path, const char *labels_path);
     int yolo_engine_detect(YOLOEngine *engine, const uint8_t *rgb_data, int width, int height,
                            detect_result_group_t *results);
     void yolo_engine_cleanup(YOLOEngine *engine);
 
-    // 图像处理：绘制检测结果到图像上
+    // 绘制检测结果到图像上
     void draw_detection_results(uint8_t *rgb_data, int width, int height,
                                 const detect_result_group_t *results);
 
-    // 图像处理：RGB565转RGB888（针对PCIE数据流）
+    // RGB565转RGB888（针对PCIE数据流）
     void rgb565_to_rgb888_yolo(const uint16_t *rgb565_data, uint8_t *rgb888_data, int width,
                                int height);
 
@@ -64,4 +64,4 @@ extern "C"
 }
 #endif
 
-#endif // _YOLO_INTEGRATION_H_：本节对应的标识或作用域。
+#endif

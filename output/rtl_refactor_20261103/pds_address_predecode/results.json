@@ -1,0 +1,26 @@
+[
+  {
+    "board": "S",
+    "exit_code": 0,
+    "completed": [
+      "compile",
+      "synthesize",
+      "device_map",
+      "place_route",
+      "timing"
+    ],
+    "log": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\rtl_refactor_20261103\\pds_address_predecode\\build_S.log"
+  },
+  {
+    "board": "M",
+    "exit_code": 0,
+    "completed": [
+      "compile",
+      "synthesize",
+      "device_map",
+      "place_route",
+      "timing"
+    ],
+    "log": "D:\\Study_Object\\image_recognition\\image_recognition\\output\\rtl_refactor_20261103\\pds_address_predecode\\build_M.log"
+  }
+]
