@@ -4,6 +4,7 @@
 #include "steering_feedback_wire.h"
 #include "steering_platform.h"
 #include "fspi_module.h"
+#include "../../../../common/perception/include/curve_heading.h"
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
@@ -151,6 +152,26 @@ int main(int argc,char **argv){
     lane_reads=0;assert(steering_runtime_init(1)==STEER_OK);feed();steering_runtime_tick();
     steering_runtime_poll_lane(1,read_lane,NULL);assert(!lane_reads&&!starts);steering_runtime_close();
     puts("PASS short-valid-lane regression: 100ms polling misses 60ms windows, 10ms poll acts, expiry releases, denial and bench isolation retained; FAKE IO only");
+    assert(steering_runtime_init(0)==STEER_OK);feed();steering_runtime_tick();
+    steering_runtime_lane(1,4999,1,90,curve_encode_image_heading(45));
+    steering_get_state(&state);assert(fabsf(state.target_deg-12.f)<.01f);
+    steering_runtime_close();
+    setenv("STEERING_LANE_TARGET_LIMIT_DEG","16",1);
+    assert(steering_runtime_init(0)==STEER_OK);feed();steering_runtime_tick();
+    const struct {unsigned type, heading; float target;} headings[]={
+        {2,10,-10.f},{1,15,15.f},{2,18,-15.2f},{1,30,16.f},{2,90,-16.f},
+    };
+    for(unsigned i=0;i<sizeof(headings)/sizeof(headings[0]);++i){
+        unsigned wire_angle=curve_encode_image_heading(headings[i].heading);
+        assert(curve_is_image_heading(wire_angle));
+        assert(curve_angle_degrees(wire_angle)==headings[i].heading);
+        steering_runtime_lane(1,5000+i,headings[i].type,90,wire_angle);
+        steering_get_state(&state);
+        assert(fabsf(state.target_deg-headings[i].target)<.01f);
+    }
+    assert(!active&&starts==0);steering_runtime_close();
+    setenv("STEERING_LANE_TARGET_LIMIT_DEG","12",1);
+    puts("PASS image heading: one-to-one, compressed, signed and bounded targets; FAKE IO only");
     /* A new M boot must remain visibly blocked by the old physical reference.
      * Sending plausible curve/angle data must not silently rebind that zero. */
     starts=0;active=0;angle=0;feedback_session=8;

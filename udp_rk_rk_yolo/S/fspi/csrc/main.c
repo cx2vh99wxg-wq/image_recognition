@@ -27,6 +27,7 @@
 #include "lane_rule.h"
 #include "traffic_go_rule.h"
 #include "steering_runtime.h"
+#include "../../../common/perception/include/curve_heading.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -763,7 +764,8 @@ int main(int argc, char *argv[])
                     printf(
                         "[SHM Read] Frame%u: %s | Conf:%u%% | RoadAngle:%u | WheelDeg:%.3f | Feedback:%d\n",
                         current_curve_frame_id, curve_name, current_curve_confidence,
-                        current_curve_angle, measured.angle_deg, measured.feedback_valid);
+                        curve_angle_degrees(current_curve_angle), measured.angle_deg,
+                        measured.feedback_valid);
                 }
                 else
                 {
@@ -772,7 +774,7 @@ int main(int argc, char *argv[])
                                                                            : "NEUTRAL";
                     printf("[SHM Read] Frame%u: %s | Conf:%u%% | Angle:%u | Wheel:%s\n",
                            current_curve_frame_id, curve_name, current_curve_confidence,
-                           current_curve_angle, pos_name);
+                           curve_angle_degrees(current_curve_angle), pos_name);
                 }
             }
         }
@@ -786,7 +788,8 @@ int main(int argc, char *argv[])
             if (control_io_failed)
                 steering_runtime_cancel();
         }
-        else if (!control_io_failed && curve_data_valid)
+        else if (!control_io_failed && curve_data_valid &&
+                 !curve_is_image_heading(current_curve_angle))
         {
             // 静态变量跟踪上次的弯道类型，用来避免重复执行
             static CurveType last_applied_curve_type = CURVE_NONE;

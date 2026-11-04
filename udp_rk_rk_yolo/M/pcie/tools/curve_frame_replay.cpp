@@ -97,7 +97,7 @@ int main(int argc, char **argv)
                     std::printf(
                         "REPLAY_NN source=%u type=%u confidence=%u angle=%u replayed_pixels=1\n",
                         last, result->curve.curve_type, result->curve.confidence,
-                        result->curve.angle);
+                        curve_angle_degrees(result->curve.angle));
                 }
             }
             else if (fresh_before)

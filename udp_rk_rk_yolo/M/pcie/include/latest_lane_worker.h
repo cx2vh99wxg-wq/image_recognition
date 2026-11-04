@@ -5,6 +5,7 @@
 #include "line_style_analyzer.h"
 #include "line_style_snapshot.h"
 #include "lane_curve_geometry.h"
+#include "../../../common/perception/include/curve_heading.h"
 #include "traffic_vision.h"
 #include <cstdio>
 #include <cstdlib>
@@ -237,14 +238,15 @@ class LatestWorker
                                 curve_confirm_.update(observed_curve, source, captured);
                             result->curve.curve_type = curve.type;
                             result->curve.confidence = curve.confidence;
-                            result->curve.angle = curve.angle;
+                            result->curve.angle = curve_encode_image_heading(curve.angle);
                             if (!curve_log_ns_ || now - curve_log_ns_ >= 2000000000ULL)
                             {
                                 std::fprintf(
                                     stderr,
-                                    "[CURVE_EGO] source=%llu raw_type=%u type=%u confidence=%u shift_px=%.2f span_px=%.1f reason=%u\n",
+                                    "[CURVE_EGO] source=%llu raw_type=%u type=%u confidence=%u shift_px=%.2f span_px=%.1f reason=%u heading_deg=%u\n",
                                     (unsigned long long)source, observed_curve.type, curve.type,
-                                    curve.confidence, curve.shift_px, curve.span_px, curve.reason);
+                                    curve.confidence, curve.shift_px, curve.span_px, curve.reason,
+                                    curve.angle);
                                 curve_log_ns_ = now;
                             }
                         }

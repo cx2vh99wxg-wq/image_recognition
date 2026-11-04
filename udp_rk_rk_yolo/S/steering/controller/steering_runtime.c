@@ -4,6 +4,7 @@
 #include "steering_keepalive.h"
 #include "steering_platform.h"
 #include "fspi_module.h"
+#include "../../../common/perception/include/curve_heading.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,6 +25,7 @@ static float zero_raw, curve_gain = .25f, target_limit = 12, last_target, target
 static int initialized, confirmed, bench, have_lane, have_frame;
 static int scheduling_changed, memory_locked, previous_policy;
 static struct sched_param previous_schedule;
+static const float max_closed_loop_target_deg = 16.f;
 static uint64_t now_ns(void *p)
 {
     (void)p;
@@ -156,8 +158,8 @@ steer_result_t steering_runtime_init(int bench_mode)
     float pulse_count_f = env_float("STEERING_MAX_CORRECTION_PULSES", 20);
     float port_f = env_float("STEERING_FEEDBACK_PORT", 54321);
     if (!isfinite(curve_gain) || curve_gain <= 0 || curve_gain > 2 || !isfinite(target_limit) ||
-        target_limit < 1 || target_limit > 16 || !isfinite(priority_f) || priority_f < 0 ||
-        priority_f > 30 || floorf(priority_f) != priority_f || !isfinite(target_tolerance) ||
+        target_limit < 1 || target_limit > max_closed_loop_target_deg || !isfinite(priority_f) ||
+        priority_f < 0 || priority_f > 30 || floorf(priority_f) != priority_f || !isfinite(target_tolerance) ||
         target_tolerance < .1f || target_tolerance > 3 || !isfinite(center_tolerance) ||
         center_tolerance < .1f || center_tolerance > 3 || !isfinite(pulse_count_f) ||
         pulse_count_f < 1 || pulse_count_f > 20 || floorf(pulse_count_f) != pulse_count_f ||
@@ -325,7 +327,10 @@ void steering_runtime_lane(int valid, uint32_t frame, unsigned type, unsigned co
 {
     if (!initialized || !confirmed)
         return;
-    if (!valid || confidence < 60 || type > 2 || road_angle > 90)
+    const int image_heading = curve_is_image_heading(road_angle);
+    if (!valid || confidence < 60 || type > 2 ||
+        (!image_heading && road_angle > CURVE_IMAGE_HEADING_MAX_DEG) ||
+        (image_heading && !type))
     {
         if (have_lane)
         {
@@ -343,8 +348,19 @@ void steering_runtime_lane(int valid, uint32_t frame, unsigned type, unsigned co
     lane_ns = steering_now_ns();
     if (frame == blocked_frame)
         return;
-    float target =
-        type == 0 ? 0 : fminf(target_limit, road_angle * curve_gain) * (type == 1 ? 1 : -1);
+    const unsigned angle_deg = curve_angle_degrees(road_angle);
+    float magnitude;
+    if (image_heading)
+    {
+        // 15..90 image degrees map to 15..20 nominal wheel degrees.
+        // The supported closed-loop target range is tighter than that mapping.
+        const float nominal = angle_deg <= 15 ? angle_deg : 15.f + (angle_deg - 15) / 15.f;
+        const float limit = model.burst_max_us ? fminf(target_limit, 15.f) : target_limit;
+        magnitude = fminf(limit, nominal);
+    }
+    else
+        magnitude = fminf(target_limit, angle_deg * curve_gain);
+    const float target = type == 0 ? 0 : (type == 1 ? magnitude : -magnitude);
     if (type && road_angle == 0)
     {
         steering_runtime_cancel();
@@ -358,7 +374,7 @@ void steering_runtime_lane(int valid, uint32_t frame, unsigned type, unsigned co
     steer_result_t rc = steering_set_target_with_tolerance_deg(
         target, type == 0 ? center_tolerance : target_tolerance);
     printf("[STEER_LANE] frame=%u type=%u confidence=%u road_angle=%u target_deg=%.3f result=%s\n",
-           frame, type, confidence, road_angle, target, steer_result_name(rc));
+           frame, type, confidence, angle_deg, target, steer_result_name(rc));
     if (rc == STEER_OK)
     {
         have_lane = 1;

@@ -38,10 +38,11 @@ inline EgoCurve estimate_ego_curve(const YOLOLineStyleResult &r)
         out.reason = 2;
         return out;
     }
+    const double step = span / 4.;
     double centers[5], widths[5];
     for (int i = 0; i < 5; ++i)
     {
-        double y = first + span * i / 4., a = curve_x(l, y, r.height), b = curve_x(q, y, r.height);
+        double y = first + step * i, a = curve_x(l, y, r.height), b = curve_x(q, y, r.height);
         if (!std::isfinite(a) || !std::isfinite(b) || a < -.15 * r.width || b > 1.15 * r.width ||
             b - a < r.width * .025 || b - a > r.width * 1.1)
         {
@@ -56,9 +57,13 @@ inline EgoCurve estimate_ego_curve(const YOLOLineStyleResult &r)
         out.reason = 3;
         return out;
     }
-    double shift = centers[0] - centers[4];
-    out.shift_px = (float)shift;
-    double threshold = std::max(r.width * .02, span * .10);
+    // Fit x = a + b*u + c*u*u at u = 2, 1, 0, -1, -2 (positive forward).
+    // Symmetry gives closed-form coefficients for the first and second derivatives.
+    const double slope = (2. * (centers[0] - centers[4]) + (centers[1] - centers[3])) /
+                         (10. * step);
+    out.shift_px = (float)(slope * span);
+    const double straight_slope = std::max(r.width * .02 / span, .10);
+    const double threshold = straight_slope * span;
     /* 走廊先明显朝一侧、再转向另一侧时，
      * 不赋予高置信的单一弯向；禁止互换远、近采样轨迹来凑方向。 */
     double a = centers[0] - centers[2], b = centers[2] - centers[4];
@@ -67,10 +72,21 @@ inline EgoCurve estimate_ego_curve(const YOLOLineStyleResult &r)
         out.reason = 4;
         return out;
     }
-    if (std::abs(shift) >= threshold)
+    const double outer_bend = (centers[0] - centers[2]) + (centers[4] - centers[2]);
+    const double inner_bend = (centers[1] - centers[2]) + (centers[3] - centers[2]);
+    const double quadratic = (2. * outer_bend - inner_bend) / 14.;
+    const double tangent_length = std::sqrt(1. + slope * slope);
+    const double curvature = std::abs(2. * quadratic) /
+                             (step * step * tangent_length * tangent_length * tangent_length);
+    constexpr double low_curvature_limit = .312; // equivalent to 0.0013 px^-1 at 240 px height
+    const bool low_curvature = curvature * r.height <= low_curvature_limit;
+    constexpr double degrees_per_radian = 57.29577951308232;
+    constexpr double low_curvature_turn_deg = 40.;
+    const double heading_deg = std::atan(std::abs(slope)) * degrees_per_radian;
+    if (std::abs(slope) >= straight_slope && (!low_curvature || heading_deg > low_curvature_turn_deg))
     {
-        out.type = shift < 0 ? 1 : 2;
-        out.angle = 25;
+        out.type = slope < 0 ? 1 : 2;
+        out.angle = (uint32_t)std::lround(heading_deg);
     }
     /* 整个小航向带均归为直道，不再用内层半带排除
      * 3.7px 的真实直道样本并反复打断确认；

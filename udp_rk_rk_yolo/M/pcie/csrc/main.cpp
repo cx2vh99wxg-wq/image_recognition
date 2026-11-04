@@ -773,10 +773,6 @@ void cleanup_all_resources(PCIEManager *pcie_mgr, SharedMemoryManager *shm_mgr,
         image_buf_565_out = NULL;
     }
 
-    // 退出时释放 FSPI 所占资源。
-    printf("移除FSPI资源...\n");
-    fspi_cleanup();
-
     printf("紧急资源移除完成\n");
 }
 
@@ -988,18 +984,7 @@ int main()
     printf("RGB888处理缓冲区: %d bytes\n", IMAGE_WIDTH * IMAGE_HEIGHT * 3);
     printf("RGB565输出缓冲区: %d bytes\n", IMAGE_WIDTH * IMAGE_HEIGHT * 2);
 
-    /* 图像处理：2. 初始化FSPI模块 */
-    printf("\n=== FSPI模块初始化 ===\n");
-    if (fspi_init() != 0)
-    {
-        emergency_stop("FSPI模块初始化失败", "FSPI模块");
-        printf("!!! 检查FSPI硬件接入和驱动 !!!\n");
-        cleanup_all_resources(&pcie_manager, &pcie_shm_manager, &yolo_engine);
-        return -1;
-    }
-    printf("✓ FSPI模块初始化完成\n");
-
-    /* 图像处理：3. 初始化PCIE管理器 */
+    /* FPGA 通过 PCIe 提供固定布局的四宫格。 */
     printf("\n=== PCIE设备初始化 ===\n");
     if (pcie_manager_init(&pcie_manager) != 0)
     {
@@ -1092,17 +1077,6 @@ int main()
     // ── 图像处理 ──
 
     printf("=== 开始视频流处理和车道线检测 ===\n");
-
-    // 在处理循环开始前进入此时视频流
-    printf("进入视频流 %d...\n", current_video_stream);
-    if (switch_video_stream(current_video_stream) == 0)
-    {
-        printf("视频流切换已完成: 此时流%d\n", current_video_stream);
-    }
-    else
-    {
-        printf("视频流切换未成功，使用默认视频流\n");
-    }
 
     printf(
         "NN submission interval: %d captured frames; completed inference FPS is reported separately\n",
@@ -1390,9 +1364,6 @@ int main()
         free(image_buf_565_out);
         image_buf_565_out = NULL;
     }
-
-    /* 退出时释放 FSPI 所占资源。 */
-    fspi_cleanup();
 
     printf("\n=== PCIE+YOLOPv2车道线识别系统执行完成 ===\n");
     return 0;

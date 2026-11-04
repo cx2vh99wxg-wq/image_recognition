@@ -78,6 +78,13 @@ def run_homing(io,limits=None):
         return delta
     def seek(direction,phase,opposite_endpoint=None):
         positions=[];best=direction*current
+        def arrival_rebound(value):
+            if opposite_endpoint is None or not positions:
+                return False
+            before=direction*(positions[-1]-opposite_endpoint)
+            after=direction*(value-opposite_endpoint)
+            return (c.min_span_deg<=after<=before<=c.max_span_deg
+                and .4<before-after<=c.full_stroke_rebound_deg)
         def qualified_window(value=None):
             recent=(positions if value is None else positions+[value])[-c.stall_count:]
             return (opposite_endpoint is not None and len(recent)==c.stall_count
@@ -90,7 +97,16 @@ def run_homing(io,limits=None):
             # 反向累计行程同样受限，开机即顶在止挡的情形也包括在内；
             # 不能反复朝相反方向小步移动，
             # 仅靠多次局部小响应就认定已经构成一个完整端点。
-            pulse(direction,phase,rebound_floor=best-c.endpoint_rebound_deg,verified_rebound=qualified_window)
+            pulse(direction,phase,rebound_floor=best-c.endpoint_rebound_deg,
+                  verified_rebound=lambda value:qualified_window(value) or arrival_rebound(value))
+            if arrival_rebound(current):
+                # 已到已验收的另一端，回弹后只采样确认，不再向止挡发脉冲。
+                settled=[current,observed(),observed()]
+                if (max(settled)-min(settled)>c.stall_deg or not all(
+                    c.min_span_deg<=direction*(value-opposite_endpoint)<=c.max_span_deg
+                    for value in settled)):
+                    raise HomeError('Full-stroke rebound did not settle within qualified range')
+                return statistics.median(settled)
             best=max(best,direction*current);positions.append(current)
             recent=positions[-c.stall_count:]
             # 已验证的完整行程可将弹性止挡回弹

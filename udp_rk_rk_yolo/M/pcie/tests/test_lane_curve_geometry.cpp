@@ -10,10 +10,35 @@ static YOLOLineStyleResult corridor(float heading) {
     return r;
 }
 int main(){
-    auto straight=corridor(0);auto left=corridor(50);auto right=corridor(-50);
+    auto straight=corridor(0);
     assert(m_lane::estimate_ego_curve(straight).type==0&&m_lane::estimate_ego_curve(straight).confidence>=60);
-    assert(m_lane::estimate_ego_curve(left).type==1&&m_lane::estimate_ego_curve(left).confidence>=60);
-    assert(m_lane::estimate_ego_curve(right).type==2&&m_lane::estimate_ego_curve(right).confidence>=60);
+    // Check both sides of 40 degrees before rounding the transmitted angle.
+    constexpr float radians_per_degree=.017453292519943295f;
+    const float below=240.f*.52f*std::tan(39.9f*radians_per_degree);
+    const float above=240.f*.52f*std::tan(40.1f*radians_per_degree);
+    for(float heading:{below,-below}){
+        auto low=m_lane::estimate_ego_curve(corridor(heading));
+        assert(low.type==0&&low.confidence>=60&&low.angle==0);
+    }
+    auto gentle=corridor(-20);
+    gentle.left.fit_c=gentle.right.fit_c=9; // midpoint curvature is about 0.00108 px^-1
+    auto gentle_result=m_lane::estimate_ego_curve(gentle);
+    assert(gentle_result.type==0&&gentle_result.confidence>=60&&gentle_result.angle==0);
+    auto above_curvature_limit=gentle;
+    above_curvature_limit.left.fit_c=above_curvature_limit.right.fit_c=12; // about 0.00142 px^-1
+    auto moderate=m_lane::estimate_ego_curve(above_curvature_limit);
+    assert(moderate.type==2&&moderate.confidence>=60&&moderate.angle==13);
+    auto left=corridor(above);auto right=corridor(-above);
+    auto l=m_lane::estimate_ego_curve(left);auto r=m_lane::estimate_ego_curve(right);
+    assert(l.type==1&&l.confidence>=60&&l.angle==40);
+    assert(r.type==2&&r.confidence>=60&&r.angle==40);
+    auto translated=right;translated.left.fit_a+=20;translated.right.fit_a+=20;
+    assert(m_lane::estimate_ego_curve(translated).angle==r.angle);
+    // The shared 140..220 interval has midpoint y=180, where this curve gives 14 degrees.
+    auto bent=corridor(16);
+    bent.left.fit_c=bent.right.fit_c=60;
+    auto full=m_lane::estimate_ego_curve(bent);
+    assert(full.type==2&&full.angle==14);
     // Coefficients from the saved, independently viewed straight-road frame.
     auto real_straight=straight;real_straight.road_area=12108;real_straight.object_count=3;
     real_straight.left.fit_a=-23.535509f;real_straight.left.fit_b=-158.304489f;
@@ -36,5 +61,5 @@ int main(){
     assert(confirm.update(m_lane::estimate_ego_curve(right),6,2500000000).confidence>=60);
     assert(!confirm.update(raw,7,3200000000).confidence); // source gap resets evidence
     assert(!confirm.update(raw,8,3100000000).confidence); // backwards source time
-    puts("PASS ego curve geometry: paired boundaries, signed heading, absent/short/crossing/NaN rejection, unique-source confirmation and expiry");
+    puts("PASS ego curve geometry: curvature gate, signed heading, geometry rejection, unique-source confirmation and expiry");
 }

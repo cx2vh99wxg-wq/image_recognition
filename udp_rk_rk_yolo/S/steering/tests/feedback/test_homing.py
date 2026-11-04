@@ -115,4 +115,32 @@ class HomingTests(unittest.TestCase):
         with self.assertRaises(HomeError):run_homing(io)
         self.assertTrue(io.released)
 
+    def test_first_full_stroke_rebound_settles_without_more_outward_pulses(self):
+        class MeasuredPlant(Plant):
+            def __init__(self, before_rebound, after_rebound):
+                super().__init__(start=16.117, left=27.578, right=before_rebound)
+                self.origin=0
+                self.left_samples=[21.562,26.251,27.297,27.502,27.571,27.578]
+                self.right_samples=[21.703,11.653,5.632,-2.369,before_rebound,after_rebound]
+            def pulse(self,direction,us):
+                if direction<0:
+                    if not self.right_samples:
+                        raise AssertionError('Another outward pulse after verified rebound')
+                    self.angle=self.right_samples.pop(0)
+                elif self.left_samples:
+                    self.angle=self.left_samples.pop(0)
+                else:
+                    super().pulse(direction,us)
+
+        limits=HomeLimits(min_span_deg=31.763,max_span_deg=37.763)
+        io=MeasuredPlant(-6.973,-5.170)
+        result=run_homing(io,limits)
+        self.assertAlmostEqual(result['right_raw_deg'],-5.170)
+        self.assertTrue(result['passed'])
+        self.assertTrue(io.released)
+        outside=MeasuredPlant(-5.200,-3.600)
+        with self.assertRaisesRegex(HomeError,'opposes homing contact'):
+            run_homing(outside,limits)
+        self.assertTrue(outside.released)
+
 if __name__=='__main__':unittest.main()

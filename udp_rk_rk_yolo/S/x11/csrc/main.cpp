@@ -1,4 +1,5 @@
 #include "shared_memory.h"
+#include "../../../common/perception/include/curve_heading.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -2330,7 +2331,7 @@ int main(int argc, char **argv)
                                         : (current_curve_type == CURVE_BOTH)  ? "BOTH"
                                                                               : "STRAIGHT";
                 printf("[Lane] Frame%u: %s, Conf:%u%%, Angle:%u\n", curve_frame_id, type_name,
-                       current_curve_confidence, curve_angle);
+                       current_curve_confidence, curve_angle_degrees(curve_angle));
             }
         }
 
