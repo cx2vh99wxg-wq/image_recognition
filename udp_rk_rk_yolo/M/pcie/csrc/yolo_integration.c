@@ -280,6 +280,25 @@ static void preprocess_image(const uint8_t *rgb_data, uint8_t *input_data, int s
     }
 }
 
+static int tensor_image_shape(const rknn_tensor_attr *attr, int channels, int *width, int *height)
+{
+    if (attr->n_dims != 4 || attr->dims[0] != 1)
+        return -1;
+    if (attr->fmt == RKNN_TENSOR_NCHW && attr->dims[1] == (uint32_t)channels)
+    {
+        *height = attr->dims[2];
+        *width = attr->dims[3];
+        return 0;
+    }
+    if (attr->fmt == RKNN_TENSOR_NHWC && attr->dims[3] == (uint32_t)channels)
+    {
+        *height = attr->dims[1];
+        *width = attr->dims[2];
+        return 0;
+    }
+    return -1;
+}
+
 int yolo_engine_init(YOLOEngine *engine, const char *model_path, const char *labels_path)
 {
     if (!engine || !model_path)
@@ -307,9 +326,22 @@ int yolo_engine_init(YOLOEngine *engine, const char *model_path, const char *lab
         return -1;
     }
 
-    // 配置模型输入尺寸。
-    engine->model_width = YOLOPV2_MODEL_INPUT_WIDTH;
-    engine->model_height = YOLOPV2_MODEL_INPUT_HEIGHT;
+    const rknn_tensor_attr *out = engine->output_attrs;
+    int width = 0, height = 0, road_w = 0, road_h = 0, lane_w = 0, lane_h = 0;
+    if (engine->io_num.n_input != 1 || engine->io_num.n_output < 2 ||
+        tensor_image_shape(engine->input_attrs, 3, &width, &height) != 0 ||
+        !((width == 640 && height == 480) || (width == 320 && height == 240)) ||
+        tensor_image_shape(&out[0], 2, &road_w, &road_h) != 0 ||
+        tensor_image_shape(&out[1], 1, &lane_w, &lane_h) != 0 ||
+        road_w != width || road_h != height || lane_w != width || lane_h != height)
+    {
+        fprintf(stderr, "YOLOPv2 unexpected input/segmentation tensors: input=%dx%d road=%dx%d lane=%dx%d\n",
+                width, height, road_w, road_h, lane_w, lane_h);
+        yolo_engine_cleanup(engine);
+        return -1;
+    }
+    engine->model_width = width;
+    engine->model_height = height;
 
     printf("模型输入尺寸: %dx%d\n", engine->model_width, engine->model_height);
 
@@ -414,7 +446,18 @@ int yolo_engine_detect(YOLOEngine *engine, const uint8_t *rgb_data, int width, i
                 engine->outputs[0].size >= drivable_size && engine->outputs[1].size >= lane_size;
     if (valid)
     {
-        memcpy(engine->drivable_area_buffer, engine->outputs[0].buf, drivable_size);
+        if (engine->output_attrs[0].fmt == RKNN_TENSOR_NHWC)
+        {
+            const float *road = engine->outputs[0].buf;
+            const size_t pixels = lane_size / sizeof(float);
+            for (size_t i = 0; i < pixels; ++i)
+            {
+                engine->drivable_area_buffer[i] = road[2 * i];
+                engine->drivable_area_buffer[pixels + i] = road[2 * i + 1];
+            }
+        }
+        else
+            memcpy(engine->drivable_area_buffer, engine->outputs[0].buf, drivable_size);
         memcpy(engine->lane_line_buffer, engine->outputs[1].buf, lane_size);
     }
     int release_result = rknn_outputs_release(engine->ctx, count, engine->outputs);

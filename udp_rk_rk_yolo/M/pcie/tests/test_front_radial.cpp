@@ -80,6 +80,36 @@ int main(int argc, char **argv)
     assert(mosaic == identity);
     m_lane::FrontRadialPreview preview(mosaic_width, mosaic_height, camera);
     assert(preview.enabled() && preview.display_scale() > .894 && preview.display_scale() < .896);
+    m_lane::FrontRadialPreview model_input(mosaic_width, mosaic_height, camera, nullptr, true);
+    const size_t tile_size = (size_t)width * height;
+    const size_t frame_size = 4 * tile_size;
+    std::vector<float> lane(tile_size), drivable(2 * tile_size);
+    std::vector<float> raw_lane(frame_size), raw_drivable(2 * frame_size);
+    for (size_t i = 0; i < tile_size; ++i)
+    {
+        lane[i] = (float)(i + 1);
+        drivable[i] = -lane[i];
+        drivable[tile_size + i] = 2 * lane[i];
+    }
+    assert(model_input.enabled());
+    model_input.restore_front_masks(lane.data(), drivable.data(), raw_lane.data(), raw_drivable.data());
+    assert(raw_lane[0] == 0.f);
+    const int raw_x = 91, raw_y = 160;
+    m_lane::ImagePoint corrected{(double)raw_x, (double)raw_y};
+    assert(camera.undistort(corrected, width, height));
+    const int cx = (int)std::lround(159.5 + (corrected.x - 159.5) * model_input.display_scale());
+    const int cy = (int)std::lround(119.5 + (corrected.y - 119.5) * model_input.display_scale());
+    const size_t dst = (size_t)raw_y * mosaic_width + raw_x;
+    const size_t src = (size_t)cy * width + cx;
+    assert(raw_lane[dst] == lane[src] && raw_drivable[dst] == drivable[src]);
+    assert(raw_drivable[frame_size + dst] == drivable[tile_size + src]);
+    for (size_t i = 0; i < frame_size; ++i)
+        if (i % mosaic_width >= width || i / mosaic_width >= height)
+            assert(raw_lane[i] == 0.f && raw_drivable[i] == 0.f && raw_drivable[frame_size + i] == 0.f);
+    m_lane::FrontRadialPreview identity_input(mosaic_width, mosaic_height, m_lane::FrontRadial(), nullptr, true);
+    assert(identity_input.enabled());
+    identity_input.restore_front_masks(lane.data(), drivable.data(), raw_lane.data(), raw_drivable.data());
+    assert(raw_lane[dst] == lane[(size_t)raw_y * width + raw_x]);
     // The top midpoint bounds the full, same-aspect crop.
     m_lane::ImagePoint beyond_y{159.5, 119.5 - 119.5 / (preview.display_scale() - .001)};
     assert(camera.distort(beyond_y, width, height) && beyond_y.y < 0.);

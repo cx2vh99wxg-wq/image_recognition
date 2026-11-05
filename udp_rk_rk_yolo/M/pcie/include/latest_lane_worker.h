@@ -75,10 +75,11 @@ class LatestWorker
   public:
     LatestWorker(YOLOEngine *engine, int width, int height,
                  traffic::NpuTask *optional_task = nullptr,
-                 const FrontRadialPreview *ipm_test = nullptr)
+                 const FrontRadialPreview *ipm_test = nullptr,
+                 const FrontRadialPreview *front_input = nullptr)
         : engine_(engine), optional_task_(optional_task), width_(width), height_(height),
           pending_pixels_((size_t)width * height * 3), working_pixels_((size_t)width * height * 3),
-          ipm_test_(ipm_test)
+          ipm_test_(ipm_test), front_input_(front_input)
     {
         const char *curve_mode = std::getenv("LANE_CURVE_MODE");
         ego_curve_ = !curve_mode || std::strcmp(curve_mode, "ego-boundaries") == 0;
@@ -98,6 +99,13 @@ class LatestWorker
             ipm_rgb_.resize(3 * tile_pixels);
             ipm_lane_.resize(tile_pixels);
             ipm_green_.resize(tile_pixels);
+        }
+        if (front_input_)
+        {
+            const size_t pixels = (size_t)width * height;
+            front_rgb_.resize(3 * (pixels / 4));
+            raw_lane_.resize(pixels);
+            raw_road_.resize(2 * pixels);
         }
         thread_ = std::thread(&LatestWorker::run, this);
     }
@@ -175,8 +183,11 @@ class LatestWorker
                 result->captured_ns = captured;
                 yolopv2_result_t raw = {};
                 uint64_t start = clock_ns();
-                int status =
-                    yolo_engine_detect(engine_, working_pixels_.data(), width_, height_, &raw);
+                if (front_input_)
+                    front_input_->render(working_pixels_.data(), front_rgb_.data());
+                int status = yolo_engine_detect(engine_,
+                    front_input_ ? front_rgb_.data() : working_pixels_.data(),
+                    front_input_ ? width_ / 2 : width_, front_input_ ? height_ / 2 : height_, &raw);
                 uint64_t inference_time = clock_ns() - start;
                 uint64_t analysis_time = 0;
                 if (status == 0 &&
@@ -190,6 +201,12 @@ class LatestWorker
                     if (captured && now >= captured && now - captured <= MAX_RESULT_AGE_NS)
                     {
                         start = now;
+                        if (front_input_)
+                        {
+                            front_input_->restore_front_masks(raw.lane_line_data, raw.drivable_area_data,
+                                                              raw_lane_.data(), raw_road_.data());
+                            raw = {raw_lane_.data(), raw_road_.data(), width_, height_};
+                        }
                         YOLOLineStyleResult observed = line_analyzer_.analyze_front_camera(
                             raw.lane_line_data, raw.width, raw.height, working_pixels_.data(),
                             width_, height_, nullptr, raw.drivable_area_data);
@@ -401,6 +418,9 @@ class LatestWorker
     uint64_t pending_id_ = 0, pending_capture_ns_ = 0;
     std::vector<uint8_t> pending_pixels_, working_pixels_;
     const FrontRadialPreview *ipm_test_;
+    const FrontRadialPreview *front_input_;
+    std::vector<uint8_t> front_rgb_;
+    std::vector<float> raw_lane_, raw_road_;
     std::vector<uint8_t> ipm_rgb_, ipm_green_;
     std::vector<float> ipm_lane_;
     uint64_t ipm_log_ns_ = 0;

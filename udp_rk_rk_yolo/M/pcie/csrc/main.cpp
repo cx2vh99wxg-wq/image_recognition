@@ -937,6 +937,7 @@ int main()
     // 对象声明顺序还保证 NPU 所有者先于其可选任务结束。
     std::unique_ptr<traffic::Service> traffic_service;
     std::unique_ptr<m_lane::FrontRadialPreview> ipm_preview;
+    std::unique_ptr<m_lane::FrontRadialPreview> lane_input;
     std::unique_ptr<m_lane::LatestWorker> lane_worker;
     int frame_count = 0;
     struct timeval stream_start, current_time;
@@ -944,7 +945,14 @@ int main()
     size_t temp_buffer_size = (LEADING_PIXELS + IMAGE_WIDTH) * IMAGE_HEIGHT * 2;
 
     // 声明路径变量，避免goto跨越初始化
-    const char *model_path = "model/yolopv2_Nx3x480x640_rk3568.rknn";
+    const char *async_option = getenv("VISION_ASYNC");
+    const bool asynchronous = !async_option || atoi(async_option) != 0;
+    const char *model_path = getenv("VISION_LANE_MODEL");
+    const char *front_model = "model/yolopv2_front_320x240_rk3568.rknn";
+    const bool prefer_front_model = asynchronous && (!model_path || !*model_path) &&
+                                    access(front_model, R_OK) == 0;
+    if (!model_path || !*model_path)
+        model_path = prefer_front_model ? front_model : YOLOPV2_MODEL_PATH;
     const char *labels_path = NULL;
 
     // 设置全局指针用于信号处理。
@@ -1002,7 +1010,14 @@ int main()
     /* 图像处理：4. 初始化YOLOPv2引擎 */
     printf("\n=== YOLOPv2引擎初始化 ===\n");
 
-    if (yolo_engine_init(&yolo_engine, model_path, labels_path) != 0)
+    int model_status = yolo_engine_init(&yolo_engine, model_path, labels_path);
+    if (model_status != 0 && prefer_front_model)
+    {
+        fprintf(stderr, "320x240 model failed to initialize, loading %s\n", YOLOPV2_MODEL_PATH);
+        model_path = YOLOPV2_MODEL_PATH;
+        model_status = yolo_engine_init(&yolo_engine, model_path, labels_path);
+    }
+    if (model_status != 0)
     {
         emergency_stop("YOLOPv2引擎初始化失败", "YOLOPv2引擎");
         printf("!!! 检查模型文件是否存在 !!!\n");
@@ -1088,8 +1103,26 @@ int main()
 
     CapturePerf perf = {};
     perf.start = monotonic_ns();
-    const char *async_option = getenv("VISION_ASYNC");
-    bool asynchronous = !async_option || atoi(async_option) != 0;
+    if (yolo_engine.model_width == IMAGE_WIDTH / 2 && yolo_engine.model_height == IMAGE_HEIGHT / 2)
+    {
+        if (!asynchronous)
+        {
+            fprintf(stderr, "320x240 front segmentation requires VISION_ASYNC=1\n");
+            cleanup_all_resources(&pcie_manager, &pcie_shm_manager, &yolo_engine);
+            return -1;
+        }
+        const auto camera = m_lane::FrontRadial::for_camera(getenv("LANE_RADIAL_LAMBDA"),
+                                                           "front_radial.conf");
+        lane_input.reset(new m_lane::FrontRadialPreview(IMAGE_WIDTH, IMAGE_HEIGHT, camera, nullptr, true));
+        if (!lane_input->enabled())
+        {
+            fprintf(stderr, "320x240 front segmentation has invalid lens calibration\n");
+            cleanup_all_resources(&pcie_manager, &pcie_shm_manager, &yolo_engine);
+            return -1;
+        }
+        fprintf(stderr, "[LANE_INPUT] front-only 320x240, radial lambda=%.6f, crop scale=%.3f\n",
+                camera.coefficient(), lane_input->display_scale());
+    }
     unsigned capture_fps = capture_fps_setting();
     uint64_t capture_deadline = monotonic_ns() + (capture_fps ? 1000000000ULL / capture_fps : 0);
     uint64_t last_raw_hash = 0, last_curve_source = 0, last_curve_capture_ns = 0;
@@ -1121,7 +1154,8 @@ int main()
                                                 : "model/traffic_yolov5n_rk3568.rknn",
                 traffic::InputView(320, 240, traffic::PixelOrder::BGR)));
             lane_worker.reset(new m_lane::LatestWorker(&yolo_engine, IMAGE_WIDTH, IMAGE_HEIGHT,
-                                                       traffic_service.get(), ipm_preview.get()));
+                                                       traffic_service.get(), ipm_preview.get(),
+                                                       lane_input.get()));
         }
         catch (const std::exception &error)
         {

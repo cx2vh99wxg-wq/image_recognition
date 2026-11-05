@@ -26,16 +26,17 @@ class FrontRadialPreview
     bool ground_view_;
     double scale_ = 1.;
     std::vector<Sample> samples_;
+    std::vector<uint32_t> corrected_at_raw_;
     std::vector<uint8_t> tile_;
 
   public:
     FrontRadialPreview(int mosaic_width, int mosaic_height, const FrontRadial &camera,
-                       const GroundProjection *ground = nullptr)
+                       const GroundProjection *ground = nullptr, bool inference_input = false)
         : width_(mosaic_width / 2), height_(mosaic_height / 2), stride_(mosaic_width * 3),
           ground_view_(ground != nullptr)
     {
         if (!camera.valid() || width_ < 2 || height_ < 2 ||
-            (ground ? !ground->valid() || !ground->enabled() : !camera.enabled()))
+            (ground ? !ground->valid() || !ground->enabled() : !camera.enabled() && !inference_input))
             return;
         const double cx = (width_ - 1) * .5, cy = (height_ - 1) * .5;
         const bool barrel = camera.coefficient() < 0.;
@@ -88,10 +89,46 @@ class FrontRadialPreview
             }
         if (!valid_samples)
             samples_.clear();
+        if (inference_input && !ground && enabled())
+        {
+            corrected_at_raw_.reserve(samples_.size());
+            for (int y = 0; y < height_; ++y)
+                for (int x = 0; x < width_; ++x)
+                {
+                    ImagePoint point{(double)x, (double)y};
+                    if (!camera.undistort(point, width_, height_))
+                    {
+                        corrected_at_raw_.push_back(uint32_t{outside});
+                        continue;
+                    }
+                    point = {cx + (point.x - cx) * scale_, cy + (point.y - cy) * scale_};
+                    const int sx = (int)std::lround(point.x), sy = (int)std::lround(point.y);
+                    corrected_at_raw_.push_back(sx < 0 || sx >= width_ || sy < 0 || sy >= height_
+                                                   ? outside : (uint32_t)(sy * width_ + sx));
+                }
+        }
     }
 
     bool enabled() const { return !samples_.empty(); }
     double display_scale() const { return scale_; }
+
+    // Place predictions back in the raw top-left tile for the existing overlay,
+    // perspective projection and steering calibration. Other mosaic tiles stay clear.
+    void restore_front_masks(const float *lane, const float *road, float *raw_lane,
+                             float *raw_road) const
+    {
+        const size_t tile_size = (size_t)width_ * height_;
+        const int w = stride_ / 3;
+        const size_t mosaic_size = (size_t)w * height_ * 2;
+        for (size_t i = 0; i < corrected_at_raw_.size(); ++i)
+        {
+            const auto sample = corrected_at_raw_[i];
+            const size_t dst = (i / width_) * w + i % width_;
+            raw_lane[dst] = sample == outside ? 0.f : lane[sample];
+            raw_road[dst] = sample == outside ? 0.f : road[sample];
+            raw_road[mosaic_size + dst] = sample == outside ? 0.f : road[tile_size + sample];
+        }
+    }
 
     void render(const uint8_t *mosaic, uint8_t *dst) const
     {
