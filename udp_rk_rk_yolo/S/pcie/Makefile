@@ -72,7 +72,7 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp | $(BUILDDIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 $(BUILDDIR)/main.o: ../../common/image/frame_pixels.h $(INCDIR)/camera_orientation.h $(INCDIR)/yolo_integration.h \
-                   $(INCDIR)/postprocess.h ../include/person_brake_trigger.h
+                   $(INCDIR)/postprocess.h $(INCDIR)/latest_detection.h ../include/person_brake_trigger.h
 $(BUILDDIR)/postprocess.o: $(INCDIR)/postprocess.h ../include/person_brake_trigger.h
 $(BUILDDIR)/yolo_integration.o: ../../common/image/frame_pixels.h $(INCDIR)/yolo_integration.h $(INCDIR)/postprocess.h
 $(BUILDDIR)/person_alert_effects.o: $(INCDIR)/person_alert_effects.h $(INCDIR)/postprocess.h
@@ -81,6 +81,13 @@ $(BUILDDIR)/person_alert_effects.o: $(INCDIR)/person_alert_effects.h $(INCDIR)/p
 $(BUILDDIR):
 	@echo "建立build目录"
 	mkdir -p $(BUILDDIR)
+
+.PHONY: test-latest-detection
+$(BUILDDIR)/test_latest_detection: tests/test_latest_detection.cpp $(INCDIR)/latest_detection.h $(INCDIR)/postprocess.h | $(BUILDDIR)
+	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 -pthread $(INCLUDES) $< -o $@
+
+test-latest-detection: $(BUILDDIR)/test_latest_detection
+	./$(BUILDDIR)/test_latest_detection
 
 # 回收编译产物
 clean:

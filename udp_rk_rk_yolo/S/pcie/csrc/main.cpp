@@ -2,6 +2,7 @@
 #include "pcie_dma_read_test.h"
 #include "../../../common/pcie/capture_support.h"
 #include "yolo_integration.h"
+#include "latest_detection.h"
 #include "person_brake_trigger.h"
 #include "camera_orientation.h"
 #include "../../include/shared_memory.h"
@@ -16,6 +17,7 @@
 #include <sys/time.h>
 #include <signal.h>
 #include <errno.h>
+#include <memory>
 
 /* aligned_alloc 的声明需要先启用 _ISOC11_SOURCE。 */
 #ifndef _ISOC11_SOURCE
@@ -619,6 +621,15 @@ int main()
 {
     setvbuf(stdout, NULL, _IOLBF, 0);
     PipelineProfile profile = {};
+    std::unique_ptr<s_vision::LatestDetection> latest_detection;
+    uint64_t last_async_capture = 0;
+    const char *async = getenv("S_VISION_ASYNC");
+    auto stop_async = [&] {
+        if (!latest_detection)
+            return;
+        emergency_brake_update_status(g_brake_shm, 0, 0, 0, 0, 0, 0);
+        latest_detection.reset(); // join before the RKNN context is destroyed
+    };
     printf("=== PCIE图像采集 + YOLO目标检测 + 紧急制动整合系统 ===\n");
 
     PCIEManager pcie_manager;
@@ -722,6 +733,22 @@ int main()
     }
     printf("✓ 紧急制动共享内存初始化完成\n");
 
+    if (!async || strcmp(async, "0") != 0)
+    {
+        try
+        {
+            latest_detection.reset(new s_vision::LatestDetection(
+                rgb888_buffer_size, [](const uint8_t *pixels, detect_result_group_t *result) {
+                    return yolo_engine_detect(&yolo_engine, pixels, IMAGE_WIDTH, IMAGE_HEIGHT, result);
+                }));
+        }
+        catch (const std::exception &e)
+        {
+            fprintf(stderr, "[S-VISION] async unavailable: %s; using synchronous inference\n", e.what());
+        }
+    }
+    printf("[S-VISION] %s\n", latest_detection ? "latest-frame worker" : "synchronous");
+
     printf("\n=== 系统初始化完成 ===\n");
     printf("图像尺寸: %dx%d\n", IMAGE_WIDTH, IMAGE_HEIGHT);
     printf("共享内存尺寸: %dx%d\n", PCIE_IMAGE_WIDTH, PCIE_IMAGE_HEIGHT);
@@ -771,12 +798,14 @@ int main()
             printf("!!! 1. PCIE接入中断 !!!\n");
             printf("!!! 2. DMA传输错误 !!!\n");
             printf("!!! 3. 硬件设备异常 !!!\n");
+            stop_async();
             cleanup_all_resources(&pcie_manager, &shm_manager, &yolo_engine);
             return -1;
         }
 
         profile.capture_ns += pipeline_clock_ns() - phase_started;
         phase_started = pipeline_clock_ns();
+        const uint64_t captured = phase_started;
 
         /* 图像处理：S端画面按摄像头区块旋转180度，保持视角位置和识别坐标一致。 */
         rotate_rgb565_tiles_180((uint16_t *)image_buf_temp, IMAGE_WIDTH, IMAGE_HEIGHT,
@@ -799,7 +828,21 @@ int main()
         static detect_result_group_t cached_results = {0};
         static int detection_valid = 0;
 
-        if (frame_count % YOLO_DETECT_INTERVAL == 0)
+        if (latest_detection)
+        {
+            if (frame_count % YOLO_DETECT_INTERVAL == 0)
+                latest_detection->submit(image_buf_888, captured);
+            const auto result = latest_detection->latest();
+            if (result.captured > last_async_capture)
+            {
+                last_async_capture = result.captured;
+                ++profile.infer_jobs;
+                profile.infer_ns += result.elapsed;
+            }
+            detection_valid = result.fresh(pipeline_clock_ns());
+            detection_results = detection_valid ? result.results : detect_result_group_t{};
+        }
+        else if (frame_count % YOLO_DETECT_INTERVAL == 0)
         {
             phase_started = pipeline_clock_ns();
             profile.infer_jobs++;
@@ -882,6 +925,7 @@ int main()
             printf("!!! 1. 共享内存被其他进程破坏 !!!\n");
             printf("!!! 2. 系统内存不足 !!!\n");
             printf("!!! 3. 权限被更改 !!!\n");
+            stop_async();
             cleanup_all_resources(&pcie_manager, &shm_manager, &yolo_engine);
             return -1;
         }
@@ -926,6 +970,7 @@ int main()
     // 本阶段集中释放系统资源。
     // ── 图像处理 ──
     printf("\n=== 系统移除 ===\n");
+    stop_async();
 
     // 移除紧急制动共享内存
     if (g_brake_shm)
