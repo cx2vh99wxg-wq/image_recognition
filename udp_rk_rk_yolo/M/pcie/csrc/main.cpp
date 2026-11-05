@@ -4,6 +4,7 @@
 #include "fspi_module.h"
 #include "yolo_integration.h"
 #include "latest_lane_worker.h"
+#include "front_camera_layout.h"
 #include "front_radial_preview.h"
 #include "line_style_ipc.h"
 #include "traffic_service.h"
@@ -935,6 +936,7 @@ int main()
 
     // 对象声明顺序还保证 NPU 所有者先于其可选任务结束。
     std::unique_ptr<traffic::Service> traffic_service;
+    std::unique_ptr<m_lane::FrontRadialPreview> ipm_preview;
     std::unique_ptr<m_lane::LatestWorker> lane_worker;
     int frame_count = 0;
     struct timeval stream_start, current_time;
@@ -1092,6 +1094,21 @@ int main()
     uint64_t capture_deadline = monotonic_ns() + (capture_fps ? 1000000000ULL / capture_fps : 0);
     uint64_t last_raw_hash = 0, last_curve_source = 0, last_curve_capture_ns = 0;
     bool have_raw_hash = false, curve_fresh = false;
+    const auto ipm_ground = m_lane::GroundProjection::for_camera(nullptr, "front_ipm_test.conf");
+    if (ipm_ground.enabled())
+    {
+        const auto camera = m_lane::FrontRadial::for_camera(getenv("LANE_RADIAL_LAMBDA"),
+                                                           "front_radial.conf");
+        auto view = std::unique_ptr<m_lane::FrontRadialPreview>(
+            new m_lane::FrontRadialPreview(IMAGE_WIDTH, IMAGE_HEIGHT, camera, &ipm_ground));
+        if (view->enabled())
+        {
+            ipm_preview = std::move(view);
+            fprintf(stderr, "[IPM_TEST] enabled M+S front preview; heading is diagnostic only\n");
+        }
+        else
+            fprintf(stderr, "[IPM_TEST] invalid preview calibration\n");
+    }
     if (asynchronous)
     {
         try
@@ -1104,7 +1121,7 @@ int main()
                                                 : "model/traffic_yolov5n_rk3568.rknn",
                 traffic::InputView(320, 240, traffic::PixelOrder::BGR)));
             lane_worker.reset(new m_lane::LatestWorker(&yolo_engine, IMAGE_WIDTH, IMAGE_HEIGHT,
-                                                       traffic_service.get()));
+                                                       traffic_service.get(), ipm_preview.get()));
         }
         catch (const std::exception &error)
         {
@@ -1121,10 +1138,10 @@ int main()
     LineStyleData line_initial = {};
     line_ipc_write(&line_ipc, &line_initial);
     m_lane::LineStyleAnalyzer synchronous_line_analyzer;
-#if ENABLE_RENDERING
+    m_lane::FrontCameraLayout front_layout;
     std::unique_ptr<m_lane::FrontRadialPreview> front_preview;
     const char *preview_mode = getenv("LANE_RADIAL_PREVIEW");
-    if (!preview_mode || strcmp(preview_mode, "0") != 0)
+    if (!ipm_preview && (!preview_mode || strcmp(preview_mode, "0") != 0))
     {
         const auto camera = m_lane::FrontRadial::for_camera(getenv("LANE_RADIAL_LAMBDA"),
                                                            "front_radial.conf");
@@ -1134,7 +1151,7 @@ int main()
             {
                 front_preview.reset(new m_lane::FrontRadialPreview(IMAGE_WIDTH, IMAGE_HEIGHT, camera));
                 if (front_preview->enabled())
-                    printf("[FRONT_PREVIEW] radial correction enabled lambda=%.6f scale=%.3f\n",
+                    printf("[FRONT_PREVIEW] centered 4:3 crop enabled lambda=%.6f scale=%.3f M=top-left S=front-center\n",
                            camera.coefficient(), front_preview->display_scale());
             }
             catch (const std::exception &error)
@@ -1143,7 +1160,6 @@ int main()
             }
         }
     }
-#endif
     const uint32_t line_session = (uint32_t)(monotonic_ns() ^ ((uint64_t)getpid() << 16)) | 1u;
     while (g_running)
     {
@@ -1176,11 +1192,15 @@ int main()
 
         /* 图像处理：步骤2: 将RGB565转换为RGB888格式 */
         // 停用示例，仅供对照：printf("[DEBUG] RGB565转RGB888开始\n");
-        rgb565_to_rgb888((uint16_t *)image_buf_temp, image_buf_888, IMAGE_WIDTH * IMAGE_HEIGHT);
+        const auto *raw_mosaic = (const uint16_t *)image_buf_temp;
+        if (front_layout.observe(raw_mosaic, IMAGE_WIDTH, IMAGE_HEIGHT))
+            printf("[FRONT_LAYOUT] DMA tile rows %s\n", front_layout.rows_swapped() ? "swapped" : "normal");
+        front_layout.unpack(raw_mosaic, image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT);
         // 停用示例，仅供对照：printf("[DEBUG] RGB565转RGB888完成\n");
 
         perf.colors += monotonic_ns() - mark;
 
+        std::shared_ptr<const m_lane::Snapshot> ipm_result;
         if (lane_worker)
         {
             uint64_t source_id = (uint64_t)frame_count + 1;
@@ -1194,6 +1214,8 @@ int main()
             bool fresh = result && result->fresh(monotonic_ns()) && !lane_worker->failed();
             if (fresh)
             {
+                if (ipm_preview)
+                    ipm_result = result;
                 mark = monotonic_ns();
                 yolopv2_result_t masks = result->masks();
                 yolo_overlay_lane_and_drivable(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, &masks);
@@ -1285,7 +1307,14 @@ int main()
         // 转换RGB888回RGB565格式到专用的输出缓冲区（避免与原始数据缓冲区冲突）
         // 停用示例，仅供对照：printf("[DEBUG] RGB888转RGB565开始\n");
         mark = monotonic_ns();
+        // Keep the local lower-right raw tile available for comparison. S reads
+        // the front center from the independently packed UDP lower-right slot.
         rgb888_to_rgb565(image_buf_888, (uint16_t *)image_buf_565_out, IMAGE_WIDTH * IMAGE_HEIGHT);
+        if (ipm_preview)
+            ipm_preview->apply(image_buf_888, (uint16_t *)image_buf_565_out,
+                               ipm_result ? &ipm_result->ipm_pair : nullptr);
+        else if (front_preview)
+            front_preview->apply(image_buf_888, (uint16_t *)image_buf_565_out);
         perf.colors += monotonic_ns() - mark;
         // 停用示例，仅供对照：printf("[DEBUG] RGB888转RGB565完成\n");
 
@@ -1314,9 +1343,6 @@ int main()
         /* 图像处理：步骤4: 渲染带有识别结果的图像 */
         // 停用示例，仅供对照：printf("[DEBUG] 渲染开始\n");
         mark = monotonic_ns();
-        // M 的前视校正仅用于本机显示。共享内存已发布原坐标画面供 S 端使用。
-        if (front_preview)
-            front_preview->apply(image_buf_888);
         if (render_engine_render_frame_with_detections(&render_engine, image_buf_888) != 0)
         {
             printf("注意: 渲染未成功，但继续处理下一帧\n");

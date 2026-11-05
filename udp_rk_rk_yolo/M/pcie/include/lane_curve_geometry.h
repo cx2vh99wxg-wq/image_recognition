@@ -14,7 +14,7 @@ namespace m_lane
 struct EgoCurve
 {
     uint32_t type = 0, confidence = 0, angle = 0;
-    float shift_px = 0, span_px = 0;
+    float shift_px = 0, span_px = 0, curvature = 0;
     unsigned reason = 1;
 };
 inline double curve_x(const YOLOLineBoundary &b, double y, double height)
@@ -44,7 +44,7 @@ inline bool ego_curve_bounds(const YOLOLineStyleResult &r, double y, double &lef
            right - left <= r.width * 1.1;
 }
 inline EgoCurve fit_ego_centers(const double (&centers)[5], double span, double source_span,
-                                int width, int height)
+                                int width, int height, bool ground = false)
 {
     EgoCurve out;
     out.span_px = (float)source_span;
@@ -54,7 +54,7 @@ inline EgoCurve fit_ego_centers(const double (&centers)[5], double span, double 
     const double slope = (2. * (centers[0] - centers[4]) + (centers[1] - centers[3])) /
                          (10. * step);
     out.shift_px = (float)(slope * span);
-    const double straight_slope = std::max(width * .02 / span, .10);
+    const double straight_slope = ground ? .10 : std::max(width * .02 / span, .10);
     const double threshold = straight_slope * span;
     /* 走廊先明显朝一侧、再转向另一侧时，
      * 不赋予高置信的单一弯向；禁止互换远、近采样轨迹来凑方向。 */
@@ -70,13 +70,14 @@ inline EgoCurve fit_ego_centers(const double (&centers)[5], double span, double 
     const double tangent_length = std::sqrt(1. + slope * slope);
     const double curvature = std::abs(2. * quadratic) /
                              (step * step * tangent_length * tangent_length * tangent_length);
+    out.curvature = (float)curvature;
     constexpr double low_curvature_limit = .312; // equivalent to 0.0013 px^-1 at 240 px height
     const bool low_curvature = curvature * height <= low_curvature_limit;
     constexpr double degrees_per_radian = 57.29577951308232;
     constexpr double low_curvature_turn_deg = 40.;
     const double heading_deg = std::atan(std::abs(slope)) * degrees_per_radian;
     if (std::abs(slope) >= straight_slope &&
-        (!low_curvature || heading_deg > low_curvature_turn_deg))
+        (ground || !low_curvature || heading_deg > low_curvature_turn_deg))
     {
         out.type = slope < 0 ? 1 : 2;
         out.angle = (uint32_t)std::lround(heading_deg);
@@ -89,7 +90,7 @@ inline EgoCurve fit_ego_centers(const double (&centers)[5], double span, double 
     return out;
 }
 
-inline EgoCurve estimate_ego_curve(const YOLOLineStyleResult &r)
+inline EgoCurve estimate_ego_curve(const YOLOLineStyleResult &r, bool ground = false)
 {
     double first, last;
     if (!ego_curve_range(r, first, last))
@@ -112,15 +113,15 @@ inline EgoCurve estimate_ego_curve(const YOLOLineStyleResult &r)
         centers[i] = (left + right) * .5;
         widths[i] = right - left;
     }
-    if (widths[0] > widths[4] * 1.05 + 2)
+    if (!ground && widths[0] > widths[4] * 1.05 + 2)
         return out;
-    return fit_ego_centers(centers, span, span, r.width, r.height);
+    return fit_ego_centers(centers, span, span, r.width, r.height, ground);
 }
 
 // A warp generally moves the two edges to different rows. Interpolate each edge
 // separately at the same five corrected rows before taking the center.
 template <typename Map>
-EgoCurve estimate_ego_curve_mapped(const YOLOLineStyleResult &r, Map map)
+EgoCurve estimate_ego_curve_mapped(const YOLOLineStyleResult &r, Map map, bool ground = false)
 {
     EgoCurve out;
     double first, last;
@@ -131,16 +132,22 @@ EgoCurve estimate_ego_curve_mapped(const YOLOLineStyleResult &r, Map map)
     out.reason = 2;
     if (source_span < std::max(24., r.height * .10))
         return out;
-    double far_left, far_right, near_left, near_right;
-    if (!ego_curve_bounds(r, first, far_left, far_right) ||
-        !ego_curve_bounds(r, last, near_left, near_right) ||
-        far_right - far_left > (near_right - near_left) * 1.05 + 2.)
+    if (!ground)
     {
-        out.reason = 3;
-        return out;
+        double far_left, far_right, near_left, near_right;
+        if (!ego_curve_bounds(r, first, far_left, far_right) ||
+            !ego_curve_bounds(r, last, near_left, near_right) ||
+            far_right - far_left > (near_right - near_left) * 1.05 + 2.)
+        {
+            out.reason = 3;
+            return out;
+        }
     }
     constexpr int segments = 64;
     std::array<ImagePoint, segments + 1> sides[2];
+    int count[2] = {};
+    bool ended[2] = {};
+    double source_first[2] = {}, source_last[2] = {};
     out.reason = 7;
     for (int i = 0; i <= segments; ++i)
     {
@@ -153,14 +160,32 @@ EgoCurve estimate_ego_curve_mapped(const YOLOLineStyleResult &r, Map map)
         {
             auto &point = points[side];
             auto &edge = sides[side];
-            if (!map(point) || !std::isfinite(point.x) || !std::isfinite(point.y) ||
-                (i && point.y <= edge[i - 1].y))
+            if (!map(point))
+            {
+                if (!ground)
+                    return out;
+                // The calibrated road can cover only part of the observed lane.
+                // Retain one continuous interval per boundary, never bridge a hole.
+                ended[side] = count[side] != 0;
+                continue;
+            }
+            if (ended[side] || !std::isfinite(point.x) || !std::isfinite(point.y) ||
+                (count[side] && point.y <= edge[count[side] - 1].y))
                 return out;
-            edge[i] = point;
+            if (!count[side])
+                source_first[side] = y;
+            source_last[side] = y;
+            edge[count[side]++] = point;
         }
     }
+    if (count[0] < 12 || count[1] < 12)
+        return out;
+    const double supported_span = std::min(source_last[0], source_last[1]) -
+                                  std::max(source_first[0], source_first[1]);
+    if (supported_span < std::max(24., r.height * .10))
+        return out;
     const double top = std::max(sides[0].front().y, sides[1].front().y);
-    const double bottom = std::min(sides[0].back().y, sides[1].back().y);
+    const double bottom = std::min(sides[0][count[0] - 1].y, sides[1][count[1] - 1].y);
     const double span = bottom - top;
     if (span < r.height * .10)
         return out;
@@ -174,7 +199,7 @@ EgoCurve estimate_ego_curve_mapped(const YOLOLineStyleResult &r, Map map)
         {
             auto &index = indices[side];
             const auto &edge = sides[side];
-            while (index + 1 < segments && edge[index + 1].y < y)
+            while (index + 2 < count[side] && edge[index + 1].y < y)
                 ++index;
             const auto &a = edge[index], &b = edge[index + 1];
             x[side] = a.x + (b.x - a.x) * (y - a.y) / (b.y - a.y);
@@ -183,7 +208,7 @@ EgoCurve estimate_ego_curve_mapped(const YOLOLineStyleResult &r, Map map)
             return out;
         centers[i] = (x[0] + x[1]) * .5;
     }
-    return fit_ego_centers(centers, span, source_span, r.width, r.height);
+    return fit_ego_centers(centers, span, supported_span, r.width, r.height, ground);
 }
 class EgoCurveConfirm
 {

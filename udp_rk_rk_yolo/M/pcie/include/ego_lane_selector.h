@@ -296,7 +296,7 @@ class EgoLaneSelector
         return false;
     }
     static std::vector<Track> objects(const float *mask, const uint8_t *rgb, Road &road, int w,
-                                      int h)
+                                      int h, bool ground)
     {
         std::vector<std::vector<Point>> rows;
         for (int y = h * 12 / 100; y < h * 96 / 100; ++y)
@@ -356,6 +356,7 @@ class EgoLaneSelector
             }
         }
         std::vector<Track> tracks;
+        std::vector<Fit> rejected_seeds;
         const double tolerance = std::max(3., w * .022);
         for (int object = 0; object < 6; ++object)
         {
@@ -402,6 +403,12 @@ class EgoLaneSelector
                 Fit f;
                 f.b = slope * h * .52;
                 f.a = a.x - slope * (a.y - h * .95);
+                if (ground && std::any_of(rejected_seeds.begin(), rejected_seeds.end(),
+                                          [&](const Fit &rejected) {
+                                              return std::abs(rejected.at(a.t) - a.x) < tolerance &&
+                                                     std::abs(rejected.at(b.t) - b.x) < tolerance;
+                                          }))
+                    continue;
                 int hits = 0, first = -1, last = -1;
                 double error = 0, first_x = 0, last_x = 0;
                 for (size_t r = 0; r < rows.size(); r += 2)
@@ -432,7 +439,7 @@ class EgoLaneSelector
                 }
                 if (hits < 4 || std::hypot(last_x - first_x, (double)last - first) < h * .08)
                     continue;
-                if (std::min(first_x, last_x) < road.reference - w * .05 &&
+                if (!ground && std::min(first_x, last_x) < road.reference - w * .05 &&
                     std::max(first_x, last_x) > road.reference + w * .05)
                     continue;
                 double score = (std::hypot(last_x - first_x, (double)last - first) + hits * 1.5) /
@@ -457,8 +464,8 @@ class EgoLaneSelector
                     double distance = tolerance * (pass ? 1 : 1.5);
                     for (const auto &p : row)
                     {
-                        if (branch_left ? p.x > road.reference + w * .05
-                                        : p.x < road.reference - w * .05)
+                        if (!ground && (branch_left ? p.x > road.reference + w * .05
+                                                    : p.x < road.reference - w * .05))
                             continue;
                         double d = std::abs(p.x - track.fit.at(p.t));
                         if (d < distance)
@@ -479,7 +486,12 @@ class EgoLaneSelector
                 }
             }
             if (track.points.size() < 8)
-                break;
+            {
+                if (!ground)
+                    break;
+                rejected_seeds.push_back(selected);
+                continue;
+            }
             track.first = track.points.front().y;
             track.last = track.points.back().y;
             // 用实测漆线峰值细化 NN 走廊，只将真实 RGB 证据用于重拟合，
@@ -543,20 +555,26 @@ class EgoLaneSelector
             track.length = arc(track.fit, track.first, track.last, h);
             // 提取一个对象后从候选点中剥离它，避免相邻长线占满
             // 所有候选名额，遮蔽图像边缘较短的本车边界。
-            for (auto &row : rows)
-                row.erase(std::remove_if(row.begin(), row.end(),
-                                         [&](const Point &p)
-                                         {
-                                             return p.y > road.first + h * .06 &&
-                                                    std::abs(p.x - track.fit.at(p.t)) < tolerance;
-                                         }),
-                          row.end());
+            const auto remove_points = [&]() {
+                for (auto &row : rows)
+                    row.erase(std::remove_if(row.begin(), row.end(),
+                                             [&](const Point &p) {
+                                                 return p.y > road.first + h * .06 &&
+                                                        std::abs(p.x - track.fit.at(p.t)) < tolerance;
+                                             }), row.end());
+            };
+            if (!ground)
+                remove_points();
             double u0 = coordinate(track.first, h), u1 = coordinate(track.last, h);
             double angle0 = std::atan((track.fit.b + 2 * track.fit.c * u0) / (h * .52));
             double angle1 = std::atan((track.fit.b + 2 * track.fit.c * u1) / (h * .52));
             if (track.error > w * .025 || track.length < h * .08 ||
                 std::abs(angle1 - angle0) > 1.0472)
+            {
+                if (ground)
+                    rejected_seeds.push_back(selected);
                 continue;
+            }
             bool duplicate = false;
             for (const auto &old : tracks)
             {
@@ -574,7 +592,13 @@ class EgoLaneSelector
                 }
             }
             if (!duplicate)
+            {
+                if (ground)
+                    remove_points();
                 tracks.push_back(track);
+            }
+            else if (ground)
+                rejected_seeds.push_back(selected);
         }
         // 仅有前景的道路分割可能从真实道路入口下方开始；
         // 利用相互收敛的 NN 线对象修正该入口，
@@ -831,12 +855,91 @@ class EgoLaneSelector
         return out;
     }
 
+    static void select_ground_pair(const std::vector<Track> &tracks, const Road &road,
+                                   const uint8_t *rgb, int w, int h, YOLOLineStyleResult &result,
+                                   LineStyleTrace *trace)
+    {
+        double best = -1.;
+        int left_id = -1, right_id = -1, near_y = -1;
+        for (size_t i = 0; i < tracks.size(); ++i)
+            for (size_t j = i + 1; j < tracks.size(); ++j)
+            {
+                if (tracks[i].nn + tracks[j].nn < 8)
+                    continue;
+                const int first = std::max(tracks[i].first, tracks[j].first);
+                const int last = std::min(tracks[i].last, tracks[j].last);
+                if (last - first < std::max(24., h * .10))
+                    continue;
+                int l = (int)i, r = (int)j;
+                if (extended(tracks[l], last, h) > extended(tracks[r], last, h))
+                    std::swap(l, r);
+                const double lx = extended(tracks[l], last, h), rx = extended(tracks[r], last, h);
+                if (lx >= road.reference - w * .012 || rx <= road.reference + w * .012)
+                    continue;
+                bool adjacent = true;
+                for (size_t k = 0; k < tracks.size(); ++k)
+                    if (k != i && k != j && tracks[k].nn >= 8 &&
+                        tracks[k].first <= last && tracks[k].last >= last)
+                    {
+                        const double x = extended(tracks[k], last, h);
+                        if (x > lx + w * .025 && x < rx - w * .025)
+                            adjacent = false;
+                    }
+                if (!adjacent)
+                    continue;
+                double narrow = w, wide = 0.;
+                int supported = 0, samples = 0;
+                for (int n = 0; n <= 8; ++n)
+                {
+                    const int y = first + (last - first) * n / 8;
+                    const double a = extended(tracks[l], y, h), b = extended(tracks[r], y, h);
+                    narrow = std::min(narrow, b - a);
+                    wide = std::max(wide, b - a);
+                    for (int k = 1; k <= 5; ++k)
+                    {
+                        const int x = (int)std::lround(a + (b - a) * k / 6);
+                        supported += x >= 0 && x < w && road.mask[y * w + x];
+                        ++samples;
+                    }
+                }
+                if (narrow < w * .08 || wide > w || wide > narrow * 2. || supported * 2 < samples)
+                    continue;
+                const double score = (double)supported / samples + (double)(last - first) / h +
+                                     (double)last / h;
+                if (score > best)
+                {
+                    best = score;
+                    left_id = l;
+                    right_id = r;
+                    near_y = last;
+                }
+            }
+        if (left_id < 0)
+        {
+            result.left.reason = result.right.reason = LINE_NO_TRACK;
+            return;
+        }
+        if (trace)
+        {
+            trace->near_y = near_y;
+            trace->selected_left = left_id;
+            trace->selected_right = right_id;
+        }
+        const auto &left = tracks[left_id];
+        const auto &right = tracks[right_id];
+        const double width = extended(right, near_y, h) - extended(left, near_y, h);
+        result.left = measure(left, rgb, w, h, road.first, road.last - road.first, width,
+                              trace ? &trace->left : nullptr);
+        result.right = measure(right, rgb, w, h, road.first, road.last - road.first, width,
+                               trace ? &trace->right : nullptr);
+    }
+
   public:
     explicit EgoLaneSelector(double normalized_anchor = -1) : fixed_anchor_(normalized_anchor)
     {
     }
     YOLOLineStyleResult analyze(const float *mask, const uint8_t *green, const uint8_t *rgb, int w,
-                                int h, LineStyleTrace *trace = nullptr) const
+                                int h, LineStyleTrace *trace = nullptr, bool ground = false) const
     {
         YOLOLineStyleResult result = {};
         result.width = w;
@@ -845,28 +948,35 @@ class EgoLaneSelector
         if (!mask || !green || !rgb || w < 80 || h < 60)
             return result;
         Road road = road_region(green, w, h);
-        if (!road.area || road.reference < 0)
+        if (!road.area || (road.reference < 0 && fixed_anchor_ < 0))
             return result;
         if (fixed_anchor_ >= 0 && fixed_anchor_ <= 1)
         {
             road.reference = fixed_anchor_ * w;
             road.centered = true;
         }
-        auto tracks = objects(mask, rgb, road, w, h);
+        auto tracks = objects(mask, rgb, road, w, h, ground);
         result.road_area = road.area;
         result.object_count = (uint32_t)tracks.size();
         result.reference_x = road.reference;
         result.reference_y = road.reference_y;
         int near_y = (int)(road.first + .72 * (road.last - road.first));
-        std::sort(tracks.begin(), tracks.end(), [&](const Track &a, const Track &b)
-                  { return extended(a, near_y, h) < extended(b, near_y, h); });
+        if (!ground)
+            std::sort(tracks.begin(), tracks.end(), [&](const Track &a, const Track &b)
+                      { return extended(a, near_y, h) < extended(b, near_y, h); });
         if (trace)
         {
             trace->reference_x = road.reference;
-            trace->near_y = near_y;
+            if (!ground)
+                trace->near_y = near_y;
             trace->road_area = road.area;
             for (const auto &t : tracks)
                 trace->objects.push_back({t.fit.a, t.fit.b, t.fit.c, t.first, t.last, t.nn});
+        }
+        if (ground)
+        {
+            select_ground_pair(tracks, road, rgb, w, h, result, trace);
+            return result;
         }
         double best = -1;
         int selected = -1;

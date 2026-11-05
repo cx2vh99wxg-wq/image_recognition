@@ -1,4 +1,5 @@
 #include "lane_curve_geometry.h"
+#include "ground_projection.h"
 #include <cassert>
 #include <cmath>
 #include <cstdio>
@@ -9,9 +10,89 @@ static YOLOLineStyleResult corridor(float heading) {
     r.left.first_y=r.right.first_y=140;r.left.last_y=r.right.last_y=220;
     return r;
 }
-int main(){
+int main(int argc, char **argv){
+    const auto radial=m_lane::FrontRadial::from_text("-0.1673");
+    for (m_lane::ImagePoint source : {m_lane::ImagePoint{0,0}, {159.5,119.5}, {319,239}, {41,185}})
+    {
+        auto point=source;
+        assert(radial.undistort(point,320,240));
+        assert(radial.distort(point,320,240));
+        assert(std::hypot(point.x-source.x,point.y-source.y)<1e-9);
+    }
+    double original_error=0, corrected_error=0;
+    // Measurements from the approved 320x240 still, independent of the board.
+    m_lane::ImagePoint edge[]={{80,31.26},{125,28.38},{155,27.58},{200,29.34},{245,33.14}};
+    auto a=edge[0], b=edge[4], ca=a, cb=b;
+    assert(radial.undistort(ca,320,240)&&radial.undistort(cb,320,240));
+    for (auto point : edge)
+    {
+        original_error+=std::abs(point.y-a.y-(point.x-a.x)*(b.y-a.y)/(b.x-a.x));
+        assert(radial.undistort(point,320,240));
+        corrected_error+=std::abs(point.y-ca.y-(point.x-ca.x)*(cb.y-ca.y)/(cb.x-ca.x));
+    }
+    assert(corrected_error < original_error * .30);
+    assert(!m_lane::FrontRadial::from_text("garbage").valid());
+    assert(!m_lane::FrontRadial::from_text("nan").valid());
     auto straight=corridor(0);
     assert(m_lane::estimate_ego_curve(straight).type==0&&m_lane::estimate_ego_curve(straight).confidence>=60);
+    auto radial_heading=m_lane::estimate_ego_curve_mapped(straight,[&](m_lane::ImagePoint &point){
+        return radial.undistort(point,straight.width,straight.height);
+    });
+    assert(radial_heading.type==0&&radial_heading.confidence>=60);
+    assert(!m_lane::estimate_ego_curve_mapped(straight,[](m_lane::ImagePoint &){ return false; }).confidence);
+    auto cropped=m_lane::estimate_ego_curve_mapped(straight,[](m_lane::ImagePoint &point){
+        return point.y>=155&&point.y<=205;
+    },true);
+    assert(cropped.type==0&&cropped.confidence==75&&std::abs(cropped.span_px-50)<1e-5);
+    assert(!m_lane::estimate_ego_curve_mapped(straight,[](m_lane::ImagePoint &point){
+        return point.y<170||point.y>185;
+    },true).confidence);
+    assert(!m_lane::estimate_ego_curve_mapped(straight,[](m_lane::ImagePoint &point){
+        return point.y>=170&&point.y<=184;
+    },true).confidence);
+    const m_lane::GroundProjection ground(".30,.40,.70,.40,.90,.95,.10,.95,2");
+    assert(ground.valid()&&ground.enabled());
+    assert(!m_lane::GroundProjection(".3,.4,.7,.4,.1,.95,.9,.95,2").valid());
+    assert(!m_lane::GroundProjection().enabled());
+    assert(!m_lane::GroundProjection::for_camera("", "unused").valid());
+    if (argc == 2)
+    {
+        const auto from_file = m_lane::GroundProjection::for_camera(nullptr, argv[1]);
+        assert(from_file.valid() && from_file.enabled() && from_file.aspect() == 2.);
+    }
+    m_lane::ImagePoint outside{159.5, 0.};
+    assert(!ground.ground_at(outside, 320, 240));
+    for (m_lane::ImagePoint unit : {m_lane::ImagePoint{0,0}, {1,0}, {1,1}, {0,1}, {.3,.7}})
+    {
+        auto image=unit;
+        assert(ground.image_at(image,320,240));
+        assert(radial.distort(image,320,240));
+        assert(radial.undistort(image,320,240));
+        assert(ground.ground_at(image,320,240));
+        assert(std::abs(image.x-(unit.x-.5)*160)<1e-8);
+        assert(std::abs(image.y-unit.y*320)<1e-8);
+    }
+    for (double slope : {0., -.25, .25})
+    {
+        auto scene=straight;
+        for (int side=0;side<2;++side)
+        {
+            const double offset=side ? .67 : .33;
+            m_lane::ImagePoint far{offset+slope*.8,.10}, near{offset-slope*.8,.90};
+            assert(ground.image_at(far,320,240)&&ground.image_at(near,320,240));
+            const double s=(near.x-far.x)/(near.y-far.y);
+            auto &edge=side ? scene.right : scene.left;
+            edge.first_y=(unsigned)std::ceil(far.y);
+            edge.last_y=(unsigned)std::floor(near.y);
+            edge.fit_a=far.x+s*(240*.95-far.y);
+            edge.fit_b=s*240*.52;
+        }
+        auto bird=m_lane::estimate_ego_curve_mapped(scene,[&](m_lane::ImagePoint &point){
+            return ground.ground_at(point,320,240);
+        },true);
+        assert(bird.confidence>=60&&bird.type==(slope<0?1u:slope>0?2u:0u));
+        assert(bird.angle==(slope?14u:0u));
+    }
     // Check both sides of 40 degrees before rounding the transmitted angle.
     constexpr float radians_per_degree=.017453292519943295f;
     const float below=240.f*.52f*std::tan(39.9f*radians_per_degree);

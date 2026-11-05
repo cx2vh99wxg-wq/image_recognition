@@ -104,13 +104,34 @@ $(BUILD_DIR)/test_ego_lane: tests/test_ego_lane.cpp include/line_style_analyzer.
 test-ego-lane: $(BUILD_DIR)/test_ego_lane
 	./$(BUILD_DIR)/test_ego_lane
 
-$(BUILD_DIR)/test_front_radial: tests/test_front_radial.cpp include/front_radial.h include/front_radial_preview.h include/lane_curve_geometry.h
+$(BUILD_DIR)/test_front_radial: tests/test_front_radial.cpp include/front_camera_layout.h include/front_radial.h include/front_radial_preview.h include/lane_curve_geometry.h
 	@mkdir -p $(BUILD_DIR)
 	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 $(INCLUDES) $< -o $@
 
 .PHONY: test-front-radial
 test-front-radial: $(BUILD_DIR)/test_front_radial
 	./$(BUILD_DIR)/test_front_radial
+
+$(BUILD_DIR)/test_front_ipm: tests/test_front_ipm.cpp include/front_radial_preview.h include/ground_projection.h include/ego_lane_selector.h include/lane_curve_geometry.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 $(INCLUDES) $< -o $@
+
+.PHONY: test-front-ipm
+test-front-ipm: $(BUILD_DIR)/test_front_ipm
+	./$(BUILD_DIR)/test_front_ipm
+
+$(BUILD_DIR)/test_lane_curve_geometry: tests/test_lane_curve_geometry.cpp include/lane_curve_geometry.h include/front_radial.h include/ground_projection.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 $(INCLUDES) $< -o $@
+
+test-lane-curve-geometry: $(BUILD_DIR)/test_lane_curve_geometry
+	./$(BUILD_DIR)/test_lane_curve_geometry
+
+$(BUILD_DIR)/front_geometry_replay: tools/front_geometry_replay.cpp include/front_radial.h include/ground_projection.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 $(INCLUDES) $< -o $@
+
+front-geometry-replay: $(BUILD_DIR)/front_geometry_replay
 
 $(BUILD_DIR)/line_style_replay: tools/line_style_replay.cpp include/line_style_analyzer.h include/ego_lane_selector.h include/line_style_trace.h ../include/line_style.h
 	@mkdir -p $(BUILD_DIR)

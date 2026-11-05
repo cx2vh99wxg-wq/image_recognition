@@ -4,7 +4,9 @@
 #include "yolo_integration.h"
 #include "line_style_analyzer.h"
 #include "line_style_snapshot.h"
+#include "front_radial_preview.h"
 #include "lane_curve_geometry.h"
+#include "ground_projection.h"
 #include "../../../common/perception/include/curve_heading.h"
 #include "traffic_vision.h"
 #include <cstdio>
@@ -39,6 +41,7 @@ struct Snapshot
     int width = 0, height = 0;
     YOLOCurveResult curve = {};
     YOLOLineStyleResult line_style = {};
+    YOLOLineStyleResult ipm_pair = {};
     std::vector<float> lane, drivable;
 
     bool fresh(uint64_t now) const
@@ -71,9 +74,11 @@ class LatestWorker
 {
   public:
     LatestWorker(YOLOEngine *engine, int width, int height,
-                 traffic::NpuTask *optional_task = nullptr)
+                 traffic::NpuTask *optional_task = nullptr,
+                 const FrontRadialPreview *ipm_test = nullptr)
         : engine_(engine), optional_task_(optional_task), width_(width), height_(height),
-          pending_pixels_((size_t)width * height * 3), working_pixels_((size_t)width * height * 3)
+          pending_pixels_((size_t)width * height * 3), working_pixels_((size_t)width * height * 3),
+          ipm_test_(ipm_test)
     {
         const char *curve_mode = std::getenv("LANE_CURVE_MODE");
         ego_curve_ = !curve_mode || std::strcmp(curve_mode, "ego-boundaries") == 0;
@@ -83,6 +88,17 @@ class LatestWorker
             std::fprintf(stderr, "[FRONT_GEOMETRY] radial calibration %s lambda=%.6f\n",
                          radial_.valid() ? "enabled" : "invalid; heading suppressed",
                          radial_.coefficient());
+        if (ground_.enabled())
+            std::fprintf(stderr, "[FRONT_GEOMETRY] ground calibration %s length/width=%.6f\n",
+                         ground_.valid() ? "enabled" : "invalid; heading suppressed",
+                         ground_.aspect());
+        if (ipm_test_)
+        {
+            const size_t tile_pixels = (size_t)(width / 2) * (height / 2);
+            ipm_rgb_.resize(3 * tile_pixels);
+            ipm_lane_.resize(tile_pixels);
+            ipm_green_.resize(tile_pixels);
+        }
         thread_ = std::thread(&LatestWorker::run, this);
     }
     ~LatestWorker()
@@ -232,15 +248,47 @@ class LatestWorker
                             ++dump_count_;
                             dump_ns_ = now;
                         }
+                        if (ipm_test_)
+                        {
+                            const bool log_ipm = !ipm_log_ns_ || now - ipm_log_ns_ >= 1000000000ULL;
+                            if (log_ipm)
+                                ipm_log_ns_ = now;
+                            if (ipm_test_->remap_masks(raw.lane_line_data, raw.drivable_area_data,
+                                                       raw.width, raw.height, ipm_lane_.data(),
+                                                       ipm_green_.data()))
+                            {
+                                ipm_test_->render(working_pixels_.data(), ipm_rgb_.data());
+                                LineStyleTrace trace;
+                                const auto bird = EgoLaneSelector(.5).analyze(
+                                    ipm_lane_.data(), ipm_green_.data(), ipm_rgb_.data(),
+                                    width_ / 2, height_ / 2, &trace, true);
+                                const auto curve = estimate_ego_curve(bird, true);
+                                if (curve.confidence)
+                                    result->ipm_pair = bird;
+                                ++ipm_frames_;
+                                ipm_valid_ += curve.confidence != 0;
+                                if (log_ipm)
+                                    std::fprintf(stderr,
+                                             "[IPM_TEST] source=%llu area=%u tracks=%u left=%d right=%d near_y=%.0f type=%u confidence=%u span=%.1f curvature_grid=%.6f reason=%u valid=%u/%u\n",
+                                             (unsigned long long)source, bird.road_area, bird.object_count,
+                                             trace.selected_left, trace.selected_right, trace.near_y,
+                                             curve.type, curve.confidence, curve.span_px,
+                                             curve.curvature, curve.reason, ipm_valid_, ipm_frames_);
+                            }
+                            else if (log_ipm)
+                                std::fprintf(stderr, "[IPM_TEST] mask size does not match input\n");
+                        }
                         int pixels = yolo_overlay_lane_and_drivable(working_pixels_.data(), width_,
                                                                     height_, &raw);
                         int curve_status = 0;
                         if (ego_curve_)
                         {
-                            EgoCurve observed_curve = radial_.enabled()
+                            EgoCurve observed_curve = (radial_.enabled() || ground_.enabled())
                                 ? estimate_ego_curve_mapped(observed, [&](ImagePoint &p) {
-                                      return radial_.undistort(p, observed.width, observed.height);
-                                  })
+                                      return radial_.undistort(p, observed.width, observed.height) &&
+                                             (!ground_.enabled() ||
+                                              ground_.ground_at(p, observed.width, observed.height));
+                                  }, ground_.enabled())
                                 : estimate_ego_curve(observed);
                             EgoCurve curve =
                                 curve_confirm_.update(observed_curve, source, captured);
@@ -339,6 +387,8 @@ class LatestWorker
     EgoCurveConfirm curve_confirm_;
     const FrontRadial radial_ = FrontRadial::for_camera(std::getenv("LANE_RADIAL_LAMBDA"),
                                                        "front_radial.conf");
+    const GroundProjection ground_ = GroundProjection::for_camera(std::getenv("LANE_GROUND_RECT"),
+                                                                   "front_ground.conf");
     bool ego_curve_ = false;
     SnapshotRequest snapshot_request_;
     uint64_t line_log_ns_ = 0, dump_ns_ = 0, curve_log_ns_ = 0;
@@ -350,6 +400,11 @@ class LatestWorker
     bool stopping_ = false, pending_ = false;
     uint64_t pending_id_ = 0, pending_capture_ns_ = 0;
     std::vector<uint8_t> pending_pixels_, working_pixels_;
+    const FrontRadialPreview *ipm_test_;
+    std::vector<uint8_t> ipm_rgb_, ipm_green_;
+    std::vector<float> ipm_lane_;
+    uint64_t ipm_log_ns_ = 0;
+    unsigned ipm_frames_ = 0, ipm_valid_ = 0;
     std::shared_ptr<const Snapshot> latest_;
     std::atomic<bool> failed_{false};
     std::atomic<uint64_t> calls_{0}, successful_{0}, fresh_{0}, stale_{0}, replaced_{0};

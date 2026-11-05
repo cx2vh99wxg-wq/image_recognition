@@ -1,4 +1,5 @@
 #include "lane_curve_geometry.h"
+#include "front_camera_layout.h"
 #include "front_radial_preview.h"
 #include <cassert>
 #include <cstdio>
@@ -42,6 +43,27 @@ int main(int argc, char **argv)
 
     // Exercise the actual RGB remapper, with sentinels in the other three tiles.
     constexpr int mosaic_width = width * 2, mosaic_height = height * 2;
+    const size_t half_frame = (size_t)mosaic_width * height;
+    std::vector<uint16_t> raw(half_frame * 2);
+    for (int y = 0; y < mosaic_height; ++y)
+        for (int x = 0; x < mosaic_width; ++x)
+            raw[y * mosaic_width + x] = ((y < height) == (x < width)) ? 0x7e0 : x < width ? 0x1f : 0xf800;
+    const auto normal_frame = raw;
+    m_lane::FrontCameraLayout layout;
+    assert(layout.observe(raw.data(), mosaic_width, mosaic_height) && !layout.rows_swapped());
+    std::rotate(raw.begin(), raw.begin() + half_frame, raw.end());
+    m_lane::FrontCameraLayout first_frame_swapped;
+    assert(first_frame_swapped.observe(raw.data(), mosaic_width, mosaic_height) && first_frame_swapped.rows_swapped());
+    assert(!layout.observe(raw.data(), mosaic_width, mosaic_height));
+    assert(!layout.observe(raw.data(), mosaic_width, mosaic_height));
+    assert(layout.observe(raw.data(), mosaic_width, mosaic_height) && layout.rows_swapped());
+    std::vector<uint8_t> normalized(3 * raw.size()), expected(normalized.size());
+    layout.unpack(raw.data(), normalized.data(), mosaic_width, mosaic_height);
+    frame_unpack_rgb565(normal_frame.data(), expected.data(), normal_frame.size());
+    assert(normalized == expected);
+    std::vector<uint16_t> ambiguous(raw.size(), 0xffff);
+    assert(!layout.observe(ambiguous.data(), mosaic_width, mosaic_height) && layout.rows_swapped());
+
     std::vector<uint8_t> mosaic(mosaic_width * mosaic_height * 3, 231);
     auto pixel = [&](int x, int y) { return mosaic.data() + (y * mosaic_width + x) * 3; };
     for (int y = 0; y < height; ++y)
@@ -57,12 +79,26 @@ int main(int argc, char **argv)
     disabled.apply(mosaic.data());
     assert(mosaic == identity);
     m_lane::FrontRadialPreview preview(mosaic_width, mosaic_height, camera);
-    assert(preview.enabled() && preview.display_scale() > .70 && preview.display_scale() < .72);
+    assert(preview.enabled() && preview.display_scale() > .894 && preview.display_scale() < .896);
+    // The top midpoint bounds the full, same-aspect crop.
+    m_lane::ImagePoint beyond_y{159.5, 119.5 - 119.5 / (preview.display_scale() - .001)};
+    assert(camera.distort(beyond_y, width, height) && beyond_y.y < 0.);
     preview.apply(mosaic.data());
+    std::vector<uint16_t> udp_frame(raw.size());
+    frame_pack_rgb565(mosaic.data(), udp_frame.data(), udp_frame.size());
     for (int y = 0; y < mosaic_height; ++y)
         for (int x = 0; x < mosaic_width; ++x)
-            if (x >= width || y >= height)
+        {
+            if ((x < width) != (y < height))
                 assert(pixel(x, y)[0] == 231 && pixel(x, y)[1] == 231 && pixel(x, y)[2] == 231);
+            else
+                assert(pixel(x, y)[2] == 199);
+            if (x >= width && y >= height)
+            {
+                assert(std::memcmp(pixel(x, y), pixel(x - width, y - height), 3) == 0);
+                assert(udp_frame[y * mosaic_width + x] == udp_frame[(y - height) * mosaic_width + x - width]);
+            }
+        }
     for (auto point : {m_lane::ImagePoint{159., 119.}, {90., 96.}, {227., 179.}, {319., 239.}, {0., 0.}})
     {
         const auto p = pixel((int)point.x, (int)point.y);
@@ -71,7 +107,11 @@ int main(int argc, char **argv)
         assert(camera.distort(point, width, height));
         assert(std::abs(p[0] - point.y) < .51 && std::abs(p[1] - point.x / 2.) < 1.51 && p[2] == 199);
     }
-    assert(pixel(159, 0)[0] == 0 && pixel(159, 0)[1] == 0 && pixel(159, 0)[2] == 0);
+    m_lane::FrontRadialPreview pincushion(mosaic_width, mosaic_height, m_lane::FrontRadial(.15));
+    assert(pincushion.enabled() && pincushion.display_scale() > 1.);
+    std::fill(mosaic.begin(), mosaic.end(), 173);
+    pincushion.apply(mosaic.data());
+    assert(std::all_of(mosaic.begin(), mosaic.end(), [](uint8_t p) { return p == 173; }));
 
     YOLOLineStyleResult road{};
     road.width = width;
@@ -104,5 +144,5 @@ int main(int argc, char **argv)
     }
     road.left.last_y = 0;
     assert(!m_lane::estimate_ego_curve_mapped(road, map).confidence);
-    std::puts("PASS front radial: grid straightness, round trip, RGB preview, other tiles, straight/left/right and missing edge");
+    std::puts("PASS front radial: DMA row order, centered 4:3 crop, both M center tiles, S front center, and steering geometry");
 }
