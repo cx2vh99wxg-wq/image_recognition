@@ -79,6 +79,10 @@ class LatestWorker
         ego_curve_ = !curve_mode || std::strcmp(curve_mode, "ego-boundaries") == 0;
         std::fprintf(stderr, "[CURVE_MODE] %s\n",
                      ego_curve_ ? "ego-boundaries candidate" : "legacy projection");
+        if (radial_.enabled())
+            std::fprintf(stderr, "[FRONT_GEOMETRY] radial calibration %s lambda=%.6f\n",
+                         radial_.valid() ? "enabled" : "invalid; heading suppressed",
+                         radial_.coefficient());
         thread_ = std::thread(&LatestWorker::run, this);
     }
     ~LatestWorker()
@@ -233,7 +237,11 @@ class LatestWorker
                         int curve_status = 0;
                         if (ego_curve_)
                         {
-                            EgoCurve observed_curve = estimate_ego_curve(observed);
+                            EgoCurve observed_curve = radial_.enabled()
+                                ? estimate_ego_curve_mapped(observed, [&](ImagePoint &p) {
+                                      return radial_.undistort(p, observed.width, observed.height);
+                                  })
+                                : estimate_ego_curve(observed);
                             EgoCurve curve =
                                 curve_confirm_.update(observed_curve, source, captured);
                             result->curve.curve_type = curve.type;
@@ -329,6 +337,8 @@ class LatestWorker
     traffic::NpuTask *optional_task_;
     LineStyleAnalyzer line_analyzer_;
     EgoCurveConfirm curve_confirm_;
+    const FrontRadial radial_ = FrontRadial::for_camera(std::getenv("LANE_RADIAL_LAMBDA"),
+                                                       "front_radial.conf");
     bool ego_curve_ = false;
     SnapshotRequest snapshot_request_;
     uint64_t line_log_ns_ = 0, dump_ns_ = 0, curve_log_ns_ = 0;

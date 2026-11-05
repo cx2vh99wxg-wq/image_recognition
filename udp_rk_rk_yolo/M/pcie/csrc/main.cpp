@@ -4,6 +4,7 @@
 #include "fspi_module.h"
 #include "yolo_integration.h"
 #include "latest_lane_worker.h"
+#include "front_radial_preview.h"
 #include "line_style_ipc.h"
 #include "traffic_service.h"
 #include "shared_memory.h"
@@ -1120,6 +1121,29 @@ int main()
     LineStyleData line_initial = {};
     line_ipc_write(&line_ipc, &line_initial);
     m_lane::LineStyleAnalyzer synchronous_line_analyzer;
+#if ENABLE_RENDERING
+    std::unique_ptr<m_lane::FrontRadialPreview> front_preview;
+    const char *preview_mode = getenv("LANE_RADIAL_PREVIEW");
+    if (!preview_mode || strcmp(preview_mode, "0") != 0)
+    {
+        const auto camera = m_lane::FrontRadial::for_camera(getenv("LANE_RADIAL_LAMBDA"),
+                                                           "front_radial.conf");
+        if (camera.valid() && camera.enabled())
+        {
+            try
+            {
+                front_preview.reset(new m_lane::FrontRadialPreview(IMAGE_WIDTH, IMAGE_HEIGHT, camera));
+                if (front_preview->enabled())
+                    printf("[FRONT_PREVIEW] radial correction enabled lambda=%.6f scale=%.3f\n",
+                           camera.coefficient(), front_preview->display_scale());
+            }
+            catch (const std::exception &error)
+            {
+                fprintf(stderr, "[FRONT_PREVIEW] unavailable: %s\n", error.what());
+            }
+        }
+    }
+#endif
     const uint32_t line_session = (uint32_t)(monotonic_ns() ^ ((uint64_t)getpid() << 16)) | 1u;
     while (g_running)
     {
@@ -1290,6 +1314,9 @@ int main()
         /* 图像处理：步骤4: 渲染带有识别结果的图像 */
         // 停用示例，仅供对照：printf("[DEBUG] 渲染开始\n");
         mark = monotonic_ns();
+        // M 的前视校正仅用于本机显示。共享内存已发布原坐标画面供 S 端使用。
+        if (front_preview)
+            front_preview->apply(image_buf_888);
         if (render_engine_render_frame_with_detections(&render_engine, image_buf_888) != 0)
         {
             printf("注意: 渲染未成功，但继续处理下一帧\n");
