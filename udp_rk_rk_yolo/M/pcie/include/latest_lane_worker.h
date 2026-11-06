@@ -7,7 +7,6 @@
 #include "front_radial_preview.h"
 #include "lane_curve_geometry.h"
 #include "ground_projection.h"
-#include "../../../common/perception/include/curve_heading.h"
 #include "traffic_vision.h"
 #include <cstdio>
 #include <cstdlib>
@@ -85,6 +84,7 @@ class LatestWorker
         ego_curve_ = !curve_mode || std::strcmp(curve_mode, "ego-boundaries") == 0;
         std::fprintf(stderr, "[CURVE_MODE] %s\n",
                      ego_curve_ ? "ego-boundaries candidate" : "legacy projection");
+        std::fprintf(stderr, "[LANE_CANDIDATES] %s\n", line_analyzer_.bottom_up() ? "bottom-up" : "seed-fit");
         if (radial_.enabled())
             std::fprintf(stderr, "[FRONT_GEOMETRY] radial calibration %s lambda=%.6f\n",
                          radial_.valid() ? "enabled" : "invalid; heading suppressed",
@@ -276,7 +276,7 @@ class LatestWorker
                             {
                                 ipm_test_->render(working_pixels_.data(), ipm_rgb_.data());
                                 LineStyleTrace trace;
-                                const auto bird = EgoLaneSelector(.5).analyze(
+                                const auto bird = EgoLaneSelector(.5, line_analyzer_.bottom_up()).analyze(
                                     ipm_lane_.data(), ipm_green_.data(), ipm_rgb_.data(),
                                     width_ / 2, height_ / 2, &trace, true);
                                 const auto curve = estimate_ego_curve(bird, true);
@@ -311,7 +311,7 @@ class LatestWorker
                                 curve_confirm_.update(observed_curve, source, captured);
                             result->curve.curve_type = curve.type;
                             result->curve.confidence = curve.confidence;
-                            result->curve.angle = curve_encode_image_heading(curve.angle);
+                            result->curve.angle = curve.angle;
                             if (!curve_log_ns_ || now - curve_log_ns_ >= 2000000000ULL)
                             {
                                 std::fprintf(

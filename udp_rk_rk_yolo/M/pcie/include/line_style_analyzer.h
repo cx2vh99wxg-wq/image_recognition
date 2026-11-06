@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <vector>
 namespace m_lane
 {
@@ -35,6 +36,7 @@ class LineStyleAnalyzer
     } confirm_[2];
     uint64_t last_id_ = 0, last_capture_ = 0;
     double ego_anchor_ = -1;
+    bool bottom_up_ = false;
     static bool fit(const std::vector<Point> &points, Fit &f)
     {
         if (points.size() < 8)
@@ -380,6 +382,8 @@ class LineStyleAnalyzer
   public:
     LineStyleAnalyzer()
     {
+        const char *mode = std::getenv("LANE_CANDIDATE_MODE");
+        bottom_up_ = !mode || std::strcmp(mode, "bottom-up") == 0;
         const char *value = std::getenv("LANE_EGO_ANCHOR_X");
         if (value && *value)
         {
@@ -389,6 +393,7 @@ class LineStyleAnalyzer
                 ego_anchor_ = x;
         }
     }
+    bool bottom_up() const { return bottom_up_; }
     YOLOLineStyleResult analyze_front_camera(const float *mask, int w, int h, const uint8_t *image,
                                              int iw, int ih, LineStyleTrace *trace = nullptr,
                                              const float *drivable = nullptr) const
@@ -452,7 +457,7 @@ class LineStyleAnalyzer
                                 image[((size_t)(y * ih / h) * iw + x * iw / w) * 3 + c];
                 rgb = resized.data();
             }
-            return EgoLaneSelector(ego_anchor_).analyze(mask, green, rgb, w, h, trace);
+            return EgoLaneSelector(ego_anchor_, bottom_up_).analyze(mask, green, rgb, w, h, trace);
         }
         std::vector<std::vector<Point>> rows;
         // 手机画面中的道路地平线可能接近相机格顶部，

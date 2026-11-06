@@ -15,6 +15,7 @@ namespace m_lane
 class EgoLaneSelector
 {
     double fixed_anchor_;
+    bool bottom_up_;
     struct Point
     {
         double x, t;
@@ -99,7 +100,8 @@ class EgoLaneSelector
             length += std::hypot(1., f.at(coordinate(y + 1, h)) - f.at(coordinate(y, h)));
         return length;
     }
-    static bool fit_geometry(const std::vector<Point> &p, Fit &f, int w, int h)
+    static bool fit_geometry(const std::vector<Point> &p, Fit &f, int w, int h,
+                             double curvature_limit = .25)
     {
         Fit linear;
         if (!solve(p, linear, true))
@@ -117,7 +119,7 @@ class EgoLaneSelector
             b += std::abs(point.x - quadratic.at(point.t));
         }
         double span = p.back().t - p.front().t;
-        if ((a - b) / p.size() > .35 && std::abs(quadratic.c) * span * span < w * .25)
+        if ((a - b) / p.size() > .35 && std::abs(quadratic.c) * span * span < w * curvature_limit)
             f = quadratic;
         return true;
     }
@@ -295,11 +297,95 @@ class EgoLaneSelector
         }
         return false;
     }
+    static std::vector<Track> bottom_up_tracks(const std::vector<std::vector<Point>> &rows, int w,
+                                               int h)
+    {
+        struct Link
+        {
+            size_t chain, point;
+            double distance;
+        };
+        const double limit = std::max(6., w * .06);
+        std::vector<Track> chains;
+        std::vector<size_t> active;
+        std::vector<Link> links;
+        for (auto row = rows.rbegin(); row != rows.rend(); ++row)
+        {
+            if (row->empty())
+                continue;
+            const int y = row->front().y;
+            active.erase(std::remove_if(active.begin(), active.end(), [&](size_t id) {
+                return chains[id].points.back().y - y >= limit;
+            }), active.end());
+            links.clear();
+            for (const size_t id : active)
+            {
+                const Point &end = chains[id].points.back();
+                const double dy = end.y - y;
+                for (size_t j = 0; j < row->size(); ++j)
+                {
+                    const double dx = end.x - (*row)[j].x;
+                    const double distance = dx * dx + dy * dy;
+                    if (distance < limit * limit)
+                        links.push_back({id, j, distance});
+                }
+            }
+            // Each row center can belong to one track. Resolve conflicts using
+            // the closest eligible endpoint before creating new seeds.
+            std::stable_sort(links.begin(), links.end(), [](const Link &a, const Link &b) {
+                return a.distance < b.distance;
+            });
+            std::vector<bool> claimed(row->size());
+            for (const auto &link : links)
+                if (!claimed[link.point] && chains[link.chain].points.back().y > y)
+                {
+                    chains[link.chain].points.push_back((*row)[link.point]);
+                    claimed[link.point] = true;
+                }
+            for (size_t j = 0; j < row->size(); ++j)
+                if (!claimed[j])
+                {
+                    active.push_back(chains.size());
+                    chains.emplace_back();
+                    chains.back().points.push_back((*row)[j]);
+                }
+        }
+
+        std::vector<Track> tracks;
+        for (auto &chain : chains)
+        {
+            auto &points = chain.points;
+            if (points.size() < 8)
+                continue;
+            std::reverse(points.begin(), points.end());
+            chain.first = points.front().y;
+            chain.last = points.back().y;
+            const int span = chain.last - chain.first;
+            if (span < h * .08 || points.size() * 4 < (size_t)span ||
+                !fit_geometry(points, chain.fit, w, h, .8))
+                continue;
+            for (const auto &p : points)
+                chain.error += std::abs(p.x - chain.fit.at(p.t));
+            chain.error /= points.size();
+            if (chain.error > w * .025)
+                continue;
+            chain.nn = (unsigned)points.size();
+            chain.length = arc(chain.fit, chain.first, chain.last, h);
+            tracks.push_back(std::move(chain));
+        }
+        std::stable_sort(tracks.begin(), tracks.end(), [](const Track &a, const Track &b) {
+            return a.nn > b.nn;
+        });
+        if (tracks.size() > 6)
+            tracks.resize(6);
+        return tracks;
+    }
+
     static std::vector<Track> objects(const float *mask, const uint8_t *rgb, Road &road, int w,
-                                      int h, bool ground)
+                                      int h, bool ground, bool bottom_up)
     {
         std::vector<std::vector<Point>> rows;
-        for (int y = h * 12 / 100; y < h * 96 / 100; ++y)
+        for (int y = bottom_up ? 0 : h * 12 / 100; y < (bottom_up ? h : h * 96 / 100); ++y)
         {
             std::vector<Point> row;
             for (int x = 0; x < w;)
@@ -355,10 +441,10 @@ class EgoLaneSelector
                 road.reference_y = center_rows[center_rows.size() / 2];
             }
         }
-        std::vector<Track> tracks;
+        std::vector<Track> tracks = bottom_up ? bottom_up_tracks(rows, w, h) : std::vector<Track>{};
         std::vector<Fit> rejected_seeds;
         const double tolerance = std::max(3., w * .022);
-        for (int object = 0; object < 6; ++object)
+        for (int object = 0; !bottom_up && object < 6; ++object)
         {
             std::vector<Point> anchors;
             for (size_t r = 0; r < rows.size(); r += 4)
@@ -935,7 +1021,8 @@ class EgoLaneSelector
     }
 
   public:
-    explicit EgoLaneSelector(double normalized_anchor = -1) : fixed_anchor_(normalized_anchor)
+    explicit EgoLaneSelector(double normalized_anchor = -1, bool bottom_up = false)
+        : fixed_anchor_(normalized_anchor), bottom_up_(bottom_up)
     {
     }
     YOLOLineStyleResult analyze(const float *mask, const uint8_t *green, const uint8_t *rgb, int w,
@@ -955,7 +1042,14 @@ class EgoLaneSelector
             road.reference = fixed_anchor_ * w;
             road.centered = true;
         }
-        auto tracks = objects(mask, rgb, road, w, h, ground);
+        else if (bottom_up_ && road.last >= h * .9 && road.mask[(h * 9 / 10) * w + w / 2])
+        {
+            // Near the vehicle, follow its optical axis even when a tight
+            // bend keeps the connected road area below the wide-road cutoff.
+            road.reference = w / 2.;
+            road.centered = true;
+        }
+        auto tracks = objects(mask, rgb, road, w, h, ground, bottom_up_);
         result.road_area = road.area;
         result.object_count = (uint32_t)tracks.size();
         result.reference_x = road.reference;
@@ -980,17 +1074,21 @@ class EgoLaneSelector
         }
         double best = -1;
         int selected = -1;
+        int selected_near_y = near_y;
         for (size_t i = 0; i + 1 < tracks.size(); ++i)
         {
             const Track &left = tracks[i];
             const Track &right = tracks[i + 1];
             if (left.nn + right.nn < 8)
                 continue;
-            double lx = extended(left, near_y, h), rx = extended(right, near_y, h), width = rx - lx;
+            const int far = std::max(left.first, right.first);
+            const int pair_near_y = bottom_up_ ? std::min(left.last, right.last) : near_y;
+            if (bottom_up_ && pair_near_y - far < h * .1)
+                continue;
+            double lx = extended(left, pair_near_y, h), rx = extended(right, pair_near_y, h), width = rx - lx;
             if (width < w * .08 || width > w * 1.8 || lx >= road.reference - w * .012 ||
                 rx <= road.reference + w * .012)
                 continue;
-            int far = std::max(left.first, right.first);
             double far_width = extended(right, far, h) - extended(left, far, h);
             if (far_width < -w * .025 || far_width > width * .9 + w * .03)
                 continue;
@@ -1028,6 +1126,7 @@ class EgoLaneSelector
             {
                 best = score;
                 selected = (int)i;
+                selected_near_y = pair_near_y;
             }
         }
         if (selected < 0)
@@ -1039,9 +1138,10 @@ class EgoLaneSelector
         {
             trace->selected_left = selected;
             trace->selected_right = selected + 1;
+            trace->near_y = selected_near_y;
         }
-        double visible_width = std::min((double)w, extended(tracks[selected + 1], near_y, h)) -
-                               std::max(0., extended(tracks[selected], near_y, h));
+        double visible_width = std::min((double)w, extended(tracks[selected + 1], selected_near_y, h)) -
+                               std::max(0., extended(tracks[selected], selected_near_y, h));
         result.left = measure(tracks[selected], rgb, w, h, road.first, road.last - road.first,
                               visible_width, trace ? &trace->left : nullptr);
         result.right = measure(tracks[selected + 1], rgb, w, h, road.first, road.last - road.first,
