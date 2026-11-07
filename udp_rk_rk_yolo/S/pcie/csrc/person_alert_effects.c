@@ -1,9 +1,31 @@
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
 #include "person_alert_effects.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <sys/time.h>
+#include <pthread.h>
+#include <errno.h>
+#include <sys/resource.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+#if defined(__ARM_NEON) || defined(__aarch64__)
+#include <arm_neon.h>
+#endif
+
+typedef struct { float *on, *off; } AlertMaskBuild;
+
+static void accumulate_alert_mask(AlertMaskBuild *mask, int index, float intensity)
+{
+    if (intensity > 0.01f)
+        mask->on[index] *= 1.0f - intensity;
+    intensity *= 0.2f;
+    if (intensity > 0.01f)
+        mask->off[index] *= 1.0f - intensity;
+}
 
 /* 图像处理：全局闪烁状态由初始化入口设置，逐帧绘制时复用。 */
 AlertEffectState g_alert_state = {0, 0, 0};
@@ -83,9 +105,20 @@ static float calculate_distance_to_box(int pixel_x, int pixel_y, const BOX_RECT 
     if (x <= 0 && y <= 0)
         return -(float)(x > y ? -x : -y);
 
-    const float dx = x > 0 ? (float)x : 0.0f;
-    const float dy = y > 0 ? (float)y : 0.0f;
-    return sqrtf(dx * dx + dy * dy);
+    const int dx = x > 0 ? x : 0, dy = y > 0 ? y : 0;
+    // Every consumer only distinguishes distances up to 60 pixels.
+    if (dx > BOX_OUTER_GRADIENT_WIDTH || dy > BOX_OUTER_GRADIENT_WIDTH)
+        return BOX_OUTER_GRADIENT_WIDTH + 1.0f;
+    static float distances[61][61];
+    static int ready;
+    if (!ready)
+    {
+        for (int a = 0; a <= 60; ++a)
+            for (int b = 0; b <= 60; ++b)
+                distances[a][b] = sqrtf((float)(a * a + b * b));
+        ready = 1;
+    }
+    return distances[dx][dy];
 }
 
 static int corner_is_left(CornerType corner)
@@ -271,11 +304,17 @@ static void blend_red_pixel(uint8_t *rgb_data, int pixel_idx, float intensity)
 /* 保留浮点表达式和混合次序，
  * 只跳过框体及圆角两项贡献都严格为零的区段。 */
 static void draw_box_alert_span(uint8_t *rgb_data, int width, int y, int left, int right,
-                                const BOX_RECT *box, CornerType corner, float blink)
+                                const BOX_RECT *box, CornerType corner, float blink,
+                                AlertMaskBuild *mask)
 {
     for (int x = left; x <= right; ++x)
     {
         float intensity = calculate_red_effect_intensity(x, y, box, corner);
+        if (mask)
+        {
+            accumulate_alert_mask(mask, y * width + x, intensity);
+            continue;
+        }
         intensity *= blink;
         if (intensity <= 0.01f)
             continue;
@@ -284,7 +323,7 @@ static void draw_box_alert_span(uint8_t *rgb_data, int width, int y, int left, i
 }
 
 static void draw_corner_alert_span(uint8_t *rgb_data, int width, int y, int left, int right,
-                                   CornerType corner, float blink)
+                                   CornerType corner, float blink, AlertMaskBuild *mask)
 {
     for (int x = left; x <= right; ++x)
     {
@@ -292,6 +331,11 @@ static void draw_corner_alert_span(uint8_t *rgb_data, int width, int y, int left
         if (dist_to_edge <= SCREEN_EDGE_GRADIENT_WIDTH)
         {
             float intensity = 0.4f * (1.0f - dist_to_edge / SCREEN_EDGE_GRADIENT_WIDTH);
+            if (mask)
+            {
+                accumulate_alert_mask(mask, y * width + x, intensity);
+                continue;
+            }
             intensity *= blink;
             if (intensity <= 0.01f)
                 continue;
@@ -301,15 +345,17 @@ static void draw_corner_alert_span(uint8_t *rgb_data, int width, int y, int left
 }
 
 /* 图像处理：对人员框周围及其最近角的边缘分别叠加红色渐变，亮暗状态控制强度。 */
-void draw_person_alert_effect(uint8_t *rgb_data, int width, int height, const BOX_RECT *person_box,
-                              AlertEffectState *state)
+static void draw_person_alert_impl(uint8_t *rgb_data, int width, int height,
+                                   const BOX_RECT *person_box, AlertEffectState *state,
+                                   AlertMaskBuild *mask)
 {
-    if (!rgb_data || !person_box || !state || !state->is_initialized)
+    if ((!rgb_data && !mask) || !person_box || !state || !state->is_initialized)
         return;
 
-    update_blink_state(state);
+    if (!mask)
+        update_blink_state(state);
 
-    float blink_multiplier = state->blink_state ? 1.0f : 0.2f;
+    float blink_multiplier = mask || state->blink_state ? 1.0f : 0.2f;
 
     CornerType nearest_corner = get_nearest_corner(person_box);
     if (nearest_corner == CORNER_NONE)
@@ -375,14 +421,14 @@ void draw_person_alert_effect(uint8_t *rgb_data, int width, int height, const BO
         if (skip_left <= skip_right)
         {
             draw_box_alert_span(rgb_data, width, y, box_left, skip_left - 1, person_box,
-                                nearest_corner, blink_multiplier);
+                                nearest_corner, blink_multiplier, mask);
             draw_box_alert_span(rgb_data, width, y, skip_right + 1, box_right, person_box,
-                                nearest_corner, blink_multiplier);
+                                nearest_corner, blink_multiplier, mask);
         }
         else
         {
             draw_box_alert_span(rgb_data, width, y, box_left, box_right, person_box, nearest_corner,
-                                blink_multiplier);
+                                blink_multiplier, mask);
         }
     }
 
@@ -410,9 +456,184 @@ void draw_person_alert_effect(uint8_t *rgb_data, int width, int height, const BO
                     left = edge_start;
             }
         }
-        draw_corner_alert_span(rgb_data, width, y, left, right, nearest_corner, blink_multiplier);
+        draw_corner_alert_span(rgb_data, width, y, left, right, nearest_corner, blink_multiplier, mask);
     }
 }
+
+void draw_person_alert_effect(uint8_t *rgb_data, int width, int height, const BOX_RECT *person_box,
+                              AlertEffectState *state)
+{
+    draw_person_alert_impl(rgb_data, width, height, person_box, state, NULL);
+}
+
+typedef struct
+{
+    int width, height, count, valid;
+    BOX_RECT boxes[OBJ_NUMB_MAX_SIZE];
+    float *on, *off;
+    uint16_t *alpha_on, *alpha_off;
+    uint8_t *blocks_on, *blocks_off;
+} AlertMaskCache;
+static AlertMaskCache alert_caches[2];
+
+static int prepare_alert_cache(AlertMaskCache *c, int width, int height, const BOX_RECT *boxes, int count)
+{
+    const size_t n = (size_t)width * height;
+    const size_t blocks = (n + 63) / 64;
+    if (c->valid && c->width == width && c->height == height && c->count == count &&
+        !memcmp(c->boxes, boxes, (size_t)count * sizeof(*boxes)))
+        return 1;
+    if (!c->on || c->width != width || c->height != height)
+    {
+        float *on = (float *)malloc(n * sizeof(float)), *off = (float *)malloc(n * sizeof(float));
+        uint16_t *a = (uint16_t *)malloc(n * sizeof(uint16_t)), *b = (uint16_t *)malloc(n * sizeof(uint16_t));
+        uint8_t *active_on = (uint8_t *)malloc(blocks), *active_off = (uint8_t *)malloc(blocks);
+        if (!on || !off || !a || !b || !active_on || !active_off)
+        {
+            free(on); free(off); free(a); free(b);
+            free(active_on); free(active_off);
+            return 0;
+        }
+        free(c->on); free(c->off); free(c->alpha_on); free(c->alpha_off);
+        free(c->blocks_on); free(c->blocks_off);
+        c->on = on; c->off = off; c->alpha_on = a; c->alpha_off = b;
+        c->blocks_on = active_on; c->blocks_off = active_off;
+    }
+    c->width = width; c->height = height; c->count = count; c->valid = 0;
+    memcpy(c->boxes, boxes, (size_t)count * sizeof(*boxes));
+    for (size_t i = 0; i < n; ++i)
+        c->on[i] = c->off[i] = 1.0f;
+    AlertMaskBuild mask = {c->on, c->off};
+    AlertEffectState build_state = {0, 1, 1};
+    for (int i = 0; i < count; ++i)
+        draw_person_alert_impl(NULL, width, height, boxes + i, &build_state, &mask);
+    memset(c->blocks_on, 0, blocks); memset(c->blocks_off, 0, blocks);
+    for (size_t i = 0; i < n; ++i)
+    {
+        float a = (1.0f - c->on[i]) * 256.0f + 0.5f;
+        float b = (1.0f - c->off[i]) * 256.0f + 0.5f;
+        c->alpha_on[i] = (uint16_t)(a > 256.0f ? 256.0f : a);
+        c->alpha_off[i] = (uint16_t)(b > 256.0f ? 256.0f : b);
+        if (c->alpha_on[i]) c->blocks_on[i / 64] = 1;
+        if (c->alpha_off[i]) c->blocks_off[i / 64] = 1;
+    }
+    c->valid = 1;
+    return 1;
+}
+
+static void blend_alert_span(uint8_t *rgb, const uint16_t *alpha, int length)
+{
+    int i = 0;
+#if defined(__ARM_NEON) || defined(__aarch64__)
+    const int vector_end = length & ~7;
+    for (; i < vector_end; i += 8)
+    {
+        uint8x8x3_t pixels = vld3_u8(rgb + i * 3);
+        const uint16x8_t a = vld1q_u16(alpha + i), inv = vsubq_u16(vdupq_n_u16(256), a);
+        pixels.val[0] = vshrn_n_u16(vmulq_u16(vmovl_u8(pixels.val[0]), inv), 8);
+        pixels.val[1] = vshrn_n_u16(vmulq_u16(vmovl_u8(pixels.val[1]), inv), 8);
+        pixels.val[2] = vshrn_n_u16(vmlaq_n_u16(vmulq_u16(vmovl_u8(pixels.val[2]), inv), a, 255), 8);
+        vst3_u8(rgb + i * 3, pixels);
+    }
+#endif
+    for (; i < length; ++i)
+    {
+        unsigned a = alpha[i], inv = 256 - a;
+        rgb[i * 3] = (uint8_t)(rgb[i * 3] * inv >> 8);
+        rgb[i * 3 + 1] = (uint8_t)(rgb[i * 3 + 1] * inv >> 8);
+        rgb[i * 3 + 2] = (uint8_t)((rgb[i * 3 + 2] * inv + 255 * a) >> 8);
+    }
+}
+
+static void blend_cached_alert(uint8_t *rgb, const uint16_t *alpha,
+                                const uint8_t *active, size_t count)
+{
+    if (count > SCREEN_WIDTH * SCREEN_HEIGHT) return;
+    for (size_t block = 0; block < (count + 63) / 64; ++block)
+    {
+        if (!active[block]) continue;
+        const size_t first = block * 64;
+        const int length = (int)(count - first < 64 ? count - first : 64);
+        blend_alert_span(rgb + first * 3, alpha + first, length);
+    }
+}
+
+typedef struct
+{
+    pthread_mutex_t mutex;
+    pthread_cond_t changed;
+    int started, failed, pending, building, requested;
+    int active, width, height, count;
+    BOX_RECT boxes[OBJ_NUMB_MAX_SIZE];
+} AlertMaskWorker;
+static AlertMaskWorker alert_worker = {
+    .mutex = PTHREAD_MUTEX_INITIALIZER, .changed = PTHREAD_COND_INITIALIZER, .active = -1
+};
+
+static void *alert_mask_worker(void *unused)
+{
+    (void)unused;
+#ifdef __linux__
+    // Cosmetic work must not inherit the capture thread's high priority.
+    setpriority(PRIO_PROCESS, (id_t)syscall(SYS_gettid), 0);
+#endif
+    for (;;)
+    {
+        BOX_RECT boxes[OBJ_NUMB_MAX_SIZE];
+        pthread_mutex_lock(&alert_worker.mutex);
+        while (!alert_worker.pending)
+            pthread_cond_wait(&alert_worker.changed, &alert_worker.mutex);
+        int width = alert_worker.width, height = alert_worker.height, count = alert_worker.count;
+        int target = alert_worker.active == 0 ? 1 : 0;
+        memcpy(boxes, alert_worker.boxes, (size_t)count * sizeof(*boxes));
+        alert_worker.pending = 0; alert_worker.building = 1;
+        pthread_mutex_unlock(&alert_worker.mutex);
+        int ok = prepare_alert_cache(&alert_caches[target], width, height, boxes, count);
+        pthread_mutex_lock(&alert_worker.mutex);
+        if (ok)
+            alert_worker.active = target;
+        alert_worker.building = 0;
+        pthread_cond_broadcast(&alert_worker.changed);
+        pthread_mutex_unlock(&alert_worker.mutex);
+    }
+    return NULL;
+}
+
+static int start_alert_worker(void)
+{
+    if (alert_worker.started) return 1;
+    if (alert_worker.failed) return 0;
+    // Initialize the distance table before it can be read by two threads.
+    const BOX_RECT warm = {0, 0, 0, 0};
+    (void)calculate_distance_to_box(1, 1, &warm);
+    pthread_t thread;
+    if (pthread_create(&thread, NULL, alert_mask_worker, NULL))
+    {
+        alert_worker.failed = 1;
+        return 0;
+    }
+    pthread_detach(thread);
+    alert_worker.started = 1;
+    return 1;
+}
+
+#ifdef PERSON_ALERT_CACHE_TEST
+int person_alert_cache_wait(unsigned timeout_ms)
+{
+    if (!alert_worker.started) return 1;
+    struct timespec until; clock_gettime(CLOCK_REALTIME, &until);
+    until.tv_sec += timeout_ms / 1000;
+    until.tv_nsec += (long)(timeout_ms % 1000) * 1000000L;
+    if (until.tv_nsec >= 1000000000L) { ++until.tv_sec; until.tv_nsec -= 1000000000L; }
+    pthread_mutex_lock(&alert_worker.mutex);
+    int ok = 1;
+    while (alert_worker.pending || alert_worker.building)
+        if (pthread_cond_timedwait(&alert_worker.changed, &alert_worker.mutex, &until) == ETIMEDOUT)
+        { ok = 0; break; }
+    pthread_mutex_unlock(&alert_worker.mutex);
+    return ok;
+}
+#endif
 
 /* 为全局状态后遍历检测结果，仅对名称为 person 的框绘制特效。建立初始状态。 */
 void apply_person_alert_effects(uint8_t *rgb_data, int width, int height,
@@ -426,14 +647,54 @@ void apply_person_alert_effects(uint8_t *rgb_data, int width, int height,
         alert_effects_init();
     }
 
-    for (int i = 0; i < results->count; i++)
+    BOX_RECT boxes[OBJ_NUMB_MAX_SIZE];
+    int count = 0;
+    for (int i = 0; i < results->count && i < OBJ_NUMB_MAX_SIZE; i++)
     {
         const detect_result_t *result = &results->results[i];
-
         if (strcmp(result->name, "person") == 0)
-        {
-
-            draw_person_alert_effect(rgb_data, width, height, &result->box, &g_alert_state);
-        }
+            boxes[count++] = result->box;
     }
+    if (!count)
+        return;
+    update_blink_state(&g_alert_state);
+    // With many overlapping people, retain the legacy sequential byte
+    // rounding instead of accumulating a visible composition difference.
+    if (count > 8 || width != SCREEN_WIDTH || height != SCREEN_HEIGHT)
+    {
+        for (int i = 0; i < count; ++i)
+            draw_person_alert_effect(rgb_data, width, height, boxes + i, &g_alert_state);
+        return;
+    }
+    if (!start_alert_worker())
+    {
+        AlertMaskCache *cache = &alert_caches[0];
+        if (prepare_alert_cache(cache, width, height, boxes, count))
+            blend_cached_alert(rgb_data, g_alert_state.blink_state ? cache->alpha_on : cache->alpha_off,
+                               g_alert_state.blink_state ? cache->blocks_on : cache->blocks_off,
+                               (size_t)width * height);
+        else
+            for (int i = 0; i < count; ++i)
+                draw_person_alert_effect(rgb_data, width, height, boxes + i, &g_alert_state);
+        return;
+    }
+    pthread_mutex_lock(&alert_worker.mutex);
+    if (!alert_worker.requested || alert_worker.width != width || alert_worker.height != height ||
+        alert_worker.count != count || memcmp(alert_worker.boxes, boxes, (size_t)count * sizeof(*boxes)))
+    {
+        alert_worker.width = width; alert_worker.height = height; alert_worker.count = count;
+        memcpy(alert_worker.boxes, boxes, (size_t)count * sizeof(*boxes));
+        alert_worker.requested = alert_worker.pending = 1;
+        pthread_cond_signal(&alert_worker.changed);
+    }
+    // The capture thread only blends a finished mask. The worker owns the
+    // other buffer; it never touches camera pixels or braking metadata.
+    if (alert_worker.active >= 0)
+    {
+        AlertMaskCache *cache = &alert_caches[alert_worker.active];
+        blend_cached_alert(rgb_data, g_alert_state.blink_state ? cache->alpha_on : cache->alpha_off,
+                           g_alert_state.blink_state ? cache->blocks_on : cache->blocks_off,
+                           (size_t)width * height);
+    }
+    pthread_mutex_unlock(&alert_worker.mutex);
 }

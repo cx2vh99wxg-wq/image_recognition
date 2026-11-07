@@ -2,6 +2,10 @@
 #define TRAFFIC_SERVICE_H
 #include "traffic_vision.h"
 #include <memory>
+namespace m_lane
+{
+class FrontRadialPreview;
+}
 namespace traffic
 {
 /* CPU 颜色跟踪使用独立的最新帧邮箱；只有既有车道工作线程调用的
@@ -12,7 +16,9 @@ class Service : public NpuTask
     std::unique_ptr<Impl> impl_;
 
   public:
-    explicit Service(const char *model_path, InputView view = InputView());
+    // The caller keeps correction alive until this service has stopped.
+    explicit Service(const char *model_path, InputView view = InputView(),
+                     const m_lane::FrontRadialPreview *correction = nullptr);
     ~Service();
     Service(const Service &) = delete;
     Service &operator=(const Service &) = delete;

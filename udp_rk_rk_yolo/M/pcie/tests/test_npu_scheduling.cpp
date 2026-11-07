@@ -24,6 +24,8 @@ struct Optional:traffic::NpuTask {
 };
 static void until(std::function<bool()> test){for(int i=0;i<2000&&!test();++i)std::this_thread::sleep_for(std::chrono::milliseconds(1));assert(test());}
 int main(){
+    // The fake curve below is emitted by the legacy overlay stub only.
+    if (setenv("LANE_CURVE_MODE", "legacy", 1) != 0) return 1;
     YOLOEngine engine={};engine.model_width=16;engine.model_height=12;
     std::vector<uint8_t> rgb(16*12*3);
     {

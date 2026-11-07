@@ -43,6 +43,10 @@ static Scene full(unsigned left,unsigned right,bool curved) {
     }
     return s;
 }
+static void erase_left(Scene &s,int y) {
+    int x=(int)std::lround(160-.65*(y-70));
+    for(int dx=-3;dx<=3;++dx)for(int k=0;k<3;++k)s.rgb[(y*W+x+dx)*3+k]=80;
+}
 static YOLOLineStyleResult classify(const Scene& s) { return m_lane::EgoLaneSelector().analyze(s.lane.data(),s.green.data(),s.rgb.data(),W,H); }
 static YOLOLineStyleResult known() {
     YOLOLineStyleResult r={};r.width=W;r.height=H;r.road_area=8000;r.object_count=3;r.reference_x=60;r.reference_y=100;
@@ -105,10 +109,30 @@ int main() {
     auto no_road=s;std::fill(no_road.green.begin(),no_road.green.end(),0);assert(!classify(no_road).left.type);
     a=classify(inset(LINE_DASHED));assert(a.left.type!=LINE_SOLID);
     a=classify(inset(LINE_DASHED,LINE_DASHED,true));assert(a.left.type!=LINE_SOLID); // dense repeated gaps are not a solid line
+    auto dense=full(LINE_SOLID,LINE_SOLID,false);
+    for(int y=80;y<236;++y)if((y-80)%24>=20)erase_left(dense,y);
+    a=classify(dense);assert(a.left.type==LINE_DASHED&&a.right.type==LINE_SOLID);
+    auto worn=full(LINE_SOLID,LINE_SOLID,false);
+    for(int y=155;y<160;++y)erase_left(worn,y);
+    assert(classify(worn).left.type==LINE_SOLID);
+    auto occluded=full(LINE_SOLID,LINE_SOLID,false);
+    for(int y=88;y<221;++y)erase_left(occluded,y);
+    assert(classify(occluded).left.type!=LINE_DASHED);
     m_lane::LineStyleAnalyzer analyzer;
+    const Scene centered = full(LINE_SOLID, LINE_DASHED, false);
     std::vector<float> mask(640*480,0),drive(640*480*2,0);std::vector<uint8_t> rgb(640*480*3,0);
-    for(int y=0;y<H;++y)for(int x=0;x<W;++x){size_t source=y*W+x,target=y*640+x;mask[target]=s.lane[source];drive[target]=s.green[source]?0:1;drive[640*480+target]=s.green[source]?1:0;for(int k=0;k<3;++k)rgb[target*3+k]=s.rgb[source*3+k];}
-    a=analyzer.analyze_front_camera(mask.data(),640,480,rgb.data(),640,480,nullptr,drive.data());
-    assert(a.left.type==LINE_SOLID&&a.right.type==LINE_DASHED);
+    for(int y=0;y<H;++y)for(int x=0;x<W;++x){size_t source=y*W+x,target=y*640+x;mask[target]=centered.lane[source];drive[target]=centered.green[source]?0:1;drive[640*480+target]=centered.green[source]?1:0;for(int k=0;k<3;++k)rgb[target*3+k]=centered.rgb[source*3+k];}
+    m_lane::LineStyleTrace trace;
+    a=analyzer.analyze_front_camera(mask.data(),640,480,rgb.data(),640,480,&trace,drive.data());
+    if (analyzer.bottom_up())
+    {
+        assert(trace.reference_x == W / 2. && trace.selected_left >= 0 && trace.selected_right >= 0);
+        assert(trace.objects[trace.selected_left].observed_bottom_x < W / 2.);
+        assert(trace.objects[trace.selected_right].observed_bottom_x > W / 2.);
+        std::printf("sampled front crop selected both sides, paint types=%s/%s\n",
+                    line_style_name(a.left.type), line_style_name(a.right.type));
+    }
+    else
+        assert(a.left.type == LINE_SOLID && a.right.type == LINE_DASHED);
     tracking();puts("ego lane ownership / line style / negative evidence PASS");
 }

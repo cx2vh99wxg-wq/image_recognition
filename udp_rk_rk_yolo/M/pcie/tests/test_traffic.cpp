@@ -34,6 +34,24 @@ int main(){
     auto white=signal(0);disk(white,80,60,11,255,255,255);assert(!color(white).state);
     auto blue=signal(0);disk(blue,80,60,11,20,20,250);assert(!color(blue).state);
     auto sign=background();rectangle(sign,60,40,40,120,10,90,210);disk(sign,80,100,10,240,195,0);assert(!color(sign).state);
+    const Box locator(60,40,40,120,.8f);
+    auto is_housing=[&](const Image &im){return signal_housing(im.data(),W,H,W*3,locator);};
+    for(unsigned state=0;state<=3;++state)assert(is_housing(signal(state)));
+    // The detector can include a bright margin around a genuine housing.
+    auto loose=background();rectangle(loose,72,40,40,120,20,20,20);
+    disk(loose,92,100,10,240,180,0);
+    assert(signal_housing(loose.data(),W,H,W*3,Box(60,40,57,120,.7f)));
+    auto one_sided=background();rectangle(one_sided,61,40,15,120,20,20,20);
+    assert(!is_housing(one_sided));
+    assert(!is_housing(sign)&&!is_housing(plain)&&!is_housing(background()));
+    auto blob=background();disk(blob,80,60,11,240,10,10);assert(!is_housing(blob));
+    auto bar=signal(0);rectangle(bar,77,45,5,34,240,10,10);assert(!color(bar).state);
+    auto signal_red=signal(1);
+    assert(!signal_housing(signal_red.data(),W,H,W*3,Box(60,40,40,120,.07f)));
+    auto horizontal=background();rectangle(horizontal,50,75,120,40,20,20,20);
+    disk(horizontal,150,95,11,0,235,210);
+    assert(signal_housing(horizontal.data(),W,H,W*3,Box(50,75,120,40,.8f)));
+    assert(classify_color(horizontal.data(),W,H,W*3,Box(50,75,120,40,.8f)).state==3);
     auto seam=Image(W*H*3,20);rectangle(seam,0,20,8,10,245,10,10);
     assert(!classify_color(seam.data(),W,H,W*3,Box(0,10,8,60,.073)).state);
     assert(!classify_color(seam.data(),W,H,W*3,Box(0,10,40,60,.073)).state);
@@ -53,6 +71,12 @@ int main(){
     admission.completed(1300000000ULL,20000000ULL);assert(!admission.allow(lane,1300000000ULL));lane.captured=2200000000ULL;assert(admission.allow(lane,2480000000ULL));
     for(int i=0;i<3;++i)admission.completed(3000000000ULL+i*11000000000ULL,90000000ULL);
     lane.captured=50000000000ULL;assert(!admission.allow(lane,50280000000ULL));
+    assert(configured_budget_ms(nullptr)==60&&configured_budget_ms("75")==75);
+    assert(configured_budget_ms("81")==60&&configured_budget_ms("70ms")==60);
+    Admission extended(75);extended.completed(1300000000ULL,70000000ULL);
+    lane.captured=2200000000ULL;assert(extended.allow(lane,2480000000ULL));
+    lane.curve_active=true;assert(!extended.allow(lane,2480000000ULL));lane.curve_active=false;
+    extended.completed(2500000000ULL,80000000ULL);assert(extended.violations()==1);
     TrafficLightData d={};d.session=7;d.source_id=10;d.detector_id=1;d.state=d.raw_state=TRAFFIC_RED;d.flags=TRAFFIC_BOX|TRAFFIC_CONFIRMED;d.color_quality=90;d.detector_quality=75;d.x=60;d.y=40;d.width=40;d.height=120;traffic_set_deadline(&d,1750000000ULL);
     uint8_t packet[traffic_wire::SIZE];assert(traffic_wire::encode(packet,d,1100000000ULL));traffic_wire::Receiver receiver;TrafficLightData received={};
     assert(receiver.ingest(packet,sizeof(packet),4000000000ULL,4000000000ULL,received));assert(received.state==1&&traffic_deadline(&received)==4650000000ULL);

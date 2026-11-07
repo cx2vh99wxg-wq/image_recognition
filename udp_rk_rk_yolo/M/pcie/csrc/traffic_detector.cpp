@@ -111,18 +111,17 @@ bool Detector::init(const char *path, std::string *error)
     return true;
 }
 bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<Box> &boxes,
-                      std::string *error)
+                      std::string *error, unsigned budget_ms)
 {
     boxes.clear();
     auto &p = *impl_;
     if (!p.context || !rgb || w < 1 || h < 1 || stride < w * 3)
         return fail(error, "invalid traffic input");
     p.passes = 0;
-    std::vector<Box> candidates;
     const auto began = std::chrono::steady_clock::now();
     // 手机测试图中占据大部分画面的信号灯超出 COCO 常见目标尺度；
-    // 普通视图未获得有效灯色时，才尝试居中的较小视图。
-    // 所有轮次共用同一所有者及 60ms 软预算。
+    // 普通视图未定位到可信灯壳时，才尝试居中的较小视图。
+    // 所有轮次共用同一所有者及配置的软预算。
     for (float view : {1.f, .5f, .25f})
     {
         const auto pass_began = std::chrono::steady_clock::now();
@@ -211,11 +210,8 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                             valid = false;
                             break;
                         }
-                        // 小型 320px 定位器采用较低召回门槛，该分数并非最终灯色判定；
-                        // 后续仍须结合 RGB 亮灯证据与连续三个新鲜帧，
-                        // 检测分数本身不改写，并与颜色结果分别报告。
                         float score = obj * cls;
-                        if (score < .07f)
+                        if (score < locator_score_gate)
                             continue;
                         float dx = at(base, pos), dy = at(base + 1, pos), dw = at(base + 2, pos),
                               dh = at(base + 3, pos);
@@ -238,8 +234,7 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
         rknn_outputs_release(p.context, 3, outputs);
         if (!valid || levels != 7)
             return fail(error, "unexpected YOLOv5 head layout/activation; refusing to decode");
-        // 先抑制重复锚框，再读取 RGB，避免每个锚框重复分类
-        // 同一大信号灯区域，耗尽车道工作线程的时间预算。
+        // Locator uses only the model score and color-independent housing evidence.
         std::sort(pass_candidates.begin(), pass_candidates.end(),
                   [](const Box &a, const Box &b) { return a.score > b.score; });
         if (pass_candidates.size() > 64)
@@ -247,6 +242,8 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
         std::vector<Box> selected;
         for (const auto &b : pass_candidates)
         {
+            if (!signal_housing(rgb, w, h, stride, b))
+                continue;
             bool keep = true;
             for (const auto &old : selected)
                 if (overlap(b, old) > .45f)
@@ -259,37 +256,16 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
             if (selected.size() >= 16)
                 break;
         }
-        std::vector<Box> colored;
-        for (const auto &b : selected)
-            if (classify_color(rgb, w, h, stride, b).state)
-                colored.push_back(b);
-        if (!colored.empty())
+        if (!selected.empty())
         {
-            candidates.swap(colored);
-            break;
+            boxes.swap(selected);
+            return true;
         }
-        candidates.insert(candidates.end(), selected.begin(), selected.end());
         const auto now = std::chrono::steady_clock::now();
         const double elapsed = std::chrono::duration<double, std::milli>(now - began).count();
         const double last = std::chrono::duration<double, std::milli>(now - pass_began).count();
-        if (elapsed + last * 1.05 + 1 > 60)
+        if (elapsed + last * 1.05 + 1 > budget_ms)
             break; // 可选重试一旦迟到，直接放弃而不排队。
-    }
-    std::sort(candidates.begin(), candidates.end(),
-              [](const Box &a, const Box &b) { return a.score > b.score; });
-    for (const auto &b : candidates)
-    {
-        bool keep = true;
-        for (const auto &old : boxes)
-            if (overlap(b, old) > .45f)
-            {
-                keep = false;
-                break;
-            }
-        if (keep)
-            boxes.push_back(b);
-        if (boxes.size() >= 16)
-            break;
     }
     return true;
 }

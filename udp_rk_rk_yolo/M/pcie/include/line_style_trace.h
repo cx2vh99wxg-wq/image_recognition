@@ -12,6 +12,7 @@ struct ObjectTrace
     double a, b, c;
     int first, last;
     unsigned nn_points;
+    double observed_bottom_x;
 };
 struct LineStyleTrace
 {

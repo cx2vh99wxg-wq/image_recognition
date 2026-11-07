@@ -29,6 +29,10 @@ static void verify_frame(int columns, int rows, int tile_width, int tile_height)
     }
     rotate_rgb565_tiles_180(frame, width, height, tile_width, tile_height);
     assert(storage == expected);
+    std::vector<uint8_t> separate(width*height*3+2,0xA5), fused=separate;
+    frame_unpack_rgb565(frame,separate.data()+1,(size_t)width*height);
+    unpack_rgb565_tiles_180(original.data()+guard,fused.data()+1,width,height,tile_width,tile_height);
+    assert(fused == separate);
     rotate_rgb565_tiles_180(frame, width, height, tile_width, tile_height);
     assert(storage == original);
 }

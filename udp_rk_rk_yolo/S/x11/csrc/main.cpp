@@ -559,6 +559,9 @@ static void render_car_png_with_state(uint32_t *display_pixels, int dst_x, int d
 
     const float scale_x = (float)state.png_width / dst_width;
     const float scale_y = (float)state.png_height / dst_height;
+    // car.png has an opaque 400x600 canvas; the vehicle's symmetry axis is
+    // X=220. Register that axis with the panel/lane-cue center at dst_width/2.
+    const float artwork_offset_x = state.png_width * .05f;
     const float blink = state.blink ? 0.8f : 0.3f;
     const int glow_radius = 80;
     for (int y = first_visible_pixel(dst_y, dst_height); y < dst_height && dst_y + y < COMBINED_IMAGE_HEIGHT; ++y)
@@ -569,7 +572,7 @@ static void render_car_png_with_state(uint32_t *display_pixels, int dst_x, int d
         auto *row = display_pixels + (dst_y + y) * COMBINED_IMAGE_WIDTH;
         for (int x = first_visible_pixel(dst_x, dst_width); x < dst_width && dst_x + x < COMBINED_IMAGE_WIDTH; ++x)
         {
-            const int sx = (int)(x * scale_x);
+            const int sx = (int)(x * scale_x + artwork_offset_x);
             if (sx < 0 || sx >= state.png_width)
                 continue;
             const uint8_t *rgba = state.png + (sy * state.png_width + sx) * 4;
@@ -1577,8 +1580,20 @@ int present_dashboard(RenderEngine *engine)
         transform.matrix[2][2] = XDoubleToFixed(1.0);
         XRenderSetPictureTransform(engine->display, engine->source_picture, &transform);
         XSetForeground(engine->display, engine->gc, 0x050715);
-        XFillRectangle(engine->display, engine->window, engine->gc, 0, 0, engine->window_width,
-                       engine->window_height);
+        // Clear only letterbox bars. Clearing the visible content first exposes
+        // a black frame while a large XRender scale/composite is in progress.
+        if (offset_y > 0)
+            XFillRectangle(engine->display, engine->window, engine->gc, 0, 0,
+                           engine->window_width, offset_y);
+        if (offset_y + draw_h < engine->window_height)
+            XFillRectangle(engine->display, engine->window, engine->gc, 0, offset_y + draw_h,
+                           engine->window_width, engine->window_height - offset_y - draw_h);
+        if (offset_x > 0)
+            XFillRectangle(engine->display, engine->window, engine->gc, 0, offset_y,
+                           offset_x, draw_h);
+        if (offset_x + draw_w < engine->window_width)
+            XFillRectangle(engine->display, engine->window, engine->gc, offset_x + draw_w,
+                           offset_y, engine->window_width - offset_x - draw_w, draw_h);
         XRenderComposite(engine->display, PictOpSrc, engine->source_picture, None,
                          engine->window_picture, 0, 0, 0, 0, offset_x, offset_y, draw_w, draw_h);
         flush_presentation(engine, warmup);

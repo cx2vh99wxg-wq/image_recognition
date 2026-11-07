@@ -17,7 +17,7 @@ class Detector
     Detector &operator=(const Detector &) = delete;
     bool init(const char *path, std::string *error = nullptr);
     bool detect(const uint8_t *rgb, int w, int h, int stride, std::vector<Box> &boxes,
-                std::string *error = nullptr);
+                std::string *error = nullptr, unsigned budget_ms = default_budget_ms);
     int input_size() const;
     unsigned last_passes() const;
 };

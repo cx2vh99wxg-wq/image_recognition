@@ -1,6 +1,9 @@
 #include "../../../common/image/frame_pixels.h"
+#include "../../../common/image/camera_valid_rows.h"
 #include "pcie_dma_read_test.h"
 #include "../../../common/pcie/capture_support.h"
+#include "../../../common/pcie/dma_readback_guard.h"
+#include "../../../common/pcie/dma_frame_alignment.h"
 #include "yolo_integration.h"
 #include "latest_detection.h"
 #include "person_brake_trigger.h"
@@ -317,17 +320,19 @@ int pcie_manager_capture_frame(PCIEManager *manager, uint8_t *image_buffer, size
     const int rows_per_transfer = 1; // 行边界由硬件协议规定，不能作为吞吐调节参数。
     for (int row = 0; row < IMAGE_HEIGHT; row += rows_per_transfer)
     {
-        if (!g_running)
-        {
-            errno = EINTR;
-            return -1;
-        }
+        // Finish this frame on SIGTERM; stopping mid-frame shifts the next reader.
         const int count =
             IMAGE_HEIGHT - row < rows_per_transfer ? IMAGE_HEIGHT - row : rows_per_transfer;
         manager->dma_operation.current_len = row_bytes * count / 4;
         manager->dma_operation.offset_addr = row * row_bytes;
-        if (ioctl(manager->pci_driver_fd, PCI_DMA_WRITE_CMD, &manager->dma_operation) < 0 ||
-            ioctl(manager->pci_driver_fd, PCI_READ_FROM_KERNEL_CMD, &manager->dma_operation) < 0)
+        if (ioctl(manager->pci_driver_fd, PCI_DMA_WRITE_CMD, &manager->dma_operation) < 0)
+        {
+            fprintf(stderr, "PCIe DMA submit failed at row %d/%d: %s\n", row, IMAGE_HEIGHT,
+                    strerror(errno));
+            return -1;
+        }
+        pcie_capture::wait_dma_readback(8000ULL);
+        if (ioctl(manager->pci_driver_fd, PCI_READ_FROM_KERNEL_CMD, &manager->dma_operation) < 0)
         {
             fprintf(stderr, "PCIe DMA failed at row %d/%d: %s\n", row, IMAGE_HEIGHT,
                     strerror(errno));
@@ -362,6 +367,15 @@ int pcie_manager_capture_frame(PCIEManager *manager, uint8_t *image_buffer, size
                          COLUMN_SHIFT_UP_ROWS);
     }
 
+    static pcie_capture::FrameAlignment alignment;
+    if (g_running)
+    {
+        const int sync = pcie_capture::align_dma_frame(
+            manager->pci_driver_fd, &manager->dma_operation, (const uint16_t *)image_buffer,
+            IMAGE_WIDTH, IMAGE_HEIGHT, &alignment, 8000ULL);
+        if (sync < 0) return -1;
+        if (sync > 0) return pcie_manager_capture_frame(manager, image_buffer, buffer_size);
+    }
     return 0;
 }
 
@@ -806,11 +820,10 @@ int main()
         profile.capture_ns += pipeline_clock_ns() - phase_started;
         phase_started = pipeline_clock_ns();
         const uint64_t captured = phase_started;
+        camera_extend_padding_rows((uint16_t *)image_buf_temp, IMAGE_WIDTH, IMAGE_HEIGHT,
+                                   CAMERA_TILE_HEIGHT);
 
-        /* 图像处理：S端画面按摄像头区块旋转180度，保持视角位置和识别坐标一致。 */
-        rotate_rgb565_tiles_180((uint16_t *)image_buf_temp, IMAGE_WIDTH, IMAGE_HEIGHT,
-                                CAMERA_TILE_WIDTH, CAMERA_TILE_HEIGHT);
-
+        // Fingerprint the raw source; rotation and color conversion are fused below.
         uint64_t raw_sample = sample_raw_fingerprint((const uint16_t *)image_buf_temp);
         if (!profile.have_raw_sample || raw_sample != profile.last_raw_sample)
             profile.raw_changed++;
@@ -819,8 +832,9 @@ int main()
         profile.orient_ns += pipeline_clock_ns() - phase_started;
         phase_started = pipeline_clock_ns();
 
-        /* 图像处理：步骤2: 将RGB565转换为RGB888格式 */
-        rgb565_to_rgb888((uint16_t *)image_buf_temp, image_buf_888, IMAGE_WIDTH * IMAGE_HEIGHT);
+        /* One pass: rotate each tile 180 degrees and convert to RGB888. */
+        unpack_rgb565_tiles_180((const uint16_t *)image_buf_temp, image_buf_888,
+                               IMAGE_WIDTH, IMAGE_HEIGHT, CAMERA_TILE_WIDTH, CAMERA_TILE_HEIGHT, true);
 
         profile.color_ns += pipeline_clock_ns() - phase_started;
 

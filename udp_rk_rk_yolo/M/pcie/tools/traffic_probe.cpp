@@ -41,7 +41,8 @@ int main(int argc, char **argv)
     for (int n = 0; n < repeats; ++n)
     {
         auto begin = std::chrono::steady_clock::now();
-        if (!detector.detect(rgb.data(), w, h, w * 3, boxes, &error))
+        if (!detector.detect(rgb.data(), w, h, w * 3, boxes, &error,
+                             traffic::configured_budget_ms(std::getenv("TRAFFIC_NPU_BUDGET_MS"))))
         {
             fprintf(stderr, "%s\n", error.c_str());
             return 1;

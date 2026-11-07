@@ -1,5 +1,6 @@
 #include "traffic_service.h"
 #include "traffic_detector.h"
+#include "traffic_frame_input.h"
 #include "traffic_light_ipc.h"
 #include <atomic>
 #include <condition_variable>
@@ -28,9 +29,10 @@ struct Observation
 struct Service::Impl
 {
     Detector detector;
-    Admission admission;
+    Admission admission{configured_budget_ms(std::getenv("TRAFFIC_NPU_BUDGET_MS"))};
     bool ready = false, enabled = true;
     const InputView view;
+    const m_lane::FrontRadialPreview *correction;
     std::atomic<unsigned> deferred{0};
     std::atomic<bool> model_failed{false};
     std::mutex mutex;
@@ -44,7 +46,8 @@ struct Service::Impl
     uint32_t session = 0;
     uint64_t report_ns = 0, calls = 0, passes = 0, skipped_curve = 0, skipped_budget = 0,
              total_ns = 0, max_ns = 0;
-    explicit Impl(const char *path, InputView input) : view(input)
+    explicit Impl(const char *path, InputView input, const m_lane::FrontRadialPreview *front)
+        : view(input), correction(front)
     {
         const char *option = std::getenv("VISION_TRAFFIC");
         enabled = !option || std::atoi(option) != 0;
@@ -63,11 +66,12 @@ struct Service::Impl
                     error.c_str());
         }
         std::printf(
-            "[TRAFFIC] enabled=%d ready=%d input=%d max_locator_rate=1Hz max_NPU_passes=3 color_rate=10Hz single_NPU_owner=lane_worker control_output=none\n",
-            enabled, ready, detector.input_size());
+            "[TRAFFIC] enabled=%d ready=%d input=%d max_locator_rate=1Hz max_NPU_passes=3 color_rate=10Hz budget_ms=%u single_NPU_owner=lane_worker control_output=none\n",
+            enabled, ready, detector.input_size(), admission.budget_ms());
         std::printf(
-            "[TRAFFIC INPUT] source_rect=%d,%d,320,240 source_order=%s detector_order=RGB\n",
-            view.x, view.y, view.order == PixelOrder::BGR ? "BGR" : "RGB");
+            "[TRAFFIC INPUT] geometry=%s source_rect=%d,%d,320,240 source_order=%s detector_order=RGB\n",
+            correction ? "radial-corrected" : "raw", view.x, view.y,
+            view.order == PixelOrder::BGR ? "BGR" : "RGB");
         cpu = std::thread(&Impl::color_loop, this);
     }
     ~Impl()
@@ -94,7 +98,7 @@ struct Service::Impl
                  (captured <= latest.captured || captured - latest.captured < 100000000ULL)) ||
                 id == latest.id)
                 return;
-            if (!copy_camera_rgb(rgb, w, h, w * 3, view, latest.pixels))
+            if (!copy_input_rgb(rgb, w, h, view, correction, latest.pixels))
                 return;
             latest.id = id;
             latest.captured = captured;
@@ -131,7 +135,8 @@ struct Service::Impl
         uint64_t start = traffic_clock_ns();
         std::vector<Box> boxes;
         std::string error;
-        bool okay = detector.detect(frame.pixels.data(), 320, 240, 320 * 3, boxes, &error);
+        bool okay = detector.detect(frame.pixels.data(), 320, 240, 320 * 3, boxes, &error,
+                                    admission.budget_ms());
         auto result = std::make_shared<Observation>();
         result->reference.id = frame.id;
         result->reference.captured = frame.captured;
@@ -242,7 +247,9 @@ struct Service::Impl
                         }
                         have_track = have_track && tracker.update(frame.pixels.data(), 320, 240,
                                                                   320 * 3, box->box, tracked);
-                        if (have_track && !box->ambiguous)
+                        const bool housing = have_track &&
+                            signal_housing(frame.pixels.data(), 320, 240, 320 * 3, tracked);
+                        if (housing && !box->ambiguous)
                         {
                             Color color =
                                 classify_color(frame.pixels.data(), 320, 240, 320 * 3, tracked);
@@ -264,7 +271,8 @@ struct Service::Impl
                         }
                         else
                         {
-                            data.reason = box->ambiguous ? TRAFFIC_AMBIGUOUS : TRAFFIC_TRACK_LOST;
+                            data.reason = box->ambiguous ? TRAFFIC_AMBIGUOUS :
+                                          have_track ? TRAFFIC_NO_BOX : TRAFFIC_TRACK_LOST;
                             confirmation.reset();
                         }
                     }
@@ -300,7 +308,8 @@ struct Service::Impl
         }
     }
 };
-Service::Service(const char *path, InputView view) : impl_(new Impl(path, view))
+Service::Service(const char *path, InputView view, const m_lane::FrontRadialPreview *correction)
+    : impl_(new Impl(path, view, correction))
 {
 }
 Service::~Service() = default;

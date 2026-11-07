@@ -111,6 +111,8 @@ class FrontRadialPreview
 
     bool enabled() const { return !samples_.empty(); }
     double display_scale() const { return scale_; }
+    int mosaic_width() const { return stride_ / 3; }
+    int mosaic_height() const { return height_ * 2; }
 
     // Place predictions back in the raw top-left tile for the existing overlay,
     // perspective projection and steering calibration. Other mosaic tiles stay clear.

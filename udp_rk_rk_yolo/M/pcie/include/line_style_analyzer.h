@@ -33,6 +33,8 @@ class LineStyleAnalyzer
         YOLOLineBoundary stable = {};
         uint32_t width = 0, height = 0, road_area = 0;
         float reference_x = 0, reference_y = 0;
+        bool point_based = false;
+        std::vector<LaneRowPoint> points;
     } confirm_[2];
     uint64_t last_id_ = 0, last_capture_ = 0;
     double ego_anchor_ = -1;
@@ -516,7 +518,8 @@ class LineStyleAnalyzer
         }
         return result;
     }
-    YOLOLineStyleResult confirm(YOLOLineStyleResult raw, uint64_t id, uint64_t captured)
+    YOLOLineStyleResult confirm(YOLOLineStyleResult raw, uint64_t id, uint64_t captured,
+                                const PointLanePair *point_pair = nullptr)
     {
         if (!captured || captured <= last_capture_ || id == last_id_)
             return {};
@@ -532,6 +535,8 @@ class LineStyleAnalyzer
         {
             auto &c = confirm_[i];
             auto &line = *lines[i];
+            const auto *points = point_pair ? (i == 0 ? &point_pair->left : &point_pair->right)
+                                            : nullptr;
             if (!raw.width || !raw.height)
             {
                 // 旧接口调用者没有可供跟踪的本车道归属上下文。
@@ -558,12 +563,30 @@ class LineStyleAnalyzer
                 continue;
             }
             bool context = c.stable.type && raw.width && raw.width == c.width &&
-                           raw.height == c.height && raw.road_area && raw.object_count &&
+                           raw.height == c.height && raw.object_count &&
+                           c.point_based == (points != nullptr) &&
                            std::abs(raw.reference_x - c.reference_x) <= raw.width * .08 &&
-                           raw.road_area >= c.road_area / 2 && raw.road_area <= c.road_area * 2;
+                           (points ? !points->empty() && !c.points.empty()
+                                   : raw.road_area && raw.road_area >= c.road_area / 2 &&
+                                         raw.road_area <= c.road_area * 2);
             bool geometry = true,
                  have_geometry = line.last_y > line.first_y && c.stable.last_y > c.stable.first_y;
-            if (context && have_geometry)
+            if (context && have_geometry && points)
+            {
+                const int lo = std::max(line.first_y, c.stable.first_y);
+                const int hi = std::min(line.last_y, c.stable.last_y);
+                unsigned matches = 0;
+                if (hi >= lo + 3)
+                    for (int y : {lo, (lo + hi) / 2, hi})
+                    {
+                        const auto *current = lane_point_near_row(*points, y);
+                        const auto *previous = lane_point_near_row(c.points, y);
+                        matches += current && previous &&
+                                   std::abs(current->x - previous->x) <= raw.width * .08;
+                    }
+                geometry = matches >= 2;
+            }
+            else if (context && have_geometry)
             {
                 double lo = std::max(line.first_y - raw.reference_y,
                                      c.stable.first_y - c.reference_y),
@@ -643,6 +666,8 @@ class LineStyleAnalyzer
                     c.road_area = raw.road_area;
                     c.reference_x = raw.reference_x;
                     c.reference_y = raw.reference_y;
+                    c.point_based = points != nullptr;
+                    c.points = points ? *points : std::vector<LaneRowPoint>{};
                 }
             }
             if (line.reason == LINE_TRACK_HELD)

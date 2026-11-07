@@ -5,6 +5,7 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <vector>
 namespace traffic
@@ -80,6 +81,40 @@ inline Box clipped(Box b, int w, int h)
 inline int luminance(const uint8_t *p)
 {
     return (p[0] + 2 * p[1] + p[2]) / 4;
+}
+constexpr float locator_score_gate = .15f;
+
+// The detector boxes can include background at the perimeter. Use two inset
+// bands beside the lamp centers, so a loose box or an unlit signal can qualify.
+inline bool signal_housing(const uint8_t *rgb, int w, int h, int stride, Box box)
+{
+    if (!rgb || w < 1 || h < 1 || stride < w * 3 || !std::isfinite(box.x) ||
+        !std::isfinite(box.y) || !std::isfinite(box.w) || !std::isfinite(box.h) ||
+        !std::isfinite(box.score) || box.score < locator_score_gate)
+        return false;
+    box = clipped(box, w, h);
+    const int x0 = (int)box.x, y0 = (int)box.y, bw = (int)box.w, bh = (int)box.h;
+    const bool vertical = bh >= bw;
+    const int along = vertical ? bh : bw, across = vertical ? bw : bh;
+    if (across < 5 || along < 9 || along < across * 1.25 || along > across * 7 ||
+        (w >= 320 && (x0 < 8 || x0 + bw > w - 8)))
+        return false;
+    unsigned dark_neutral[2] = {};
+    const int inset = across / 5, band = std::max(1, across / 6);
+    const int first = along / 10, last = along - first;
+    for (int i = first; i < last; ++i)
+        for (int offset = 0; offset < band; ++offset)
+            for (int side = 0; side < 2; ++side)
+            {
+                const int j = side ? across - 1 - inset - offset : inset + offset;
+                const int x = x0 + (vertical ? j : i), y = y0 + (vertical ? i : j);
+                const uint8_t *p = rgb + y * stride + x * 3;
+                const int hi = std::max(p[0], std::max(p[1], p[2])),
+                          lo = std::min(p[0], std::min(p[1], p[2]));
+                dark_neutral[side] += hi <= 100 && hi - lo <= 42;
+            }
+    const unsigned samples = (last - first) * band;
+    return dark_neutral[0] * 100 >= samples * 45 && dark_neutral[1] * 100 >= samples * 45;
 }
 /* 输入限于原始 RGB；掩码、界面像素及已标注视频均无效。
  * 这里色相用角度制，不采用 OpenCV 的半角单位。 */
@@ -188,6 +223,10 @@ inline Color classify_color(const uint8_t *rgb, int w, int h, int stride, Box bo
                 }
             }
             if (queue.size() < (size_t)std::max(3, total / 400) || queue.size() > total * .88)
+                continue;
+            const int lit_width = maxx - minx + 1, lit_height = maxy - miny + 1;
+            if (std::max(lit_width, lit_height) > 3 * std::min(lit_width, lit_height) ||
+                queue.size() > total * .38)
                 continue;
             // 明亮蓝色标牌上的彩色亮斑不能直接当作点亮的信号灯。
             // 发光连通块周围需要局部深色灯壳；这里使用 HSV 的 V，
@@ -389,23 +428,42 @@ class NpuTask
     virtual ~NpuTask() {};
     virtual void after_lane(const LaneBudget &lane) = 0;
 };
+constexpr unsigned default_budget_ms = 60, max_budget_ms = 80;
+
+inline unsigned configured_budget_ms(const char *text)
+{
+    if (!text || *text < '0' || *text > '9')
+        return default_budget_ms;
+    char *end = nullptr;
+    const auto value = std::strtoul(text, &end, 10);
+    return !*end && value >= default_budget_ms && value <= max_budget_ms
+               ? static_cast<unsigned>(value) : default_budget_ms;
+}
+
 class Admission
 {
     uint64_t due_ = 0, estimate_ = 30000000ULL;
     unsigned violations_ = 0;
+    unsigned budget_ms_;
 
   public:
+    explicit Admission(unsigned budget_ms = default_budget_ms)
+        : budget_ms_(std::max(default_budget_ms, std::min(max_budget_ms, budget_ms)))
+    {
+    }
+    unsigned budget_ms() const { return budget_ms_; }
+
     bool allow(const LaneBudget &lane, uint64_t now)
     {
         return violations_ < 3 && lane.fresh && !lane.curve_active && lane.captured &&
                now >= lane.captured && now - lane.captured <= 300000000ULL &&
-               lane.duration <= 350000000ULL && now >= due_ && estimate_ <= 60000000ULL;
+               lane.duration <= 350000000ULL && now >= due_ && estimate_ <= budget_ms_ * 1000000ULL;
     }
     void completed(uint64_t now, uint64_t duration)
     {
         estimate_ = std::max(duration, (estimate_ * 3 + duration) / 4);
         due_ = now + 1000000000ULL;
-        if (duration > 60000000ULL)
+        if (duration > budget_ms_ * 1000000ULL)
         {
             ++violations_;
             due_ = now + 10000000000ULL;

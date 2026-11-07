@@ -1,6 +1,9 @@
 #include "../../../common/image/frame_pixels.h"
+#include "../../../common/image/camera_valid_rows.h"
 #include "pcie_dma_read_test.h"
 #include "../../../common/pcie/capture_support.h"
+#include "dma_readback_guard.h"
+#include "../../../common/pcie/dma_frame_alignment.h"
 #include "fspi_module.h"
 #include "yolo_integration.h"
 #include "latest_lane_worker.h"
@@ -290,16 +293,14 @@ int pcie_manager_capture_frame(PCIEManager *manager, uint8_t *image_buffer, size
     const unsigned int rows = 1; // FPGA 使用流式读取协议，不能视为线性 DDR 批量读取。
     for (unsigned int i = 0; i < IMAGE_HEIGHT; i += rows)
     {
-        if (!g_running)
-        {
-            errno = ECANCELED;
-            return -1;
-        }
+        // Finish this frame on SIGTERM; stopping mid-frame shifts the next reader.
         const unsigned int count = (i + rows <= IMAGE_HEIGHT) ? rows : IMAGE_HEIGHT - i;
         manager->dma_operation.offset_addr = i * row_bytes;
         manager->dma_operation.current_len = count * row_bytes / 4;
-        if (ioctl(manager->pci_driver_fd, PCI_DMA_WRITE_CMD, &manager->dma_operation) < 0 ||
-            ioctl(manager->pci_driver_fd, PCI_READ_FROM_KERNEL_CMD, &manager->dma_operation) < 0)
+        if (ioctl(manager->pci_driver_fd, PCI_DMA_WRITE_CMD, &manager->dma_operation) < 0)
+            return -1;
+        m_capture::wait_dma_readback();
+        if (ioctl(manager->pci_driver_fd, PCI_READ_FROM_KERNEL_CMD, &manager->dma_operation) < 0)
             return -1;
         for (unsigned int row = 0; row < count; ++row)
         {
@@ -335,8 +336,15 @@ int pcie_manager_capture_frame(PCIEManager *manager, uint8_t *image_buffer, size
                          COLUMN_SHIFT_UP_ROWS);
     }
 
-    /* 在帧结束后，更新下一帧的起始位置 - 重置为0，保证每次从帧头开始 */
-    // 上述各次请求均给出相对于帧起点的绝对偏移。
+    static pcie_capture::FrameAlignment alignment;
+    if (g_running)
+    {
+        const int sync = pcie_capture::align_dma_frame(
+            manager->pci_driver_fd, &manager->dma_operation, (const uint16_t *)image_buffer,
+            IMAGE_WIDTH, IMAGE_HEIGHT, &alignment);
+        if (sync < 0) return -1;
+        if (sync > 0) return pcie_manager_capture_frame(manager, image_buffer, buffer_size);
+    }
 
     return 0;
 }
@@ -1036,9 +1044,10 @@ int main()
     SharedMemoryManager pcie_shm_manager = {};
 
     // 对象声明顺序还保证 NPU 所有者先于其可选任务结束。
-    std::unique_ptr<traffic::Service> traffic_service;
     std::unique_ptr<m_lane::FrontRadialPreview> ipm_preview;
     std::unique_ptr<m_lane::FrontRadialPreview> lane_input;
+    std::unique_ptr<m_lane::FrontRadialPreview> traffic_input;
+    std::unique_ptr<traffic::Service> traffic_service;
     std::unique_ptr<m_lane::LatestWorker> lane_worker;
     int frame_count = 0;
     struct timeval stream_start, current_time;
@@ -1241,12 +1250,20 @@ int main()
         try
         {
             const char *traffic_model = getenv("VISION_TRAFFIC_MODEL");
-            // M 端物理中间镜头映射到 UDP 右下格，对应 S 的 0x88。
-            // 仅在交通灯任务自有副本中归一化 BGR，车道与视频缓冲区不改。
+            const m_lane::FrontRadialPreview *traffic_correction = lane_input.get();
+            if (!traffic_correction)
+            {
+                const auto camera = m_lane::FrontRadial::for_camera(getenv("LANE_RADIAL_LAMBDA"),
+                                                                   "front_radial.conf");
+                traffic_input.reset(
+                    new m_lane::FrontRadialPreview(IMAGE_WIDTH, IMAGE_HEIGHT, camera, nullptr, true));
+                traffic_correction = traffic_input.get();
+            }
+            // Read the normalized raw front tile before any lane overlay or IPM.
             traffic_service.reset(new traffic::Service(
                 traffic_model && *traffic_model ? traffic_model
                                                 : "model/traffic_yolov5n_rk3568.rknn",
-                traffic::InputView(320, 240, traffic::PixelOrder::BGR)));
+                traffic::InputView(0, 0, traffic::PixelOrder::BGR), traffic_correction));
             lane_worker.reset(new m_lane::LatestWorker(&yolo_engine, IMAGE_WIDTH, IMAGE_HEIGHT,
                                                        traffic_service.get(), ipm_preview.get(),
                                                        lane_input.get()));
@@ -1317,6 +1334,8 @@ int main()
         }
 
         uint64_t captured_ns = monotonic_ns();
+        camera_extend_padding_rows((uint16_t *)image_buf_temp, IMAGE_WIDTH, IMAGE_HEIGHT,
+                                   IMAGE_HEIGHT / 2);
         perf.dma += captured_ns - mark;
         uint64_t raw_hash = raw_fingerprint((const uint16_t *)image_buf_temp);
         if (!have_raw_hash || raw_hash != last_raw_hash)

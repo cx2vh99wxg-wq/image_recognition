@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #define _GNU_SOURCE
 #include "shared_memory.h"
+#include "../../common/image/frame_checksum.h"
 #include "../../common/perception/include/curve_shm_attach.h"
 #include "brake_release_policy.h"
 #include <stdio.h>
@@ -431,24 +432,7 @@ void shared_memory_cleanup(SharedMemoryManager *manager)
  * 空指针或零长度输入返回零；该算法与接收端校验过程配套。 */
 uint32_t calculate_data_checksum(const uint8_t *data, size_t size)
 {
-    if (!data || size == 0)
-    {
-        return 0;
-    }
-
-    uint32_t checksum = 0;
-    while (size >= 8)
-    {
-        checksum = ((checksum << 8) | (checksum >> 24)) ^ ((uint32_t)data[0] << 7) ^
-                   ((uint32_t)data[1] << 6) ^ ((uint32_t)data[2] << 5) ^ ((uint32_t)data[3] << 4) ^
-                   ((uint32_t)data[4] << 3) ^ ((uint32_t)data[5] << 2) ^ ((uint32_t)data[6] << 1) ^
-                   data[7];
-        data += 8;
-        size -= 8;
-    }
-    while (size--)
-        checksum = ((checksum << 1) | (checksum >> 31)) ^ *data++;
-    return checksum;
+    return frame_rotating_checksum(data, size);
 }
 
 /* 共享数据：兼容旧入口，仅固定图像类型为 PCIe，其余初始化逻辑由通用入口负责。 */

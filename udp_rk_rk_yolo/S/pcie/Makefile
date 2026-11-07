@@ -11,8 +11,8 @@ MODEL_PATH_COMPILE = "model/RK3566_RK3568/yolov5s-640-640.rknn"
 LABELS_PATH_COMPILE = "model/coco_80_labels_list.txt"
 
 # 构建选项 (高性能优化)
-CFLAGS = -Wall -O3 -march=native -std=c11 -DYOLO_MODEL_PATH=\"$(MODEL_PATH_COMPILE)\" -DYOLO_LABELS_PATH=\"$(LABELS_PATH_COMPILE)\" -MMD -MP
-CXXFLAGS = -Wall -O3 -march=native -std=c++11 -DYOLO_MODEL_PATH=\"$(MODEL_PATH_COMPILE)\" -DYOLO_LABELS_PATH=\"$(LABELS_PATH_COMPILE)\" -MMD -MP
+CFLAGS = -Wall -O3 -march=native -mtune=cortex-a55 -std=c11 -DYOLO_MODEL_PATH=\"$(MODEL_PATH_COMPILE)\" -DYOLO_LABELS_PATH=\"$(LABELS_PATH_COMPILE)\" -MMD -MP
+CXXFLAGS = -Wall -O3 -march=native -mtune=cortex-a55 -std=c++11 -DYOLO_MODEL_PATH=\"$(MODEL_PATH_COMPILE)\" -DYOLO_LABELS_PATH=\"$(LABELS_PATH_COMPILE)\" -MMD -MP
 
 # 工程目录
 SRCDIR = csrc
@@ -55,6 +55,30 @@ LIBS = -lrknnrt \
 .PHONY: all clean
 
 all: $(TARGET)
+
+.PHONY: test-pixels
+$(BUILDDIR)/test_frame_pixels: ../../common/image/tests/test_frame_pixels.cpp ../../common/image/frame_pixels.h $(INCDIR)/camera_orientation.h | $(BUILDDIR)
+	$(CXX) -std=c++11 -O2 -Wall -Wextra -Werror -DTEST_S_ORIENTATION=1 $< -o $@
+
+test-pixels: $(BUILDDIR)/test_frame_pixels
+	./$(BUILDDIR)/test_frame_pixels
+
+.PHONY: test-camera-capture-edges test-person-alert-cache
+$(BUILDDIR)/test_camera_capture_edges: tests/test_camera_capture_edges.cpp include/camera_capture_edges.h include/camera_orientation.h | $(BUILDDIR)
+	$(CXX) -std=c++11 -O2 -Wall -Wextra -Werror $< -o $@
+test-camera-capture-edges: $(BUILDDIR)/test_camera_capture_edges
+	./$(BUILDDIR)/test_camera_capture_edges
+
+ALERT_TEST_FLAGS = -std=c11 -O3 -march=native -mtune=cortex-a55 -Wall -Wextra -Werror $(INCLUDES) -D_POSIX_C_SOURCE=200809L -Dgettimeofday=test_gettimeofday
+ALERT_REFERENCE_SYMBOLS = g_alert_state alert_effects_init get_current_time_ms update_blink_state calculate_fade_info blend_colors draw_person_alert_effect apply_person_alert_effects
+$(BUILDDIR)/reference_alerts.o: tests/fixtures/person_alert_effects_reference.c include/person_alert_effects.h | $(BUILDDIR)
+	$(CC) $(ALERT_TEST_FLAGS) $(foreach symbol,$(ALERT_REFERENCE_SYMBOLS),-D$(symbol)=reference_$(symbol)) -c $< -o $@
+$(BUILDDIR)/test_cached_alerts.o: csrc/person_alert_effects.c include/person_alert_effects.h | $(BUILDDIR)
+	$(CC) $(ALERT_TEST_FLAGS) -DPERSON_ALERT_CACHE_TEST -c $< -o $@
+$(BUILDDIR)/test_person_alert_cache: tests/test_person_alert_cache.c $(BUILDDIR)/reference_alerts.o $(BUILDDIR)/test_cached_alerts.o
+	$(CC) -std=c11 -O3 -Wall -Wextra -Werror -D_POSIX_C_SOURCE=200809L $(INCLUDES) $^ -lm -pthread -o $@
+test-person-alert-cache: $(BUILDDIR)/test_person_alert_cache
+	./$(BUILDDIR)/test_person_alert_cache
 
 $(TARGET): $(OBJECTS) | $(BUILDDIR)
 	@echo "生成目标程序文件: $@"

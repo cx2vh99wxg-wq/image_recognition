@@ -7,6 +7,7 @@
 #include "front_radial_preview.h"
 #include "lane_curve_geometry.h"
 #include "ground_projection.h"
+#include "../../../common/perception/include/curve_heading.h"
 #include "traffic_vision.h"
 #include <cstdio>
 #include <cstdlib>
@@ -212,36 +213,16 @@ class LatestWorker
                             raw = {raw_lane_.data(), raw_road_.data(), width_, height_};
                         }
                         PointLanePair front_points;
-                        YOLOLineStyleResult observed = line_analyzer_.analyze_front_camera(
-                            raw.lane_line_data, raw.width, raw.height, working_pixels_.data(),
-                            width_, height_, nullptr, raw.drivable_area_data,
-                            use_point_lanes() ? &front_points : nullptr);
-                        result->line_style = line_analyzer_.confirm(observed, source, captured);
-                        snapshot_request_.poll(now, source, captured, working_pixels_.data(),
-                                               width_, height_, raw, observed, result->line_style);
-                        if (!line_log_ns_ || now - line_log_ns_ >= 2000000000ULL)
+                        YOLOLineStyleResult observed = {};
+                        const PointLanePair *line_points = nullptr;
+                        if (!use_ipm_heading())
                         {
-                            float lo = raw.lane_line_data[0], hi = lo;
-                            for (int k = 0; k < raw.width * raw.height; ++k)
-                            {
-                                lo = std::min(lo, raw.lane_line_data[k]);
-                                hi = std::max(hi, raw.lane_line_data[k]);
-                            }
-                            printf(
-                                "[LINE_STYLE] source=%llu camera=1 left=%s q=%u raw=%s reason=%s duty=%u spans=%u right=%s q=%u raw=%s reason=%s duty=%u spans=%u mask_range=%.3f..%.3f ego_ref=%.1f road=%u objects=%u\n",
-                                (unsigned long long)source,
-                                line_style_name(result->line_style.left.type),
-                                result->line_style.left.quality,
-                                line_style_name(observed.left.type),
-                                line_reason_name(result->line_style.left.reason),
-                                observed.left.duty, observed.left.spans,
-                                line_style_name(result->line_style.right.type),
-                                result->line_style.right.quality,
-                                line_style_name(observed.right.type),
-                                line_reason_name(result->line_style.right.reason),
-                                observed.right.duty, observed.right.spans, lo, hi,
-                                observed.reference_x, observed.road_area, observed.object_count);
-                            line_log_ns_ = now;
+                            observed = line_analyzer_.analyze_front_camera(
+                                raw.lane_line_data, raw.width, raw.height, working_pixels_.data(),
+                                width_, height_, nullptr, raw.drivable_area_data,
+                                use_point_lanes() ? &front_points : nullptr);
+                            if (use_point_lanes())
+                                line_points = &front_points;
                         }
                         // 可选诊断只保存有限的配对样本，正常运行不执行磁盘 IO。
                         const char *dump = getenv("LANE_STYLE_DUMP_DIR");
@@ -283,18 +264,20 @@ class LatestWorker
                             {
                                 LineStyleTrace trace;
                                 YOLOLineStyleResult bird = {};
+                                ipm_test_->render(working_pixels_.data(), ipm_rgb_.data());
                                 if (use_point_lanes())
                                 {
                                     auto points = select_point_lanes(ipm_lane_.data(), width_ / 2, height_ / 2);
+                                    bird = EgoLaneSelector::describe_points(points, ipm_rgb_.data(), true);
                                     bird.object_count = points.candidates;
                                     trace.near_y = points.last;
                                     ipm_curve = estimate_ego_curve(points, true);
-                                    if (ipm_curve.confidence)
-                                        result->ipm_points = std::move(points);
+                                    result->ipm_points = std::move(points);
+                                    observed = bird;
+                                    line_points = &result->ipm_points;
                                 }
                                 else
                                 {
-                                    ipm_test_->render(working_pixels_.data(), ipm_rgb_.data());
                                     bird = EgoLaneSelector(.5, line_analyzer_.bottom_up()).analyze(
                                         ipm_lane_.data(), ipm_green_.data(), ipm_rgb_.data(),
                                         width_ / 2, height_ / 2, &trace, true);
@@ -314,6 +297,33 @@ class LatestWorker
                             }
                             else if (log_ipm)
                                 std::fprintf(stderr, "[IPM_TEST] mask size does not match input\n");
+                        }
+                        result->line_style = line_analyzer_.confirm(observed, source, captured, line_points);
+                        snapshot_request_.poll(now, source, captured, working_pixels_.data(),
+                                               width_, height_, raw, observed, result->line_style);
+                        if (!line_log_ns_ || now - line_log_ns_ >= 2000000000ULL)
+                        {
+                            float lo = raw.lane_line_data[0], hi = lo;
+                            for (int k = 0; k < raw.width * raw.height; ++k)
+                            {
+                                lo = std::min(lo, raw.lane_line_data[k]);
+                                hi = std::max(hi, raw.lane_line_data[k]);
+                            }
+                            printf(
+                                "[LINE_STYLE] source=%llu geometry=%s camera=1 left=%s q=%u raw=%s reason=%s duty=%u spans=%u right=%s q=%u raw=%s reason=%s duty=%u spans=%u mask_range=%.3f..%.3f ego_ref=%.1f road=%u objects=%u\n",
+                                (unsigned long long)source, use_ipm_heading() ? "ipm" : "front",
+                                line_style_name(result->line_style.left.type),
+                                result->line_style.left.quality,
+                                line_style_name(observed.left.type),
+                                line_reason_name(result->line_style.left.reason),
+                                observed.left.duty, observed.left.spans,
+                                line_style_name(result->line_style.right.type),
+                                result->line_style.right.quality,
+                                line_style_name(observed.right.type),
+                                line_reason_name(result->line_style.right.reason),
+                                observed.right.duty, observed.right.spans, lo, hi,
+                                observed.reference_x, observed.road_area, observed.object_count);
+                            line_log_ns_ = now;
                         }
                         int pixels = yolo_overlay_lane_and_drivable(working_pixels_.data(), width_,
                                                                     height_, &raw);
@@ -340,7 +350,8 @@ class LatestWorker
                                 curve_confirm_.update(observed_curve, source, captured);
                             result->curve.curve_type = curve.type;
                             result->curve.confidence = curve.confidence;
-                            result->curve.angle = curve.angle;
+                            result->curve.angle = use_point_lanes()
+                                ? curve.angle : curve_encode_image_heading(curve.angle);
                             if (!curve_log_ns_ || now - curve_log_ns_ >= 2000000000ULL)
                             {
                                 std::fprintf(

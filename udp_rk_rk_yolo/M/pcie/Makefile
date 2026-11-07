@@ -89,6 +89,14 @@ endif
 
 all: info $(BUILD_DIR)/$(TARGET)
 
+.PHONY: test-pixels
+$(BUILD_DIR)/test_frame_pixels: ../../common/image/tests/test_frame_pixels.cpp ../../common/image/frame_pixels.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) -std=c++11 -O2 -Wall -Wextra -Werror $< -o $@
+
+test-pixels: $(BUILD_DIR)/test_frame_pixels
+	./$(BUILD_DIR)/test_frame_pixels
+
 # 说明：Offline classification checks/replay never open PCIe or vehicle interfaces.
 $(BUILD_DIR)/test_line_style: tests/test_line_style.cpp include/line_style_analyzer.h include/ego_lane_selector.h include/line_style_trace.h ../include/line_style.h ../include/line_style_wire.h ../include/line_style_ipc.h
 	@mkdir -p $(BUILD_DIR)

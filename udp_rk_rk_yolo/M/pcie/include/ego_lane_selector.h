@@ -15,6 +15,7 @@ namespace m_lane
  * 本层不改叠加图、旧弯道判定或控制寄存器。 */
 class EgoLaneSelector
 {
+    enum { sample_step = 10, min_sampled_span = 50 };
     double fixed_anchor_;
     bool bottom_up_;
     using Point = LaneRowPoint;
@@ -47,9 +48,9 @@ class EgoLaneSelector
     {
         return (y - h * .95) / (h * .52);
     }
-    static bool solve(const std::vector<Point> &p, Fit &f, bool linear = false)
+    static bool solve(const std::vector<Point> &p, Fit &f, bool linear = false, size_t min_points = 8)
     {
-        if (p.size() < 8)
+        if (p.size() < min_points)
             return false;
         const int size = linear ? 2 : 3;
         double m[3][4] = {};
@@ -97,16 +98,16 @@ class EgoLaneSelector
         return length;
     }
     static bool fit_geometry(const std::vector<Point> &p, Fit &f, int w, int h,
-                             double curvature_limit = .25)
+                             double curvature_limit = .25, size_t min_points = 8)
     {
         Fit linear;
-        if (!solve(p, linear, true))
+        if (!solve(p, linear, true, min_points))
             return false;
         f = linear;
         if (p.back().y - p.front().y < h * .10)
             return true;
         Fit quadratic;
-        if (!solve(p, quadratic, false))
+        if (!solve(p, quadratic, false, min_points))
             return true;
         double a = 0, b = 0;
         for (const auto &point : p)
@@ -294,7 +295,7 @@ class EgoLaneSelector
         return false;
     }
     static std::vector<Track> bottom_up_tracks(const std::vector<std::vector<Point>> &rows, int w,
-                                               int h)
+                                               int h, bool sampled = false)
     {
         struct Link
         {
@@ -311,22 +312,25 @@ class EgoLaneSelector
                 continue;
             const int y = row->front().y;
             active.erase(std::remove_if(active.begin(), active.end(), [&](size_t id) {
-                return chains[id].points.back().y - y >= limit;
+                const int dy = chains[id].points.back().y - y;
+                return sampled ? dy > 2 * sample_step : dy >= limit;
             }), active.end());
             links.clear();
             for (const size_t id : active)
             {
                 const Point &end = chains[id].points.back();
                 const double dy = end.y - y;
-                for (size_t j = 0; j < row->size(); ++j)
+                auto point = std::lower_bound(row->begin(), row->end(), end.x - limit,
+                                              [](const Point &p, double x) { return p.x < x; });
+                for (; point != row->end() && point->x < end.x + limit; ++point)
                 {
-                    const double dx = end.x - (*row)[j].x;
+                    const double dx = end.x - point->x;
                     const double distance = dx * dx + dy * dy;
-                    if (distance < limit * limit)
-                        links.push_back({id, j, distance});
+                    if (sampled ? std::abs(dx) < limit : distance < limit * limit)
+                        links.push_back({id, (size_t)(point - row->begin()), distance});
                 }
             }
-            // Each row center can belong to one track. Resolve conflicts using
+            // Each point can belong to one track. Resolve conflicts using
             // the closest eligible endpoint before creating new seeds.
             std::stable_sort(links.begin(), links.end(), [](const Link &a, const Link &b) {
                 return a.distance < b.distance;
@@ -351,30 +355,111 @@ class EgoLaneSelector
         for (auto &chain : chains)
         {
             auto &points = chain.points;
-            if (points.size() < 8)
+            if (points.size() < (sampled ? 3u : 8u))
                 continue;
             std::reverse(points.begin(), points.end());
             chain.first = points.front().y;
             chain.last = points.back().y;
             const int span = chain.last - chain.first;
-            if (span < h * .08 || points.size() * 4 < (size_t)span ||
-                !fit_geometry(points, chain.fit, w, h, .8))
+            if (sampled ? span < min_sampled_span : span < h * .08 || points.size() * 4 < (size_t)span)
                 continue;
-            for (const auto &p : points)
-                chain.error += std::abs(p.x - chain.fit.at(p.t));
-            chain.error /= points.size();
-            if (chain.error > w * .025)
+            if (!fit_geometry(points, chain.fit, w, h, .8, sampled ? 3u : 8u))
                 continue;
+            if (!sampled)
+            {
+                for (const auto &p : points)
+                    chain.error += std::abs(p.x - chain.fit.at(p.t));
+                chain.error /= points.size();
+                if (chain.error > w * .025)
+                    continue;
+            }
             chain.nn = (unsigned)points.size();
             chain.length = arc(chain.fit, chain.first, chain.last, h);
             tracks.push_back(std::move(chain));
         }
+        if (sampled)
+            return tracks;
         std::stable_sort(tracks.begin(), tracks.end(), [](const Track &a, const Track &b) {
             return a.nn > b.nn;
         });
         if (tracks.size() > 6)
             tracks.resize(6);
         return tracks;
+    }
+
+    static void select_sampled_pair(const float *mask, const uint8_t *rgb, const Road &road,
+                                    int w, int h, YOLOLineStyleResult &result, LineStyleTrace *trace)
+    {
+        const double center = w / 2.;
+        result.reference_x = center;
+        result.road_area = road.area;
+        const auto row_has_lane = [&](int y) {
+            const float *row = mask + y * w;
+            return std::any_of(row, row + w, [](float score) { return score > .3f; });
+        };
+        int last = h - 1;
+        while (last >= 0 && !row_has_lane(last))
+            --last;
+        if (last < 0)
+            return;
+        int first = 0;
+        while (!row_has_lane(first))
+            ++first;
+        result.reference_y = last;
+        result.left.reason = result.right.reason = LINE_NO_TRACK;
+        if (trace)
+        {
+            trace->reference_x = center;
+            trace->near_y = last;
+            trace->road_area = road.area;
+        }
+        if (last - first < min_sampled_span)
+            return;
+
+        std::vector<std::vector<Point>> rows;
+        for (int y = last - (last - first) / sample_step * sample_step; y <= last; y += sample_step)
+        {
+            rows.emplace_back();
+            const double t = coordinate(y, h);
+            for (int x = 0; x < w; ++x)
+                if (mask[y * w + x] > .3f)
+                    rows.back().push_back({(double)x, t, y, 1, true});
+        }
+        const auto tracks = bottom_up_tracks(rows, w, h, true);
+        result.object_count = (uint32_t)tracks.size();
+        int left = -1, right = -1;
+        double lx = 0, rx = w;
+        for (size_t i = 0; i < tracks.size(); ++i)
+        {
+            const auto &track = tracks[i];
+            const double x = track.points.back().x;
+            if (trace)
+                trace->objects.push_back({track.fit.a, track.fit.b, track.fit.c, track.first,
+                                          track.last, track.nn, x});
+            if (x < center && (left < 0 || x > lx))
+            {
+                left = (int)i;
+                lx = x;
+            }
+            if (x > center && (right < 0 || x < rx))
+            {
+                right = (int)i;
+                rx = x;
+            }
+        }
+        if (trace)
+        {
+            trace->selected_left = left;
+            trace->selected_right = right;
+        }
+        const int road_first = road.area ? road.first : first;
+        const int road_height = road.area ? road.last - road.first : last - first;
+        if (left >= 0)
+            result.left = measure(tracks[left], rgb, w, h, road_first, road_height, rx - lx,
+                                  trace ? &trace->left : nullptr);
+        if (right >= 0)
+            result.right = measure(tracks[right], rgb, w, h, road_first, road_height, rx - lx,
+                                   trace ? &trace->right : nullptr);
     }
 
     static std::vector<Track> objects(const float *mask, const uint8_t *rgb, Road &road, int w,
@@ -802,7 +887,7 @@ class EgoLaneSelector
     static YOLOLineBoundary measure(const Track &track, const uint8_t *rgb, int w, int h,
                                     int road_first, int road_height, double lane_width,
                                     std::vector<PaintSample> *trace,
-                                    const std::vector<Point> *points = nullptr)
+                                    const std::vector<Point> *points = nullptr, bool ground = false)
     {
         size_t upper = 0;
         const auto x_at = [&](int y) {
@@ -836,8 +921,9 @@ class EgoLaneSelector
             {
                 // 采集图中孤立且完全为零的整行表示证据缺失，
                 // 不能把它算作车道漆线的暗间隔。
-                bool missing = black_row(rgb, w, h, x, y) && !black_row(rgb, w, h, x, y - 1) &&
-                               !black_row(rgb, w, h, x, y + 1);
+                bool missing = black_row(rgb, w, h, x, y) &&
+                               (ground || (!black_row(rgb, w, h, x, y - 1) &&
+                                           !black_row(rgb, w, h, x, y + 1)));
                 if (!missing)
                 {
                     value = ridge(rgb, w, h, x, y, 3) >= 0 ? 1 : 0;
@@ -855,38 +941,47 @@ class EgoLaneSelector
         }
         auto cleaned = values;
         for (size_t i = 1; i + 1 < values.size(); ++i)
-            if (values[i] == 1 && values[i - 1] == 0 && values[i + 1] == 0)
-                cleaned[i] = 0;
-        int painted = 0, spans = 0, gaps = 0, longest = 0, longest_paint = 0, run = 0,
-            previous = -1;
-        for (size_t i = 0; i <= cleaned.size(); ++i)
+            if (values[i] >= 0 && values[i - 1] >= 0 && values[i - 1] == values[i + 1])
+                cleaned[i] = values[i - 1]; // isolated noise or one missing paint row
+        struct Run
         {
-            int value = i < cleaned.size() ? cleaned[i] : -1;
-            if (i < cleaned.size() && value < 0)
+            int value, length;
+        };
+        std::vector<Run> runs;
+        int painted = 0, spans = 0, gaps = 0, longest = 0, longest_paint = 0;
+        for (size_t i = 0; i < cleaned.size(); ++i)
+        {
+            const int value = cleaned[i];
+            painted += value == 1;
+            if (trace)
+                (*trace)[i].filtered = value;
+            // A single corrupt row surrounded by paint does not split a solid
+            // marking. Other unknown rows are evidence barriers, never gaps.
+            if (value < 0 && i > 0 && i + 1 < cleaned.size() && cleaned[i - 1] == 1 &&
+                cleaned[i + 1] == 1)
                 continue;
-            if (i < cleaned.size())
+            if (runs.empty() || runs.back().value != value)
+                runs.push_back({value, 1});
+            else
+                ++runs.back().length;
+        }
+        for (size_t i = 0; i < runs.size(); ++i)
+        {
+            const auto &run = runs[i];
+            if (run.value == 1 && run.length >= 3)
             {
-                painted += value == 1;
-                if (trace)
-                    (*trace)[i].filtered = value;
+                ++spans;
+                longest_paint = std::max(longest_paint, run.length);
             }
-            if (value != previous)
-            {
-                if (previous == 1 && run >= 3)
-                {
-                    ++spans;
-                    longest_paint = std::max(longest_paint, run);
-                }
-                if (previous == 0 && run >= 3 && i > (size_t)run && i < cleaned.size() &&
-                    cleaned[i - run - 1] == 1 && value == 1)
-                {
-                    ++gaps;
-                    longest = std::max(longest, run);
-                }
-                run = 0;
-                previous = value;
-            }
-            ++run;
+            if (run.value != 0 || run.length < 3 || i == 0 || i + 1 == runs.size() ||
+                runs[i - 1].value != 1 || runs[i + 1].value != 1)
+                continue;
+            longest = std::max(longest, run.length);
+            // Compare a gap with its neighboring marks at roughly the same
+            // image scale. Tiny specks and very long occlusions are weak evidence.
+            const int shorter = std::min(runs[i - 1].length, runs[i + 1].length);
+            if (shorter >= 3 && run.length <= 5 * shorter)
+                ++gaps;
         }
         out.duty = 100 * painted / valid;
         out.spans = spans;
@@ -894,7 +989,8 @@ class EgoLaneSelector
         double first_x = out.x_top,
                last_x = points ? points->back().x : track.fit.at(coordinate(track.last, h));
         bool clipped = std::min(first_x, last_x) < w * .04 || std::max(first_x, last_x) > w * .96;
-        double required_length = h * .22;
+        double required_length = ground ? std::max(24., std::min(h * .22, road_height * .7))
+                                        : h * .22;
         if (clipped && track.first <= road_first + h * .1)
         {
             // 画面内小型道路的观测长度不能用整个相机格的高度衡量；
@@ -915,7 +1011,8 @@ class EgoLaneSelector
             out.type = LINE_SOLID;
             out.quality = std::min(95u, 68u + (out.duty - 80) / 2 + out.coverage / 10);
         }
-        else if (out.duty >= 15 && out.duty <= 72 && spans >= 2 && gaps >= 1 && longest >= 3)
+        else if (out.duty >= 15 && spans >= 2 &&
+                 ((gaps >= 2 && out.duty <= 88) || (gaps == 1 && out.duty <= 72)))
         {
             out.type = LINE_DASHED;
             out.quality = std::min(94u, 60u + std::min(3, spans) * 5u + out.coverage / 10);
@@ -1008,7 +1105,8 @@ class EgoLaneSelector
     }
 
   public:
-    static YOLOLineStyleResult describe_points(const PointLanePair &pair, const uint8_t *rgb)
+    static YOLOLineStyleResult describe_points(const PointLanePair &pair, const uint8_t *rgb,
+                                               bool ground = false)
     {
         YOLOLineStyleResult out = {};
         out.width = pair.width;
@@ -1027,7 +1125,7 @@ class EgoLaneSelector
                                              points[i].y - points[i - 1].y);
             return measure(geometry, rgb, pair.width, pair.height, pair.first,
                            pair.last - pair.first, pair.right.back().x - pair.left.back().x,
-                           nullptr, &points);
+                            nullptr, &points, ground);
         };
         out.left = describe(pair.left);
         out.right = describe(pair.right);
@@ -1045,21 +1143,19 @@ class EgoLaneSelector
         result.width = w;
         result.height = h;
         result.left.reason = result.right.reason = LINE_NO_MASK;
-        if (!mask || !green || !rgb || w < 80 || h < 60)
+        if (!mask || !rgb || w < 80 || h < 60)
             return result;
-        Road road = road_region(green, w, h);
+        Road road = green ? road_region(green, w, h) : Road{};
+        if (bottom_up_ && !ground)
+        {
+            select_sampled_pair(mask, rgb, road, w, h, result, trace);
+            return result;
+        }
         if (!road.area || (road.reference < 0 && fixed_anchor_ < 0))
             return result;
         if (fixed_anchor_ >= 0 && fixed_anchor_ <= 1)
         {
             road.reference = fixed_anchor_ * w;
-            road.centered = true;
-        }
-        else if (bottom_up_ && road.last >= h * .9 && road.mask[(h * 9 / 10) * w + w / 2])
-        {
-            // Near the vehicle, follow its optical axis even when a tight
-            // bend keeps the connected road area below the wide-road cutoff.
-            road.reference = w / 2.;
             road.centered = true;
         }
         auto tracks = objects(mask, rgb, road, w, h, ground, bottom_up_);
@@ -1078,7 +1174,8 @@ class EgoLaneSelector
                 trace->near_y = near_y;
             trace->road_area = road.area;
             for (const auto &t : tracks)
-                trace->objects.push_back({t.fit.a, t.fit.b, t.fit.c, t.first, t.last, t.nn});
+                trace->objects.push_back({t.fit.a, t.fit.b, t.fit.c, t.first, t.last, t.nn,
+                                          t.points.back().x});
         }
         if (ground)
         {
@@ -1087,7 +1184,6 @@ class EgoLaneSelector
         }
         double best = -1;
         int selected = -1;
-        int selected_near_y = near_y;
         for (size_t i = 0; i + 1 < tracks.size(); ++i)
         {
             const Track &left = tracks[i];
@@ -1095,10 +1191,7 @@ class EgoLaneSelector
             if (left.nn + right.nn < 8)
                 continue;
             const int far = std::max(left.first, right.first);
-            const int pair_near_y = bottom_up_ ? std::min(left.last, right.last) : near_y;
-            if (bottom_up_ && pair_near_y - far < h * .1)
-                continue;
-            double lx = extended(left, pair_near_y, h), rx = extended(right, pair_near_y, h), width = rx - lx;
+            double lx = extended(left, near_y, h), rx = extended(right, near_y, h), width = rx - lx;
             if (width < w * .08 || width > w * 1.8 || lx >= road.reference - w * .012 ||
                 rx <= road.reference + w * .012)
                 continue;
@@ -1139,7 +1232,6 @@ class EgoLaneSelector
             {
                 best = score;
                 selected = (int)i;
-                selected_near_y = pair_near_y;
             }
         }
         if (selected < 0)
@@ -1151,10 +1243,9 @@ class EgoLaneSelector
         {
             trace->selected_left = selected;
             trace->selected_right = selected + 1;
-            trace->near_y = selected_near_y;
         }
-        double visible_width = std::min((double)w, extended(tracks[selected + 1], selected_near_y, h)) -
-                               std::max(0., extended(tracks[selected], selected_near_y, h));
+        double visible_width = std::min((double)w, extended(tracks[selected + 1], near_y, h)) -
+                               std::max(0., extended(tracks[selected], near_y, h));
         result.left = measure(tracks[selected], rgb, w, h, road.first, road.last - road.first,
                               visible_width, trace ? &trace->left : nullptr);
         result.right = measure(tracks[selected + 1], rgb, w, h, road.first, road.last - road.first,

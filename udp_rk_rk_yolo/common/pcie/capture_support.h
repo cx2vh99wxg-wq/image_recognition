@@ -27,20 +27,9 @@ static inline int capture_start_dma(int fd, DMA_OPERATION *operation)
     }
     printf("DMA地址映射完成\n");
 
-    /* 图像处理：重置DMA读取地址到帧起始位置 */
-    printf("正在重置DMA读取地址...\n");
-    operation->offset_addr = 0; // 保证从地址0开始
-    if (ioctl(fd, PCI_DMA_WRITE_CMD, operation) != 0)
-    {
-        printf("*** 致命错误：DMA读取地址重置失败 ***\n");
-        printf("*** 错误原因：%s ***\n", strerror(errno));
-        printf("*** 检查项目：***\n");
-        printf("*** 1. DMA控制器是否响应 ***\n");
-        printf("*** 2. PCIE连接是否稳定 ***\n");
-        printf("*** 程序立即停止 ***\n");
-        return -1;
-    }
-    printf("DMA读取地址重置完成\n");
+    // Mapping prepares host DMA memory. A DMA_WRITE here would CONSUME
+    // one video row rather than reset the FPGA FIFO's frame position.
+    // Submit the first row in the capture loop; recover row phase there.
     return 0;
 }
 

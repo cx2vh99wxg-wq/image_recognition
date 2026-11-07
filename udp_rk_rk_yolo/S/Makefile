@@ -32,7 +32,7 @@ SHARED_OBJECTS = $(patsubst $(SHARED_SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SHARED_CSRC
 
 # 构建标志
 INCFLAGS = -I$(SHARED_INC_DIR)
-CFLAGS = $(INCFLAGS) -std=c99 -O3 -march=native -funroll-loops -pthread -fPIC -MMD -MP
+CFLAGS = $(INCFLAGS) -std=c99 -O3 -march=native -mtune=cortex-a55 -funroll-loops -pthread -fPIC -MMD -MP
 ARFLAGS = rcs
 
 # 说明：获取系统信息用于调试
@@ -298,7 +298,14 @@ $(BUILD_DIR)/$(SHARED_LIB): $(SHARED_OBJECTS) | $(BUILD_DIR)
 	$(AR) $(ARFLAGS) $@ $^
 
 # 构建共享库对象文件
-$(BUILD_DIR)/shared_memory.o: $(SHARED_INC_DIR)/shared_memory.h $(SHARED_INC_DIR)/brake_release_policy.h ../common/perception/include/curve_shm_attach.h
+$(BUILD_DIR)/shared_memory.o: $(SHARED_INC_DIR)/shared_memory.h $(SHARED_INC_DIR)/brake_release_policy.h ../common/perception/include/curve_shm_attach.h ../common/image/frame_checksum.h
+
+.PHONY: test-checksum
+$(BUILD_DIR)/test_frame_checksum: ../common/image/tests/test_frame_checksum.cpp ../common/image/frame_checksum.h | $(BUILD_DIR)
+	$(CXX) -std=c++11 -O3 -mtune=cortex-a55 -Wall -Wextra -Werror $< -o $@
+
+test-checksum: $(BUILD_DIR)/test_frame_checksum
+	./$(BUILD_DIR)/test_frame_checksum
 
 $(BUILD_DIR)/%.o: $(SHARED_SRC_DIR)/%.c | $(BUILD_DIR)
 	@echo "构建共享库: $<"
