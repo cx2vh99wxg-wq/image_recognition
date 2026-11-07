@@ -31,6 +31,13 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/extensions/XShm.h>
+#include <atomic>
+#include <chrono>
+#include <condition_variable>
+#include <mutex>
+#include <pthread.h>
+#include <thread>
+#include <vector>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #endif
@@ -124,6 +131,7 @@ typedef struct
 {
     Display *display;
     Window window;
+    Atom wm_delete;
     GC gc;
     XImage *ximage;
     char *display_buffer;
@@ -192,9 +200,6 @@ static volatile int g_running = 1;
 static PCIEManager *g_pcie_manager = NULL;
 static SharedMemoryManager *g_shm_manager = NULL;
 static YOLOEngine *g_yolo_engine = NULL;
-#if ENABLE_RENDERING
-static RenderEngine *g_render_engine = NULL;
-#endif
 
 // ── 图像处理 ──
 // 处理进程信号的回调入口。
@@ -389,10 +394,19 @@ void pcie_manager_cleanup(PCIEManager *manager)
     }
 }
 
+struct RenderTotals
+{
+    uint64_t frames, draw_ns, replaced;
+};
+
+class RenderWorker;
+
 #if ENABLE_RENDERING
 // ── 图像处理 ──
 // 渲染引擎函数实现 - X11图形渲染
 // ── 图像处理 ──
+
+static uint64_t monotonic_ns();
 
 static int m_shm_attach_error = 0;
 static int m_shm_error_handler(Display *, XErrorEvent *)
@@ -477,18 +491,17 @@ int render_engine_init(RenderEngine *engine)
     if (!display_env)
     {
         printf("注意: DISPLAY环境变量未设置，尝试使用默认值 :0\n");
-        setenv("DISPLAY", ":0", 0);
     }
 
     // 建立到 X 服务器的接入。
     printf("尝试接入X服务器...\n");
-    engine->display = XOpenDisplay(NULL);
+    engine->display = XOpenDisplay(display_env ? NULL : ":0");
     if (!engine->display)
     {
         printf("✗ 异常: 无法接入到X服务器\n");
         printf("可能的原因:\n");
         printf("1. X11服务未运行 (检查: ps aux | grep Xorg)\n");
-        printf("2. DISPLAY变量错误 (此时: %s)\n", getenv("DISPLAY"));
+        printf("2. DISPLAY变量错误 (此时: %s)\n", display_env ? display_env : ":0");
         printf("3. SSH接入缺少X11转发 (使用: ssh -X)\n");
         printf("4. 权限问题 (尝试: xhost +local:)\n");
         printf("建议修复:\n");
@@ -526,29 +539,13 @@ int render_engine_init(RenderEngine *engine)
     printf("设置窗口属性...\n");
     XSelectInput(engine->display, engine->window,
                  ExposureMask | KeyPressMask | ButtonPressMask | StructureNotifyMask);
+    engine->wm_delete = XInternAtom(engine->display, "WM_DELETE_WINDOW", False);
+    XSetWMProtocols(engine->display, engine->window, &engine->wm_delete, 1);
 
     printf("映射窗口到屏幕...\n");
     XMapWindow(engine->display, engine->window);
     XStoreName(engine->display, engine->window, "PCIE+YOLO 目标检测系统");
     XFlush(engine->display);
-
-    // 等候 X 窗口映射完成。
-    printf("等待窗口呈现...\n");
-    XEvent event;
-    while (1)
-    {
-        XNextEvent(engine->display, &event);
-        if (event.type == MapNotify)
-        {
-            printf("✓ 窗口已已完成呈现\n");
-            break;
-        }
-        if (event.type == Expose)
-        {
-            printf("✓ 窗口准备就绪\n");
-            break;
-        }
-    }
 
     // 取得窗口绘制所需的 GC。
     engine->gc = XCreateGC(engine->display, engine->window, 0, NULL);
@@ -645,7 +642,12 @@ int render_engine_check_exit_event(RenderEngine *engine)
         case ButtonPress:
             return 1; // 任意鼠标按键退出
         case ClientMessage:
-            return 1; // 处理窗口管理器发出的关闭请求。
+            if (event.xclient.format == 32 && (Atom)event.xclient.data.l[0] == engine->wm_delete)
+                return 1;
+            break;
+        case DestroyNotify:
+            engine->window = 0;
+            return 1;
         }
     }
 
@@ -698,6 +700,100 @@ void render_engine_cleanup(RenderEngine *engine)
     engine->is_init = 0;
     printf("渲染引擎移除完成\n");
 }
+
+class RenderWorker
+{
+  public:
+    RenderWorker()
+        : pending_((size_t)DISPLAY_WIDTH * DISPLAY_HEIGHT * 3), working_(pending_.size()),
+          thread_(&RenderWorker::run, this)
+    {
+    }
+
+    ~RenderWorker()
+    {
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            stopping_ = true;
+        }
+        ready_.notify_one();
+        thread_.join();
+    }
+
+    void submit(const uint8_t *pixels)
+    {
+        if (!accepting_.load(std::memory_order_relaxed))
+            return;
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            if (has_pending_)
+                ++totals_.replaced;
+            memcpy(pending_.data(), pixels, pending_.size());
+            has_pending_ = true;
+        }
+        ready_.notify_one();
+    }
+
+    bool exit_requested() const { return exit_requested_.load(std::memory_order_relaxed); }
+
+    RenderTotals totals()
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        return totals_;
+    }
+
+  private:
+    void run()
+    {
+        pthread_setname_np(pthread_self(), "m-display");
+        RenderEngine engine = {};
+        if (render_engine_init(&engine) != 0)
+        {
+            fprintf(stderr, "[DISPLAY M] 本地显示初始化失败，继续采集和发布视频\n");
+            return;
+        }
+        printf("[DISPLAY M] async latest-frame renderer ready\n");
+        accepting_.store(true, std::memory_order_relaxed);
+        for (;;)
+        {
+            if (render_engine_check_exit_event(&engine))
+            {
+                exit_requested_.store(true, std::memory_order_relaxed);
+                break;
+            }
+            {
+                std::unique_lock<std::mutex> lock(mutex_);
+                ready_.wait_for(lock, std::chrono::milliseconds(50),
+                                [this] { return stopping_ || has_pending_; });
+                if (stopping_)
+                    break;
+                if (!has_pending_)
+                    continue;
+                working_.swap(pending_);
+                has_pending_ = false;
+            }
+            // Xorg waits happen after releasing the handoff lock.
+            const uint64_t start = monotonic_ns();
+            if (render_engine_render_frame_with_detections(&engine, working_.data()) == 0)
+            {
+                const uint64_t elapsed = monotonic_ns() - start;
+                std::lock_guard<std::mutex> lock(mutex_);
+                ++totals_.frames;
+                totals_.draw_ns += elapsed;
+            }
+        }
+        accepting_.store(false, std::memory_order_relaxed);
+        render_engine_cleanup(&engine);
+    }
+
+    std::vector<uint8_t> pending_, working_;
+    std::mutex mutex_;
+    std::condition_variable ready_;
+    RenderTotals totals_ = {};
+    bool has_pending_ = false, stopping_ = false;
+    std::atomic<bool> accepting_{false}, exit_requested_{false};
+    std::thread thread_;
+};
 #endif
 
 // ── 图像处理 ──
@@ -713,15 +809,6 @@ void cleanup_all_resources(PCIEManager *pcie_mgr, SharedMemoryManager *shm_mgr,
                            YOLOEngine *yolo_eng)
 {
     printf("\n=== 紧急资源移除 ===\n");
-
-#if ENABLE_RENDERING
-    // 释放呈现引擎持有的对象。
-    if (g_render_engine)
-    {
-        printf("移除渲染引擎...\n");
-        render_engine_cleanup(g_render_engine);
-    }
-#endif
 
     // 移除PCIE流传输
     if (pcie_mgr)
@@ -831,11 +918,12 @@ static uint64_t monotonic_ns(void)
 
 struct CapturePerf
 {
-    uint64_t start, frames, raw_changed, inferred, inference_calls, published, renders, overlays;
-    uint64_t dma, colors, inference, overlay, shared, render;
+    uint64_t start, frames, raw_changed, inferred, inference_calls, published, overlays;
+    uint64_t dma, colors, inference, overlay, shared, display_submit;
 };
 
-static void report_capture_perf(CapturePerf *stats, int dma_rows, m_lane::LatestWorker *worker)
+static void report_capture_perf(CapturePerf *stats, int dma_rows, m_lane::LatestWorker *worker,
+                                RenderWorker *renderer)
 {
     uint64_t now = monotonic_ns();
     if (now <= stats->start || now - stats->start < 5000000000ull)
@@ -843,6 +931,15 @@ static void report_capture_perf(CapturePerf *stats, int dma_rows, m_lane::Latest
     double seconds = (now - stats->start) / 1000000000.0;
     double frame_ms = stats->frames ? 1.0 / (stats->frames * 1000000.0) : 0;
     static m_lane::Totals previous_worker = {};
+    static RenderTotals previous_render = {};
+    RenderTotals render = {};
+#if ENABLE_RENDERING
+    if (renderer)
+        render = renderer->totals();
+#else
+    (void)renderer;
+#endif
+    const uint64_t rendered = render.frames - previous_render.frames;
     m_lane::Totals totals = worker ? worker->totals() : m_lane::Totals{};
     uint64_t inferred = worker ? totals.successful - previous_worker.successful : stats->inferred;
     uint64_t calls = worker ? totals.calls - previous_worker.calls : stats->inference_calls;
@@ -856,16 +953,20 @@ static void report_capture_perf(CapturePerf *stats, int dma_rows, m_lane::Latest
     printf("[PERF M] capture_loop_fps=%.2f raw_changed_fps=%.2f inference_fps=%.2f "
            "fresh_result_fps=%.2f publish_fps=%.2f dma_ms=%.2f color_ms=%.2f infer_ms=%.2f "
            "overlay_ms=%.2f analysis_ms=%.2f shm_ms=%.2f render_ms=%.2f "
+           "render_fps=%.2f display_submit_ms=%.2f display_replaced=%llu "
            "pending_replaced=%llu stale_results=%llu worker_failed=%d dma_rows=%d\n",
            stats->frames / seconds, stats->raw_changed / seconds, inferred / seconds,
            fresh / seconds, stats->published / seconds, stats->dma * frame_ms,
            stats->colors * frame_ms, calls ? inference / (calls * 1000000.0) : 0,
            stats->overlays ? stats->overlay / (stats->overlays * 1000000.0) : 0,
            inferred ? analysis / (inferred * 1000000.0) : 0, stats->shared * frame_ms,
-           stats->renders ? stats->render / (stats->renders * 1000000.0) : 0,
+           rendered ? (render.draw_ns - previous_render.draw_ns) / (rendered * 1000000.0) : 0,
+           rendered / seconds, stats->display_submit * frame_ms,
+           (unsigned long long)(render.replaced - previous_render.replaced),
            (unsigned long long)replaced, (unsigned long long)stale, worker && worker->failed(),
            dma_rows);
     previous_worker = totals;
+    previous_render = render;
     fflush(stdout);
     memset(stats, 0, sizeof(*stats));
     stats->start = now;
@@ -929,7 +1030,7 @@ int main()
     PCIEManager pcie_manager = {};
     pcie_manager.pci_driver_fd = -1;
 #if ENABLE_RENDERING
-    RenderEngine render_engine = {};
+    std::unique_ptr<RenderWorker> renderer;
 #endif
     yolopv2_result_t yolopv2_results = {};
     SharedMemoryManager pcie_shm_manager = {};
@@ -959,9 +1060,6 @@ int main()
     g_pcie_manager = &pcie_manager;
     g_shm_manager = &pcie_shm_manager;
     g_yolo_engine = &yolo_engine;
-#if ENABLE_RENDERING
-    g_render_engine = &render_engine;
-#endif
 
     // 设置信号处理程序。
     setup_signal_handlers();
@@ -1063,18 +1161,14 @@ int main()
     printf("✓ 视频流采集初始化完成\n");
 
 #if ENABLE_RENDERING
-    /* 图像处理：7. 初始化渲染引擎 */
-    printf("\n=== 渲染引擎初始化 ===\n");
-    if (render_engine_init(&render_engine) != 0)
+    try
     {
-        emergency_stop("渲染引擎初始化失败", "X11渲染引擎");
-        printf("!!! X11呈现系统无法正常工作 !!!\n");
-        printf("!!! 程序将继续运行但无法呈现图像 !!!\n");
-        // 需注意：渲染未成功不应导致整个程序退出，因为核心功能仍可工作
-        cleanup_all_resources(&pcie_manager, &pcie_shm_manager, &yolo_engine);
-        return -1;
+        renderer.reset(new RenderWorker());
     }
-    printf("✓ 渲染引擎初始化完成\n");
+    catch (const std::exception &error)
+    {
+        fprintf(stderr, "[DISPLAY M] 无法启动显示线程，继续采集和发布视频: %s\n", error.what());
+    }
 #endif
 
     printf("=== 系统初始化完成 ===\n");
@@ -1197,6 +1291,13 @@ int main()
     const uint32_t line_session = (uint32_t)(monotonic_ns() ^ ((uint64_t)getpid() << 16)) | 1u;
     while (g_running)
     {
+#if ENABLE_RENDERING
+        if (renderer && renderer->exit_requested())
+        {
+            printf("识别到退出事件\n");
+            break;
+        }
+#endif
         uint64_t mark = monotonic_ns();
         // 停用示例，仅供对照：printf("[DEBUG] ===== 帧 %d 开始 =====\n", frame_count);
         /* 图像处理：步骤1: 从PCIE采集一帧数据 */
@@ -1375,30 +1476,21 @@ int main()
         // 停用示例，仅供对照：printf("[DEBUG] 写入共享内存完成\n");
 
 #if ENABLE_RENDERING
-        /* 图像处理：步骤4: 渲染带有识别结果的图像 */
-        // 停用示例，仅供对照：printf("[DEBUG] 渲染开始\n");
-        mark = monotonic_ns();
-        if (render_engine_render_frame_with_detections(&render_engine, image_buf_888) != 0)
+        if (renderer)
         {
-            printf("注意: 渲染未成功，但继续处理下一帧\n");
+            mark = monotonic_ns();
+            renderer->submit(image_buf_888);
+            perf.display_submit += monotonic_ns() - mark;
         }
-        perf.render += monotonic_ns() - mark;
-        ++perf.renders;
-        // 停用示例，仅供对照：printf("[DEBUG] 渲染完成\n");
-
-        /* 图像处理：步骤5: 检查退出事件 */
-        // 停用示例，仅供对照：printf("[DEBUG] 检查退出事件\n");
-        if (render_engine_check_exit_event(&render_engine))
-        {
-            printf("识别到退出事件\n");
-            break;
-        }
-        // 停用示例，仅供对照：printf("[DEBUG] 退出事件检查完成\n");
 #endif
 
         frame_count++;
         ++perf.frames;
-        report_capture_perf(&perf, pcie_manager.dma_rows, lane_worker.get());
+#if ENABLE_RENDERING
+        report_capture_perf(&perf, pcie_manager.dma_rows, lane_worker.get(), renderer.get());
+#else
+        report_capture_perf(&perf, pcie_manager.dma_rows, lane_worker.get(), nullptr);
+#endif
         wait_for_capture_deadline(&capture_deadline, capture_fps);
         // 停用示例，仅供对照：printf("[DEBUG] ===== 帧 %d 结束 =====\n", frame_count - 1);
     }
@@ -1426,9 +1518,6 @@ int main()
     // ── 图像处理 ──
     printf("\n=== 系统移除 ===\n");
 
-#if ENABLE_RENDERING
-    render_engine_cleanup(&render_engine);
-#endif
     pcie_manager_cleanup_streaming(&pcie_manager);
     shared_memory_cleanup(&pcie_shm_manager);
     line_ipc_close(&line_ipc);
@@ -1453,6 +1542,9 @@ int main()
         image_buf_565_out = NULL;
     }
 
+#if ENABLE_RENDERING
+    renderer.reset();
+#endif
     printf("\n=== PCIE+YOLOPv2车道线识别系统执行完成 ===\n");
     return 0;
 }
