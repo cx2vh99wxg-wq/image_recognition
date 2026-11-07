@@ -2,6 +2,7 @@
 #define EGO_LANE_SELECTOR_H
 #include "line_style.h"
 #include "line_style_trace.h"
+#include "lane_point_selector.h"
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -16,12 +17,7 @@ class EgoLaneSelector
 {
     double fixed_anchor_;
     bool bottom_up_;
-    struct Point
-    {
-        double x, t;
-        int y, width;
-        bool nn;
-    };
+    using Point = LaneRowPoint;
     struct Fit
     {
         double a = 0, b = 0, c = 0;
@@ -384,31 +380,8 @@ class EgoLaneSelector
     static std::vector<Track> objects(const float *mask, const uint8_t *rgb, Road &road, int w,
                                       int h, bool ground, bool bottom_up)
     {
-        std::vector<std::vector<Point>> rows;
-        for (int y = bottom_up ? 0 : h * 12 / 100; y < (bottom_up ? h : h * 96 / 100); ++y)
-        {
-            std::vector<Point> row;
-            for (int x = 0; x < w;)
-            {
-                if (!(mask[y * w + x] > .3f))
-                {
-                    ++x;
-                    continue;
-                }
-                int begin = x;
-                while (x < w && mask[y * w + x] > .3f)
-                    ++x;
-                if (x - begin <= w / 10)
-                    row.push_back({(begin + x - 1) * .5, coordinate(y, h), y, x - begin, true});
-            }
-            if (row.size() > 12)
-            {
-                std::stable_sort(row.begin(), row.end(),
-                                 [](const Point &a, const Point &b) { return a.nn > b.nn; });
-                row.resize(12);
-            }
-            rows.push_back(row);
-        }
+        auto rows = lane_mask_rows(mask, w, h, bottom_up ? 0 : h * 12 / 100,
+                                   bottom_up ? h : h * 96 / 100);
         if (!road.centered)
         {
             std::vector<double> centers;
@@ -828,22 +801,36 @@ class EgoLaneSelector
     }
     static YOLOLineBoundary measure(const Track &track, const uint8_t *rgb, int w, int h,
                                     int road_first, int road_height, double lane_width,
-                                    std::vector<PaintSample> *trace)
+                                    std::vector<PaintSample> *trace,
+                                    const std::vector<Point> *points = nullptr)
     {
+        size_t upper = 0;
+        const auto x_at = [&](int y) {
+            if (!points)
+                return track.fit.at(coordinate(y, h));
+            while (upper + 1 < points->size() && (*points)[upper].y < y)
+                ++upper;
+            const auto &b = (*points)[upper];
+            if (!upper || b.y == y)
+                return b.x;
+            const auto &a = (*points)[upper - 1];
+            // RGB paint sampling only. Direction uses observed X samples.
+            return a.x + (b.x - a.x) * (y - a.y) / (b.y - a.y);
+        };
         YOLOLineBoundary out = {};
         out.fit_a = track.fit.a;
         out.fit_b = track.fit.b;
         out.fit_c = track.fit.c;
         out.first_y = track.first;
         out.last_y = track.last;
-        out.x_bottom = track.fit.at(0);
-        out.x_top = track.fit.at(coordinate(track.first, h));
+        out.x_bottom = points ? points->back().x : track.fit.at(0);
+        out.x_top = points ? points->front().x : track.fit.at(coordinate(track.first, h));
         out.coverage = std::min(100, (int)(track.length * 100 / (h * .52)));
         std::vector<int> values;
         int valid = 0;
         for (int y = track.first; y <= track.last; ++y)
         {
-            int x = (int)std::lround(track.fit.at(coordinate(y, h)));
+            int x = (int)std::lround(x_at(y));
             int value = -1;
             if (x >= w / 40 && x < w - w / 40)
             {
@@ -904,8 +891,8 @@ class EgoLaneSelector
         out.duty = 100 * painted / valid;
         out.spans = spans;
         out.gaps = gaps;
-        double first_x = track.fit.at(coordinate(track.first, h)),
-               last_x = track.fit.at(coordinate(track.last, h));
+        double first_x = out.x_top,
+               last_x = points ? points->back().x : track.fit.at(coordinate(track.last, h));
         bool clipped = std::min(first_x, last_x) < w * .04 || std::max(first_x, last_x) > w * .96;
         double required_length = h * .22;
         if (clipped && track.first <= road_first + h * .1)
@@ -1021,6 +1008,32 @@ class EgoLaneSelector
     }
 
   public:
+    static YOLOLineStyleResult describe_points(const PointLanePair &pair, const uint8_t *rgb)
+    {
+        YOLOLineStyleResult out = {};
+        out.width = pair.width;
+        out.height = pair.height;
+        out.reference_x = pair.width * .5;
+        out.object_count = pair.candidates;
+        out.left.reason = out.right.reason = LINE_NO_TRACK;
+        if (!rgb || pair.left.empty() || pair.right.empty() || pair.last < pair.first)
+            return out;
+        const auto describe = [&](const std::vector<Point> &points) {
+            Track geometry;
+            geometry.first = points.front().y;
+            geometry.last = points.back().y;
+            for (size_t i = 1; i < points.size(); ++i)
+                geometry.length += std::hypot(points[i].x - points[i - 1].x,
+                                             points[i].y - points[i - 1].y);
+            return measure(geometry, rgb, pair.width, pair.height, pair.first,
+                           pair.last - pair.first, pair.right.back().x - pair.left.back().x,
+                           nullptr, &points);
+        };
+        out.left = describe(pair.left);
+        out.right = describe(pair.right);
+        return out;
+    }
+
     explicit EgoLaneSelector(double normalized_anchor = -1, bool bottom_up = false)
         : fixed_anchor_(normalized_anchor), bottom_up_(bottom_up)
     {

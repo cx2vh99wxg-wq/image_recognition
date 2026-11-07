@@ -41,6 +41,7 @@ struct Snapshot
     YOLOCurveResult curve = {};
     YOLOLineStyleResult line_style = {};
     YOLOLineStyleResult ipm_pair = {};
+    PointLanePair ipm_points;
     std::vector<float> lane, drivable;
 
     bool fresh(uint64_t now) const
@@ -84,7 +85,10 @@ class LatestWorker
         ego_curve_ = !curve_mode || std::strcmp(curve_mode, "ego-boundaries") == 0;
         std::fprintf(stderr, "[CURVE_MODE] %s\n",
                      ego_curve_ ? "ego-boundaries candidate" : "legacy projection");
-        std::fprintf(stderr, "[LANE_CANDIDATES] %s\n", line_analyzer_.bottom_up() ? "bottom-up" : "seed-fit");
+        std::fprintf(stderr, "[LANE_CANDIDATES] %s\n",
+                     use_point_lanes() ? "point-tracks" : line_analyzer_.bottom_up() ? "bottom-up" : "seed-fit");
+        if (use_ipm_heading())
+            std::fprintf(stderr, "[CURVE_GEOMETRY] ipm point-tracks\n");
         if (radial_.enabled())
             std::fprintf(stderr, "[FRONT_GEOMETRY] radial calibration %s lambda=%.6f\n",
                          radial_.valid() ? "enabled" : "invalid; heading suppressed",
@@ -207,9 +211,11 @@ class LatestWorker
                                                               raw_lane_.data(), raw_road_.data());
                             raw = {raw_lane_.data(), raw_road_.data(), width_, height_};
                         }
+                        PointLanePair front_points;
                         YOLOLineStyleResult observed = line_analyzer_.analyze_front_camera(
                             raw.lane_line_data, raw.width, raw.height, working_pixels_.data(),
-                            width_, height_, nullptr, raw.drivable_area_data);
+                            width_, height_, nullptr, raw.drivable_area_data,
+                            use_point_lanes() ? &front_points : nullptr);
                         result->line_style = line_analyzer_.confirm(observed, source, captured);
                         snapshot_request_.poll(now, source, captured, working_pixels_.data(),
                                                width_, height_, raw, observed, result->line_style);
@@ -265,6 +271,7 @@ class LatestWorker
                             ++dump_count_;
                             dump_ns_ = now;
                         }
+                        EgoCurve ipm_curve;
                         if (ipm_test_)
                         {
                             const bool log_ipm = !ipm_log_ns_ || now - ipm_log_ns_ >= 1000000000ULL;
@@ -274,23 +281,36 @@ class LatestWorker
                                                        raw.width, raw.height, ipm_lane_.data(),
                                                        ipm_green_.data()))
                             {
-                                ipm_test_->render(working_pixels_.data(), ipm_rgb_.data());
                                 LineStyleTrace trace;
-                                const auto bird = EgoLaneSelector(.5, line_analyzer_.bottom_up()).analyze(
-                                    ipm_lane_.data(), ipm_green_.data(), ipm_rgb_.data(),
-                                    width_ / 2, height_ / 2, &trace, true);
-                                const auto curve = estimate_ego_curve(bird, true);
-                                if (curve.confidence)
-                                    result->ipm_pair = bird;
+                                YOLOLineStyleResult bird = {};
+                                if (use_point_lanes())
+                                {
+                                    auto points = select_point_lanes(ipm_lane_.data(), width_ / 2, height_ / 2);
+                                    bird.object_count = points.candidates;
+                                    trace.near_y = points.last;
+                                    ipm_curve = estimate_ego_curve(points, true);
+                                    if (ipm_curve.confidence)
+                                        result->ipm_points = std::move(points);
+                                }
+                                else
+                                {
+                                    ipm_test_->render(working_pixels_.data(), ipm_rgb_.data());
+                                    bird = EgoLaneSelector(.5, line_analyzer_.bottom_up()).analyze(
+                                        ipm_lane_.data(), ipm_green_.data(), ipm_rgb_.data(),
+                                        width_ / 2, height_ / 2, &trace, true);
+                                    ipm_curve = estimate_ego_curve(bird, true);
+                                    if (ipm_curve.confidence)
+                                        result->ipm_pair = bird;
+                                }
                                 ++ipm_frames_;
-                                ipm_valid_ += curve.confidence != 0;
+                                ipm_valid_ += ipm_curve.confidence != 0;
                                 if (log_ipm)
                                     std::fprintf(stderr,
                                              "[IPM_TEST] source=%llu area=%u tracks=%u left=%d right=%d near_y=%.0f type=%u confidence=%u span=%.1f curvature_grid=%.6f reason=%u valid=%u/%u\n",
                                              (unsigned long long)source, bird.road_area, bird.object_count,
                                              trace.selected_left, trace.selected_right, trace.near_y,
-                                             curve.type, curve.confidence, curve.span_px,
-                                             curve.curvature, curve.reason, ipm_valid_, ipm_frames_);
+                                              ipm_curve.type, ipm_curve.confidence, ipm_curve.span_px,
+                                              ipm_curve.curvature, ipm_curve.reason, ipm_valid_, ipm_frames_);
                             }
                             else if (log_ipm)
                                 std::fprintf(stderr, "[IPM_TEST] mask size does not match input\n");
@@ -300,13 +320,22 @@ class LatestWorker
                         int curve_status = 0;
                         if (ego_curve_)
                         {
-                            EgoCurve observed_curve = (radial_.enabled() || ground_.enabled())
-                                ? estimate_ego_curve_mapped(observed, [&](ImagePoint &p) {
-                                      return radial_.undistort(p, observed.width, observed.height) &&
-                                             (!ground_.enabled() ||
-                                              ground_.ground_at(p, observed.width, observed.height));
-                                  }, ground_.enabled())
-                                : estimate_ego_curve(observed);
+                            const bool ipm_heading = use_ipm_heading();
+                            // Reuse the same fit as the preview; an invalid IPM frame stays unknown.
+                            EgoCurve observed_curve = ipm_curve;
+                            if (!ipm_heading)
+                            {
+                                if (use_point_lanes())
+                                    observed_curve = estimate_ego_curve(front_points);
+                                else if (radial_.enabled() || ground_.enabled())
+                                    observed_curve = estimate_ego_curve_mapped(observed, [&](ImagePoint &p) {
+                                        return radial_.undistort(p, observed.width, observed.height) &&
+                                               (!ground_.enabled() ||
+                                                ground_.ground_at(p, observed.width, observed.height));
+                                    }, ground_.enabled());
+                                else
+                                    observed_curve = estimate_ego_curve(observed);
+                            }
                             EgoCurve curve =
                                 curve_confirm_.update(observed_curve, source, captured);
                             result->curve.curve_type = curve.type;
@@ -316,8 +345,9 @@ class LatestWorker
                             {
                                 std::fprintf(
                                     stderr,
-                                    "[CURVE_EGO] source=%llu raw_type=%u type=%u confidence=%u shift_px=%.2f span_px=%.1f reason=%u heading_deg=%u\n",
-                                    (unsigned long long)source, observed_curve.type, curve.type,
+                                    "[CURVE_EGO] source=%llu geometry=%s raw_type=%u type=%u confidence=%u shift_px=%.2f span_px=%.1f reason=%u heading_deg=%u\n",
+                                    (unsigned long long)source, ipm_heading ? "ipm" : "front",
+                                    observed_curve.type, curve.type,
                                     curve.confidence, curve.shift_px, curve.span_px, curve.reason,
                                     curve.angle);
                                 curve_log_ns_ = now;
@@ -401,6 +431,11 @@ class LatestWorker
     YOLOEngine *engine_;
     traffic::NpuTask *optional_task_;
     LineStyleAnalyzer line_analyzer_;
+    bool use_point_lanes() const
+    {
+        return ego_curve_ && line_analyzer_.bottom_up() && !ground_.enabled();
+    }
+    bool use_ipm_heading() const { return ipm_test_ && use_point_lanes(); }
     EgoCurveConfirm curve_confirm_;
     const FrontRadial radial_ = FrontRadial::for_camera(std::getenv("LANE_RADIAL_LAMBDA"),
                                                        "front_radial.conf");

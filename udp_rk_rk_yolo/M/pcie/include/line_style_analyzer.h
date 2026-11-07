@@ -396,7 +396,8 @@ class LineStyleAnalyzer
     bool bottom_up() const { return bottom_up_; }
     YOLOLineStyleResult analyze_front_camera(const float *mask, int w, int h, const uint8_t *image,
                                              int iw, int ih, LineStyleTrace *trace = nullptr,
-                                             const float *drivable = nullptr) const
+                                             const float *drivable = nullptr,
+                                             PointLanePair *point_pair = nullptr) const
     {
         if (!mask || w < 80 || h < 60 || iw < 1 || ih < 1)
             return {};
@@ -405,14 +406,14 @@ class LineStyleAnalyzer
         if (w < 600 || h < 400)
         {
             std::vector<uint8_t> green;
-            if (drivable)
+            if (drivable && !point_pair)
             {
                 green.resize((size_t)w * h);
                 for (size_t p = 0; p < green.size(); ++p)
                     green[p] = drivable[(size_t)w * h + p] > drivable[p];
             }
             return analyze(mask, w, h, image, iw, ih, trace,
-                           green.empty() ? nullptr : green.data());
+                           green.empty() ? nullptr : green.data(), point_pair);
         }
         int cw = w / 2, ch = h / 2, ciw = iw / 2, cih = ih / 2;
         std::vector<float> cropped((size_t)cw * ch);
@@ -424,7 +425,7 @@ class LineStyleAnalyzer
             for (int y = 0; y < cih; ++y)
                 std::copy(image + y * iw * 3, image + y * iw * 3 + ciw * 3,
                           rgb.data() + y * ciw * 3);
-        if (drivable)
+        if (drivable && !point_pair)
         {
             green.resize((size_t)cw * ch);
             for (int y = 0; y < ch; ++y)
@@ -432,18 +433,18 @@ class LineStyleAnalyzer
                     green[y * cw + x] = drivable[(size_t)w * h + y * w + x] > drivable[y * w + x];
         }
         return analyze(cropped.data(), cw, ch, image ? rgb.data() : nullptr, ciw, cih, trace,
-                       green.empty() ? nullptr : green.data());
+                       green.empty() ? nullptr : green.data(), point_pair);
     }
     YOLOLineStyleResult analyze(const float *mask, int w, int h, const uint8_t *image, int iw,
                                 int ih, LineStyleTrace *trace = nullptr,
-                                const uint8_t *green = nullptr) const
+                                const uint8_t *green = nullptr, PointLanePair *point_pair = nullptr) const
     {
         if (trace)
             *trace = LineStyleTrace{};
         YOLOLineStyleResult result = {};
         if (!mask || w < 80 || h < 60 || iw < 1 || ih < 1)
             return result;
-        if (green)
+        if (green || point_pair)
         {
             std::vector<uint8_t> resized;
             const uint8_t *rgb = image;
@@ -456,6 +457,11 @@ class LineStyleAnalyzer
                             resized[((size_t)y * w + x) * 3 + c] =
                                 image[((size_t)(y * ih / h) * iw + x * iw / w) * 3 + c];
                 rgb = resized.data();
+            }
+            if (point_pair)
+            {
+                *point_pair = select_point_lanes(mask, w, h);
+                return EgoLaneSelector::describe_points(*point_pair, rgb);
             }
             return EgoLaneSelector(ego_anchor_, bottom_up_).analyze(mask, green, rgb, w, h, trace);
         }

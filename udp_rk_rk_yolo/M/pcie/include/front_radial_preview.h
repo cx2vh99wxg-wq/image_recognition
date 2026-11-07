@@ -181,24 +181,43 @@ class FrontRadialPreview
     }
 
     void apply(uint8_t *mosaic, uint16_t *udp_frame = nullptr,
-               const YOLOLineStyleResult *pair = nullptr)
+               const YOLOLineStyleResult *pair = nullptr, const PointLanePair *points = nullptr)
     {
         if (!mosaic || !enabled())
             return;
         render(mosaic, tile_.data());
-        if (ground_view_ && pair)
+        const auto mark = [&](int x, int y, uint8_t b, uint8_t g, uint8_t r) {
+            if (x < 0 || x >= width_ || y < 0 || y >= height_)
+                return;
+            uint8_t *pixel = tile_.data() + ((size_t)y * width_ + x) * 3;
+            pixel[0] = b;
+            pixel[1] = g;
+            pixel[2] = r;
+        };
+        const auto mark_center = [&](double x, double y) {
+            for (int dy = -2; dy <= 2; ++dy)
+                for (int dx = -2; dx <= 2; ++dx)
+                    mark((int)std::lround(x) + dx, (int)std::lround(y) + dy, 255, 255, 255);
+        };
+        if (ground_view_ && points && points->sampled)
+        {
+            for (const auto &p : points->left)
+                if (p.y >= points->first && p.y <= points->last)
+                    for (int dx = -1; dx <= 1; ++dx)
+                        mark((int)std::lround(p.x) + dx, p.y, 255, 240, 48);
+            for (const auto &p : points->right)
+                if (p.y >= points->first && p.y <= points->last)
+                    for (int dx = -1; dx <= 1; ++dx)
+                        mark((int)std::lround(p.x) + dx, p.y, 58, 222, 255);
+            for (size_t i = 0; i < points->left_x.size(); ++i)
+                mark_center((points->left_x[i] + points->right_x[i]) * .5,
+                            points->first + (points->last - points->first) * .25 * i);
+        }
+        else if (ground_view_ && pair)
         {
             double first, last;
             if (ego_curve_range(*pair, first, last) && last > first)
             {
-                const auto mark = [&](int x, int y, uint8_t b, uint8_t g, uint8_t r) {
-                    if (x < 0 || x >= width_ || y < 0 || y >= height_)
-                        return;
-                    uint8_t *pixel = tile_.data() + ((size_t)y * width_ + x) * 3;
-                    pixel[0] = b;
-                    pixel[1] = g;
-                    pixel[2] = r;
-                };
                 for (int y = (int)first; y <= (int)last; ++y)
                 {
                     double left, right;
@@ -217,10 +236,7 @@ class FrontRadialPreview
                     double left, right;
                     if (!ego_curve_bounds(*pair, y, left, right))
                         continue;
-                    const int x = (int)std::lround((left + right) * .5);
-                    for (int dy = -2; dy <= 2; ++dy)
-                        for (int dx = -2; dx <= 2; ++dx)
-                            mark(x + dx, (int)std::lround(y) + dy, 255, 255, 255);
+                    mark_center((left + right) * .5, y);
                 }
             }
         }

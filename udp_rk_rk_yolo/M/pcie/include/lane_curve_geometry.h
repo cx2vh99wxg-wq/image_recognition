@@ -2,6 +2,7 @@
 #define M_LANE_CURVE_GEOMETRY_H
 #include "line_style.h"
 #include "front_radial.h"
+#include "lane_point_selector.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -44,7 +45,8 @@ inline bool ego_curve_bounds(const YOLOLineStyleResult &r, double y, double &lef
            right - left <= r.width * 1.1;
 }
 inline EgoCurve fit_ego_centers(const double (&centers)[5], double span, double source_span,
-                                int width, int height, bool ground = false)
+                                int width, int height, bool ground = false,
+                                bool apply_low_curvature_gate = false)
 {
     EgoCurve out;
     out.span_px = (float)source_span;
@@ -77,7 +79,8 @@ inline EgoCurve fit_ego_centers(const double (&centers)[5], double span, double 
     constexpr double low_curvature_turn_deg = 40.;
     const double heading_deg = std::atan(std::abs(slope)) * degrees_per_radian;
     if (std::abs(slope) >= straight_slope &&
-        (ground || !low_curvature || heading_deg > low_curvature_turn_deg))
+        ((ground && !apply_low_curvature_gate) || !low_curvature ||
+         heading_deg > low_curvature_turn_deg))
     {
         out.type = slope < 0 ? 1 : 2;
         out.angle = (uint32_t)std::lround(heading_deg);
@@ -88,6 +91,35 @@ inline EgoCurve fit_ego_centers(const double (&centers)[5], double span, double 
     out.confidence = source_span >= height * .30 ? 85 : source_span >= height * .20 ? 75 : 60;
     out.reason = 0;
     return out;
+}
+
+inline EgoCurve estimate_ego_curve(const PointLanePair &pair, bool ground = false)
+{
+    EgoCurve out;
+    if (pair.left.empty() || pair.right.empty())
+        return out;
+    const int span = pair.last - pair.first;
+    out.span_px = (float)std::max(0, span);
+    if (span < std::max(24., pair.height * .10))
+    {
+        out.reason = 2;
+        return out;
+    }
+    out.reason = 3;
+    if (!pair.sampled)
+        return out;
+    double centers[5];
+    for (size_t i = 0; i < pair.left_x.size(); ++i)
+    {
+        const double width = pair.right_x[i] - pair.left_x[i];
+        if (width < pair.width * .02 || width > pair.width * 1.5)
+            return out;
+        centers[i] = (pair.left_x[i] + pair.right_x[i]) * .5;
+    }
+    // X can come from a neighboring row, while the five target Y positions
+    // remain equally spaced for the existing quadratic formula.
+    // The point-based heading keeps the curvature gate in both camera and IPM coordinates.
+    return fit_ego_centers(centers, span, span, pair.width, pair.height, ground, true);
 }
 
 inline EgoCurve estimate_ego_curve(const YOLOLineStyleResult &r, bool ground = false)

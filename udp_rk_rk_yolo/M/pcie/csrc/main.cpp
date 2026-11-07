@@ -1137,7 +1137,7 @@ int main()
         if (view->enabled())
         {
             ipm_preview = std::move(view);
-            fprintf(stderr, "[IPM_TEST] enabled M+S front preview; heading is diagnostic only\n");
+            fprintf(stderr, "[IPM_TEST] enabled M+S front preview\n");
         }
         else
             fprintf(stderr, "[IPM_TEST] invalid preview calibration\n");
@@ -1346,7 +1346,8 @@ int main()
         rgb888_to_rgb565(image_buf_888, (uint16_t *)image_buf_565_out, IMAGE_WIDTH * IMAGE_HEIGHT);
         if (ipm_preview)
             ipm_preview->apply(image_buf_888, (uint16_t *)image_buf_565_out,
-                               ipm_result ? &ipm_result->ipm_pair : nullptr);
+                               ipm_result ? &ipm_result->ipm_pair : nullptr,
+                               ipm_result ? &ipm_result->ipm_points : nullptr);
         else if (front_preview)
             front_preview->apply(image_buf_888, (uint16_t *)image_buf_565_out);
         perf.colors += monotonic_ns() - mark;
