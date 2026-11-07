@@ -3,6 +3,7 @@
 
 #include "yolo_integration.h"
 #include "line_style_analyzer.h"
+#include "lane_marking_profile.h"
 #include "line_style_snapshot.h"
 #include "front_radial_preview.h"
 #include "lane_curve_geometry.h"
@@ -104,6 +105,8 @@ class LatestWorker
             ipm_rgb_.resize(3 * tile_pixels);
             ipm_lane_.resize(tile_pixels);
             ipm_green_.resize(tile_pixels);
+            ipm_coverage_.resize(tile_pixels);
+            ipm_test_->coverage_mask(ipm_coverage_.data());
         }
         if (front_input_)
         {
@@ -212,7 +215,7 @@ class LatestWorker
                                                               raw_lane_.data(), raw_road_.data());
                             raw = {raw_lane_.data(), raw_road_.data(), width_, height_};
                         }
-                        PointLanePair front_points;
+                        PointLanePair front_points, style_points;
                         YOLOLineStyleResult observed = {};
                         const PointLanePair *line_points = nullptr;
                         if (!use_ipm_heading())
@@ -268,13 +271,14 @@ class LatestWorker
                                 if (use_point_lanes())
                                 {
                                     auto points = select_point_lanes(ipm_lane_.data(), width_ / 2, height_ / 2);
-                                    bird = EgoLaneSelector::describe_points(points, ipm_rgb_.data(), true);
-                                    bird.object_count = points.candidates;
+                                    style_points = marking_profile(ipm_lane_.data(), points);
+                                    bird = EgoLaneSelector::describe_points(style_points, ipm_rgb_.data(),
+                                                                            true, ipm_coverage_.data());
                                     trace.near_y = points.last;
                                     ipm_curve = estimate_ego_curve(points, true);
                                     result->ipm_points = std::move(points);
                                     observed = bird;
-                                    line_points = &result->ipm_points;
+                                    line_points = &style_points;
                                 }
                                 else
                                 {
@@ -325,7 +329,8 @@ class LatestWorker
                                 observed.reference_x, observed.road_area, observed.object_count);
                             line_log_ns_ = now;
                         }
-                        int pixels = yolo_overlay_lane_and_drivable(working_pixels_.data(), width_,
+                        // Ego steering reads masks/points, so it needs no throwaway RGB overlay.
+                        int pixels = ego_curve_ ? 0 : yolo_overlay_lane_and_drivable(working_pixels_.data(), width_,
                                                                     height_, &raw);
                         int curve_status = 0;
                         if (ego_curve_)
@@ -467,7 +472,7 @@ class LatestWorker
     const FrontRadialPreview *front_input_;
     std::vector<uint8_t> front_rgb_;
     std::vector<float> raw_lane_, raw_road_;
-    std::vector<uint8_t> ipm_rgb_, ipm_green_;
+    std::vector<uint8_t> ipm_rgb_, ipm_green_, ipm_coverage_;
     std::vector<float> ipm_lane_;
     uint64_t ipm_log_ns_ = 0;
     unsigned ipm_frames_ = 0, ipm_valid_ = 0;

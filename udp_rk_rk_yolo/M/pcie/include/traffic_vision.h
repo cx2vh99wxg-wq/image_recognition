@@ -455,14 +455,14 @@ class Admission
 
     bool allow(const LaneBudget &lane, uint64_t now)
     {
-        return violations_ < 3 && lane.fresh && !lane.curve_active && lane.captured &&
+        return violations_ < 3 && lane.fresh && lane.captured &&
                now >= lane.captured && now - lane.captured <= 300000000ULL &&
                lane.duration <= 350000000ULL && now >= due_ && estimate_ <= budget_ms_ * 1000000ULL;
     }
     void completed(uint64_t now, uint64_t duration)
     {
         estimate_ = std::max(duration, (estimate_ * 3 + duration) / 4);
-        due_ = now + 1000000000ULL;
+        due_ = now + 180000000ULL;
         if (duration > budget_ms_ * 1000000ULL)
         {
             ++violations_;

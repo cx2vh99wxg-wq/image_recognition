@@ -1201,7 +1201,7 @@ int main()
 
     printf(
         "NN submission interval: %d captured frames; completed inference FPS is reported separately\n",
-        YOLO_DETECT_INTERVAL);
+        asynchronous ? 1 : YOLO_DETECT_INTERVAL);
     printf("Performance timing report interval: 5 seconds\n");
 
     CapturePerf perf = {};
@@ -1362,8 +1362,10 @@ int main()
                 traffic_service->submit_raw(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, source_id,
                                             captured_ns);
             // 提交未经标注的原图，不把上一次叠加掩码的图当作新输入。
-            if (frame_count % YOLO_DETECT_INTERVAL == 0)
-                lane_worker->submit(image_buf_888, source_id, captured_ns);
+            // A single overwriteable mailbox: always offer the newest frame.
+            // Throttling submissions to every third frame only makes the next
+            // inference older; it does not reduce NPU work in this async path.
+            lane_worker->submit(image_buf_888, source_id, captured_ns);
             std::shared_ptr<const m_lane::Snapshot> result = lane_worker->latest();
             bool fresh = result && result->fresh(monotonic_ns()) && !lane_worker->failed();
             if (fresh)

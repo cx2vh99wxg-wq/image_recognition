@@ -66,7 +66,7 @@ struct Service::Impl
                     error.c_str());
         }
         std::printf(
-            "[TRAFFIC] enabled=%d ready=%d input=%d max_locator_rate=1Hz max_NPU_passes=3 color_rate=10Hz budget_ms=%u single_NPU_owner=lane_worker control_output=none\n",
+            "[TRAFFIC] enabled=%d ready=%d input=%d locator_interval_ms=180 max_NPU_passes=1 color_rate=10Hz budget_ms=%u single_NPU_owner=lane_worker control_output=none\n",
             enabled, ready, detector.input_size(), admission.budget_ms());
         std::printf(
             "[TRAFFIC INPUT] geometry=%s source_rect=%d,%d,320,240 source_order=%s detector_order=RGB\n",
@@ -110,11 +110,6 @@ struct Service::Impl
     {
         uint64_t now = traffic_clock_ns();
         unsigned reason = 0;
-        if (lane.curve_active)
-        {
-            ++skipped_curve;
-            reason = TRAFFIC_LANE_PRIORITY;
-        }
         if (!admission.allow(lane, now))
         {
             ++skipped_budget;

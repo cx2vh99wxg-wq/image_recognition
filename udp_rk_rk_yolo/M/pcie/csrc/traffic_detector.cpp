@@ -22,7 +22,7 @@ struct Detector::Impl
     rknn_context context = 0;
     int width = 0, height = 0;
     bool quantized = false;
-    unsigned passes = 0;
+    unsigned passes = 0, view_cursor = 0, locked_view = 0, hits = 0;
     std::vector<rknn_tensor_attr> attrs;
     std::vector<uint8_t> pixels;
     ~Impl()
@@ -118,13 +118,13 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
     if (!p.context || !rgb || w < 1 || h < 1 || stride < w * 3)
         return fail(error, "invalid traffic input");
     p.passes = 0;
-    const auto began = std::chrono::steady_clock::now();
-    // 手机测试图中占据大部分画面的信号灯超出 COCO 常见目标尺度；
-    // 普通视图未定位到可信灯壳时，才尝试居中的较小视图。
-    // 所有轮次共用同一所有者及配置的软预算。
-    for (float view : {1.f, .5f, .25f})
+    // Round-robin views on fresh frames; one NPU pass never delays the next
+    // lane job by a three-scale burst. Keep a successful view for tracking.
+    const float views[] = {1.f, .5f, .25f};
+    const unsigned view_id = p.hits ? p.locked_view : p.view_cursor++ % 3;
+    (void)budget_ms; // Admission still measures the whole call and backs off overruns.
     {
-        const auto pass_began = std::chrono::steady_clock::now();
+        const float view = views[view_id];
         const float scale = std::min(float(p.width) / w, float(p.height) / h) * view;
         int rw = std::max(1, (int)std::lround(w * scale)),
             rh = std::max(1, (int)std::lround(h * scale));
@@ -259,13 +259,11 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
         if (!selected.empty())
         {
             boxes.swap(selected);
+            p.locked_view = view_id;
+            p.hits = 1;
             return true;
         }
-        const auto now = std::chrono::steady_clock::now();
-        const double elapsed = std::chrono::duration<double, std::milli>(now - began).count();
-        const double last = std::chrono::duration<double, std::milli>(now - pass_began).count();
-        if (elapsed + last * 1.05 + 1 > budget_ms)
-            break; // 可选重试一旦迟到，直接放弃而不排队。
+        p.hits = 0;
     }
     return true;
 }

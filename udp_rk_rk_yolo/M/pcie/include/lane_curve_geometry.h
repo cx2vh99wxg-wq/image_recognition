@@ -7,6 +7,7 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
 namespace m_lane
 {
 /* 在已选本车道走廊上估计图像航向候选值，
@@ -15,6 +16,9 @@ namespace m_lane
 struct EgoCurve
 {
     uint32_t type = 0, confidence = 0, angle = 0;
+    // Signed prediction before rounding the legacy integer-degree wire field.
+    // Right is positive, left negative; a classified straight road is zero.
+    double signed_angle_deg = NAN;
     float shift_px = 0, span_px = 0, curvature = 0;
     unsigned reason = 1;
 };
@@ -78,16 +82,18 @@ inline EgoCurve fit_ego_centers(const double (&centers)[5], double span, double 
     constexpr double degrees_per_radian = 57.29577951308232;
     constexpr double low_curvature_turn_deg = 40.;
     const double heading_deg = std::atan(std::abs(slope)) * degrees_per_radian;
+    out.signed_angle_deg = 0.;
     if (std::abs(slope) >= straight_slope &&
         ((ground && !apply_low_curvature_gate) || !low_curvature ||
          heading_deg > low_curvature_turn_deg))
     {
         out.type = slope < 0 ? 1 : 2;
         out.angle = (uint32_t)std::lround(heading_deg);
+        out.signed_angle_deg = slope < 0 ? -heading_deg : heading_deg;
     }
     /* 整个小航向带均归为直道，不再用内层半带排除
      * 3.7px 的真实直道样本并反复打断确认；
-     * 每次状态转换仍需三个不同的新帧。 */
+     * 时间确认由相邻两次新识别结果的角度差决定。 */
     out.confidence = source_span >= height * .30 ? 85 : source_span >= height * .20 ? 75 : 60;
     out.reason = 0;
     return out;
@@ -245,9 +251,14 @@ EgoCurve estimate_ego_curve_mapped(const YOLOLineStyleResult &r, Map map, bool g
 class EgoCurveConfirm
 {
     uint64_t last_id_ = 0, last_capture_ = 0;
-    unsigned candidate_ = 0, count_ = 0;
+    double previous_angle_ = 0.;
+    bool have_previous_ = false;
 
   public:
+    EgoCurveConfirm()
+    {
+        std::fputs("[CURVE_CONFIRM] ANGLE_PAIR: adjacent signed predictions <= 1.5 deg\n", stderr);
+    }
     EgoCurve update(EgoCurve raw, uint64_t id, uint64_t captured)
     {
         if (!captured || id == last_id_ || captured <= last_capture_)
@@ -257,22 +268,31 @@ class EgoCurveConfirm
             return raw;
         }
         if (last_capture_ && captured - last_capture_ > 500000000ULL)
-            count_ = 0;
+            have_previous_ = false;
         last_id_ = id;
         last_capture_ = captured;
-        if (!raw.confidence)
+        if (raw.confidence < 60 || raw.type > 2)
         {
-            count_ = 0;
+            have_previous_ = false;
+            raw.confidence = 0;
             return raw;
         }
-        if (!count_ || candidate_ != raw.type)
+        const double angle = std::isfinite(raw.signed_angle_deg) ? raw.signed_angle_deg :
+                             raw.type == 1 ? -(double)raw.angle :
+                             raw.type == 2 ? (double)raw.angle : 0.;
+        if (!std::isfinite(angle) || std::abs(angle) > 90.)
         {
-            candidate_ = raw.type;
-            count_ = 1;
+            have_previous_ = false;
+            raw.confidence = 0;
+            raw.reason = 8;
+            return raw;
         }
-        else if (count_ < 3)
-            ++count_;
-        if (count_ < 3)
+        // Sliding adjacent pair: even a rejected jump becomes the next baseline.
+        // Duplicated video/display frames never add a second observation.
+        const bool accepted = have_previous_ && std::abs(angle - previous_angle_) <= 1.5 + 1e-9;
+        previous_angle_ = angle;
+        have_previous_ = true;
+        if (!accepted)
         {
             raw.confidence = 0;
             raw.reason = 6;

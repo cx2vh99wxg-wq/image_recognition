@@ -289,3 +289,10 @@ $(BUILD_DIR)/%.d: $(SRC_DIR)/%.c
 $(BUILD_DIR)/%.d: $(SRC_DIR)/%.cpp
 	@mkdir -p $(BUILD_DIR)
 	@$(CXX) -MM $(CXXFLAGS) $(INCLUDES) $< | sed 's,\($*\.o\)[ :]*,$(BUILD_DIR)/\1 $@ : ,g' > $@
+
+.PHONY: test-marking-profile
+$(BUILD_DIR)/test_marking_profile: tests/test_marking_profile.cpp include/lane_marking_profile.h include/ego_lane_selector.h include/line_style_analyzer.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) -std=c++11 -O2 -Wall -Wextra -Werror $(INCLUDES) $< -o $@
+test-marking-profile: $(BUILD_DIR)/test_marking_profile
+	./$(BUILD_DIR)/test_marking_profile

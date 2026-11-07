@@ -62,6 +62,13 @@ endif
 # 直接调用 make 时采用的入口
 all: $(BIN)
 
+$(BUILD_DIR)/test_lane_angle_cue: tests/test_lane_angle_cue.cpp include/lane_angle_cue.h include/dashboard_ui.h | $(BUILD_DIR)
+	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror -Iinclude $< -o $@
+
+.PHONY: test-lane-angle
+test-lane-angle: $(BUILD_DIR)/test_lane_angle_cue
+	./$(BUILD_DIR)/test_lane_angle_cue
+
 $(BUILD_DIR)/test_six_camera: tests/test_six_camera.cpp include/six_camera_render.h ../../include/camera_views.h | $(BUILD_DIR)
 	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@
 
@@ -163,3 +170,12 @@ debug-info:
 	@echo "C构建标志: $(CFLAGS)"
 	@echo "说明：链接标志: $(LDFLAGS)"
 	@echo "说明：共享库: $(SHARED_LIB)"
+
+.PHONY: test-dashboard-cache
+$(BUILD_DIR)/test_dashboard_cache: tests/test_dashboard_cache.cpp include/dashboard_ui.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
+test-dashboard-cache: $(BUILD_DIR)/test_dashboard_cache
+	VISION_DASHBOARD_FAST=0 ./$(BUILD_DIR)/test_dashboard_cache > $(BUILD_DIR)/dashboard-full.hashes
+	VISION_DASHBOARD_FAST=1 ./$(BUILD_DIR)/test_dashboard_cache > $(BUILD_DIR)/dashboard-fast.hashes
+	cmp $(BUILD_DIR)/dashboard-full.hashes $(BUILD_DIR)/dashboard-fast.hashes

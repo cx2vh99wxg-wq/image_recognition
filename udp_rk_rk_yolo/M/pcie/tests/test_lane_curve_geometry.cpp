@@ -135,12 +135,37 @@ int main(int argc, char **argv){
     m_lane::EgoCurveConfirm confirm;auto raw=m_lane::estimate_ego_curve(left);
     assert(!confirm.update(raw,1,1000000000).confidence);
     assert(!confirm.update(raw,1,1000000000).confidence); // duplicates never confirm
-    assert(!confirm.update(raw,2,1300000000).confidence);
+    assert(confirm.update(raw,2,1300000000).confidence>=60);
     assert(confirm.update(raw,3,1600000000).confidence>=60);
     assert(!confirm.update(m_lane::estimate_ego_curve(right),4,1900000000).confidence);
-    assert(!confirm.update(m_lane::estimate_ego_curve(right),5,2200000000).confidence);
+    assert(confirm.update(m_lane::estimate_ego_curve(right),5,2200000000).confidence>=60);
     assert(confirm.update(m_lane::estimate_ego_curve(right),6,2500000000).confidence>=60);
     assert(!confirm.update(raw,7,3200000000).confidence); // source gap resets evidence
     assert(!confirm.update(raw,8,3100000000).confidence); // backwards source time
-    puts("PASS ego curve geometry: curvature gate, signed heading, geometry rejection, unique-source confirmation and expiry");
+    // Compare signed, unrounded predictions with an inclusive 1.5-degree limit.
+    m_lane::EgoCurveConfirm pair;
+    auto prediction = [](double degrees) {
+        m_lane::EgoCurve p;
+        p.confidence=85; p.signed_angle_deg=degrees;
+        p.type=degrees<0?1u:degrees>0?2u:0u;
+        p.angle=(unsigned)std::lround(std::abs(degrees));
+        return p;
+    };
+    assert(!pair.update(prediction(5),1,1000000000).confidence);
+    assert(pair.update(prediction(6.5),2,1200000000).confidence==85);
+    assert(!pair.update(prediction(8.01),3,1400000000).confidence);
+    assert(pair.update(prediction(8.2),4,1600000000).confidence==85);
+    assert(!pair.update(prediction(-8.2),5,1800000000).confidence); // signs matter
+    assert(pair.update(prediction(-8.3),6,2000000000).confidence==85);
+    auto invalid=prediction(-8.3);invalid.confidence=0;
+    assert(!pair.update(invalid,7,2200000000).confidence);
+    assert(!pair.update(prediction(-8.3),8,2400000000).confidence);
+    assert(pair.update(prediction(-8.3),9,2600000000).confidence==85);
+    assert(!pair.update(prediction(0),10,2800000000).confidence);
+    assert(pair.update(prediction(0),11,3000000000).confidence==85);
+    assert(pair.update(prediction(.8),12,3200000000).confidence==85); // no same-category rule
+    assert(pair.update(prediction(-.7),13,3400000000).confidence==85);
+    assert(!pair.update(prediction(-.7),14,4100000000).confidence); // >500ms resets
+    assert(pair.update(prediction(-.7),15,4300000000).confidence==85);
+    puts("PASS ego curve geometry: curvature gate, signed sub-degree adjacent pairs, 1.5 threshold, duplicates, invalid data and expiry");
 }

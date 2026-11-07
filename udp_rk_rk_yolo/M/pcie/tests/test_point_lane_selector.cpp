@@ -51,7 +51,7 @@ int main()
     assert(left.type == 1 && left.confidence == 60 && left.angle == 48);
     m_lane::EgoCurveConfirm confirm;
     assert(confirm.update(left, 1, 100000000).confidence == 0);
-    assert(confirm.update(left, 2, 300000000).confidence == 0);
+    assert(confirm.update(left, 2, 300000000).confidence == 60);
     assert(confirm.update(left, 3, 500000000).confidence == 60);
 
     for (size_t i = 0; i < pair.left_x.size(); ++i)

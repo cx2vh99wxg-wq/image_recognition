@@ -44,7 +44,7 @@ static inline const char *line_style_name(uint32_t style)
 static inline const char *line_reason_name(uint32_t reason)
 {
     static const char *names[] = {"OK",    "NO MASK", "NO TRACK",  "SHORT", "BAD FIT", "NO PAINT",
-                                  "AMBIG", "WAIT 3",  "DUPLICATE", "STALE", "HELD"};
+                                  "AMBIG", "WAIT 2",  "DUPLICATE", "STALE", "HELD"};
     return reason < 11 ? names[reason] : "UNKNOWN";
 }
 #endif

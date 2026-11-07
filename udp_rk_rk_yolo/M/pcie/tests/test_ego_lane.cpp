@@ -57,7 +57,7 @@ static YOLOLineStyleResult known() {
 static void tracking() {
     m_lane::LineStyleAnalyzer analyzer;auto raw=known();
     assert(!analyzer.confirm(raw,1,1000000000ULL).left.type);
-    assert(!analyzer.confirm(raw,2,1280000000ULL).left.type);
+    assert(analyzer.confirm(raw,2,1280000000ULL).left.type==LINE_SOLID);
     auto confirmed=analyzer.confirm(raw,3,1560000000ULL);
     assert(confirmed.left.type==LINE_SOLID&&confirmed.left.evidence_ns==1560000000ULL);
     auto gap=raw;gap.left.type=gap.left.raw_type=0;gap.left.reason=LINE_AMBIGUOUS;
@@ -74,7 +74,7 @@ static void tracking() {
     auto expired=analyzer.confirm(gap,6,2400000000ULL);assert(!expired.left.type);
     assert(!analyzer.confirm(raw,6,2400000000ULL).left.type);
     assert(!analyzer.confirm(raw,7,2680000000ULL).left.type);
-    assert(!analyzer.confirm(raw,8,2960000000ULL).left.type);
+    assert(analyzer.confirm(raw,8,2960000000ULL).left.type==LINE_SOLID);
     confirmed=analyzer.confirm(raw,9,3240000000ULL);assert(confirmed.left.type==LINE_SOLID);
     auto other=raw;other.left.fit_a=125;
     assert(!analyzer.confirm(other,10,3520000000ULL).left.type); // a different boundary cannot inherit the old label

@@ -117,7 +117,7 @@ run-fspi: all
 	@cd fspi && sudo python3 ../steering/tools/launch_vehicle_control.py
 
 # 运行呈现程序
-run-display: all
+run-display: all prepare-display
 	@echo "=== 运行X11六摄像头呈现程序 ==="
 	@if [ ! -f "$(X11_TARGET)" ]; then \
 		echo "异常: X11程序不存在，请先运行 make"; \
@@ -130,7 +130,7 @@ run-display: all
 	@cd x11/csrc && ./build/eight_camera_renderer
 
 # 运行完整系统（后台 + FSPI控制 + 呈现）
-run: all tune-network
+run: all tune-network prepare-display
 	@echo "=== 运行FPGA六摄像头视频呈现系统 (带视角切换) ==="
 	@echo "说明：系统: $(UNAME) $(ARCH)"
 	@echo "说明：时间: $(shell date)"
@@ -575,3 +575,7 @@ tune-network:
 
 # 说明：Shared headers are authoritative; rebuild their consumers when they change.
 -include $(SHARED_OBJECTS:.o=.d)
+
+.PHONY: prepare-display
+prepare-display:
+	@python3 scripts/prepare_display.py

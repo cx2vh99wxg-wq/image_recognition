@@ -887,7 +887,8 @@ class EgoLaneSelector
     static YOLOLineBoundary measure(const Track &track, const uint8_t *rgb, int w, int h,
                                     int road_first, int road_height, double lane_width,
                                     std::vector<PaintSample> *trace,
-                                    const std::vector<Point> *points = nullptr, bool ground = false)
+                                    const std::vector<Point> *points = nullptr, bool ground = false,
+                                    const uint8_t *coverage = nullptr)
     {
         size_t upper = 0;
         const auto x_at = [&](int y) {
@@ -921,7 +922,7 @@ class EgoLaneSelector
             {
                 // 采集图中孤立且完全为零的整行表示证据缺失，
                 // 不能把它算作车道漆线的暗间隔。
-                bool missing = black_row(rgb, w, h, x, y) &&
+                bool missing = coverage ? !coverage[y * w + x] : black_row(rgb, w, h, x, y) &&
                                (ground || (!black_row(rgb, w, h, x, y - 1) &&
                                            !black_row(rgb, w, h, x, y + 1)));
                 if (!missing)
@@ -1106,7 +1107,7 @@ class EgoLaneSelector
 
   public:
     static YOLOLineStyleResult describe_points(const PointLanePair &pair, const uint8_t *rgb,
-                                               bool ground = false)
+                                               bool ground = false, const uint8_t *coverage = nullptr)
     {
         YOLOLineStyleResult out = {};
         out.width = pair.width;
@@ -1114,7 +1115,7 @@ class EgoLaneSelector
         out.reference_x = pair.width * .5;
         out.object_count = pair.candidates;
         out.left.reason = out.right.reason = LINE_NO_TRACK;
-        if (!rgb || pair.left.empty() || pair.right.empty() || pair.last < pair.first)
+        if (!rgb || pair.last < pair.first)
             return out;
         const auto describe = [&](const std::vector<Point> &points) {
             Track geometry;
@@ -1124,11 +1125,13 @@ class EgoLaneSelector
                 geometry.length += std::hypot(points[i].x - points[i - 1].x,
                                              points[i].y - points[i - 1].y);
             return measure(geometry, rgb, pair.width, pair.height, pair.first,
-                           pair.last - pair.first, pair.right.back().x - pair.left.back().x,
-                            nullptr, &points, ground);
+                           pair.last - pair.first,
+                           pair.left.empty() || pair.right.empty() ? pair.width * .5 :
+                           pair.right.back().x - pair.left.back().x,
+                           nullptr, &points, ground, coverage);
         };
-        out.left = describe(pair.left);
-        out.right = describe(pair.right);
+        if (!pair.left.empty()) out.left = describe(pair.left);
+        if (!pair.right.empty()) out.right = describe(pair.right);
         return out;
     }
 

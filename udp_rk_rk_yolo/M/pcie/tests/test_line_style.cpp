@@ -50,7 +50,7 @@ int main() {
     scene(mask,rgb,1,2);auto raw=a.analyze(mask.data(),320,240,rgb.data(),320,240);
     assert(!a.confirm(raw,1,1000000000).left.type);
     assert(!a.confirm(raw,1,1000000000).left.type); // duplicated display is not confirmation
-    assert(!a.confirm(raw,2,1100000000).left.type);
+    assert(a.confirm(raw,2,1100000000).left.type==LINE_SOLID);
     assert(a.confirm(raw,3,1200000000).left.type==LINE_SOLID);
     assert(!a.confirm(raw,4,1800000000).left.type); // capture gap resets temporal state
     LineStyleData d={};d.session=9;d.source_id=10;d.left=1;d.right=2;d.left_quality=90;line_set_deadline(&d,1500000000);
@@ -60,7 +60,7 @@ int main() {
     assert(receiver.ingest(wire,sizeof(wire),1200000000,1200000000,got));assert(line_deadline(&got)==1500000000);
     assert(!receiver.ingest(wire,sizeof(wire),1600000000,1600000000,got));
     wire[20]^=1;assert(!receiver.ingest(wire,sizeof(wire),1200000000,1200000000,got));
-    auto pending=a.confirm(raw,5,1900000000);
+    a.confirm({},5,1900000000);auto pending=a.confirm(raw,6,2000000000);
     auto diagnostic=line_result_data(&pending,9,5,1900000000);
     assert(sizeof(LineStyleData)==56&&sizeof(LineStyleSegment)==64);
     assert((diagnostic.diagnostic&255)==LINE_CONFIRMING);

@@ -550,9 +550,9 @@ class LineStyleAnalyzer
                     c.candidate = line.type;
                     c.count = 0;
                 }
-                if (c.count < 3)
+                if (c.count < 2)
                     ++c.count;
-                if (c.count < 3)
+                if (c.count < 2)
                 {
                     line.type = LINE_UNKNOWN;
                     line.quality = 0;
@@ -616,7 +616,7 @@ class LineStyleAnalyzer
                     line.reason = LINE_TRACK_HELD;
                     line.raw_type = LINE_UNKNOWN;
                     c.candidate = c.stable.type;
-                    c.count = 3;
+                    c.count = 2;
                 }
                 else
                 {
@@ -636,12 +636,12 @@ class LineStyleAnalyzer
                     c.candidate = line.type;
                     c.count = 0;
                 }
-                if (c.count < 3)
+                if (c.count < 2)
                     ++c.count;
-                // 线型状态转换需要三个不同 NN 输入；前一边界
+                // 线型状态转换需要两个不同 NN 输入；前一边界
                 // 只可在原证据的有限有效期内
                 // 跨过短暂分类分歧，不能因此延长存活时间。
-                if (c.count < 3)
+                if (c.count < 2)
                 {
                     if (held)
                     {

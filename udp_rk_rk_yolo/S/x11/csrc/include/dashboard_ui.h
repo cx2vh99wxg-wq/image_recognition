@@ -44,6 +44,8 @@ struct ViewStatus
     unsigned line_left_quality = 0, line_right_quality = 0;
     unsigned line_left_reason = 9, line_right_reason = 9;
     unsigned line_left_raw = 0, line_right_raw = 0;
+    bool lane_angle_valid = false;
+    int lane_angle_deg = 0; // Recognized road heading: right positive, left negative.
     unsigned traffic = 0, traffic_raw = 0, traffic_quality = 0, traffic_detector_quality = 0,
              traffic_flags = 0;
     bool traffic_live = false;
@@ -145,6 +147,14 @@ class Dashboard
         {
             drawVehiclePlaceholder();
         }
+        char angle_text[48];
+        if (status.lane_angle_valid)
+            std::snprintf(angle_text, sizeof(angle_text), "ANGLE %+d DEG", status.lane_angle_deg);
+        else
+            std::snprintf(angle_text, sizeof(angle_text), "ANGLE: WAIT");
+        fill(frame_, 1238, 234, 296, 34, 0xFF080B20);
+        centeredText(frame_, angle_text, {1238, 234, 296, 34}, 2,
+                      status.lane_angle_valid ? 0xFF65F5AA : 0xFF93B1CB);
         if (status.motion != MotionDirection::Idle)
             drawMotionCue(status.motion);
         if (status.lane_blocked & 1)
@@ -164,7 +174,7 @@ class Dashboard
                       status.line_right_quality);
         centeredText(frame_, line_text, {1238, 699, 296, 18}, 1, 0xFF93B1CB);
         const char *reasons[] = {"OK",    "NO MASK", "NO TRACK",  "SHORT", "FIT ERR", "NO PAINT",
-                                 "AMBIG", "WAIT 3",  "DUPLICATE", "STALE", "HELD"};
+                                 "AMBIG", "WAIT 2",  "DUPLICATE", "STALE", "HELD"};
         const char *lr = (!status.line_left && status.line_left_reason == 0)
                              ? "NO CLASS"
                              : reasons[std::min(10u, status.line_left_reason)];
@@ -339,7 +349,7 @@ class Dashboard
     static bool fastComposition()
     {
         static const char *value = std::getenv("VISION_DASHBOARD_FAST");
-        static const bool enabled = value && !std::strcmp(value, "1");
+        static const bool enabled = !value || std::strcmp(value, "0");
         return enabled;
     }
 
@@ -617,6 +627,7 @@ class Dashboard
             size = 1.10f;
             break;
         case MotionDirection::Idle:
+        default:
             return;
         }
 

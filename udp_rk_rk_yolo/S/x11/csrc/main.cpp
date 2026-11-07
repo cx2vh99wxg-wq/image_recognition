@@ -31,6 +31,7 @@
 #include "traffic_go_rule.h"
 #include "speed_status.h"
 #include "six_camera_render.h"
+#include "lane_angle_cue.h"
 #include "../../../common/image/frame_pixels.h"
 
 /* aligned_alloc 的声明需要先启用 _ISOC11_SOURCE。 */
@@ -98,13 +99,17 @@ struct VehicleLayerState
     int person, box_left, box_top, box_right, box_bottom, blink;
     CurveType curve;
     uint32_t confidence;
+    int signed_angle;
+    unsigned left_style, right_style;
     bool operator==(const VehicleLayerState &other) const
     {
         return png == other.png && png_revision == other.png_revision &&
                png_width == other.png_width && png_height == other.png_height &&
                person == other.person && box_left == other.box_left && box_top == other.box_top &&
                box_right == other.box_right && box_bottom == other.box_bottom &&
-               blink == other.blink && curve == other.curve && confidence == other.confidence;
+               blink == other.blink && curve == other.curve && confidence == other.confidence &&
+               signed_angle == other.signed_angle && left_style == other.left_style &&
+               right_style == other.right_style;
     }
 };
 
@@ -184,6 +189,8 @@ static int blink_state = 1;
 // 保存此时道路弯向的识别状态。
 static CurveType current_curve_type = CURVE_NONE;
 static uint32_t current_curve_confidence = 0;
+static uint32_t current_curve_angle = 0, last_curve_source_id = 0;
+static uint64_t current_curve_seen_ms = 0;
 static int start_fullscreen = 1;
 static int frame_limit = 0;
 static const char *snapshot_path = NULL;
@@ -222,7 +229,7 @@ void render_camera_block(uint32_t *display_pixels, const uint16_t *source_pixels
 int load_car_png(const char *filename);
 void render_car_png(uint32_t *display_pixels, int dst_x, int dst_y, int dst_width, int dst_height);
 void draw_lane_lines(uint32_t *display_pixels, int dst_x, int dst_y, int dst_width, int dst_height,
-                     CurveType curve_type, uint32_t confidence);
+                     const VehicleLayerState &state);
 
 void render_scaled_camera_block(uint32_t *display_pixels, const uint16_t *source_pixels, int src_x,
                                 int src_y, float scale_factor, int center_x, int center_y);
@@ -447,60 +454,15 @@ void calculate_car_edge_position(int box_left, int box_top, int box_right, int b
     *edge_type = edge_for_tile[tile];
 }
 
-// 把标线分割结果叠加到图像。
+// Draw the received signed angle, rather than three fixed bend templates.
 void draw_lane_lines(uint32_t *display_pixels, int dst_x, int dst_y, int dst_width, int dst_height,
-                     CurveType curve_type, uint32_t confidence)
+                     const VehicleLayerState &state)
 {
-    if (confidence < 60)
+    if (state.confidence < 60)
         return;
-
-    const int lane_width = dst_width / 3;
-    const int center = dst_x + dst_width / 2;
-    const int length = dst_height / 2;
-    const int start_y = dst_y + dst_height / 2;
-    float left_curve = 0.0f, right_curve = 0.0f;
-    if (curve_type == CURVE_LEFT)
-    {
-        left_curve = -0.5f;
-        right_curve = -0.2f;
-    }
-    else if (curve_type == CURVE_RIGHT)
-    {
-        left_curve = 0.2f;
-        right_curve = 0.5f;
-    }
-
-    for (int step = 0; step < length; ++step)
-    {
-        const int y = start_y - step;
-        if (y < 0 || y >= COMBINED_IMAGE_HEIGHT)
-            continue;
-
-        const float t = (float)step / length;
-        const int left_offset = (int)(lane_width * left_curve * t * t);
-        const int right_offset = (int)(lane_width * right_curve * t * t);
-        const int left = center - lane_width / 2 + left_offset;
-        const int right = center + lane_width / 2 + right_offset;
-        const int gradient_center = center + (left_offset + right_offset) / 2;
-        auto *row = display_pixels + y * COMBINED_IMAGE_WIDTH;
-        for (int x = std::max(0, left); x <= std::min(right, COMBINED_IMAGE_WIDTH - 1); ++x)
-        {
-            const float distance = fabsf((float)(x - gradient_center) / (lane_width / 2.0f));
-            const float alpha = 0.3f * (1.0f - std::min(distance, 1.0f) * 0.85f);
-            const uint32_t original = row[x];
-            const uint8_t red = ((original >> 16) & 0xff) * (1.0f - alpha);
-            const uint8_t green = ((original >> 8) & 0xff) * (1.0f - alpha) + 255 * alpha;
-            const uint8_t blue = (original & 0xff) * (1.0f - alpha);
-            row[x] = 0xff000000u | (red << 16) | (green << 8) | blue;
-        }
-
-        const int edges[] = {left, right};
-        for (int edge : edges)
-        {
-            for (int x = std::max(0, edge - 1); x <= std::min(edge + 1, COMBINED_IMAGE_WIDTH - 1); ++x)
-                row[x] = 0xff00ff00u;
-        }
-    }
+    lane_cue::draw(display_pixels + dst_y * COMBINED_IMAGE_WIDTH + dst_x,
+                   COMBINED_IMAGE_WIDTH, dst_width, dst_height, state.signed_angle,
+                   state.left_style, state.right_style);
 }
 
 // 呈现合成：渲染car.png到指定位置，带红光闪烁效果
@@ -528,7 +490,20 @@ static VehicleLayerState snapshot_vehicle_state()
     // 没有 person 时，闪烁状态及坐标变化均不影响像素。
     state.blink = state.person ? blink_state : 0;
     state.curve = current_curve_type;
-    state.confidence = current_curve_confidence;
+    const uint64_t now_ms = display_clock_ns() / 1000000ULL;
+    state.confidence = current_curve_seen_ms && now_ms >= current_curve_seen_ms &&
+                       now_ms - current_curve_seen_ms <= 1000 &&
+                       lane_cue::valid(current_curve_type, current_curve_confidence,
+                                       current_curve_angle) ? current_curve_confidence : 0;
+    state.signed_angle = lane_cue::signed_degrees(current_curve_type, current_curve_angle);
+    static LineStyleIPC styles = {-1, nullptr};
+    LineStyleData line = {};
+    line_ipc_open(&styles, LINE_STYLE_KEY, 0);
+    if (!line_ipc_read(&styles, &line) && line_fresh(&line, display_clock_ns()))
+    {
+        state.left_style = line.left;
+        state.right_style = line.right;
+    }
     return state;
 }
 
@@ -614,7 +589,23 @@ void render_car_png(uint32_t *display_pixels, int dst_x, int dst_y, int dst_widt
 
 static bool update_vehicle_layer(RenderEngine *engine)
 {
-    const VehicleLayerState state = snapshot_vehicle_state();
+    VehicleLayerState state = snapshot_vehicle_state();
+    // Offline preview only: no IPC writes and no vehicle/control processes.
+    if (engine->headless)
+    {
+        const char *angle = getenv("VISION_PREVIEW_LANE_ANGLE");
+        if (angle)
+        {
+            const int value = std::max(-90, std::min(90, atoi(angle)));
+            state.curve = value < 0 ? CURVE_LEFT : value > 0 ? CURVE_RIGHT : CURVE_NONE;
+            state.signed_angle = value;
+            state.confidence = 85;
+            const char *left = getenv("VISION_PREVIEW_LINE_LEFT");
+            const char *right = getenv("VISION_PREVIEW_LINE_RIGHT");
+            state.left_style = left ? (unsigned)atoi(left) : 1;
+            state.right_style = right ? (unsigned)atoi(right) : 1;
+        }
+    }
     if (engine->vehicle_cached && engine->vehicle_state == state)
         return false;
     // 320x480 目标区、1280 像素步长及背景均由
@@ -622,7 +613,7 @@ static bool update_vehicle_layer(RenderEngine *engine)
     for (int y = 0; y < 480; ++y)
         std::fill_n(engine->vehicle_layer + y * COMBINED_IMAGE_WIDTH, 320, 0xff080b20u);
     render_car_png_with_state(engine->vehicle_layer, 0, 0, 320, 480, state);
-    draw_lane_lines(engine->vehicle_layer, 0, 0, 320, 480, state.curve, state.confidence);
+    draw_lane_lines(engine->vehicle_layer, 0, 0, 320, 480, state);
     engine->vehicle_state = state;
     engine->vehicle_cached = 1;
     return true;
@@ -934,7 +925,7 @@ struct UploadRegion
 static bool partial_upload_requested()
 {
     static const char *value = getenv("VISION_PARTIAL_UPLOAD");
-    static const bool enabled = value && !strcmp(value, "1");
+    static const bool enabled = !value || strcmp(value, "0");
     return enabled;
 }
 
@@ -954,9 +945,10 @@ static void prepare_xrender_upload(RenderEngine *engine, const uint32_t *pixels,
         return;
     }
     static const UploadRegion areas[] = {
-        {0, 180, 1600, 44}, {72, 224, 1092, 504}, {0, 728, 1600, 152}, {1188, 230, 412, 498}};
-    bool changed[4] = {};
-    for (int area_index = 0; area_index < 4; ++area_index)
+        {712, 44, 836, 78}, {0, 180, 1600, 44}, {72, 224, 1092, 504},
+        {0, 728, 1600, 152}, {1188, 230, 412, 498}};
+    bool changed[5] = {};
+    for (int area_index = 0; area_index < 5; ++area_index)
     {
         const UploadRegion &area = areas[area_index];
         int first_row = -1;
@@ -985,7 +977,7 @@ static void prepare_xrender_upload(RenderEngine *engine, const uint32_t *pixels,
     if (regions.size() > 64)
     {
         regions.clear();
-        for (int i = 0; i < 4; ++i)
+        for (int i = 0; i < 5; ++i)
             if (changed[i])
                 regions.push_back(areas[i]);
     }
@@ -1335,6 +1327,8 @@ int present_dashboard(RenderEngine *engine)
     bool car_redrawn = update_vehicle_layer(engine);
     uint64_t car_done = display_clock_ns();
     perception_ui::ViewStatus status;
+    status.lane_angle_valid = engine->vehicle_state.confidence >= 60;
+    status.lane_angle_deg = engine->vehicle_state.signed_angle;
     status.recorded = engine->preview_recorded != 0;
     status.pcie_live = engine->pcie_last_seen && now >= engine->pcie_last_seen &&
                        now - engine->pcie_last_seen < 2000;
@@ -2148,6 +2142,8 @@ static void maintain_metadata_readers(MetadataReaders *state, uint32_t *control_
         state->curve_id = -1;
         current_curve_type = CURVE_NONE;
         current_curve_confidence = 0;
+        current_curve_angle = last_curve_source_id = 0;
+        current_curve_seen_ms = 0;
     }
     if (!state->curve_available && id >= 0 && curve_detection_shm_init(0) == 0)
     {
@@ -2338,6 +2334,12 @@ int main(int argc, char **argv)
             curve_detection_read(&curve_frame_id, &current_curve_type, &current_curve_confidence,
                                  &curve_angle) == 0)
         {
+            if (curve_frame_id && (!current_curve_seen_ms || curve_frame_id != last_curve_source_id))
+            {
+                last_curve_source_id = curve_frame_id;
+                current_curve_seen_ms = display_clock_ns() / 1000000ULL;
+            }
+            current_curve_angle = curve_angle;
             // 呈现合成：每30帧打印一次弯道信息
             if (display_verbose() && ++curve_read_count % 30 == 0)
             {

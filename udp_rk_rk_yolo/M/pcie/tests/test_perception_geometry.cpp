@@ -26,7 +26,7 @@ int main()
     for (unsigned i = 1; i <= 12; ++i)
     {
         const auto stable = confirm.confirm(raw, i, 1000000000ULL + i * 200000000ULL, &points);
-        if (i < 3)
+        if (i < 2)
             assert(!stable.left.type && !stable.right.type);
         else
             assert(stable.left.type == LINE_SOLID && stable.right.type == LINE_DASHED);
@@ -40,7 +40,7 @@ int main()
     auto stable = confirm.confirm(changed, 13, 3600000000ULL, &shifted);
     assert(stable.left.type == LINE_SOLID && stable.right.type == LINE_UNKNOWN);
     stable = confirm.confirm(changed, 14, 3800000000ULL, &shifted);
-    assert(stable.right.type == LINE_UNKNOWN);
+    assert(stable.right.type == LINE_DASHED);
     stable = confirm.confirm(changed, 15, 4000000000ULL, &shifted);
     assert(stable.right.type == LINE_DASHED);
     assert(!confirm.confirm(changed, 15, 4000000000ULL, &shifted).left.type);

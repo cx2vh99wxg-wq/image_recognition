@@ -110,6 +110,11 @@ class FrontRadialPreview
     }
 
     bool enabled() const { return !samples_.empty(); }
+    void coverage_mask(uint8_t *dst) const
+    {
+        for (const auto &sample : samples_)
+            *dst++ = sample.offset != outside;
+    }
     double display_scale() const { return scale_; }
     int mosaic_width() const { return stride_ / 3; }
     int mosaic_height() const { return height_ * 2; }
