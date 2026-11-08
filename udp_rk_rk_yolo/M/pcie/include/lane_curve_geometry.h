@@ -257,7 +257,7 @@ class EgoCurveConfirm
   public:
     EgoCurveConfirm()
     {
-        std::fputs("[CURVE_CONFIRM] ANGLE_PAIR: adjacent signed predictions <= 1.5 deg\n", stderr);
+        std::fputs("[CURVE_CONFIRM] ANGLE_PAIR: adjacent signed predictions <= 2.0 deg\n", stderr);
     }
     EgoCurve update(EgoCurve raw, uint64_t id, uint64_t captured)
     {
@@ -289,7 +289,7 @@ class EgoCurveConfirm
         }
         // Sliding adjacent pair: even a rejected jump becomes the next baseline.
         // Duplicated video/display frames never add a second observation.
-        const bool accepted = have_previous_ && std::abs(angle - previous_angle_) <= 1.5 + 1e-9;
+        const bool accepted = have_previous_ && std::abs(angle - previous_angle_) <= 2.0 + 1e-9;
         previous_angle_ = angle;
         have_previous_ = true;
         if (!accepted)

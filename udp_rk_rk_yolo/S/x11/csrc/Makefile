@@ -174,8 +174,14 @@ debug-info:
 .PHONY: test-dashboard-cache
 $(BUILD_DIR)/test_dashboard_cache: tests/test_dashboard_cache.cpp include/dashboard_ui.h
 	@mkdir -p $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -o $@
+	$(CXX) $(CXXFLAGS) $< -o $@
 test-dashboard-cache: $(BUILD_DIR)/test_dashboard_cache
 	VISION_DASHBOARD_FAST=0 ./$(BUILD_DIR)/test_dashboard_cache > $(BUILD_DIR)/dashboard-full.hashes
 	VISION_DASHBOARD_FAST=1 ./$(BUILD_DIR)/test_dashboard_cache > $(BUILD_DIR)/dashboard-fast.hashes
 	cmp $(BUILD_DIR)/dashboard-full.hashes $(BUILD_DIR)/dashboard-fast.hashes
+
+.PHONY: test-vehicle-artwork
+$(BUILD_DIR)/test_vehicle_artwork: tests/test_vehicle_artwork.cpp include/vehicle_artwork.h | $(BUILD_DIR)
+	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror -Iinclude $< -o $@
+test-vehicle-artwork: $(BUILD_DIR)/test_vehicle_artwork
+	./$(BUILD_DIR)/test_vehicle_artwork

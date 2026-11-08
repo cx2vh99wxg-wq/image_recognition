@@ -142,7 +142,7 @@ int main(int argc, char **argv){
     assert(confirm.update(m_lane::estimate_ego_curve(right),6,2500000000).confidence>=60);
     assert(!confirm.update(raw,7,3200000000).confidence); // source gap resets evidence
     assert(!confirm.update(raw,8,3100000000).confidence); // backwards source time
-    // Compare signed, unrounded predictions with an inclusive 1.5-degree limit.
+    // Compare signed, unrounded predictions with an inclusive 2-degree limit.
     m_lane::EgoCurveConfirm pair;
     auto prediction = [](double degrees) {
         m_lane::EgoCurve p;
@@ -152,9 +152,9 @@ int main(int argc, char **argv){
         return p;
     };
     assert(!pair.update(prediction(5),1,1000000000).confidence);
-    assert(pair.update(prediction(6.5),2,1200000000).confidence==85);
-    assert(!pair.update(prediction(8.01),3,1400000000).confidence);
-    assert(pair.update(prediction(8.2),4,1600000000).confidence==85);
+    assert(pair.update(prediction(7),2,1200000000).confidence==85);
+    assert(!pair.update(prediction(9.01),3,1400000000).confidence);
+    assert(pair.update(prediction(9.2),4,1600000000).confidence==85);
     assert(!pair.update(prediction(-8.2),5,1800000000).confidence); // signs matter
     assert(pair.update(prediction(-8.3),6,2000000000).confidence==85);
     auto invalid=prediction(-8.3);invalid.confidence=0;
@@ -167,5 +167,9 @@ int main(int argc, char **argv){
     assert(pair.update(prediction(-.7),13,3400000000).confidence==85);
     assert(!pair.update(prediction(-.7),14,4100000000).confidence); // >500ms resets
     assert(pair.update(prediction(-.7),15,4300000000).confidence==85);
-    puts("PASS ego curve geometry: curvature gate, signed sub-degree adjacent pairs, 1.5 threshold, duplicates, invalid data and expiry");
+    m_lane::EgoCurveConfirm negative_limit;
+    assert(!negative_limit.update(prediction(-7),1,1000000000).confidence);
+    assert(negative_limit.update(prediction(-5),2,1200000000).confidence==85);
+    assert(!negative_limit.update(prediction(-2.999),3,1400000000).confidence);
+    puts("PASS ego curve geometry: curvature gate, signed sub-degree adjacent pairs, 2.0 threshold, duplicates, invalid data and expiry");
 }

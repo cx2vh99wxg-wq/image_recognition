@@ -157,10 +157,6 @@ class Dashboard
                       status.lane_angle_valid ? 0xFF65F5AA : 0xFF93B1CB);
         if (status.motion != MotionDirection::Idle)
             drawMotionCue(status.motion);
-        if (status.lane_blocked & 1)
-            drawForbiddenCross(1282, 475);
-        if (status.lane_blocked & 2)
-            drawForbiddenCross(1490, 475);
         if (status.go_blocked)
             drawTrafficGoWarning(status);
         const char *names[] = {"UNKNOWN", "SOLID", "DASHED"};
@@ -669,26 +665,6 @@ class Dashboard
         }
     }
 
-    void drawForbiddenCross(int x, int y)
-    {
-        // 所有摄像头及缩放模式都使用清晰的屏幕坐标几何。
-        circle(frame_, x, y, 35.f, 0xFFFF254F, 30);
-        circle(frame_, x, y, 28.f, 0xFF200D1B, 235);
-        for (int i = 0; i < 32; ++i)
-        {
-            float a = i * 6.2831853f / 32, b = (i + 1) * 6.2831853f / 32;
-            line(frame_, {x + (int)(27 * std::cos(a)), y + (int)(27 * std::sin(a))},
-                 {x + (int)(27 * std::cos(b)), y + (int)(27 * std::sin(b))}, 0xFFFF4368, 2.f, 230);
-        }
-        for (int slope : {-1, 1})
-        {
-            Point a = {x - 13, y - slope * 13}, b = {x + 13, y + slope * 13};
-            line(frame_, a, b, 0xFFFF244F, 13.f, 40);
-            line(frame_, a, b, 0xFFFF375C, 7.f, 255);
-            line(frame_, a, b, 0xFFFFCBD4, 2.f, 230);
-        }
-        centeredText(frame_, "BLOCKED", {x - 42, y + 38, 84, 16}, 1, 0xFFFF7C96);
-    }
 
     static void panel(std::vector<uint32_t> &image, Rect box, uint32_t color)
     {

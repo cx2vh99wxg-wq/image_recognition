@@ -20,32 +20,61 @@ int main(int argc, char **argv)
     auto clear=[](std::vector<uint32_t> &p){
         for(int y=0;y<h;++y) std::fill_n(p.data()+guard+y*stride,w,0xff080b20);
     };
-    for(int a:{-90,-45,-5,0,5,45,90})
+    const uint32_t bg=0xff080b20;
+    const int seam=(int)std::ceil(lane_cue::picture_rect(w,h).y+lane_cue::picture_rect(w,h).height*lane_cue::SEAM);
+    clear(solid);lane_cue::draw(solid.data()+guard,stride,w,h,0,1,1);
+    const auto straight=solid;
+    for(int a:{-90,-45,-20,-5,0,5,20,45,90})
     {
-        clear(solid);
-        lane_cue::draw(solid.data()+guard,stride,w,h,a,1,1);
-        for(int i=0;i<guard;++i)assert(solid[i]==0xA55AA55A && solid[solid.size()-1-i]==0xA55AA55A);
-        for(int y=0;y<h;++y)for(int x=w;x<stride;++x)
-            assert(solid[guard+y*stride+x]==0xA55AA55A);
-        if(a==5 || a==-5)
-        {
-            double xsum=0;unsigned count=0;
-            for(int y=20;y<70;++y)for(int x=0;x<w;++x)
-                if(solid[guard+y*stride+x]==0xff00ff00){xsum+=x;++count;}
-            assert(count && (a>0 ? xsum/count>160 : xsum/count<160));
-        }
+        clear(solid);lane_cue::draw(solid.data()+guard,stride,w,h,a,1,1);
+        for(int i=0;i<guard;++i)assert(solid[i]==0xA55AA55A&&solid[solid.size()-1-i]==0xA55AA55A);
+        for(int y=0;y<h;++y)for(int x=w;x<stride;++x)assert(solid[guard+y*stride+x]==0xA55AA55A);
+        // Every lower-road pixel is angle-independent, exactly as requested.
+        for(int y=seam;y<h;++y)for(int x=0;x<w;++x)assert(solid[guard+y*stride+x]==straight[guard+y*stride+x]);
+        double sum=0;unsigned count=0;
+        for(int y=90;y<120;++y)for(int x=0;x<w;++x)if(solid[guard+y*stride+x]==lane_cue::WHITE){sum+=x;++count;}
+        assert(count);
+        assert(a<0?sum/count<160:a>0?sum/count>160:std::abs(sum/count-160)<.6);
     }
     clear(solid);clear(dashed);
     lane_cue::draw(solid.data()+guard,stride,w,h,0,1,1);
     lane_cue::draw(dashed.data()+guard,stride,w,h,0,2,1);
-    unsigned sl=0,dl=0;
+    for(int band=0;band<2;++band)
+    {
+        unsigned painted=0,gaps=0;
+        for(int y=band?seam:90;y<(band?435:seam);++y)
+        {
+            unsigned sl=0,dl=0;
+            for(int x=0;x<160;++x){sl+=solid[guard+y*stride+x]==lane_cue::WHITE;dl+=dashed[guard+y*stride+x]==lane_cue::WHITE;}
+            if(sl){painted+=dl>0;gaps+=dl==0;}
+        }
+        assert(painted>0&&gaps>0); // dashed over BOTH fixed and bending parts
+    }
+    for(int y=0;y<h;++y)for(int x=160;x<w;++x)assert(solid[guard+y*stride+x]==dashed[guard+y*stride+x]);
+    clear(dashed);lane_cue::draw(dashed.data()+guard,stride,w,h,0,1,1,1,true);
+    unsigned red=0;
     for(int y=0;y<h;++y)for(int x=0;x<w;++x)
     {
-        if(x<160){sl+=solid[guard+y*stride+x]==0xff00ff00;dl+=dashed[guard+y*stride+x]==0xff00ff00;}
-        else assert(solid[guard+y*stride+x]==dashed[guard+y*stride+x]);
+        const auto base=solid[guard+y*stride+x],actual=dashed[guard+y*stride+x];
+        if(x<160){if(base==lane_cue::WHITE)assert(actual==lane_cue::WARNING_RED);red+=actual==lane_cue::WARNING_RED;}
+        else assert(actual==base);
     }
-    assert(dl>sl/3 && dl<sl*4/5);
-    lane_cue::draw(dashed.data()+guard,stride,w,h,0,1,2);
+    assert(red>300);
+    clear(dashed);lane_cue::draw(dashed.data()+guard,stride,w,h,0,1,1,1,false);
+    unsigned wide=0,normal=0;
+    for(int y=0;y<h;++y)for(int x=0;x<160;++x){wide+=dashed[guard+y*stride+x]==lane_cue::WHITE;normal+=solid[guard+y*stride+x]==lane_cue::WHITE;}
+    assert(wide>normal*1.5); // white warning phase remains thick
+    clear(dashed);lane_cue::draw(dashed.data()+guard,stride,w,h,0,1,1,0,false);
+    assert(dashed==solid); // release restores normal width and color
+    assert(lane_cue::warning_sides(3,0,0)==3);
+    clear(dashed);lane_cue::draw(dashed.data()+guard,stride,w,h,20,0,0);
+    unsigned gray=0;
+    for(int y=0;y<h;++y)for(int x=0;x<w;++x)gray+=dashed[guard+y*stride+x]==lane_cue::UNKNOWN_GRAY;
+    assert(gray>1000);
+    clear(dashed);lane_cue::draw(dashed.data()+guard,stride,w,h,20,1,1,0,false,false);
+    clear(solid);lane_cue::draw(solid.data()+guard,stride,w,h,0,0,0,0,false,false);
+    assert(dashed==solid); // unknown direction is always a complete straight gray pair
+    (void)bg;
     perception_ui::Dashboard dashboard;
     perception_ui::ViewStatus status;
     status.lane_angle_valid=true;status.lane_angle_deg=-5;
@@ -61,5 +90,5 @@ int main(int argc, char **argv)
     }
     status.lane_angle_valid=false;
     frame=dashboard.compose(nullptr,0,nullptr,0,true,-1,"TEST",status);
-    std::puts("LANE ANGLE CUE PASS: signed angles, variable curves, independent dash styles, clipping guards and angle label updates");
+    std::puts("LANE ANGLE CUE PASS: perspective, fixed lower road, signed upper bends, full-length dashes, side-specific red/white alarm, unknowns, guards and angle label updates");
 }

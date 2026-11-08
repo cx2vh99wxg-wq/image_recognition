@@ -19,35 +19,60 @@ inline int signed_degrees(unsigned type, unsigned wire_angle)
     return type == 1 ? -degrees : type == 2 ? degrees : 0;
 }
 
-// Schematic parallel lane edges. Their far-end tangent follows the received
-// angle exactly; this is an angle cue, not a reconstruction of road geometry.
-// Style 1 = solid, 2 = dashed, 0 = unknown (muted dotted).
-inline void draw(uint32_t *pixels, int stride, int width, int height, int angle,
-                 unsigned left_style, unsigned right_style)
+constexpr uint32_t WHITE = 0xffffffffu, WARNING_RED = 0xffff3030u, UNKNOWN_GRAY = 0xff7d8696u;
+constexpr double SEAM = .435; // Reference only; no horizontal guide is drawn.
+struct PictureRect { double x, y, width, height; };
+inline PictureRect picture_rect(int width, int height)
 {
-    if (!pixels || width < 8 || height < 8 || stride < width || std::abs(angle) > 90)
+    const double ratio = 1586. / 2643.; // The supplied rear elevated artwork.
+    const double h = std::min(double(height), width / ratio), w = h * ratio;
+    return {(width - w) * .5, (height - h) * .5, w, h};
+}
+inline unsigned warning_sides(unsigned blocked, unsigned left, unsigned right)
+{
+    // The fresh controller warning is authoritative and may outlive a temporary
+    // UNKNOWN line classification during its 700ms display hold.
+    (void)left; (void)right;
+    return blocked & 3u;
+}
+// Perspective schematic: lower edges stay fixed beside the car; only the
+// upper centerline bends. Unknown direction uses two complete gray straight
+// edges; a missing side style has a gray placeholder rather than disappearing.
+inline void draw(uint32_t *pixels, int stride, int width, int height, int angle,
+                 unsigned left_style, unsigned right_style, unsigned blocked = 0,
+                 bool red_phase = false, bool angle_known = true)
+{
+    if (!pixels || width < 8 || height < 8 || stride < width || (angle_known && (angle < -90 || angle > 90)))
         return;
-    const double theta = angle * .017453292519943295;
-    const double length = height * .48, start = height * .52, center = width * .5;
-    const double half_width = width / 6.;
-    const int samples = (int)std::ceil(length * 2);
-    for (int i = 0; i <= samples; ++i)
+    const auto rect = picture_rect(width, height);
+    const double top = rect.y + rect.height * .17;
+    const double seam = rect.y + rect.height * SEAM;
+    const double bottom = rect.y + rect.height * .91;
+    const double theta = (angle_known ? std::max(-85, std::min(85, angle)) : 0) * .017453292519943295;
+    const double limit = rect.width * .28;
+    const double bend = std::max(-limit, std::min(limit, (seam - top) * .5 * std::tan(theta)));
+    const unsigned warning = warning_sides(blocked, left_style, right_style);
+    double dash_phase = 0.;
+    for (int y = (int)std::floor(bottom); y >= (int)std::ceil(top); --y)
     {
-        const double s = length * i / samples, phi = theta * i / samples;
-        const double x = center + (angle ? length / theta * (1. - std::cos(phi)) : 0.);
-        const double y = start - (angle ? length / theta * std::sin(phi) : s);
+        const double depth = (y - top) / (bottom - top);
+        dash_phase += 1. / (12. + 38. * depth);
+        const double t = y < seam ? (seam - y) / (seam - top) : 0.;
+        const double center = width * .5 + bend * t * t;
+        const double half_width = rect.width * (.15 + .27 * depth);
         for (int side = 0; side < 2; ++side)
         {
             const unsigned style = side ? right_style : left_style;
-            if ((style == 2 && (int)s % 28 >= 16) || (!style && (int)s % 12 >= 4))
+            const bool alarm = (warning & (1u << side)) != 0;
+            const bool known = angle_known && (style == 1 || style == 2);
+            if (!alarm && known && style == 2 && dash_phase - std::floor(dash_phase) >= .58)
                 continue;
-            const double normal = side ? half_width : -half_width;
-            const int px = (int)std::lround(x + normal * std::cos(phi));
-            const int py = (int)std::lround(y + normal * std::sin(phi));
-            for (int dy = -1; dy <= 1; ++dy)
-                for (int dx = -1; dx <= 1; ++dx)
-                    if (px + dx >= 0 && px + dx < width && py + dy >= 0 && py + dy < height)
-                        pixels[(py + dy) * stride + px + dx] = style ? 0xff00ff00u : 0xff527f69u;
+            const int x = (int)std::lround(center + (side ? half_width : -half_width));
+            const uint32_t color = alarm ? (red_phase ? WARNING_RED : WHITE) : known ? WHITE : UNKNOWN_GRAY;
+            const int radius = alarm ? 4 : 2;
+            for (int dx = -radius; dx <= radius; ++dx)
+                if (x + dx >= 0 && x + dx < width)
+                    pixels[y * stride + x + dx] = color;
         }
     }
 }

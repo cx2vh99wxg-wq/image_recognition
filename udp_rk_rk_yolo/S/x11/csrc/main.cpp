@@ -32,6 +32,7 @@
 #include "speed_status.h"
 #include "six_camera_render.h"
 #include "lane_angle_cue.h"
+#include "vehicle_artwork.h"
 #include "../../../common/image/frame_pixels.h"
 
 /* aligned_alloc 的声明需要先启用 _ISOC11_SOURCE。 */
@@ -93,23 +94,23 @@ typedef struct
 // 缓存键计算和实际绘制使用同一份快照。
 struct VehicleLayerState
 {
-    const uint8_t *png;
-    uint64_t png_revision;
-    int png_width, png_height;
+    const uint32_t *artwork;
+    uint64_t artwork_revision;
     int person, box_left, box_top, box_right, box_bottom, blink;
     CurveType curve;
     uint32_t confidence;
     int signed_angle;
-    unsigned left_style, right_style;
+    unsigned left_style, right_style, blocked;
+    bool warning_red;
     bool operator==(const VehicleLayerState &other) const
     {
-        return png == other.png && png_revision == other.png_revision &&
-               png_width == other.png_width && png_height == other.png_height &&
+        return artwork == other.artwork && artwork_revision == other.artwork_revision &&
                person == other.person && box_left == other.box_left && box_top == other.box_top &&
                box_right == other.box_right && box_bottom == other.box_bottom &&
                blink == other.blink && curve == other.curve && confidence == other.confidence &&
                signed_angle == other.signed_angle && left_style == other.left_style &&
-               right_style == other.right_style;
+               right_style == other.right_style && blocked == other.blocked &&
+               warning_red == other.warning_red;
     }
 };
 
@@ -176,11 +177,8 @@ static DisplayControlSharedMemory *display_control_shm = NULL; // 呈现合成�
 static EmergencyBrakeSharedMemory *emergency_brake_shm = NULL; // 呈现合成：紧急制动共享内存
 
 
-static uint8_t *car_png_data = NULL;
-static int car_png_width = 0;
-static int car_png_height = 0;
-static int car_png_channels = 0;
-static uint64_t car_png_revision = 0;
+static std::vector<uint32_t> car_artwork;
+static uint64_t car_artwork_revision = 0;
 
 // 跟踪红色告警的闪烁相位。
 static uint64_t last_blink_time = 0;
@@ -226,8 +224,7 @@ void save_combined_frame_to_ppm(const uint8_t *pcie_data, const uint8_t *udp_dat
                                 const char *filename);
 void render_camera_block(uint32_t *display_pixels, const uint16_t *source_pixels, int src_x,
                          int src_y, int dst_x, int dst_y);
-int load_car_png(const char *filename);
-void render_car_png(uint32_t *display_pixels, int dst_x, int dst_y, int dst_width, int dst_height);
+int load_car_artwork(const char *filename);
 void draw_lane_lines(uint32_t *display_pixels, int dst_x, int dst_y, int dst_width, int dst_height,
                      const VehicleLayerState &state);
 
@@ -424,22 +421,22 @@ void draw_screen_flash(RenderEngine *engine, float alpha)
     }
 }
 
-// 呈现合成：加载car.png图像
-int load_car_png(const char *filename)
+// Decode the supplied image once; keep a compact, centered panel cache.
+int load_car_artwork(const char *filename)
 {
-    car_png_data = stbi_load(filename, &car_png_width, &car_png_height, &car_png_channels, 4);
-    if (!car_png_data)
-    {
-        printf("无法加载PNG图像: %s\n", filename);
-        return -1;
-    }
-    ++car_png_revision;
-    printf("已完成加载PNG图像: %s (%dx%d, %d通道)\n", filename, car_png_width, car_png_height,
-           car_png_channels);
+    int width, height, channels;
+    uint8_t *decoded = stbi_load(filename, &width, &height, &channels, 4);
+    if (!decoded) { std::fprintf(stderr, "Cannot load vehicle artwork: %s\n", filename); return -1; }
+    try { car_artwork = vehicle_artwork::prepare(decoded, width, height); }
+    catch (...) { stbi_image_free(decoded); return -1; }
+    stbi_image_free(decoded);
+    ++car_artwork_revision;
+    std::printf("[VEHICLE_ARTWORK] %s source=%dx%d cached=320x480 centered aspect-preserved\n",
+                filename, width, height);
     return 0;
 }
 
-// 求出识别框在car.png上的映射位置（车尾对应的边缘）。
+// Keep the existing person-warning mapping to the rear/side of the car panel.
 void calculate_car_edge_position(int box_left, int box_top, int box_right, int box_bottom,
                                  int *edge_type, float *edge_position)
 {
@@ -458,27 +455,24 @@ void calculate_car_edge_position(int box_left, int box_top, int box_right, int b
 void draw_lane_lines(uint32_t *display_pixels, int dst_x, int dst_y, int dst_width, int dst_height,
                      const VehicleLayerState &state)
 {
-    if (state.confidence < 60)
-        return;
     lane_cue::draw(display_pixels + dst_y * COMBINED_IMAGE_WIDTH + dst_x,
                    COMBINED_IMAGE_WIDTH, dst_width, dst_height, state.signed_angle,
-                   state.left_style, state.right_style);
+                   state.left_style, state.right_style, state.blocked, state.warning_red,
+                   state.confidence >= 60);
 }
 
-// 呈现合成：渲染car.png到指定位置，带红光闪烁效果
+// One immutable snapshot controls the cached vehicle panel and alarm phase.
 static VehicleLayerState snapshot_vehicle_state()
 {
     uint64_t current_time = get_current_time_ms();
-    if (car_png_data && current_time - last_blink_time >= 300)
+    if (!car_artwork.empty() && current_time - last_blink_time >= 300)
     {
         blink_state = !blink_state;
         last_blink_time = current_time;
     }
     VehicleLayerState state = {};
-    state.png = car_png_data;
-    state.png_revision = car_png_revision;
-    state.png_width = car_png_width;
-    state.png_height = car_png_height;
+    state.artwork = car_artwork.empty() ? nullptr : car_artwork.data();
+    state.artwork_revision = car_artwork_revision;
     if (emergency_brake_shm && emergency_brake_shm->valid && emergency_brake_shm->person_detected)
     {
         state.person = 1;
@@ -496,100 +490,14 @@ static VehicleLayerState snapshot_vehicle_state()
                        lane_cue::valid(current_curve_type, current_curve_confidence,
                                        current_curve_angle) ? current_curve_confidence : 0;
     state.signed_angle = lane_cue::signed_degrees(current_curve_type, current_curve_angle);
-    static LineStyleIPC styles = {-1, nullptr};
-    LineStyleData line = {};
-    line_ipc_open(&styles, LINE_STYLE_KEY, 0);
-    if (!line_ipc_read(&styles, &line) && line_fresh(&line, display_clock_ns()))
-    {
-        state.left_style = line.left;
-        state.right_style = line.right;
-    }
     return state;
 }
 
-static void render_car_png_with_state(uint32_t *display_pixels, int dst_x, int dst_y, int dst_width,
-                                      int dst_height, const VehicleLayerState &state)
-{
-    if (!state.png)
-        return;
-
-    int glow_x = 0, glow_y = 0;
-    if (state.person)
-    {
-        int edge;
-        float position;
-        calculate_car_edge_position(state.box_left, state.box_top, state.box_right,
-                                    state.box_bottom, &edge, &position);
-        if (edge == 3)
-        {
-            glow_x = (int)(position * dst_width);
-            glow_y = dst_height;
-        }
-        else
-        {
-            glow_x = edge == 2 ? dst_width : 0;
-            glow_y = (int)(position * dst_height);
-        }
-    }
-
-    const float scale_x = (float)state.png_width / dst_width;
-    const float scale_y = (float)state.png_height / dst_height;
-    // car.png has an opaque 400x600 canvas; the vehicle's symmetry axis is
-    // X=220. Register that axis with the panel/lane-cue center at dst_width/2.
-    const float artwork_offset_x = state.png_width * .05f;
-    const float blink = state.blink ? 0.8f : 0.3f;
-    const int glow_radius = 80;
-    for (int y = first_visible_pixel(dst_y, dst_height); y < dst_height && dst_y + y < COMBINED_IMAGE_HEIGHT; ++y)
-    {
-        const int sy = (int)(y * scale_y);
-        if (sy < 0 || sy >= state.png_height)
-            continue;
-        auto *row = display_pixels + (dst_y + y) * COMBINED_IMAGE_WIDTH;
-        for (int x = first_visible_pixel(dst_x, dst_width); x < dst_width && dst_x + x < COMBINED_IMAGE_WIDTH; ++x)
-        {
-            const int sx = (int)(x * scale_x + artwork_offset_x);
-            if (sx < 0 || sx >= state.png_width)
-                continue;
-            const uint8_t *rgba = state.png + (sy * state.png_width + sx) * 4;
-            if (rgba[3] == 0)
-                continue;
-
-            float glow = 0.0f;
-            if (state.person)
-            {
-                const int dx = x - glow_x, dy = y - glow_y;
-                const float distance = sqrtf(dx * dx + dy * dy);
-                if (distance < glow_radius)
-                    glow = (1.0f - distance / glow_radius) * blink;
-            }
-
-            uint8_t r = rgba[0], g = rgba[1], b = rgba[2];
-            uint32_t &pixel = row[dst_x + x];
-            if (rgba[3] < 255)
-            {
-                const float alpha = rgba[3] / 255.0f;
-                r = (uint8_t)(r * alpha + ((pixel >> 16) & 0xff) * (1 - alpha));
-                g = (uint8_t)(g * alpha + ((pixel >> 8) & 0xff) * (1 - alpha));
-                b = (uint8_t)(b * alpha + (pixel & 0xff) * (1 - alpha));
-            }
-
-            r = (uint8_t)(r + (255 - r) * glow);
-            g = (uint8_t)(g * (1.0f - glow));
-            b = (uint8_t)(b * (1.0f - glow));
-            pixel = 0xff000000u | (r << 16) | (g << 8) | b;
-        }
-    }
-}
-
-void render_car_png(uint32_t *display_pixels, int dst_x, int dst_y, int dst_width, int dst_height)
-{
-    const VehicleLayerState state = snapshot_vehicle_state();
-    render_car_png_with_state(display_pixels, dst_x, dst_y, dst_width, dst_height, state);
-}
-
-static bool update_vehicle_layer(RenderEngine *engine)
+static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::ViewStatus &status)
 {
     VehicleLayerState state = snapshot_vehicle_state();
+    state.left_style = status.line_left;
+    state.right_style = status.line_right;
     // Offline preview only: no IPC writes and no vehicle/control processes.
     if (engine->headless)
     {
@@ -600,19 +508,33 @@ static bool update_vehicle_layer(RenderEngine *engine)
             state.curve = value < 0 ? CURVE_LEFT : value > 0 ? CURVE_RIGHT : CURVE_NONE;
             state.signed_angle = value;
             state.confidence = 85;
-            const char *left = getenv("VISION_PREVIEW_LINE_LEFT");
-            const char *right = getenv("VISION_PREVIEW_LINE_RIGHT");
-            state.left_style = left ? (unsigned)atoi(left) : 1;
-            state.right_style = right ? (unsigned)atoi(right) : 1;
+
         }
     }
+    state.blocked = lane_cue::warning_sides(status.lane_blocked, state.left_style, state.right_style);
+    state.warning_red = state.blocked && (display_clock_ns() / 300000000ULL) % 2;
+    if (engine->headless && state.blocked)
+        if (const char *phase = std::getenv("VISION_PREVIEW_WARNING_RED"))
+            state.warning_red = std::strcmp(phase, "0") != 0;
     if (engine->vehicle_cached && engine->vehicle_state == state)
         return false;
     // 320x480 目标区、1280 像素步长及背景均由
     // 逻辑仪表面板固定，不随物理窗口缩放改变。
     for (int y = 0; y < 480; ++y)
-        std::fill_n(engine->vehicle_layer + y * COMBINED_IMAGE_WIDTH, 320, 0xff080b20u);
-    render_car_png_with_state(engine->vehicle_layer, 0, 0, 320, 480, state);
+    {
+        auto *row = engine->vehicle_layer + y * COMBINED_IMAGE_WIDTH;
+        if (state.artwork) std::copy_n(state.artwork + y * 320, 320, row);
+        else std::fill_n(row, 320, 0xff080b20u);
+    }
+    if (state.person)
+    {
+        int edge; float position;
+        calculate_car_edge_position(state.box_left, state.box_top, state.box_right,
+                                    state.box_bottom, &edge, &position);
+        int x = edge == 3 ? (int)(position * 320) : edge == 2 ? 320 : 0;
+        int y = edge == 3 ? 480 : (int)(position * 480);
+        vehicle_artwork::person_glow(engine->vehicle_layer, COMBINED_IMAGE_WIDTH, x, y, state.blink);
+    }
     draw_lane_lines(engine->vehicle_layer, 0, 0, 320, 480, state);
     engine->vehicle_state = state;
     engine->vehicle_cached = 1;
@@ -812,6 +734,20 @@ void set_fullscreen(RenderEngine *engine, int enabled)
 {
     if (!engine || !engine->display)
         return;
+    if (enabled)
+    {
+        // prepare_display.py makes HDMI the primary/Xinerama head 0. Explicitly
+        // select that head: overlapping DSI and HDMI coordinates otherwise let
+        // xfwm4 fullscreen this dashboard on the 720x1280 DSI panel.
+        XEvent monitor = {};
+        monitor.type = ClientMessage;
+        monitor.xclient.window = engine->window;
+        monitor.xclient.message_type = XInternAtom(engine->display, "_NET_WM_FULLSCREEN_MONITORS", False);
+        monitor.xclient.format = 32;
+        monitor.xclient.data.l[4] = 1;
+        XSendEvent(engine->display, DefaultRootWindow(engine->display), False,
+                   SubstructureRedirectMask | SubstructureNotifyMask, &monitor);
+    }
     XEvent event = {};
     event.type = ClientMessage;
     event.xclient.window = engine->window;
@@ -1324,11 +1260,7 @@ int present_dashboard(RenderEngine *engine)
         return -1;
     uint64_t render_started = display_clock_ns();
     uint64_t now = get_current_time_ms();
-    bool car_redrawn = update_vehicle_layer(engine);
-    uint64_t car_done = display_clock_ns();
     perception_ui::ViewStatus status;
-    status.lane_angle_valid = engine->vehicle_state.confidence >= 60;
-    status.lane_angle_deg = engine->vehicle_state.signed_angle;
     status.recorded = engine->preview_recorded != 0;
     status.pcie_live = engine->pcie_last_seen && now >= engine->pcie_last_seen &&
                        now - engine->pcie_last_seen < 2000;
@@ -1433,6 +1365,18 @@ int present_dashboard(RenderEngine *engine)
     }
     if (engine->headless)
     {
+        if (std::getenv("VISION_PREVIEW_LANE_ANGLE"))
+        {
+            const char *left = std::getenv("VISION_PREVIEW_LINE_LEFT");
+            const char *right = std::getenv("VISION_PREVIEW_LINE_RIGHT");
+            status.line_left = left ? (unsigned)atoi(left) : 1;
+            status.line_right = right ? (unsigned)atoi(right) : 1;
+            status.line_left_raw = status.line_left;
+            status.line_right_raw = status.line_right;
+            status.line_left_quality = status.line_left ? 85 : 0;
+            status.line_right_quality = status.line_right ? 85 : 0;
+            status.line_left_reason = status.line_right_reason = 0;
+        }
         const char *gear_preview = getenv("VISION_PREVIEW_GEAR");
         if (gear_preview)
         {
@@ -1506,6 +1450,10 @@ int present_dashboard(RenderEngine *engine)
             --suffix;
         *suffix = 0;
     }
+    bool car_redrawn = update_vehicle_layer(engine, status);
+    uint64_t car_done = display_clock_ns();
+    status.lane_angle_valid = engine->vehicle_state.confidence >= 60;
+    status.lane_angle_deg = engine->vehicle_state.signed_angle;
     const uint32_t *pixels = engine->dashboard->compose(
         (const uint32_t *)engine->display_buffer, COMBINED_IMAGE_WIDTH, engine->vehicle_layer,
         COMBINED_IMAGE_WIDTH, engine->presented_mode == DISPLAY_MODE_ALL_CAMERAS, progress,
@@ -1940,7 +1888,7 @@ static int find_display_asset(const char *name, char *output, size_t capacity)
 static int load_vehicle_artwork()
 {
     char path[PATH_MAX];
-    return find_display_asset("car.png", path, sizeof(path)) == 0 ? load_car_png(path) : -1;
+    return find_display_asset("assets/car_third_person.jpg", path, sizeof(path)) == 0 ? load_car_artwork(path) : -1;
 }
 
 static perception_ui::Dashboard *create_dashboard_theme()
@@ -2040,8 +1988,7 @@ static int preview_dashboard(const char *output, const char *input, DisplayMode 
         result = save_dashboard(&engine, output);
     emergency_brake_shm = NULL;
     render_engine_cleanup(&engine);
-    stbi_image_free(car_png_data);
-    car_png_data = NULL;
+    std::vector<uint32_t>().swap(car_artwork);
     printf("Dashboard preview: %s\n", output);
     return result != 0;
 }
@@ -2276,11 +2223,11 @@ int main(int argc, char **argv)
         printf("UDP共享内存暂不可用，等待网络收取进程\n");
     }
 
-    // 呈现合成：加载car.png图像
-    printf("\n=== 加载car.png图像 ===\n");
+    // 呈现合成：加载第三人称小车图像
+    printf("\n=== 加载第三人称小车图像 ===\n");
     if (load_vehicle_artwork() != 0)
     {
-        printf("注意: 无法加载car.png,将使用原始摄像头画面\n");
+        printf("注意: 无法加载第三人称小车图像,将使用原始摄像头画面\n");
     }
 
     printf("\n=== 接入可选呈现元数据；未运行的数据源每秒重试 ===\n");
@@ -2559,11 +2506,7 @@ int main(int argc, char **argv)
         free(udp_buffer);
     }
 
-    // 归还已取得的PNG图像内存。
-    if (car_png_data)
-    {
-        stbi_image_free(car_png_data);
-    }
+    std::vector<uint32_t>().swap(car_artwork);
 
     printf("\n=== 双通道渲染程序执行完成 ===\n");
     return 0;
