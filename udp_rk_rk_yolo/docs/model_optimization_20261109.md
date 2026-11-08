@@ -77,3 +77,20 @@ Toolkit2 2.3.2 的自动混合建议在 `IRGraph.expand_batch` 中报 `KeyError(
 `export_twin_front.py` 记录源码/权重/ONNX SHA256、输出含义、等价改写选项和数值对照，拒绝覆盖候选。`lane_candidate_probe.cpp --tensor-replay` 可以把 CPU 输出送入相同 IPM / 选线 / 判向程序；该模式报告的推理耗时为 0，真实 CPU 推理须由调用者计时，不能混入 NPU 速度结果。工具不会发布控制结果或自动提升模型。
 
 这些是有限场景的实际否决结果，不是 TwinLiteNet+ 在所有道路上的准确率排名。官方模型及输入处理依据：[TwinLiteNet+](https://github.com/chequanghuy/TwinLiteNetPlus)、[官方加载器](https://github.com/chequanghuy/TwinLiteNetPlus/blob/main/demoDataset.py)。
+
+## 目标检测升级实测
+
+从瑞芯微 Model Zoo 的[官方下载脚本](https://github.com/airockchip/rknn_model_zoo/blob/main/examples/yolov8/model/download_model.sh)取得 YOLOv8n ONNX（SHA256 `0c8716701f471067932b797eeb67c8e5db47c693c2557c881d7679ec12e21bc5`），将输入改为 320×320，重新推导输出形状，再按官方 `/255` 规则转换 INT8。使用与前述相同的 21 张小规模校准输入，仅作为候选测速。
+
+暂停 M 端正式 NPU 工作，使用同一张带行人的 bus 图片、相同等比例补边 RGB、3 次预热和 25 次测量。下表不包含图像缩放、检测解码、颜色判断或行人道路关联，因此不能与完整检测服务的约 17～18 ms 混为一谈。它衡量是否值得继续接入新解码器。
+
+| 模型与输出模式 | `rknn_run` 中位数 | 输入提交＋运行＋取输出中位数 |
+|---|---:|---:|
+| 原 YOLOv5n INT8，原生输出 | 7.35 ms | 8.95 ms |
+| 候选 YOLOv8n INT8，原生输出 | 8.51 ms | 10.87 ms |
+| 原 YOLOv5n INT8，转 float 输出 | 7.29 ms | 10.44 ms |
+| 候选 YOLOv8n INT8，转 float 输出 | 10.92 ms | 17.70 ms |
+
+分别用 YOLOv5 的 anchor/objectness 和 YOLOv8 的 DFL/类别概率公式解码，不能沿用同一个检测头公式。两个候选都在这张图片上得到 3 个 NMS 后行人框；该单例不能证明交通灯准确率、完整行人召回或制动行为相同。原生输出的调用耗时已经增加约 21.5%，float 模式更慢，故**不替换现有 YOLOv5n**。正式交通灯筛选、颜色状态机和行人制动逻辑保持原样。
+
+`detector_candidate_probe.cpp` 只在正式采集程序停止时进行离线 NPU 测量，导出输出布局和张量。`decode_detector_probe.py` 用各自正确的公式做保存数据回放，输出不发布到任何控制接口。这一步的结果是完成板上升级对照并否决候选，不是部署了新的目标模型。
