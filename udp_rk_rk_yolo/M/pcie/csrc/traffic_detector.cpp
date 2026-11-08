@@ -236,13 +236,18 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                                         bw / scale, bh / scale, score),
                                     w, h);
                         bool person_top = persons && person_score >= FRONT_PERSON_CONFIDENCE_THRESHOLD;
-                        // Match S: class 0 must be the highest-scoring COCO class,
-                        // rather than a low secondary score on another object.
-                        for (int id=1;person_top && id<80;++id)
+                        bool signal_top = score >= locator_score_gate;
+                        // Both classes compete with all COCO categories. A red
+                        // object with a stronger non-signal class cannot become
+                        // a traffic light merely by passing the housing filter.
+                        // Person admission remains independent of signal filters.
+                        for (int id=0;(person_top || signal_top) && id<80;++id)
                         {
                             const float other=at(base+5+id,pos);
-                            if (!std::isfinite(other)) { valid=false; person_top=false; break; }
-                            if (other>person_cls) person_top=false;
+                            if (!std::isfinite(other) || other<-.01f || other>1.02f)
+                            { valid=false; person_top=signal_top=false; break; }
+                            if (id!=0 && other>person_cls) person_top=false;
+                            if (id!=9 && other>cls) signal_top=false;
                         }
                         // Person safety examines every threshold-passing class-0 anchor,
                         // independent of signal housing/color/ROI and display limits.
@@ -254,7 +259,7 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                             if (person_score > persons->best.score)
                             { persons->best = b; persons->best.score = person_score; }
                         }
-                        if (score >= locator_score_gate && b.w >= 3 && b.h >= 4 && b.y + b.h * .5 < h * .88)
+                        if (signal_top && b.w >= 3 && b.h >= 4 && b.y + b.h * .5 < h * .88)
                             pass_candidates.push_back(b);
                     }
         }

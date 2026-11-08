@@ -59,7 +59,7 @@ int main()
     std::fill(coverage.begin(), coverage.end(), 0);
     assert(!m_lane::EgoLaneSelector::describe_points(points, rgb.data(), true, coverage.data()).left.type);
     m_lane::LineStyleAnalyzer confirm;
-    assert(!confirm.confirm(raw, 1, 1000000000ULL, &points).left.type);
+    assert(confirm.confirm(raw, 1, 1000000000ULL, &points).left.type == LINE_DASHED);
     assert(!confirm.confirm(raw, 1, 1000000000ULL, &points).left.type);
     assert(confirm.confirm(raw, 2, 1200000000ULL, &points).left.type == LINE_DASHED);
     for (int phase = 0; phase <= 35; phase += 5)
@@ -86,5 +86,5 @@ int main()
     auto start = std::chrono::steady_clock::now();
     for (int i=0;i<200;++i) (void)m_lane::marking_profile(mask.data(), steering);
     std::printf("marking_profile noisy-mask mean_ms=%.3f\n", std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-start).count()/200);
-    std::puts("PASS: gaps, curves, one-sided evidence, map coverage, two distinct frames, bounded noise");
+    std::puts("PASS: gaps, curves, one-sided evidence, map coverage, immediate fresh result, duplicate rejection, bounded noise");
 }

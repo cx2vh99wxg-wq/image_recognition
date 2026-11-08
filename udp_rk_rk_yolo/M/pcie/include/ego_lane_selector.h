@@ -3,6 +3,7 @@
 #include "line_style.h"
 #include "line_style_trace.h"
 #include "lane_point_selector.h"
+#include "lane_paint_evidence.h"
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -912,11 +913,25 @@ class EgoLaneSelector
         out.x_bottom = points ? points->back().x : track.fit.at(0);
         out.x_top = points ? points->front().x : track.fit.at(coordinate(track.first, h));
         out.coverage = std::min(100, (int)(track.length * 100 / (h * .52)));
+        std::vector<double> centers, weights;
+        std::vector<int> widths;
+        centers.reserve(track.last-track.first+1);
+        for(int y=track.first;y<=track.last;++y) {
+            centers.push_back(x_at(y));
+            widths.push_back(points?std::max(1,std::min(12,(*points)[upper].width)):5);
+        }
+        weights.assign(centers.size(),1.);
+        for(size_t i=1;ground && i<centers.size();++i)
+            weights[i]=std::hypot(centers[i]-centers[i-1],1.);
+        if(weights.size()>1) weights[0]=weights[1];
+        LanePaintEvidence evidence(rgb,w,h,coverage);
         std::vector<int> values;
         int valid = 0;
+        double valid_length=0.,paint_length=0.;
         for (int y = track.first; y <= track.last; ++y)
         {
-            int x = (int)std::lround(x_at(y));
+            const size_t at=(size_t)(y-track.first);
+            int x = (int)std::lround(centers[at]);
             int value = -1;
             if (x >= w / 40 && x < w - w / 40)
             {
@@ -927,8 +942,14 @@ class EgoLaneSelector
                                            !black_row(rgb, w, h, x, y + 1)));
                 if (!missing)
                 {
-                    value = ridge(rgb, w, h, x, y, 3) >= 0 ? 1 : 0;
-                    ++valid;
+                    // Production style classification uses IPM pixels. Keep
+                    // the optional legacy front-image path's sampling policy.
+                    if (ground) {
+                        const size_t lo=at>1?at-2:0,hi=std::min(centers.size()-1,at+2);
+                        const double slope=hi>lo?(centers[hi]-centers[lo])/(hi-lo):0.;
+                        value=evidence.sample(centers[at],y,slope,widths[at]);
+                    } else value=ridge(rgb,w,h,x,y,3)>=0?1:0;
+                    if(value>=0) ++valid;
                 }
             }
             values.push_back(value);
@@ -941,19 +962,30 @@ class EgoLaneSelector
             return out;
         }
         auto cleaned = values;
+        // A single low-contrast speck inside an observed dark interval must
+        // not split one real dash gap into two. Missing IPM coverage remains
+        // an evidence barrier and is never filled by this rule.
+        if(ground)for(size_t i=1;i+1<values.size();++i)
+            if(values[i]==PAINT_WEAK && values[i-1]==PAINT_GAP && values[i+1]==PAINT_GAP){
+                cleaned[i]=PAINT_GAP;
+                ++valid;
+            }
         for (size_t i = 1; i + 1 < values.size(); ++i)
             if (values[i] >= 0 && values[i - 1] >= 0 && values[i - 1] == values[i + 1])
                 cleaned[i] = values[i - 1]; // isolated noise or one missing paint row
         struct Run
         {
-            int value, length;
+            int value, rows;
+            double length;
         };
         std::vector<Run> runs;
-        int painted = 0, spans = 0, gaps = 0, longest = 0, longest_paint = 0;
+        int spans = 0, gaps = 0;
+        double longest=0.,longest_paint=0.,longest_unknown=0.;
         for (size_t i = 0; i < cleaned.size(); ++i)
         {
             const int value = cleaned[i];
-            painted += value == 1;
+            if(value>=0)valid_length+=weights[i];
+            if(value==1)paint_length+=weights[i];
             if (trace)
                 (*trace)[i].filtered = value;
             // A single corrupt row surrounded by paint does not split a solid
@@ -962,29 +994,38 @@ class EgoLaneSelector
                 cleaned[i + 1] == 1)
                 continue;
             if (runs.empty() || runs.back().value != value)
-                runs.push_back({value, 1});
+                runs.push_back({value, 1, weights[i]});
             else
-                ++runs.back().length;
+            {
+                ++runs.back().rows;
+                runs.back().length+=weights[i];
+            }
         }
         for (size_t i = 0; i < runs.size(); ++i)
         {
             const auto &run = runs[i];
-            if (run.value == 1 && run.length >= 3)
+            if(run.value<0)longest_unknown=std::max(longest_unknown,run.length);
+            if (run.value == 1 && run.rows >= 3)
             {
                 ++spans;
                 longest_paint = std::max(longest_paint, run.length);
             }
-            if (run.value != 0 || run.length < 3 || i == 0 || i + 1 == runs.size() ||
+            if (run.value != 0 || run.rows < 3 || i == 0 || i + 1 == runs.size() ||
                 runs[i - 1].value != 1 || runs[i + 1].value != 1)
                 continue;
             longest = std::max(longest, run.length);
             // Compare a gap with its neighboring marks at roughly the same
             // image scale. Tiny specks and very long occlusions are weak evidence.
-            const int shorter = std::min(runs[i - 1].length, runs[i + 1].length);
-            if (shorter >= 3 && run.length <= 5 * shorter)
+            // A mark touching the observation endpoint may be only a clipped
+            // fragment. Use its complete neighbor as the scale reference;
+            // interior gaps still require support from both adjacent marks.
+            const bool endpoint_mark=ground && (i==1 || i+2==runs.size());
+            const double reference=endpoint_mark?std::max(runs[i-1].length,runs[i+1].length):
+                                                  std::min(runs[i-1].length,runs[i+1].length);
+            if (runs[i-1].rows>=3 && runs[i+1].rows>=3 && run.length <= 5 * reference)
                 ++gaps;
         }
-        out.duty = 100 * painted / valid;
+        out.duty = valid_length>0 ? (unsigned)(100*paint_length/valid_length) : 0;
         out.spans = spans;
         out.gaps = gaps;
         double first_x = out.x_top,
@@ -1000,19 +1041,22 @@ class EgoLaneSelector
             required_length =
                 std::max(24., std::min(h * .20, std::min(road_height * .35, lane_width * .3)));
         }
-        bool near_continuous = out.duty >= 82 || (out.duty >= 80 && longest_paint >= valid * .6);
+        const bool enough_evidence=!ground || (size_t)valid*100>=values.size()*65;
+        const bool solid_evidence=!ground || ((size_t)valid*100>=values.size()*85 &&
+                                  longest_unknown<=std::max(4,h*3/100));
+        bool near_continuous = out.duty >= 82 || (out.duty >= 80 && longest_paint >= valid_length * .6);
         // 短且侧边被裁断的观测里，一个空隙就可能属于虚线周期；
         // 此处要求漆线近乎连续，不能套用
         // 长距离可见线所允许的磨损容差。
         if (valid < h * .18)
             near_continuous = out.duty >= 95 && gaps == 0;
-        if (near_continuous && gaps <= 1 && longest <= std::max(4, h * 3 / 100) &&
+        if (enough_evidence && solid_evidence && near_continuous && gaps <= 1 && longest <= std::max(4, h * 3 / 100) &&
             track.length >= required_length)
         {
             out.type = LINE_SOLID;
             out.quality = std::min(95u, 68u + (out.duty - 80) / 2 + out.coverage / 10);
         }
-        else if (out.duty >= 15 && spans >= 2 &&
+        else if (enough_evidence && out.duty >= 15 && spans >= 2 &&
                  ((gaps >= 2 && out.duty <= 88) || (gaps == 1 && out.duty <= 72)))
         {
             out.type = LINE_DASHED;

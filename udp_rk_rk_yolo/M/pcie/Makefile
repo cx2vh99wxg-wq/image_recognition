@@ -331,3 +331,18 @@ build/test_overlay_roi: tests/test_overlay_roi.cpp build/yolo_integration.o $(SH
 	$(CXX) -std=c++11 -O3 -Wall -Wextra -Werror $(INCLUDES) $^ -o $@ $(LIBS) $(LDFLAGS)
 test-overlay-roi: build/test_overlay_roi
 	./build/test_overlay_roi
+
+.PHONY: test-paint-evidence test-signal-competition
+build/test_paint_evidence: tests/test_paint_evidence.cpp include/lane_paint_evidence.h include/ego_lane_selector.h include/line_style_analyzer.h
+	@mkdir -p build
+	$(CXX) -std=c++11 -O3 -Wall -Wextra -Werror $(INCLUDES) $< -o $@
+test-paint-evidence: build/test_paint_evidence
+	./build/test_paint_evidence
+build/test_signal_competition: tests/test_signal_competition.cpp csrc/traffic_detector.cpp include/traffic_detector.h include/traffic_vision.h
+	@mkdir -p build
+	$(CXX) -std=c++11 -O3 -Wall -Wextra -Werror $(INCLUDES) tests/test_signal_competition.cpp csrc/traffic_detector.cpp -o $@
+test-signal-competition: build/test_signal_competition
+	./build/test_signal_competition
+
+# These header-only algorithms are also instantiated by existing regressions.
+build/test_line_style build/test_ego_lane build/test_marking_profile build/test_npu_scheduling build/test_front_ipm build/test_lane_curve_geometry build/test_direct_mask_ipm build/test_front_radial: include/lane_paint_evidence.h
