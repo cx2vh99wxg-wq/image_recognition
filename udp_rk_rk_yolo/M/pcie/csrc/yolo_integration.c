@@ -1,5 +1,10 @@
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
 #include "../../../common/image/frame_pixels.h"
 #include "yolo_integration.h"
+#include "fp16_expand.h"
+#include "overlay_blend_lut.h"
 #include "../../../common/perception/include/yolo_engine_resources.h"
 #include "shared_memory.h"
 #include <stdio.h>
@@ -45,6 +50,31 @@ static void lane_error(const char *format, ...)
     va_start(args, format);
     vfprintf(stderr, format, args);
     va_end(args);
+}
+
+static uint64_t yolo_clock_ns(void)
+{
+    struct timespec t;
+    if (clock_gettime(CLOCK_MONOTONIC, &t)) return 0;
+    return (uint64_t)t.tv_sec * 1000000000ULL + t.tv_nsec;
+}
+
+static void prepare_outputs(YOLOEngine *e, uint32_t count)
+{
+    memset(e->outputs, 0, e->io_num.n_output * sizeof(*e->outputs));
+    for (uint32_t i = 0; i < count; ++i) {
+        rknn_output *out = &e->outputs[i];
+        out->index = i; out->want_float = 1;
+        if (i < 2 && e->output_mode) {
+            out->is_prealloc = 1;
+            out->want_float = e->output_mode != 2;
+            out->buf = e->output_mode == 2
+                ? (void *)(i ? e->native_lane : e->native_road)
+                : (void *)(i ? e->lane_line_buffer : e->drivable_area_buffer);
+            out->size = e->model_width * e->model_height * (i ? 1 : 2) *
+                        (e->output_mode == 2 ? sizeof(uint16_t) : sizeof(float));
+        }
+    }
 }
 
 // 本节给出弯向分类的编号。
@@ -373,6 +403,27 @@ int yolo_engine_init(YOLOEngine *engine, const char *model_path, const char *lab
     printf("输出缓冲区: 车道线=%zu bytes, 可行驶区域=%zu bytes\n", lane_size, drivable_size);
 
     printf("YOLOPv2引擎初始化成功\n");
+    // The native FP16 path was compared bit-for-bit with SDK float output.
+    // Unsupported layouts/types retain the original SDK path; mode 0 is an explicit rollback.
+    const char *mode = getenv("VISION_LANE_OUTPUT_MODE");
+    if (!mode) mode="2";
+    if (mode && (!strcmp(mode,"1") || !strcmp(mode,"2")) &&
+        out[0].fmt == RKNN_TENSOR_NCHW && out[1].fmt == RKNN_TENSOR_NCHW) {
+        engine->output_mode = (unsigned)(mode[0]-'0');
+        if (engine->output_mode == 2) {
+            if (out[0].type != RKNN_TENSOR_FLOAT16 || out[1].type != RKNN_TENSOR_FLOAT16)
+                engine->output_mode = 0;
+            else {
+                engine->native_road = malloc(drivable_size/2);
+                engine->native_lane = malloc(lane_size/2);
+                if (!engine->native_road || !engine->native_lane) {
+                    free(engine->native_road);free(engine->native_lane);
+                    engine->native_road=NULL;engine->native_lane=NULL;engine->output_mode=0;
+                    fprintf(stderr,"YOLOP native buffers unavailable; using original SDK float output\n");
+                }
+            }
+        }
+    }
     engine->requested_output_count = 2;
     engine->is_initialized = 1;
     return 0;
@@ -386,20 +437,26 @@ int yolo_engine_detect(YOLOEngine *engine, const uint8_t *rgb_data, int width, i
         return -1;
 
     memset(results, 0, sizeof(*results));
+    YOLOTiming timing = {0};
+    uint64_t begin = yolo_clock_ns();
     preprocess_image(rgb_data, engine->input_data, width, height, engine->model_width,
                      engine->model_height);
+    uint64_t mark = yolo_clock_ns(); timing.prepare_ns = mark - begin;
     engine->inputs[0].index = 0;
     engine->inputs[0].type = RKNN_TENSOR_UINT8;
     engine->inputs[0].size = engine->model_width * engine->model_height * 3;
     engine->inputs[0].fmt = RKNN_TENSOR_NHWC;
     engine->inputs[0].buf = engine->input_data;
     int ret = rknn_inputs_set(engine->ctx, engine->io_num.n_input, engine->inputs);
+    timing.inputs_ns = yolo_clock_ns() - mark;
     if (ret < 0)
     {
         lane_error("YOLOP inputs_set failed: %d\n", ret);
         return -1;
     }
+    mark = yolo_clock_ns();
     ret = rknn_run(engine->ctx, NULL);
+    timing.run_ns = yolo_clock_ns() - mark;
     if (ret < 0)
     {
         lane_error("YOLOP inference failed: %d\n", ret);
@@ -412,12 +469,8 @@ int yolo_engine_detect(YOLOEngine *engine, const uint8_t *rgb_data, int width, i
     uint32_t count = engine->requested_output_count;
     if (count != engine->io_num.n_output)
         count = 2;
-    memset(engine->outputs, 0, engine->io_num.n_output * sizeof(*engine->outputs));
-    for (uint32_t i = 0; i < count; ++i)
-    {
-        engine->outputs[i].index = i;
-        engine->outputs[i].want_float = 1;
-    }
+    prepare_outputs(engine, count);
+    mark = yolo_clock_ns();
     ret = rknn_outputs_get(engine->ctx, count, engine->outputs, NULL);
     if (ret < 0 && count == 2 && engine->io_num.n_output > 2)
     {
@@ -425,12 +478,7 @@ int yolo_engine_detect(YOLOEngine *engine, const uint8_t *rgb_data, int width, i
          * 仅探测一次后缓存兼容数量，释放时使用同一数量。 */
         count = engine->io_num.n_output;
         engine->requested_output_count = count;
-        memset(engine->outputs, 0, count * sizeof(*engine->outputs));
-        for (uint32_t i = 0; i < count; ++i)
-        {
-            engine->outputs[i].index = i;
-            engine->outputs[i].want_float = 1;
-        }
+        prepare_outputs(engine, count);
         fprintf(stderr, "YOLOP runtime requires all %u outputs; caching fallback\n", count);
         ret = rknn_outputs_get(engine->ctx, count, engine->outputs, NULL);
     }
@@ -440,13 +488,27 @@ int yolo_engine_detect(YOLOEngine *engine, const uint8_t *rgb_data, int width, i
         return -1;
     }
 
+    timing.outputs_ns = yolo_clock_ns() - mark;
+    mark = yolo_clock_ns();
+
     size_t drivable_size = (size_t)engine->model_width * engine->model_height * 2 * sizeof(float);
     size_t lane_size = (size_t)engine->model_width * engine->model_height * sizeof(float);
+    const size_t divisor = engine->output_mode == 2 ? 2 : 1;
     int valid = engine->outputs[0].buf && engine->outputs[1].buf &&
-                engine->outputs[0].size >= drivable_size && engine->outputs[1].size >= lane_size;
+                engine->outputs[0].size >= drivable_size/divisor &&
+                engine->outputs[1].size >= lane_size/divisor;
+    if (engine->output_mode) {
+        const void *road=engine->output_mode==2?(void*)engine->native_road:(void*)engine->drivable_area_buffer;
+        const void *lane=engine->output_mode==2?(void*)engine->native_lane:(void*)engine->lane_line_buffer;
+        valid = valid && engine->outputs[0].buf==road && engine->outputs[1].buf==lane;
+    }
     if (valid)
     {
-        if (engine->output_attrs[0].fmt == RKNN_TENSOR_NHWC)
+        if (engine->output_mode == 2) {
+            fp16_expand(engine->native_road,engine->drivable_area_buffer,drivable_size/sizeof(float));
+            fp16_expand(engine->native_lane,engine->lane_line_buffer,lane_size/sizeof(float));
+        }
+        else if (engine->output_attrs[0].fmt == RKNN_TENSOR_NHWC)
         {
             const float *road = engine->outputs[0].buf;
             const size_t pixels = lane_size / sizeof(float);
@@ -456,11 +518,15 @@ int yolo_engine_detect(YOLOEngine *engine, const uint8_t *rgb_data, int width, i
                 engine->drivable_area_buffer[pixels + i] = road[2 * i + 1];
             }
         }
-        else
+        else if (engine->outputs[0].buf != engine->drivable_area_buffer)
             memcpy(engine->drivable_area_buffer, engine->outputs[0].buf, drivable_size);
-        memcpy(engine->lane_line_buffer, engine->outputs[1].buf, lane_size);
+        if (engine->output_mode != 2 && engine->outputs[1].buf != engine->lane_line_buffer)
+            memcpy(engine->lane_line_buffer, engine->outputs[1].buf, lane_size);
     }
+    timing.copy_ns = yolo_clock_ns() - mark;
+    mark = yolo_clock_ns();
     int release_result = rknn_outputs_release(engine->ctx, count, engine->outputs);
+    timing.release_ns = yolo_clock_ns() - mark;
     if (!valid || release_result < 0)
     {
         lane_error("YOLOP invalid segmentation tensors or release failure\n");
@@ -470,6 +536,7 @@ int yolo_engine_detect(YOLOEngine *engine, const uint8_t *rgb_data, int width, i
     results->drivable_area_data = engine->drivable_area_buffer;
     results->width = engine->model_width;
     results->height = engine->model_height;
+    engine->timing = timing;
     return 0;
 }
 
@@ -477,6 +544,8 @@ void yolo_engine_cleanup(YOLOEngine *engine)
 {
     if (!engine)
         return;
+    free(engine->native_road); engine->native_road = NULL;
+    free(engine->native_lane); engine->native_lane = NULL;
 
     // 需注意：outputs已在detect函数中释放，本处无需再释放
 
@@ -497,8 +566,8 @@ void yolo_engine_cleanup(YOLOEngine *engine)
     engine->is_initialized = 0;
 }
 
-int yolo_overlay_lane_and_drivable(uint8_t *rgb_data, int width, int height,
-                                   const yolopv2_result_t *results)
+int yolo_overlay_lane_and_drivable_roi(uint8_t *rgb_data,int width,int height,
+                                     const yolopv2_result_t *results,int roi_width,int roi_height)
 {
     if (!rgb_data || !results || !results->lane_line_data || !results->drivable_area_data ||
         width <= 0 || height <= 0 || results->width <= 0 || results->height <= 0)
@@ -508,26 +577,21 @@ int yolo_overlay_lane_and_drivable(uint8_t *rgb_data, int width, int height,
     int area = results->height * results->width;
     int same_size = width == results->width && height == results->height;
     int lane_pixel_count = 0;
+    if(roi_width<0||roi_height<0||roi_width>width||roi_height>height)return -1;
 
     /* 将两次遍历合并为一次；
      * 尺寸一致时不做浮点除法。混色表达式与车道阈值保持原样，
      * 以维持绘制像素和弯道分类。 */
-    for (int i = 0; i < height; ++i)
+    for (int i = 0; i < roi_height; ++i)
     {
         int y = same_size ? i : (int)(i / ratioh);
-        for (int j = 0; j < width; ++j)
+        for (int j = 0; j < roi_width; ++j)
         {
             int x = same_size ? j : (int)(j / ratiow);
             if (x < 0 || x >= results->width || y < 0 || y >= results->height)
                 continue;
             int mask = y * results->width + x;
             int idx = (i * width + j) * 3;
-            if (results->drivable_area_data[mask] < results->drivable_area_data[area + mask])
-            {
-                rgb_data[idx] = (uint8_t)(rgb_data[idx] * 0.6 + 0 * 0.4);
-                rgb_data[idx + 1] = (uint8_t)(rgb_data[idx + 1] * 0.6 + 255 * 0.4);
-                rgb_data[idx + 2] = (uint8_t)(rgb_data[idx + 2] * 0.6 + 0 * 0.4);
-            }
             if (results->lane_line_data[mask] > 0.3)
             {
                 rgb_data[idx] = 0;
@@ -535,11 +599,22 @@ int yolo_overlay_lane_and_drivable(uint8_t *rgb_data, int width, int height,
                 rgb_data[idx + 2] = 255;
                 ++lane_pixel_count;
             }
+            else if (results->drivable_area_data[mask] < results->drivable_area_data[area + mask])
+            {
+                rgb_data[idx]=overlay_darker[rgb_data[idx]];
+                rgb_data[idx+1]=overlay_greener[rgb_data[idx+1]];
+                rgb_data[idx+2]=overlay_darker[rgb_data[idx+2]];
+            }
         }
     }
     LANE_TRACE("绘制 %d 个红色车道线像素\n", lane_pixel_count);
 
     return lane_pixel_count;
+}
+
+int yolo_overlay_lane_and_drivable(uint8_t *rgb_data,int width,int height,const yolopv2_result_t *results)
+{
+    return yolo_overlay_lane_and_drivable_roi(rgb_data,width,height,results,width,height);
 }
 
 int yolo_analyze_annotated_curve(const uint8_t *rgb_data, int width, int height,

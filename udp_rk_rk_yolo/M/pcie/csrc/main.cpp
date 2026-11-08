@@ -1,4 +1,5 @@
 #include "../../../common/image/frame_pixels.h"
+#include "../../../common/display/hdmi_mode_guard.h"
 #include "../../../common/image/camera_valid_rows.h"
 #include "pcie_dma_read_test.h"
 #include "../../../common/pcie/capture_support.h"
@@ -503,6 +504,7 @@ int render_engine_init(RenderEngine *engine)
 
     // 建立到 X 服务器的接入。
     printf("尝试接入X服务器...\n");
+    vision_display::mode_guard().prepare();
     engine->display = XOpenDisplay(display_env ? NULL : ":0");
     if (!engine->display)
     {
@@ -547,6 +549,7 @@ int render_engine_init(RenderEngine *engine)
     printf("设置窗口属性...\n");
     XSelectInput(engine->display, engine->window,
                  ExposureMask | KeyPressMask | ButtonPressMask | StructureNotifyMask);
+    XSelectInput(engine->display,DefaultRootWindow(engine->display),StructureNotifyMask);
     engine->wm_delete = XInternAtom(engine->display, "WM_DELETE_WINDOW", False);
     XSetWMProtocols(engine->display, engine->window, &engine->wm_delete, 1);
 
@@ -637,6 +640,7 @@ int render_engine_check_exit_event(RenderEngine *engine)
 {
     if (!engine || !engine->is_init)
         return 1;
+    vision_display::mode_guard().poll();
 
     XEvent event;
     while (XPending(engine->display))
@@ -645,6 +649,10 @@ int render_engine_check_exit_event(RenderEngine *engine)
 
         switch (event.type)
         {
+        case ConfigureNotify:
+            if(event.xconfigure.window==DefaultRootWindow(engine->display))
+                vision_display::mode_guard().changed();
+            break;
         case KeyPress:
             return 1; // 收取到任意按键后退出。
         case ButtonPress:
@@ -973,6 +981,14 @@ static void report_capture_perf(CapturePerf *stats, int dma_rows, m_lane::Latest
            (unsigned long long)(render.replaced - previous_render.replaced),
            (unsigned long long)replaced, (unsigned long long)stale, worker && worker->failed(),
            dma_rows);
+    if(worker && inferred){
+        const double ms=1./(inferred*1000000.);
+        const auto &a=totals.timing,&b=previous_worker.timing;
+        printf("[PERF RKNN] front_ms=%.3f prepare_ms=%.3f inputs_ms=%.3f run_ms=%.3f outputs_ms=%.3f copy_ms=%.3f release_ms=%.3f\n",
+            (totals.front_ns-previous_worker.front_ns)*ms,(a.prepare_ns-b.prepare_ns)*ms,
+            (a.inputs_ns-b.inputs_ns)*ms,(a.run_ns-b.run_ns)*ms,(a.outputs_ns-b.outputs_ns)*ms,
+            (a.copy_ns-b.copy_ns)*ms,(a.release_ns-b.release_ns)*ms);
+    }
     previous_worker = totals;
     previous_render = render;
     fflush(stdout);
@@ -1374,7 +1390,10 @@ int main()
                     ipm_result = result;
                 mark = monotonic_ns();
                 yolopv2_result_t masks = result->masks();
-                yolo_overlay_lane_and_drivable(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, &masks);
+                if(result->restore_map)
+                    yolo_overlay_lane_and_drivable_roi(image_buf_888,IMAGE_WIDTH,IMAGE_HEIGHT,&masks,
+                                                       IMAGE_WIDTH/2,IMAGE_HEIGHT/2);
+                else yolo_overlay_lane_and_drivable(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, &masks);
                 perf.overlay += monotonic_ns() - mark;
                 ++perf.overlays;
                 // 把缓存掩码贴到另一视频帧上，并不产生新的 NN 观测。

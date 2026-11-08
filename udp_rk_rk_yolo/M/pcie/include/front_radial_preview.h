@@ -2,12 +2,14 @@
 #define M_FRONT_RADIAL_PREVIEW_H
 
 #include "front_radial.h"
+#include "front_mask_map.h"
 #include "ground_projection.h"
 #include "lane_curve_geometry.h"
 #include "../../../common/image/frame_pixels.h"
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <memory>
 #include <vector>
 
 namespace m_lane
@@ -118,6 +120,37 @@ class FrontRadialPreview
     double display_scale() const { return scale_; }
     int mosaic_width() const { return stride_ / 3; }
     int mosaic_height() const { return height_ * 2; }
+
+    std::shared_ptr<const FrontMaskRestore> mask_restore() const
+    {
+        if(corrected_at_raw_.empty())return {};
+        auto map=std::make_shared<FrontMaskRestore>();
+        map->tile_width=width_;map->tile_height=height_;
+        map->mosaic_width=mosaic_width();map->mosaic_height=mosaic_height();
+        map->corrected_at_raw=corrected_at_raw_;return map;
+    }
+    FrontMaskPull compose_masks_from(const FrontMaskRestore &front) const
+    {
+        FrontMaskPull map;
+        if(!ground_view_||!enabled()||front.tile_width!=width_||front.tile_height!=height_||
+           front.mosaic_width!=mosaic_width()||front.corrected_at_raw.size()!=(size_t)width_*height_)
+            return map;
+        map.width_=width_;map.height_=height_;map.samples_.reserve(samples_.size());
+        for(const auto &s:samples_){
+            FrontMaskPull::Sample out;
+            out.at.fill(outside);out.fx=s.fx*(1.f/256.f);out.fy=s.fy*(1.f/256.f);
+            if(s.offset!=outside){
+                const size_t raw=s.offset/3;const size_t y=raw/mosaic_width(),x=raw%mosaic_width();
+                if(x+1<(size_t)width_&&y+1<(size_t)height_){
+                    const size_t i=y*width_+x;
+                    out.at={{front.corrected_at_raw[i],front.corrected_at_raw[i+1],
+                             front.corrected_at_raw[i+width_],front.corrected_at_raw[i+width_+1]}};
+                }
+            }
+            map.samples_.push_back(out);
+        }
+        return map;
+    }
 
     // Place predictions back in the raw top-left tile for the existing overlay,
     // perspective projection and steering calibration. Other mosaic tiles stay clear.

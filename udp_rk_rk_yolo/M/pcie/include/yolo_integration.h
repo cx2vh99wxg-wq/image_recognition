@@ -18,6 +18,9 @@ extern "C"
 #define YOLOPV2_MODEL_PATH "model/yolopv2_Nx3x480x640_rk3568.rknn"
 #endif
 
+    typedef struct {
+        uint64_t prepare_ns, inputs_ns, run_ns, outputs_ns, copy_ns, release_ns;
+    } YOLOTiming;
     // YOLOPv2引擎结构体（支持车道线和可行驶区域）
     typedef struct
     {
@@ -38,6 +41,9 @@ extern "C"
         // 向下一级提供数据缓冲区（用于保存检测结果）。
         float *lane_line_buffer;     // 车道线数据缓冲区
         float *drivable_area_buffer; // 可行驶区域数据缓冲区
+        YOLOTiming timing; // completed call only; monotonic CPU-side wall time
+        unsigned output_mode; // 0 SDK float allocation; 1 float prealloc; 2 native FP16 prealloc
+        uint16_t *native_road, *native_lane;
     } YOLOEngine;
 
     // YOLOPv2检测结果结构（车道线和可行驶区域）
@@ -66,6 +72,8 @@ extern "C"
  * 因此可复用显示掩码而不会伪造新的 NN 结果。 */
     int yolo_overlay_lane_and_drivable(uint8_t *rgb_data, int width, int height,
                                        const yolopv2_result_t *results);
+    int yolo_overlay_lane_and_drivable_roi(uint8_t *rgb_data,int width,int height,
+                                          const yolopv2_result_t *results,int roi_width,int roi_height);
     int yolo_analyze_annotated_curve(const uint8_t *rgb_data, int width, int height,
                                      int lane_pixel_count, YOLOCurveResult *curve);
 

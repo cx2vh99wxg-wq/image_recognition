@@ -15,8 +15,9 @@ class SnapshotRequest
     uint64_t polled_ = 0;
 
   public:
-    void poll(uint64_t now, uint64_t source, uint64_t captured, const uint8_t *rgb, int w, int h,
-              const yolopv2_result_t &mask, const YOLOLineStyleResult &raw,
+    template<class MaskGetter>
+    void poll_lazy(uint64_t now, uint64_t source, uint64_t captured, const uint8_t *rgb, int w, int h,
+              MaskGetter get_mask, const YOLOLineStyleResult &raw,
               const YOLOLineStyleResult &stable)
     {
         if (polled_ && now - polled_ < 1000000000ULL)
@@ -24,6 +25,7 @@ class SnapshotRequest
         polled_ = now;
         if (access("/tmp/m_lane_snapshot.request", F_OK))
             return;
+        const yolopv2_result_t mask=get_mask();
         FILE *f = fopen("/tmp/m_lane_snapshot.ppm.tmp", "wb");
         if (!f)
             return;

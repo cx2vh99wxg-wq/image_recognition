@@ -45,6 +45,9 @@ struct Snapshot
     YOLOLineStyleResult ipm_pair = {};
     PointLanePair ipm_points;
     std::vector<float> lane, drivable;
+    std::shared_ptr<const FrontMaskRestore> restore_map;
+    mutable std::once_flag restored;
+    mutable std::vector<float> restored_lane, restored_road;
 
     bool fresh(uint64_t now) const
     {
@@ -55,8 +58,15 @@ struct Snapshot
         // 旧 C 视图虽然暴露可写指针，纯叠加接口实际上
         // 只读取数据；发布出去的快照本身仍为 const。
         yolopv2_result_t view;
-        view.lane_line_data = const_cast<float *>(lane.data());
-        view.drivable_area_data = const_cast<float *>(drivable.data());
+        if(restore_map){
+            std::call_once(restored,[&]{
+                const size_t n=(size_t)width*height;
+                restored_lane.assign(n,0.f);restored_road.assign(2*n,0.f);
+                restore_map->restore(lane.data(),drivable.data(),restored_lane.data(),restored_road.data());
+            });
+        }
+        view.lane_line_data = const_cast<float *>(restore_map?restored_lane.data():lane.data());
+        view.drivable_area_data = const_cast<float *>(restore_map?restored_road.data():drivable.data());
         view.width = width;
         view.height = height;
         return view;
@@ -67,6 +77,8 @@ struct Totals
 {
     uint64_t calls, successful, fresh_results, stale_results, replaced;
     uint64_t inference_ns, analysis_ns;
+    uint64_t front_ns;
+    YOLOTiming timing;
 };
 
 /* 工作线程独占 RKNN 上下文和缓冲区，
@@ -112,8 +124,12 @@ class LatestWorker
         {
             const size_t pixels = (size_t)width * height;
             front_rgb_.resize(3 * (pixels / 4));
-            raw_lane_.resize(pixels);
-            raw_road_.resize(2 * pixels);
+            if(ipm_test_ && ego_curve_ && use_ipm_heading() &&
+               (!std::getenv("VISION_DIRECT_MASK_IPM") || std::strcmp(std::getenv("VISION_DIRECT_MASK_IPM"),"0"))) {
+                restore_map_=front_input_->mask_restore();
+                if(restore_map_)mask_pull_=ipm_test_->compose_masks_from(*restore_map_);
+            }
+            if(!mask_pull_.enabled()) {raw_lane_.resize(pixels);raw_road_.resize(2*pixels);}
         }
         thread_ = std::thread(&LatestWorker::run, this);
     }
@@ -154,7 +170,8 @@ class LatestWorker
     {
         std::lock_guard<std::mutex> lock(mutex_);
         return {calls_.load(),    successful_.load(),   fresh_.load(),      stale_.load(),
-                replaced_.load(), inference_ns_.load(), analysis_ns_.load()};
+                replaced_.load(), inference_ns_.load(), analysis_ns_.load(),front_ns_.load(),
+                {prepare_ns_.load(),inputs_ns_.load(),run_ns_.load(),outputs_ns_.load(),copy_ns_.load(),release_ns_.load()}};
     }
     void stop()
     {
@@ -194,6 +211,7 @@ class LatestWorker
                 uint64_t start = clock_ns();
                 if (front_input_)
                     front_input_->render(working_pixels_.data(), front_rgb_.data());
+                const uint64_t front_time=clock_ns()-start;
                 int status = yolo_engine_detect(engine_,
                     front_input_ ? front_rgb_.data() : working_pixels_.data(),
                     front_input_ ? width_ / 2 : width_, front_input_ ? height_ / 2 : height_, &raw);
@@ -218,9 +236,16 @@ class LatestWorker
                             front_road.height = raw.height;
                             front_road.source = source;
                             front_road.captured = captured;
-                            front_input_->restore_front_masks(raw.lane_line_data, raw.drivable_area_data,
-                                                              raw_lane_.data(), raw_road_.data());
-                            raw = {raw_lane_.data(), raw_road_.data(), width_, height_};
+                            if(mask_pull_.enabled()){
+                                const size_t n=(size_t)raw.width*raw.height;
+                                result->width=width_;result->height=height_;result->restore_map=restore_map_;
+                                result->lane.assign(raw.lane_line_data,raw.lane_line_data+n);
+                                result->drivable.assign(raw.drivable_area_data,raw.drivable_area_data+2*n);
+                            }else{
+                                front_input_->restore_front_masks(raw.lane_line_data, raw.drivable_area_data,
+                                                                  raw_lane_.data(), raw_road_.data());
+                                raw = {raw_lane_.data(), raw_road_.data(), width_, height_};
+                            }
                         }
                         PointLanePair front_points, style_points;
                         YOLOLineStyleResult observed = {};
@@ -254,9 +279,10 @@ class LatestWorker
                             fp = fopen(path, "wb");
                             if (fp)
                             {
-                                fprintf(fp, "P5\n%d %d\n255\n", raw.width, raw.height);
-                                for (int k = 0; k < raw.width * raw.height; ++k)
-                                    fputc(raw.lane_line_data[k] > .3f ? 255 : 0, fp);
+                                const auto mask=result->restore_map?result->masks():raw;
+                                fprintf(fp, "P5\n%d %d\n255\n", mask.width, mask.height);
+                                for (int k = 0; k < mask.width * mask.height; ++k)
+                                    fputc(mask.lane_line_data[k] > .3f ? 255 : 0, fp);
                                 fclose(fp);
                             }
                             ++dump_count_;
@@ -268,7 +294,9 @@ class LatestWorker
                             const bool log_ipm = !ipm_log_ns_ || now - ipm_log_ns_ >= 1000000000ULL;
                             if (log_ipm)
                                 ipm_log_ns_ = now;
-                            if (ipm_test_->remap_masks(raw.lane_line_data, raw.drivable_area_data,
+                            if (mask_pull_.enabled() ? mask_pull_.remap(raw.lane_line_data,raw.drivable_area_data,
+                                                       raw.width,raw.height,ipm_lane_.data(),ipm_green_.data()) :
+                                ipm_test_->remap_masks(raw.lane_line_data, raw.drivable_area_data,
                                                        raw.width, raw.height, ipm_lane_.data(),
                                                        ipm_green_.data()))
                             {
@@ -310,16 +338,17 @@ class LatestWorker
                                 std::fprintf(stderr, "[IPM_TEST] mask size does not match input\n");
                         }
                         result->line_style = line_analyzer_.confirm(observed, source, captured, line_points);
-                        snapshot_request_.poll(now, source, captured, working_pixels_.data(),
-                                               width_, height_, raw, observed, result->line_style);
+                        snapshot_request_.poll_lazy(now, source, captured, working_pixels_.data(),
+                            width_, height_, [&]{return result->restore_map?result->masks():raw;},
+                            observed, result->line_style);
                         if (!line_log_ns_ || now - line_log_ns_ >= 2000000000ULL)
                         {
-                            float lo = raw.lane_line_data[0], hi = lo;
-                            for (int k = 0; k < raw.width * raw.height; ++k)
-                            {
-                                lo = std::min(lo, raw.lane_line_data[k]);
-                                hi = std::max(hi, raw.lane_line_data[k]);
-                            }
+                            float lo = result->restore_map?0.f:raw.lane_line_data[0], hi = lo;
+                            if(result->restore_map){
+                                for(const auto at:restore_map_->corrected_at_raw)if(at!=UINT32_MAX){
+                                    lo=std::min(lo,raw.lane_line_data[at]);hi=std::max(hi,raw.lane_line_data[at]);}
+                            }else for (int k = 0; k < raw.width * raw.height; ++k) {
+                                lo=std::min(lo,raw.lane_line_data[k]);hi=std::max(hi,raw.lane_line_data[k]);}
                             printf(
                                 "[LINE_STYLE] source=%llu geometry=%s camera=1 left=%s q=%u raw=%s reason=%s duty=%u spans=%u right=%s q=%u raw=%s reason=%s duty=%u spans=%u mask_range=%.3f..%.3f ego_ref=%.1f road=%u objects=%u\n",
                                 (unsigned long long)source, use_ipm_heading() ? "ipm" : "front",
@@ -381,12 +410,12 @@ class LatestWorker
                                 working_pixels_.data(), width_, height_, pixels, &result->curve);
                         if (curve_status == 0)
                         {
-                            result->width = raw.width;
-                            result->height = raw.height;
-                            size_t count = (size_t)raw.width * raw.height;
-                            result->lane.assign(raw.lane_line_data, raw.lane_line_data + count);
-                            result->drivable.assign(raw.drivable_area_data,
-                                                    raw.drivable_area_data + count * 2);
+                            if(!result->restore_map){
+                                result->width = raw.width;result->height = raw.height;
+                                size_t count = (size_t)raw.width * raw.height;
+                                result->lane.assign(raw.lane_line_data, raw.lane_line_data + count);
+                                result->drivable.assign(raw.drivable_area_data,raw.drivable_area_data + count * 2);
+                            }
                             result->valid = true;
                         }
                         analysis_time = clock_ns() - start;
@@ -403,6 +432,10 @@ class LatestWorker
                         return;
                     ++calls_;
                     inference_ns_ += inference_time;
+                    front_ns_ += front_time;
+                    if(status==0 && engine_){const auto &t=engine_->timing;
+                        prepare_ns_+=t.prepare_ns;inputs_ns_+=t.inputs_ns;run_ns_+=t.run_ns;
+                        outputs_ns_+=t.outputs_ns;copy_ns_+=t.copy_ns;release_ns_+=t.release_ns;}
                     analysis_ns_ += analysis_time;
                     if (status == 0)
                     {
@@ -480,6 +513,8 @@ class LatestWorker
     const FrontRadialPreview *front_input_;
     std::vector<uint8_t> front_rgb_;
     std::vector<float> raw_lane_, raw_road_;
+    std::shared_ptr<const FrontMaskRestore> restore_map_;
+    FrontMaskPull mask_pull_;
     std::vector<uint8_t> ipm_rgb_, ipm_green_, ipm_coverage_;
     std::vector<float> ipm_lane_;
     uint64_t ipm_log_ns_ = 0;
@@ -488,6 +523,7 @@ class LatestWorker
     std::atomic<bool> failed_{false};
     std::atomic<uint64_t> calls_{0}, successful_{0}, fresh_{0}, stale_{0}, replaced_{0};
     std::atomic<uint64_t> inference_ns_{0}, analysis_ns_{0};
+    std::atomic<uint64_t> front_ns_{0},prepare_ns_{0},inputs_ns_{0},run_ns_{0},outputs_ns_{0},copy_ns_{0},release_ns_{0};
 };
 }
 #endif

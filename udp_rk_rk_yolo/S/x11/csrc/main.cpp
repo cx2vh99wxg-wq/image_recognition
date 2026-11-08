@@ -1,5 +1,6 @@
 #include "shared_memory.h"
 #include "../../../common/perception/include/curve_heading.h"
+#include "../../../common/display/hdmi_mode_guard.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -1656,6 +1657,7 @@ int render_engine_init(RenderEngine *engine)
     if (!engine)
         return -1;
     memset(engine, 0, sizeof(*engine));
+    vision_display::mode_guard().prepare();
     engine->display = XOpenDisplay(NULL);
     if (!engine->display)
     {
@@ -1681,6 +1683,7 @@ int render_engine_init(RenderEngine *engine)
     XSetWMProtocols(engine->display, engine->window, &engine->wm_delete, 1);
     XSelectInput(engine->display, engine->window,
                  ExposureMask | KeyPressMask | StructureNotifyMask);
+    XSelectInput(engine->display,DefaultRootWindow(engine->display),StructureNotifyMask);
     XSizeHints hints = {};
     hints.flags = PMinSize;
     hints.min_width = 320;
@@ -1765,12 +1768,16 @@ int render_engine_check_exit_event(RenderEngine *engine)
 {
     if (!engine || !engine->is_init)
         return 1;
+    vision_display::mode_guard().poll();
     while (XPending(engine->display))
     {
         XEvent event;
         XNextEvent(engine->display, &event);
         if (consume_shm_completion(engine, &event))
             continue;
+        if(event.type==ConfigureNotify && event.xconfigure.window==DefaultRootWindow(engine->display)){
+            vision_display::mode_guard().changed();continue;
+        }
         // EGL/X11 可能在同一接入上为辅助窗口排入事件；
         // 只有主窗口事件可改变视口大小或关闭呈现器。
         if (event.xany.window != engine->window)

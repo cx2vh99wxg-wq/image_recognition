@@ -310,3 +310,24 @@ build/test_person_road: tests/test_person_road.cpp include/person_road_associati
 	$(CXX) -std=c++11 -O3 -Wall -Wextra -Werror $(INCLUDES) $< -o $@
 test-person-road: build/test_person_road
 	./build/test_person_road
+
+.PHONY: test-fp16-expand test-direct-mask-ipm lane-perf-probe
+build/test_fp16_expand: tests/test_fp16_expand.cpp include/fp16_expand.h
+	@mkdir -p build
+	$(CXX) -std=c++11 -O3 -Wall -Wextra -Werror $(INCLUDES) $< -o $@
+test-fp16-expand: build/test_fp16_expand
+	./build/test_fp16_expand
+build/test_direct_mask_ipm: tests/test_direct_mask_ipm.cpp include/front_mask_map.h include/front_radial_preview.h include/latest_lane_worker.h
+	@mkdir -p build
+	$(CXX) -std=c++11 -O3 -Wall -Wextra -Werror $(INCLUDES) $< -pthread -o $@
+test-direct-mask-ipm: build/test_direct_mask_ipm
+	./build/test_direct_mask_ipm
+build/lane_perf_probe: tools/lane_perf_probe.cpp build/yolo_integration.o $(SHARED_MEMORY_OBJ)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@ $(LIBS) $(LDFLAGS)
+lane-perf-probe: build/lane_perf_probe
+
+.PHONY: test-overlay-roi
+build/test_overlay_roi: tests/test_overlay_roi.cpp build/yolo_integration.o $(SHARED_MEMORY_OBJ)
+	$(CXX) -std=c++11 -O3 -Wall -Wextra -Werror $(INCLUDES) $^ -o $@ $(LIBS) $(LDFLAGS)
+test-overlay-roi: build/test_overlay_roi
+	./build/test_overlay_roi

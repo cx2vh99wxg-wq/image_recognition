@@ -6,9 +6,10 @@
 #include <stdexcept>
 #include <thread>
 static std::atomic<unsigned> in_lane{0};
+static float road_value=7.f;
 extern "C" int yolo_engine_detect(YOLOEngine* e,const uint8_t*,int,int,yolopv2_result_t* r){
     assert(++in_lane==1);std::this_thread::sleep_for(std::chrono::milliseconds(4));
-    static std::vector<float> lane,road;lane.assign(e->model_width*e->model_height,0.f);road.assign(lane.size()*2,7.f);
+    static std::vector<float> lane,road;lane.assign(e->model_width*e->model_height,0.f);road.assign(lane.size()*2,road_value);
     r->lane_line_data=lane.data();r->drivable_area_data=road.data();r->width=e->model_width;r->height=e->model_height;--in_lane;return 0;
 }
 extern "C" int yolo_overlay_lane_and_drivable(uint8_t*,int,int,const yolopv2_result_t*){return 0;}
@@ -29,6 +30,14 @@ struct Optional:traffic::NpuTask {
     }
 };
 static void until(std::function<bool()> test){for(int i=0;i<2000&&!test();++i)std::this_thread::sleep_for(std::chrono::milliseconds(1));assert(test());}
+struct DirectOptional:traffic::NpuTask {
+    m_lane::LatestWorker *owner=nullptr;std::atomic<bool> called{false};
+    void after_lane(const traffic::LaneBudget &b)override{
+        const auto p=owner->latest();assert(p&&p->valid&&p->restore_map);
+        assert(b.front.matches(b.source,b.captured)&&b.front.road[0]==7.f);
+        called=true;
+    }
+};
 int main(){
     // The fake curve below is emitted by the legacy overlay stub only.
     if (setenv("LANE_CURVE_MODE", "legacy", 1) != 0) return 1;
@@ -55,5 +64,24 @@ int main(){
         w.submit(rgb.data(),37,m_lane::clock_ns());until([&]{return task.entered.load();});w.stop();
         assert(!w.failed()&&task.calls==1);
     }
-    puts("NPU SCHEDULING PASS: matched corrected frame/mask, lane result published first, single owner, latest-only pending frame, optional failure does not stop lane");
+    {
+        char directory[]="build/npu-direct-XXXXXX",previous[4096];
+        assert(getcwd(previous,sizeof(previous))&&mkdtemp(directory)&&!chdir(directory));
+        assert(!setenv("LANE_CURVE_MODE","ego-boundaries",1));
+        assert(!setenv("LANE_CANDIDATE_MODE","bottom-up",1));unsetenv("LANE_GROUND_RECT");
+        std::shared_ptr<const m_lane::Snapshot> kept;
+        {
+            m_lane::FrontRadialPreview front(640,480,m_lane::FrontRadial(0),nullptr,true);
+            m_lane::GroundProjection ground(".30,.40,.70,.40,.90,.95,.10,.95,2");
+            m_lane::FrontRadialPreview bird(640,480,m_lane::FrontRadial(0),&ground);
+            DirectOptional task;m_lane::LatestWorker w(&engine,640,480,&task,&bird,&front);task.owner=&w;
+            w.submit(rgb.data(),48,m_lane::clock_ns());until([&]{return task.called.load();});w.stop();
+            kept=w.latest();assert(!w.failed());
+        }
+        road_value=9; yolopv2_result_t newer={};yolo_engine_detect(&engine,rgb.data(),320,240,&newer);
+        auto restored=kept->masks();assert(restored.width==640&&restored.height==480);
+        assert(restored.drivable_area_data[0]==7.f&&restored.drivable_area_data[640*480]==7.f);
+        assert(!chdir(previous)&&!rmdir(directory));
+    }
+    puts("NPU SCHEDULING PASS: direct IPM output ownership after engine/mapper advance, matched frame/mask, lane published first, single owner, latest mailbox, optional failure isolation");
 }
