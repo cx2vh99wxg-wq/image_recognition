@@ -58,3 +58,22 @@ Toolkit2 2.3.2 的自动混合建议在 `IRGraph.expand_batch` 中报 `KeyError(
 所有转换和 NPU 测速均在 M 板 Linux 隔离目录 `/userdata/codex-model-optimization-20261109` 进行，没有使用 Ubuntu 虚拟机、全局安装新依赖或改 FPGA。候选权重未覆盖正式模型。
 
 官方流程参考：[RKNN 混合量化示例](https://github.com/airockchip/rknn-toolkit2/tree/master/rknn-toolkit2/examples/functions/hybrid_quant)。
+
+## TwinLiteNet+ Small / Medium 实际对照
+
+使用作者公开预训练权重，严格加载参数，核对 RGB /255、道路类别 1、车道类别 1。保留同一张校正后的 320×240 输入；分别测试内部 320×240 和上采样到 640×480 的模型，输出都恢复到相同 320×240。车道采用作者两类 argmax 等价的 `p>0.5` 适配，再进入正式 IPM 和选线，未套用 YOLOPv2 的 0.3 门限。
+
+原始 ONNX 能通过 PyTorch / ONNX 数值对照，也能编译 RKNN，但四种模型在板上执行时均在 `caam/gcn/conv1/Conv` 提交失败。板端 Runtime / Toolkit 都为 2.3.2，RKNPU 驱动 0.9.8；没有升级全局环境或驱动。为测试兼容性，把八个区域的批量 MatMul 展成二维 MatMul，把 8×8 的区域混合 1×1 卷积改写为相同权重的 Mul/Add。原网络与改写网络、改写网络与 ONNX 均经过随机输入和两张实际输入数值对照（容差 `4e-4`），然后重新转换并实际执行全部 11 帧。
+
+| 等价改写候选 | 板上单帧中位数 | 留出 10 帧判向与基线一致 | 线型与基线一致 |
+|---|---:|---:|---:|
+| Small，内部 320×240 | 72.06 ms | 0/10 | 0/10 |
+| Medium，内部 320×240 | 114.10 ms | 0/10 | 2/10 |
+| Small，内部 640×480 | 219.73 ms | 3/10 | 3/10 |
+| Medium，内部 640×480 | 381.59 ms | 4/10 | 6/10 |
+
+**四个候选均未达到替换条件，正式模型仍是原 YOLOPv2 FP16。** CPU ONNX 的对应线型正确帧数为 0、1、7、8 /10：小尺寸的退化在 CPU 上也存在；较大尺寸还有明显的 CPU / RKNN 结果差异。因此不能把问题只归因于后处理，也不能把 PyTorch / ONNX 等价当成 RKNN 精度已验收。较大输入不仅没有通过功能回归，速度也低于正式模型。
+
+`export_twin_front.py` 记录源码/权重/ONNX SHA256、输出含义、等价改写选项和数值对照，拒绝覆盖候选。`lane_candidate_probe.cpp --tensor-replay` 可以把 CPU 输出送入相同 IPM / 选线 / 判向程序；该模式报告的推理耗时为 0，真实 CPU 推理须由调用者计时，不能混入 NPU 速度结果。工具不会发布控制结果或自动提升模型。
+
+这些是有限场景的实际否决结果，不是 TwinLiteNet+ 在所有道路上的准确率排名。官方模型及输入处理依据：[TwinLiteNet+](https://github.com/chequanghuy/TwinLiteNetPlus)、[官方加载器](https://github.com/chequanghuy/TwinLiteNetPlus/blob/main/demoDataset.py)。

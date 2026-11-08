@@ -34,11 +34,12 @@ def foot_classes(road):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('directory', type=Path)
+    parser.add_argument('--candidate', action='append', help='Additional saved candidate tag; default: int8 and hybrid2')
     args = parser.parse_args()
     base = args.directory
     report = json.loads((base/'quantization.json').read_text())
     results = {}
-    for candidate in ('int8', 'hybrid2'):
+    for candidate in args.candidate or ('int8', 'hybrid2'):
         if not report.get('conversions', {}).get(candidate, {}).get('success'):
             results[candidate] = dict(available=False)
             continue
