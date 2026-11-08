@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cstdio>
 #include <fstream>
+#include <iomanip>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -36,7 +37,7 @@ int main(int argc,char **argv) {
         const bool floats=std::string(argv[5])=="float";
         rknn_input input={};input.buf=image.data();input.size=image.size();input.type=RKNN_TENSOR_UINT8;input.fmt=RKNN_TENSOR_NHWC;
         std::vector<rknn_output> outputs(io.n_output);
-        std::ofstream meta(std::string(argv[3])+".json");meta<<"{\"outputs\":[";
+        std::ofstream meta(std::string(argv[3])+".json");meta<<std::setprecision(9)<<"{\"outputs\":[";
         for(unsigned i=0;i<io.n_output;++i) {
             rknn_tensor_attr a={};a.index=i;check(rknn_query(ctx,RKNN_QUERY_OUTPUT_ATTR,&a,sizeof a),"output attr");
             if(i)meta<<",";

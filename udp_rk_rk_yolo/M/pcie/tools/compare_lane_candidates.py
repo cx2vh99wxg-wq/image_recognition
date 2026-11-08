@@ -55,10 +55,18 @@ def main():
             ar, br = ar[1] > ar[0], br[1] > br[0]
             af, bf = foot_classes(ar), foot_classes(br)
             before, after = report['fp16'][i], report[candidate][i]
+            valid_before=bool(before['sampled'] and before['confidence'])
+            valid_after=bool(after['sampled'] and after['confidence'])
+            signed=lambda r: -r['angle'] if r['curve']==1 else r['angle'] if r['curve']==2 else 0
             rows.append(dict(scene=case['scene'], held_out=case['scene'] in ('scene2', 'scene3'),
                 lane_iou=overlap(a, b), road_iou=overlap(ar, br),
                 bird_lane_iou=overlap(load('fp16', 'bird_lane')[0] > .3, load(candidate, 'bird_lane')[0] > .3),
                 geometry_equal=all(before[k] == after[k] for k in ('curve', 'confidence', 'angle', 'sampled')),
+                validity_equal=valid_before==valid_after,
+                lost_validity=valid_before and not valid_after,
+                both_valid=valid_before and valid_after,
+                direction_equal=(before['curve']==after['curve']) if valid_before and valid_after else None,
+                angle_error_deg=abs(signed(before)-signed(after)) if valid_before and valid_after else None,
                 marking_equal=all(before[k] == after[k] for k in ('left', 'right')),
                 protected_to_outside=int(np.count_nonzero((af != 0) & (bf == 0))),
                 foot_relation_changes=int(np.count_nonzero(af != bf)),
@@ -70,6 +78,10 @@ def main():
             speedup=statistics.median(r['fp16_ms']/r['candidate_ms'] for r in rows),
             held_out_frames=len(held), geometry_matches=sum(r['geometry_equal'] for r in held),
             marking_matches=sum(r['marking_equal'] for r in held),
+            lost_validity=sum(r['lost_validity'] for r in held),
+            both_valid=sum(r['both_valid'] for r in held),
+            direction_mismatches=sum(r['direction_equal'] is False for r in held),
+            maximum_angle_error_deg=max((r['angle_error_deg'] for r in held if r['both_valid']),default=None),
             minimum_lane_iou=min(r['lane_iou'] for r in held),
             minimum_road_iou=min(r['road_iou'] for r in held),
             protected_to_outside=sum(r['protected_to_outside'] for r in held), rows=rows,

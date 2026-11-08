@@ -8,7 +8,7 @@ def main():
     parser.add_argument('onnx', type=Path)
     parser.add_argument('rknn', type=Path)
     parser.add_argument('--precision', choices=('fp16', 'int8', 'hybrid1', 'hybrid2'), default='fp16')
-    parser.add_argument('--dataset', type=Path, help='Unannotated RGB calibration image list; required for INT8/hybrid1')
+    parser.add_argument('--dataset', type=Path, help='Calibration image list; decoded RGB values must match runtime input order (legacy BGR requires channel-swapped files)')
     parser.add_argument('--hybrid-prefix', type=Path, help='Prefix of Toolkit-generated .model/.data/.quantization.cfg')
     parser.add_argument('--proposal-images', type=int, default=3)
     parser.add_argument('--no-proposal', action='store_true', help='Generate editable hybrid config without automatic precision proposals')

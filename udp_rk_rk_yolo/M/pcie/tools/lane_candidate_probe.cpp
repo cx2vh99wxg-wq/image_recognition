@@ -57,7 +57,10 @@ int main(int argc,char **argv){
         std::vector<double> times;double run=0;
         for(int n=0;n<(tensor_replay?1:repeats+3);++n){
             const auto start=std::chrono::steady_clock::now();
-            if(!tensor_replay && yolo_engine_detect(&engine,input.data(),320,240,&output))throw std::runtime_error("model inference");
+            // Keep the deployed legacy YOLOPv2's BGR contract unchanged.
+            // The author's TwinLiteNet+ expects RGB, including on the NPU.
+            const uint8_t *network_input=twin_softmax?rgb.data():input.data();
+            if(!tensor_replay && yolo_engine_detect(&engine,network_input,320,240,&output))throw std::runtime_error("model inference");
             // Explicit offline adapter: the author's TwinLiteNet+ uses argmax
             // over two logits. Never silently apply YOLOPv2's 0.3 gate to it.
             if(twin_softmax)for(size_t p=0;p<320*240;++p){
@@ -78,8 +81,8 @@ int main(int argc,char **argv){
         const auto curve=m_lane::estimate_ego_curve(points,true);
         save(prefix+".bird_lane.f32",lane.data(),area*sizeof(float));save(prefix+".bird_road.u8",green.data(),area);
         std::sort(times.begin(),times.end());
-        std::printf("CANDIDATE {\"median_ms\":%.4f,\"p95_ms\":%.4f,\"run_ms\":%.4f,\"curve\":%u,\"confidence\":%u,\"angle\":%u,\"left\":%u,\"right\":%u,\"left_reason\":%u,\"right_reason\":%u,\"sampled\":%d,\"left_points\":%zu,\"right_points\":%zu,\"twin_softmax_adapter\":%d,\"tensor_replay\":%d}\n",
-            times[times.size()/2],times[std::min(times.size()-1,size_t(times.size()*.95))],run/repeats,curve.type,curve.confidence,curve.angle,result.left.type,result.right.type,result.left.reason,result.right.reason,points.sampled,points.left.size(),points.right.size(),twin_softmax,tensor_replay);
+        std::printf("CANDIDATE {\"median_ms\":%.4f,\"p95_ms\":%.4f,\"run_ms\":%.4f,\"curve\":%u,\"confidence\":%u,\"angle\":%u,\"left\":%u,\"right\":%u,\"left_reason\":%u,\"right_reason\":%u,\"sampled\":%d,\"left_points\":%zu,\"right_points\":%zu,\"twin_softmax_adapter\":%d,\"tensor_replay\":%d,\"input_order\":\"%s\"}\n",
+            times[times.size()/2],times[std::min(times.size()-1,size_t(times.size()*.95))],run/repeats,curve.type,curve.confidence,curve.angle,result.left.type,result.right.type,result.left.reason,result.right.reason,points.sampled,points.left.size(),points.right.size(),twin_softmax,tensor_replay,tensor_replay?"external":twin_softmax?"RGB":"BGR");
         yolo_engine_cleanup(&engine);return 0;
     }catch(const std::exception &e){std::fprintf(stderr,"%s\n",e.what());yolo_engine_cleanup(&engine);return 1;}
 }
