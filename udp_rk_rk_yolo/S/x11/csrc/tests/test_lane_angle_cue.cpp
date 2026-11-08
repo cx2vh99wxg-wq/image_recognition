@@ -7,6 +7,14 @@
 
 int main(int argc, char **argv)
 {
+    lane_cue::HeadingHistory history={};
+    assert(history.observe(30,false)==0);
+    assert(history.observe(20,true)==20);
+    assert(history.observe(0,false)==20);
+    assert(history.observe(-15,true)==-15);
+    assert(history.observe(50,false)==-15);
+    assert(history.observe(100,true)==-15);
+    assert(history.observe(0,true)==0);
     assert(lane_cue::signed_degrees(1,5)==-5);
     assert(lane_cue::signed_degrees(2,5)==5);
     assert(lane_cue::signed_degrees(0,0)==0);
@@ -78,7 +86,12 @@ int main(int argc, char **argv)
     clear(dashed);lane_cue::draw(dashed.data()+guard,stride,w,h,20,1,1,0,false,false);
     clear(solid);lane_cue::draw(solid.data()+guard,stride,w,h,0,0,0,0,false,false);
     assert(solid[guard+upper*stride+160]==bg);
-    assert(dashed==solid); // unknown direction is always a complete straight gray pair
+    assert(dashed!=solid); // unknown keeps the supplied +20-degree geometry
+    clear(solid);lane_cue::draw(solid.data()+guard,stride,w,h,20,1,1,0,false,true);
+    for(int y=0;y<h;++y)for(int x=0;x<w;++x)
+        assert((solid[guard+y*stride+x]==lane_cue::WHITE)==
+               (dashed[guard+y*stride+x]==lane_cue::UNKNOWN_GRAY));
+    assert(dashed[guard+upper*stride+160]==bg); // stale geometry never gets a green fill
     (void)bg;
     perception_ui::Dashboard dashboard;
     perception_ui::ViewStatus status;

@@ -147,6 +147,7 @@ typedef struct
     int use_gles;
     GlesPresenter *gles;
     VehicleLayerState vehicle_state;
+    lane_cue::HeadingHistory heading_history;
     int vehicle_cached;
     int use_shm_completion, shm_completion_disabled, shm_completion_type, shm_pending;
     unsigned long shm_pending_serial;
@@ -514,6 +515,9 @@ static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::View
 
         }
     }
+    // Unknown changes display color/validity, not the remembered geometry.
+    // Confidence and all control/IPC data retain their actual unknown state.
+    state.signed_angle = engine->heading_history.observe(state.signed_angle,state.confidence>=60);
     state.blocked = lane_cue::warning_sides(status.lane_blocked, state.left_style, state.right_style);
     state.warning_red = state.blocked && (display_clock_ns() / 300000000ULL) % 2;
     if (engine->headless && state.blocked)
@@ -1970,6 +1974,8 @@ static int preview_dashboard(const char *output, const char *input, DisplayMode 
         }
     stbi_image_free(rgb);
     RenderEngine engine = {};
+    if (const char *held = getenv("VISION_PREVIEW_LAST_VALID_ANGLE"))
+        engine.heading_history.observe(atoi(held), true); // offline display-history fixture only
     engine.headless = engine.is_init = engine.preview_recorded = 1;
     engine.pcie_last_seen = engine.udp_last_seen = get_current_time_ms();
     engine.display_buffer = (char *)calloc(1280 * 480, 4);
