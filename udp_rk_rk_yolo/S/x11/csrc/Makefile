@@ -62,8 +62,15 @@ endif
 # 直接调用 make 时采用的入口
 all: $(BIN)
 
+$(BUILD_DIR)/test_dashboard_ui_cache: tests/test_dashboard_ui_cache.cpp include/dashboard_ui.h include/six_camera_render.h include/speed_warning_glyphs.h ../../include/camera_views.h | $(BUILD_DIR)
+	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@
+
+.PHONY: test-dashboard-ui-cache
+test-dashboard-ui-cache: $(BUILD_DIR)/test_dashboard_ui_cache
+	./$(BUILD_DIR)/test_dashboard_ui_cache
+
 $(BUILD_DIR)/test_lane_angle_cue: tests/test_lane_angle_cue.cpp include/lane_angle_cue.h include/dashboard_ui.h | $(BUILD_DIR)
-	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror -Iinclude $< -o $@
+	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@
 
 .PHONY: test-lane-angle
 test-lane-angle: $(BUILD_DIR)/test_lane_angle_cue

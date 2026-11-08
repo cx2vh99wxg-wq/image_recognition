@@ -9,7 +9,13 @@
 #include <vector>
 #include <chrono>
 #include <cstdlib>
+#include <string>
+#include <tuple>
 #include "speed_warning_glyphs.h"
+#include "six_camera_render.h"
+#if defined(__aarch64__)
+#include <arm_neon.h>
+#endif
 
 // 合成器只负责显示，不读取或改变车辆控制状态。
 namespace perception_ui
@@ -77,11 +83,17 @@ class Dashboard
     // 两张输入平面均为 ARGB32，独立车辆平面尺寸是 320x480。
     const uint32_t *compose(const uint32_t *legacy, int legacy_stride, const uint32_t *vehicle,
                             int vehicle_stride, bool overview, float transition_progress,
-                            const char *mode_label, const ViewStatus &status)
+                            const char *mode_label, const ViewStatus &status,bool vehicle_changed=true,
+                            const uint16_t *pcie=nullptr,const uint16_t *udp=nullptr)
     {
         const uint64_t started = compositorClock();
         const bool fast = fastComposition();
-        if (fast)
+        const char *label=safeLabel(mode_label,overview);
+        const bool full_overview=legacy && legacy_stride>=1280 && overview && transition_progress<0;
+        ui_redrawn_=!fast || vehicle_changed || !ui_valid_ || !sameUi(status,ui_status_) ||
+                    ui_label_!=label || ui_overview_!=full_overview ||
+                    ui_vehicle_!=vehicle || ui_vehicle_stride_!=vehicle_stride;
+        if (fast && ui_redrawn_)
         {
             restoreBackground({1110, 44, 438, 70});
             restoreBackground({712, 44, 392, 78});
@@ -93,12 +105,10 @@ class Dashboard
             restoreBackground({0, 808, WIDTH, 72});
             restoreBackground({1188, 230, 412, 500});
         }
-        else
+        else if(!fast)
             std::copy(background_.begin(), background_.end(), frame_.begin());
         const uint64_t copied = compositorClock();
         const Rect video = {72, 224, 1092, 546};
-        const bool full_overview =
-            legacy && legacy_stride >= 1280 && overview && transition_progress < 0;
         // 六个 364x273 小格恰好填满 1092x546 视频区域。
         if (!fast || !full_overview)
             fill(frame_, video.x, video.y, video.w, video.h, 0xFF02060D);
@@ -108,6 +118,9 @@ class Dashboard
         {
             if (overview && transition_progress < 0)
             {
+                if(pcie && udp)
+                    six_camera::dashboard_overview(frame_.data(),WIDTH,video.x,video.y,pcie,udp);
+                else
                 for (int row = 0; row < 2; ++row)
                 {
                     for (int col = 0; col < 3; ++col)
@@ -140,6 +153,12 @@ class Dashboard
         }
 
         const uint64_t video_done = compositorClock();
+        // Video still updates on every frame. Unchanged text, indicators and
+        // vehicle artwork keep their already rendered pixels outside it.
+        if(!ui_redrawn_){
+            reportComposition(started,copied,cleared,video_done,video_done,compositorClock(),fast);
+            return frame_.data();
+        }
         // 保留原车图素材与既有红色告警效果。
         if (vehicle && vehicle_stride >= 320)
         {
@@ -185,7 +204,6 @@ class Dashboard
         const uint64_t car_done = compositorClock();
         drawTraffic(status);
         drawGearStatus(status);
-        const char *label = safeLabel(mode_label, overview);
         text(frame_, 1162 - textWidth(label, 1), 204, label, 1, 0xFFA1C4DA);
         if (overview && transition_progress < 0)
         {
@@ -229,8 +247,11 @@ class Dashboard
         }
         text(frame_, 486, 844, performance, 2, status.recorded ? 0xFFD5B97B : 0xFF93B1CB);
         reportComposition(started, copied, cleared, video_done, car_done, compositorClock(), fast);
+        ui_valid_=true;ui_status_=status;ui_label_=label;ui_overview_=full_overview;
+        ui_vehicle_=vehicle;ui_vehicle_stride_=vehicle_stride;
         return frame_.data();
     }
+    bool uiRedrawn() const { return ui_redrawn_; }
 
   private:
     struct Rect
@@ -247,6 +268,24 @@ class Dashboard
     };
     std::vector<uint32_t> background_;
     std::vector<uint32_t> frame_;
+    bool ui_valid_=false,ui_redrawn_=true,ui_overview_=false;
+    ViewStatus ui_status_;
+    std::string ui_label_;
+    const uint32_t *ui_vehicle_=nullptr;
+    int ui_vehicle_stride_=0;
+    static bool sameUi(const ViewStatus &a,const ViewStatus &b)
+    {
+        // `fps` is diagnostic only. Every field that paints a visible status
+        // remains in this key, including freshness, unknown and alarm states.
+        const auto key=[](const ViewStatus &s){return std::tie(s.pcie_live,s.udp_live,s.person,
+            s.front_person,s.front_person_outside,s.front_road_unknown,s.pcie_fps,s.udp_fps,s.recorded,
+            s.motion,s.lane_blocked,s.line_left,s.line_right,s.line_left_quality,s.line_right_quality,
+            s.line_left_reason,s.line_right_reason,s.line_left_raw,s.line_right_raw,s.lane_angle_valid,
+            s.lane_angle_deg,s.traffic,s.traffic_raw,s.traffic_quality,s.traffic_detector_quality,
+            s.traffic_flags,s.traffic_live,s.go_blocked,s.go_control_live,s.go_write_ok,s.gear,
+            s.gear_known,s.gear_live,s.gear_shifting);};
+        return key(a)==key(b);
+    }
     std::vector<uint8_t> font_atlas_;
     FontMetrics font_metrics_[3] = {};
 
@@ -843,15 +882,30 @@ class Dashboard
         // 不再对每个目标行的每个像素重复计算。
         static thread_local std::vector<int> columns;
         static thread_local int mapped_source_width = 0;
+#if defined(__aarch64__)
+        static thread_local std::vector<int> table_left;
+        static thread_local std::vector<uint8_t> table_indices;
+#endif
         if ((int)columns.size() != width || mapped_source_width != src.w)
         {
             columns.resize(width);
             for (int x = 0; x < width; ++x)
                 columns[x] = std::min(src.w - 1, x * src.w / width);
             mapped_source_width = src.w;
+#if defined(__aarch64__)
+            table_left.assign(width/8,-1);table_indices.resize((width/8)*32);
+            for(int group=0;group<width/8;++group){
+                const int x=group*8,left=std::min(columns[x],src.w-16);
+                if(left<0 || columns[x+7]-left>=16)continue;
+                table_left[group]=left;
+                for(int pixel=0;pixel<8;++pixel)for(int channel=0;channel<4;++channel)
+                    table_indices[group*32+pixel*4+channel]=(columns[x+pixel]-left)*4+channel;
+            }
+#endif
         }
         const bool unclipped =
             left >= 0 && top >= 0 && left + width <= WIDTH && top + height <= HEIGHT;
+        int previous_sy=-1;
         for (int y = 0; y < height; ++y)
         {
             const int sy = src.y + std::min(src.h - 1, y * src.h / height);
@@ -859,12 +913,32 @@ class Dashboard
             if (unclipped)
             {
                 uint32_t *destination = image.data() + (top + y) * WIDTH + left;
-                for (int x = 0; x < width; ++x)
+                if(y && sy==previous_sy){std::copy_n(destination-WIDTH,width,destination);continue;}
+                int x=0;
+#if defined(__aarch64__)
+                for(;x+8<=width;x+=8){
+                    const int group=x/8,source_left=table_left[group];
+                    if(source_left<0){for(int j=0;j<8;++j)destination[x+j]=row[columns[x+j]]|0xff000000u;continue;}
+                    // Gather eight nearest-neighbor pixels from a bounded
+                    // sixteen-pixel table. Loads stay inside this source tile,
+                    // including the final output columns at a camera seam.
+                    const auto *bytes=reinterpret_cast<const uint8_t *>(row+source_left);
+                    uint8x16x4_t table;
+                    for(int lane=0;lane<4;++lane)table.val[lane]=vld1q_u8(bytes+16*lane);
+                    const auto *index=table_indices.data()+group*32;
+                    const auto a=vqtbl4q_u8(table,vld1q_u8(index));
+                    const auto b=vqtbl4q_u8(table,vld1q_u8(index+16));
+                    vst1q_u32(destination+x,vorrq_u32(vreinterpretq_u32_u8(a),vdupq_n_u32(0xff000000u)));
+                    vst1q_u32(destination+x+4,vorrq_u32(vreinterpretq_u32_u8(b),vdupq_n_u32(0xff000000u)));
+                }
+#endif
+                for (; x < width; ++x)
                     destination[x] = row[columns[x]] | 0xFF000000;
             }
             else
                 for (int x = 0; x < width; ++x)
                     pixel(image, left + x, top + y, row[columns[x]]);
+            previous_sy=sy;
         }
     }
 

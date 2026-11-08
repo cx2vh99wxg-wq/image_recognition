@@ -139,6 +139,7 @@ typedef struct
     uint32_t *vehicle_layer;
     int window_width, window_height;
     int fullscreen, needs_redraw, headless;
+    const uint16_t *overview_pcie, *overview_udp; // Borrowed only during the synchronous compose.
     Atom wm_delete;
     DisplayMode presented_mode;
     uint64_t pcie_last_seen, udp_last_seen, last_presented;
@@ -890,6 +891,17 @@ static void prepare_xrender_upload(RenderEngine *engine, const uint32_t *pixels,
         regions.push_back({0, 0, perception_ui::WIDTH, perception_ui::HEIGHT});
         return;
     }
+    if(!engine->dashboard->uiRedrawn())
+    {
+        // Only the six-camera rectangle changed. Do not scan the unchanged
+        // toolbar/vehicle canvas; copy the video once with its exact bounds.
+        const UploadRegion area={72,224,1092,546};
+        for(int y=0;y<area.height;++y)
+            memcpy(image->data+(area.y+y)*image->bytes_per_line+area.x*4,
+                   pixels+(area.y+y)*perception_ui::WIDTH+area.x,area.width*4);
+        regions.push_back(area);
+        return;
+    }
     static const UploadRegion areas[] = {
         {712, 44, 836, 78}, {0, 180, 1600, 44}, {72, 224, 1092, 504},
         {0, 728, 1600, 152}, {1188, 230, 412, 498}};
@@ -1478,7 +1490,7 @@ int present_dashboard(RenderEngine *engine)
     const uint32_t *pixels = engine->dashboard->compose(
         (const uint32_t *)engine->display_buffer, COMBINED_IMAGE_WIDTH, engine->vehicle_layer,
         COMBINED_IMAGE_WIDTH, engine->presented_mode == DISPLAY_MODE_ALL_CAMERAS, progress,
-        mode_label, status);
+        mode_label, status,car_redrawn,engine->overview_pcie,engine->overview_udp);
     uint64_t compose_done = display_clock_ns();
     engine->last_presented = now;
     engine->needs_redraw = 0;
@@ -1755,13 +1767,22 @@ int render_engine_render_camera_view(RenderEngine *engine, const uint8_t *pcie_d
     mode = camera_mode_or_overview(mode);
     engine->presented_mode = mode;
     const CameraView *view = camera_view_for_mode(mode);
-    if (view)
-        six_camera::focus(display_pixels, pcie_pixels, udp_pixels, *view);
-    else
-        six_camera::overview(display_pixels, pcie_pixels, udp_pixels);
+    const bool direct_overview=!view && !engine->headless;
+    engine->overview_pcie=direct_overview?pcie_pixels:nullptr;
+    engine->overview_udp=direct_overview?udp_pixels:nullptr;
+    // Steady overview expands and scales in the dashboard. Focus and the
+    // diagnostic intermediate retain their existing layout/animation path.
+    if(!direct_overview){
+        if (view)
+            six_camera::focus(display_pixels, pcie_pixels, udp_pixels, *view);
+        else
+            six_camera::overview(display_pixels, pcie_pixels, udp_pixels);
+    }
 
     engine->last_layout_ns = display_clock_ns() - layout_started;
-    return present_dashboard(engine);
+    const int result=present_dashboard(engine);
+    engine->overview_pcie=engine->overview_udp=nullptr;
+    return result;
 }
 
 int render_engine_check_exit_event(RenderEngine *engine)
