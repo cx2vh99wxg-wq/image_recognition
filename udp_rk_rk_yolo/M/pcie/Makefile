@@ -326,6 +326,11 @@ build/lane_perf_probe: tools/lane_perf_probe.cpp build/yolo_integration.o $(SHAR
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@ $(LIBS) $(LDFLAGS)
 lane-perf-probe: build/lane_perf_probe
 
+.PHONY: lane-candidate-probe
+build/lane_candidate_probe: tools/lane_candidate_probe.cpp build/yolo_integration.o include/front_radial_preview.h include/ego_lane_selector.h include/lane_paint_evidence.h
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $< build/yolo_integration.o -o $@ $(LIBS) $(LDFLAGS)
+lane-candidate-probe: build/lane_candidate_probe
+
 .PHONY: test-overlay-roi
 build/test_overlay_roi: tests/test_overlay_roi.cpp build/yolo_integration.o $(SHARED_MEMORY_OBJ)
 	$(CXX) -std=c++11 -O3 -Wall -Wextra -Werror $(INCLUDES) $^ -o $@ $(LIBS) $(LDFLAGS)

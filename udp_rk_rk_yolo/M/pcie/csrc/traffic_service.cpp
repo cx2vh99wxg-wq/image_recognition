@@ -32,7 +32,8 @@ struct Service::Impl
 {
     Detector detector;
     PersonRoadAssociation road_association;
-    Admission admission{configured_budget_ms(std::getenv("TRAFFIC_NPU_BUDGET_MS"))};
+    Admission admission{configured_budget_ms(std::getenv("TRAFFIC_NPU_BUDGET_MS")),
+                        configured_locator_interval_ms(std::getenv("TRAFFIC_NPU_INTERVAL_MS"))};
     bool ready = false, enabled = true;
     const InputView view;
     const m_lane::FrontRadialPreview *correction;
@@ -72,8 +73,8 @@ struct Service::Impl
                     error.c_str());
         }
         std::printf(
-            "[TRAFFIC] enabled=%d ready=%d input=%d locator_interval_ms=180 max_NPU_passes=1 color_rate=10Hz budget_ms=%u single_NPU_owner=lane_worker classes=person:0,traffic_light:9 view=full-front control_output=metadata\n",
-            enabled, ready, detector.input_size(), admission.budget_ms());
+            "[TRAFFIC] enabled=%d ready=%d input=%d locator_interval_ms=%u max_NPU_passes=1 color_rate=10Hz budget_ms=%u single_NPU_owner=lane_worker classes=person:0,traffic_light:9 view=full-front control_output=metadata\n",
+            enabled, ready, detector.input_size(), admission.interval_ms(), admission.budget_ms());
         std::printf(
             "[TRAFFIC INPUT] geometry=%s source_rect=%d,%d,320,240 source_order=%s detector_order=RGB\n",
             correction ? "radial-corrected" : "raw", view.x, view.y,

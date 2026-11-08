@@ -444,6 +444,15 @@ class NpuTask
     virtual void after_lane(const LaneBudget &lane) = 0;
 };
 constexpr unsigned default_budget_ms = 60, max_budget_ms = 80;
+constexpr unsigned default_locator_interval_ms = 100;
+
+inline unsigned configured_locator_interval_ms(const char *text)
+{
+    if (!text || *text < '0' || *text > '9')return default_locator_interval_ms;
+    char *end=nullptr;const auto value=std::strtoul(text,&end,10);
+    return !*end && value>=100 && value<=1000 ? static_cast<unsigned>(value)
+                                            : default_locator_interval_ms;
+}
 
 inline unsigned configured_budget_ms(const char *text)
 {
@@ -459,14 +468,17 @@ class Admission
 {
     uint64_t due_ = 0, estimate_ = 30000000ULL;
     unsigned violations_ = 0;
-    unsigned budget_ms_;
+    unsigned budget_ms_, interval_ms_;
 
   public:
-    explicit Admission(unsigned budget_ms = default_budget_ms)
-        : budget_ms_(std::max(default_budget_ms, std::min(max_budget_ms, budget_ms)))
+    explicit Admission(unsigned budget_ms = default_budget_ms,
+                       unsigned interval_ms = default_locator_interval_ms)
+        : budget_ms_(std::max(default_budget_ms, std::min(max_budget_ms, budget_ms))),
+          interval_ms_(std::max(100u,std::min(1000u,interval_ms)))
     {
     }
     unsigned budget_ms() const { return budget_ms_; }
+    unsigned interval_ms() const { return interval_ms_; }
 
     bool allow(const LaneBudget &lane, uint64_t now)
     {
@@ -477,7 +489,10 @@ class Admission
     void completed(uint64_t now, uint64_t duration)
     {
         estimate_ = std::max(duration, (estimate_ * 3 + duration) / 4);
-        due_ = now + 180000000ULL;
+        // Faster lane models must not accidentally reduce detector frequency
+        // by missing a fixed 180ms eligibility window. Keep a bounded 10Hz
+        // maximum, one NPU owner, freshness checks and the original backoff.
+        due_ = now + interval_ms_ * 1000000ULL;
         if (duration > budget_ms_ * 1000000ULL)
         {
             ++violations_;

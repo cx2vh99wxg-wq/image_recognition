@@ -68,7 +68,11 @@ int main(){
     Admission admission;LaneBudget lane;lane.source=1;lane.captured=1000000000ULL;lane.completed=1280000000ULL;lane.duration=280000000ULL;lane.fresh=true;
     assert(admission.allow(lane,1280000000ULL));lane.curve_active=true;assert(admission.allow(lane,1280000000ULL));lane.curve_active=false;
     lane.duration=360000000ULL;assert(!admission.allow(lane,1280000000ULL));lane.duration=280000000ULL;assert(!admission.allow(lane,1400000000ULL));
-    admission.completed(1300000000ULL,20000000ULL);assert(!admission.allow(lane,1300000000ULL));lane.captured=1200000000ULL;assert(!admission.allow(lane,1479999999ULL));assert(admission.allow(lane,1480000000ULL));lane.captured=2200000000ULL;assert(admission.allow(lane,2480000000ULL));
+    admission.completed(1300000000ULL,20000000ULL);assert(!admission.allow(lane,1300000000ULL));lane.captured=1200000000ULL;assert(!admission.allow(lane,1399999999ULL));assert(admission.allow(lane,1400000000ULL));lane.captured=2200000000ULL;assert(admission.allow(lane,2480000000ULL));
+    assert(configured_locator_interval_ms(nullptr)==100&&configured_locator_interval_ms("180")==180);
+    assert(configured_locator_interval_ms("99")==100&&configured_locator_interval_ms("120ms")==100);
+    Admission legacy_interval(60,180);legacy_interval.completed(1300000000ULL,20000000ULL);
+    lane.captured=1200000000ULL;assert(!legacy_interval.allow(lane,1479999999ULL));assert(legacy_interval.allow(lane,1480000000ULL));
     for(int i=0;i<3;++i)admission.completed(3000000000ULL+i*11000000000ULL,90000000ULL);
     lane.captured=50000000000ULL;assert(!admission.allow(lane,50280000000ULL));
     assert(configured_budget_ms(nullptr)==60&&configured_budget_ms("75")==75);
