@@ -20,7 +20,7 @@ inline int signed_degrees(unsigned type, unsigned wire_angle)
 }
 
 constexpr uint32_t WHITE = 0xffffffffu, WARNING_RED = 0xffff3030u, UNKNOWN_GRAY = 0xff7d8696u;
-constexpr double SEAM = .435; // Reference only; no horizontal guide is drawn.
+constexpr double SEAM = .53; // Reference only; no horizontal guide is drawn.
 struct PictureRect { double x, y, width, height; };
 inline PictureRect picture_rect(int width, int height)
 {
@@ -60,6 +60,21 @@ inline void draw(uint32_t *pixels, int stride, int width, int height, int angle,
         const double t = y < seam ? (seam - y) / (seam - top) : 0.;
         const double center = width * .5 + bend * t * t;
         const double half_width = rect.width * (.15 + .27 * depth);
+        // Green corridor only above the reference seam and only for a valid
+        // current heading. Integer alpha blending keeps the underlying artwork.
+        if (angle_known && y < seam)
+        {
+            const int left = std::max(0, (int)std::ceil(center-half_width)+4);
+            const int right = std::min(width-1, (int)std::floor(center+half_width)-4);
+            for (int x=left;x<=right;++x)
+            {
+                const uint32_t old=pixels[y*stride+x];
+                const unsigned r=(((old>>16)&255u)*3u+24u)/4u;
+                const unsigned g=(((old>>8)&255u)*3u+210u)/4u;
+                const unsigned b=((old&255u)*3u+90u)/4u;
+                pixels[y*stride+x]=0xff000000u|(r<<16)|(g<<8)|b;
+            }
+        }
         for (int side = 0; side < 2; ++side)
         {
             const unsigned style = side ? right_style : left_style;
@@ -69,7 +84,7 @@ inline void draw(uint32_t *pixels, int stride, int width, int height, int angle,
                 continue;
             const int x = (int)std::lround(center + (side ? half_width : -half_width));
             const uint32_t color = alarm ? (red_phase ? WARNING_RED : WHITE) : known ? WHITE : UNKNOWN_GRAY;
-            const int radius = alarm ? 4 : 2;
+            const int radius = alarm ? 5 : 3;
             for (int dx = -radius; dx <= radius; ++dx)
                 if (x + dx >= 0 && x + dx < width)
                     pixels[y * stride + x + dx] = color;

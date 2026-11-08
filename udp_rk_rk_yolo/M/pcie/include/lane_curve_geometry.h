@@ -251,13 +251,11 @@ EgoCurve estimate_ego_curve_mapped(const YOLOLineStyleResult &r, Map map, bool g
 class EgoCurveConfirm
 {
     uint64_t last_id_ = 0, last_capture_ = 0;
-    double previous_angle_ = 0.;
-    bool have_previous_ = false;
 
   public:
     EgoCurveConfirm()
     {
-        std::fputs("[CURVE_CONFIRM] ANGLE_PAIR: adjacent signed predictions <= 2.0 deg\n", stderr);
+        std::fputs("[CURVE_CONFIRM] IMMEDIATE: each fresh geometrically valid prediction\n", stderr);
     }
     EgoCurve update(EgoCurve raw, uint64_t id, uint64_t captured)
     {
@@ -267,13 +265,10 @@ class EgoCurveConfirm
             raw.reason = 5;
             return raw;
         }
-        if (last_capture_ && captured - last_capture_ > 500000000ULL)
-            have_previous_ = false;
         last_id_ = id;
         last_capture_ = captured;
         if (raw.confidence < 60 || raw.type > 2)
         {
-            have_previous_ = false;
             raw.confidence = 0;
             return raw;
         }
@@ -282,20 +277,9 @@ class EgoCurveConfirm
                              raw.type == 2 ? (double)raw.angle : 0.;
         if (!std::isfinite(angle) || std::abs(angle) > 90.)
         {
-            have_previous_ = false;
             raw.confidence = 0;
             raw.reason = 8;
             return raw;
-        }
-        // Sliding adjacent pair: even a rejected jump becomes the next baseline.
-        // Duplicated video/display frames never add a second observation.
-        const bool accepted = have_previous_ && std::abs(angle - previous_angle_) <= 2.0 + 1e-9;
-        previous_angle_ = angle;
-        have_previous_ = true;
-        if (!accepted)
-        {
-            raw.confidence = 0;
-            raw.reason = 6;
         }
         return raw;
     }

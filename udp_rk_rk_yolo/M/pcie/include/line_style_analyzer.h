@@ -29,7 +29,6 @@ class LineStyleAnalyzer
     };
     struct Confirm
     {
-        uint32_t candidate = 0, count = 0;
         YOLOLineBoundary stable = {};
         uint32_t width = 0, height = 0, road_area = 0;
         float reference_x = 0, reference_y = 0;
@@ -537,31 +536,17 @@ class LineStyleAnalyzer
             auto &line = *lines[i];
             const auto *points = point_pair ? (i == 0 ? &point_pair->left : &point_pair->right)
                                             : nullptr;
-            if (!raw.width || !raw.height)
+            if (line.type == LINE_SOLID || line.type == LINE_DASHED)
             {
-                // 旧接口调用者没有可供跟踪的本车道归属上下文。
-                if (!line.type)
-                {
-                    c = {};
-                    continue;
-                }
-                if (c.candidate != line.type)
-                {
-                    c.candidate = line.type;
-                    c.count = 0;
-                }
-                if (c.count < 2)
-                    ++c.count;
-                if (c.count < 2)
-                {
-                    line.type = LINE_UNKNOWN;
-                    line.quality = 0;
-                    line.reason = LINE_CONFIRMING;
-                }
-                else
-                    line.evidence_ns = captured;
+                // First valid observation (and a changed type) is effective now.
+                line.evidence_ns = captured;
+                c.stable = line; c.width = raw.width; c.height = raw.height;
+                c.road_area = raw.road_area; c.reference_x = raw.reference_x;
+                c.reference_y = raw.reference_y; c.point_based = points != nullptr;
+                c.points = points ? *points : std::vector<LaneRowPoint>{};
                 continue;
             }
+            // Keep the existing bounded hold only for temporarily missing evidence.
             bool context = c.stable.type && raw.width && raw.width == c.width &&
                            raw.height == c.height && raw.object_count &&
                            c.point_based == (points != nullptr) &&
@@ -604,72 +589,14 @@ class LineStyleAnalyzer
                     geometry = std::abs(a - b) <= raw.width * .1;
                 }
             }
-            uint32_t observed = line.type;
-            bool held =
-                context && geometry && c.stable.evidence_ns && captured >= c.stable.evidence_ns &&
-                captured - c.stable.evidence_ns <= (have_geometry ? 700000000ULL : 400000000ULL);
-            if (!line.type)
+            const bool held = context && geometry && c.stable.evidence_ns &&
+                captured >= c.stable.evidence_ns && captured-c.stable.evidence_ns <=
+                (have_geometry ? 700000000ULL : 400000000ULL);
+            if (held)
             {
-                if (held)
-                {
-                    line = c.stable;
-                    line.reason = LINE_TRACK_HELD;
-                    line.raw_type = LINE_UNKNOWN;
-                    c.candidate = c.stable.type;
-                    c.count = 2;
-                }
-                else
-                {
-                    c = {};
-                    continue;
-                }
+                line=c.stable; line.reason=LINE_TRACK_HELD; line.raw_type=LINE_UNKNOWN;
             }
-            else
-            {
-                if (c.stable.type && (!context || !geometry))
-                {
-                    c = {};
-                    held = false;
-                }
-                if (c.candidate != line.type)
-                {
-                    c.candidate = line.type;
-                    c.count = 0;
-                }
-                if (c.count < 2)
-                    ++c.count;
-                // 线型状态转换需要两个不同 NN 输入；前一边界
-                // 只可在原证据的有限有效期内
-                // 跨过短暂分类分歧，不能因此延长存活时间。
-                if (c.count < 2)
-                {
-                    if (held)
-                    {
-                        line = c.stable;
-                        line.reason = LINE_TRACK_HELD;
-                        line.raw_type = observed;
-                    }
-                    else
-                    {
-                        line.type = LINE_UNKNOWN;
-                        line.quality = 0;
-                        line.reason = LINE_CONFIRMING;
-                        line.evidence_ns = 0;
-                    }
-                }
-                else
-                {
-                    line.evidence_ns = captured;
-                    c.stable = line;
-                    c.width = raw.width;
-                    c.height = raw.height;
-                    c.road_area = raw.road_area;
-                    c.reference_x = raw.reference_x;
-                    c.reference_y = raw.reference_y;
-                    c.point_based = points != nullptr;
-                    c.points = points ? *points : std::vector<LaneRowPoint>{};
-                }
-            }
+            else { c={}; continue; }
             if (line.reason == LINE_TRACK_HELD)
             {
                 unsigned decay = (unsigned)((captured - line.evidence_ns) / 100000000ULL);

@@ -48,11 +48,11 @@ int main() {
     assert(!a.analyze_front_camera(nullptr,640,480,nullptr,640,480).left.type);
     scene(mask,rgb,1,1);std::fill(rgb.begin(),rgb.end(),45);auto shadow=a.analyze(mask.data(),320,240,rgb.data(),320,240);assert(!shadow.left.type&&!shadow.right.type);
     scene(mask,rgb,1,2);auto raw=a.analyze(mask.data(),320,240,rgb.data(),320,240);
-    assert(!a.confirm(raw,1,1000000000).left.type);
+    assert(a.confirm(raw,1,1000000000).left.type==LINE_SOLID);
     assert(!a.confirm(raw,1,1000000000).left.type); // duplicated display is not confirmation
     assert(a.confirm(raw,2,1100000000).left.type==LINE_SOLID);
     assert(a.confirm(raw,3,1200000000).left.type==LINE_SOLID);
-    assert(!a.confirm(raw,4,1800000000).left.type); // capture gap resets temporal state
+    assert(a.confirm(raw,4,1800000000).left.type==LINE_SOLID); // no repeated confirmation after gap
     LineStyleData d={};d.session=9;d.source_id=10;d.left=1;d.right=2;d.left_quality=90;line_set_deadline(&d,1500000000);
     uint8_t wire[line_wire::SIZE];assert(line_wire::encode(wire,d,1100000000));
     line_wire::Receiver receiver;LineStyleData got={};assert(receiver.ingest(wire,sizeof(wire),1100000000,1100000000,got));
@@ -63,7 +63,7 @@ int main() {
     a.confirm({},5,1900000000);auto pending=a.confirm(raw,6,2000000000);
     auto diagnostic=line_result_data(&pending,9,5,1900000000);
     assert(sizeof(LineStyleData)==56&&sizeof(LineStyleSegment)==64);
-    assert((diagnostic.diagnostic&255)==LINE_CONFIRMING);
+    assert(pending.left.type==LINE_SOLID && pending.left.evidence_ns==2000000000);
     assert(((diagnostic.diagnostic>>16)&3)==raw.left.type);
     assert(line_wire::encode(wire,diagnostic,2000000000));
     line_wire::Receiver diagnostic_receiver;

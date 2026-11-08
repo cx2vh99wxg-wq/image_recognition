@@ -1,32 +1,50 @@
 #ifndef FRONT_PERSON_GUARD_H
 #define FRONT_PERSON_GUARD_H
 #include "front_person_ipc.h"
-#include "brake_release_policy.h"
 #include "control_status.h"
 #include "traffic_go_rule.h"
 #define FRONT_GUARD_KEY (0x12345678 + 15)
-/* The same 2s valid-clear policy as the rear detector. Only GO contacts determine
- * forward motion, so forward+left/right are covered; HMI selection is not a gear.
- * The shared STOP request latches only if front danger occurs during forward.
- * The independent GO permission prevents starting forward into a known person.
- * Neither software clear nor AUTO-off performs a hardware STOP REARM. */
+/* Recovery requires confirmed GREEN and three distinct fresh person-inference
+ * results with no person. Repeated UDP/monitor reads never advance the count.
+ * This restores GO permission only; FPGA STOP still requires manual REARM. */
 typedef struct {
-    BrakeReleaseState release;
+    uint32_t session, source_id;
+    uint64_t evidence_deadline;
+    unsigned have_source, clear_count, recovery_pending;
     unsigned raw_request, held_go, auto_enabled;
 } FrontPersonGuard;
 static inline unsigned front_person_guard_observe(FrontPersonGuard *p, const FrontPersonData *d,
                                                    uint64_t now, const ControlSnapshot *snapshot,
-                                                   int snapshot_ok)
+                                                   int snapshot_ok, unsigned color)
 {
     const unsigned valid = d && front_person_fresh(d,now) &&
                            (d->flags & (FRONT_PERSON_VALID|FRONT_PERSON_READY)) == 3;
     const unsigned found = valid && (d->flags & FRONT_PERSON_FOUND);
-    const unsigned required = brake_release_required(&p->release,found,valid,now!=0,now/1000000ULL);
     if (snapshot_ok) p->auto_enabled = (snapshot->gates & GATE_AUTO) != 0;
     const unsigned forward = snapshot_ok && !(snapshot->contacts & CONTACT_GO_N) &&
                               (snapshot->contacts & CONTACT_BACK_N);
-    if (required && (forward || (!snapshot_ok && p->auto_enabled))) p->raw_request = 1;
-    if (!required) p->raw_request = 0;
+    // Require green for recovery after a real person/red/fault stop. Initial
+    // clear road and leaving an already-passed green light must remain usable.
+    if (found || color==TRAFFIC_RED || (!valid && (forward || p->raw_request)))
+        p->recovery_pending=1;
+    const unsigned green_ok=!p->recovery_pending || color==TRAFFIC_GREEN;
+    if (!valid || found || !green_ok) p->clear_count=0;
+    if (valid)
+    {
+        const unsigned changed=!p->have_source || d->session!=p->session;
+        const unsigned newer=changed || (int32_t)(d->source_id-p->source_id)>0;
+        if (changed || (p->evidence_deadline && now>=p->evidence_deadline)) p->clear_count=0;
+        if (newer)
+        {
+            if (!found && green_ok && p->clear_count<3) ++p->clear_count;
+            p->session=d->session; p->source_id=d->source_id; p->have_source=1;
+            p->evidence_deadline=front_person_deadline(d);
+        }
+        else if (d->source_id!=p->source_id) p->clear_count=0;
+    }
+    const unsigned required=!valid || found || !green_ok || p->clear_count<3;
+    if ((!valid || found) && (forward || (!snapshot_ok && p->auto_enabled))) p->raw_request = 1;
+    if (!required) { p->raw_request = 0; p->recovery_pending=0; }
     return required;
 }
 static inline unsigned front_person_guard_permission(const FrontPersonGuard *p, unsigned required,

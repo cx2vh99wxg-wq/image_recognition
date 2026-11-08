@@ -23,6 +23,10 @@ int main(int argc, char **argv)
     const uint32_t bg=0xff080b20;
     const int seam=(int)std::ceil(lane_cue::picture_rect(w,h).y+lane_cue::picture_rect(w,h).height*lane_cue::SEAM);
     clear(solid);lane_cue::draw(solid.data()+guard,stride,w,h,0,1,1);
+    const int upper=(int)((lane_cue::picture_rect(w,h).height*.17+seam)*.5);
+    assert(seam>h*.51 && seam<h*.55); // blue reference is lower than old .435
+    assert(((solid[guard+upper*stride+160]>>8)&255)>((bg>>8)&255));
+    assert(solid[guard+(seam+20)*stride+160]==bg); // no tint below seam
     const auto straight=solid;
     for(int a:{-90,-45,-20,-5,0,5,20,45,90})
     {
@@ -73,6 +77,7 @@ int main(int argc, char **argv)
     assert(gray>1000);
     clear(dashed);lane_cue::draw(dashed.data()+guard,stride,w,h,20,1,1,0,false,false);
     clear(solid);lane_cue::draw(solid.data()+guard,stride,w,h,0,0,0,0,false,false);
+    assert(solid[guard+upper*stride+160]==bg);
     assert(dashed==solid); // unknown direction is always a complete straight gray pair
     (void)bg;
     perception_ui::Dashboard dashboard;

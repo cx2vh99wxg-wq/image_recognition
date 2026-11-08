@@ -10,20 +10,36 @@ int main(){
  wire[28]^=1;assert(!receiver.ingest(wire,sizeof wire,now,now,q));wire[28]^=1;
  assert(!receiver.ingest(wire,sizeof wire-1,now,now,q));assert(!receiver.ingest(wire,sizeof wire,now,now+FRONT_PERSON_TTL_NS,q));
  FrontPersonGuard p={};ControlSnapshot c={};c.contacts=31;c.gates=GATE_AUTO;
- assert(front_person_guard_observe(&p,&d,now,&c,1));assert(!p.raw_request);
+ assert(front_person_guard_observe(&p,&d,now,&c,1,TRAFFIC_GREEN));assert(!p.raw_request);
  assert(front_person_guard_permission(&p,1,TRAFFIC_GO_CLEAR,1)==TRAFFIC_GO_SET); // green cannot release person
  for(unsigned steering:{0u,(unsigned)CONTACT_LEFT_N,(unsigned)CONTACT_RIGHT_N}){
   p=FrontPersonGuard{};c.contacts=31 & ~CONTACT_GO_N & ~steering;
-  assert(front_person_guard_observe(&p,&d,now,&c,1) && p.raw_request); // forward with either turn
+  assert(front_person_guard_observe(&p,&d,now,&c,1,TRAFFIC_GREEN) && p.raw_request); // forward with either turn
  }
- p=FrontPersonGuard{};c.contacts=31 & ~CONTACT_BACK_N;assert(front_person_guard_observe(&p,&d,now,&c,1) && !p.raw_request);
- p.held_go=1;p.raw_request=1;d.flags=3;d.count=0;
- for(int i=0;i<=4;++i){uint64_t t=now+i*500000000ULL;front_person_set_deadline(&d,t+FRONT_PERSON_TTL_NS);
-  unsigned need=front_person_guard_observe(&p,&d,t,&c,1);assert(need==(i<4));}
+ p=FrontPersonGuard{};c.contacts=31 & ~CONTACT_BACK_N;assert(front_person_guard_observe(&p,&d,now,&c,1,TRAFFIC_GREEN) && !p.raw_request);
+ p.held_go=1;p.raw_request=1;p.recovery_pending=1;d.flags=3;d.count=0;
+ for(int i=0;i<3;++i){uint64_t t=now+i*200000000ULL;d.source_id++;front_person_set_deadline(&d,t+FRONT_PERSON_TTL_NS);
+  unsigned need=front_person_guard_observe(&p,&d,t,&c,1,TRAFFIC_GREEN);assert(need==(i<2));
+  unsigned count=p.clear_count;front_person_guard_observe(&p,&d,t,&c,1,TRAFFIC_GREEN);assert(p.clear_count==count);}
  assert(!p.raw_request);assert(front_person_guard_permission(&p,0,TRAFFIC_GO_SET,1)==TRAFFIC_GO_SET); // person clear cannot release red
  assert(front_person_guard_permission(&p,0,0,0)==TRAFFIC_GO_CLEAR);
- front_person_set_deadline(&d,now);assert(front_person_guard_observe(&p,&d,now,&c,0) && p.raw_request); // AUTO link failure never means clear
+ front_person_set_deadline(&d,now);assert(front_person_guard_observe(&p,&d,now,&c,0,TRAFFIC_GREEN) && p.raw_request); // AUTO link failure never means clear
+ p=FrontPersonGuard{};c.gates=GATE_AUTO;c.contacts=31 & ~CONTACT_GO_N;d.flags=3;d.count=0;
+ front_person_set_deadline(&d,now+FRONT_PERSON_TTL_NS);
+ assert(front_person_guard_observe(&p,&d,now,&c,1,TRAFFIC_RED));
+ assert(!p.raw_request); // red light permission alone must not create a new person STOP
+ for(int i=0;i<2;++i){++d.source_id;front_person_guard_observe(&p,&d,now,&c,1,TRAFFIC_GREEN);}
+ assert(p.clear_count==2);front_person_guard_observe(&p,&d,now,&c,1,TRAFFIC_UNKNOWN);
+ assert(p.clear_count==0);
  p=FrontPersonGuard{};c.gates=0;c.contacts=31;front_person_set_deadline(&d,now+FRONT_PERSON_TTL_NS);
- assert(front_person_guard_observe(&p,&d,now,&c,1));assert(front_person_guard_permission(&p,1,0,0)==0); // preserves FPGA AUTO switch
- puts("FRONT PERSON POLICY/WIRE PASS: corruption/expiry/duplicate, forward+both turns, reverse, 2s valid clear, independent red hold, AUTO and failures");
+ assert(front_person_guard_observe(&p,&d,now,&c,1,TRAFFIC_GREEN));assert(front_person_guard_permission(&p,1,0,0)==0); // preserves FPGA AUTO switch
+ p=FrontPersonGuard{};c.gates=GATE_AUTO;c.contacts=31;d.flags=3;d.count=0;
+ for(int i=0;i<3;++i){++d.source_id;front_person_set_deadline(&d,now+FRONT_PERSON_TTL_NS);
+   front_person_guard_observe(&p,&d,now,&c,1,TRAFFIC_UNKNOWN);}
+ assert(p.clear_count==3 && !front_person_guard_observe(&p,&d,now,&c,1,TRAFFIC_UNKNOWN));
+ p.recovery_pending=1;p.clear_count=0;
+ for(int i=0;i<3;++i){++d.source_id;front_person_guard_observe(&p,&d,now,&c,1,TRAFFIC_GREEN);}
+ assert(!p.recovery_pending);++d.source_id;
+ assert(!front_person_guard_observe(&p,&d,now,&c,1,TRAFFIC_UNKNOWN)); // green leaves camera after release
+ puts("FRONT PERSON POLICY/WIRE PASS: corruption/expiry/duplicate, forward+both turns, reverse, three distinct green/no-person results, independent red hold, AUTO and failures");
 }

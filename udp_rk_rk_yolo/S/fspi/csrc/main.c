@@ -81,7 +81,7 @@ static int front_guard_initialized = 0;
 static unsigned front_required = 1;
 static FrontPersonData front_result;
 static int front_snapshot_ok = 0;
-static void monitor_front_person(uint64_t now)
+static void monitor_front_person(uint64_t now, unsigned color)
 {
     front_guard_open(&front_guard_ipc, 1);
     if (!front_guard_initialized)
@@ -91,16 +91,18 @@ static void monitor_front_person(uint64_t now)
         {
             front_guard.held_go = !!old.blocked;
             front_guard.raw_request = !!old.raw_request;
+            front_guard.recovery_pending = !!old.raw_request || !!old.blocked;
             front_guard.auto_enabled = !!old.auto_enabled;
         }
         front_guard_initialized = 1;
     }
+    if (traffic_policy.blocked) front_guard.recovery_pending=1;
     front_person_ipc_open(&front_input, 0);
     memset(&front_result,0,sizeof(front_result));
     if (front_person_ipc_read(&front_input,&front_result)) memset(&front_result,0,sizeof(front_result));
     ControlSnapshot snapshot = {0};
     front_snapshot_ok = fspi_read_control_snapshot(&snapshot) == 0;
-    front_required = front_person_guard_observe(&front_guard,&front_result,now,&snapshot,front_snapshot_ok);
+    front_required = front_person_guard_observe(&front_guard,&front_result,now,&snapshot,front_snapshot_ok,color);
 }
 
 static SpeedWarningIPC speed_warning = {-1, NULL};
@@ -165,7 +167,10 @@ static void monitor_lane_rule(void)
     unsigned color = signal_valid ? traffic_go_color(&signal, now) : TRAFFIC_UNKNOWN;
     unsigned traffic_command = traffic_go_prepare(&traffic_policy, color);
     // Sample contacts BEFORE inhibiting GO; left/right do not hide forward motion.
-    monitor_front_person(now);
+    monitor_front_person(now,color);
+    // Green alone cannot clear an existing red hold before three fresh no-person results.
+    if (traffic_command==TRAFFIC_GO_CLEAR && front_required && traffic_policy.blocked)
+        traffic_command=TRAFFIC_GO_SET;
     unsigned permission = front_person_guard_permission(&front_guard,front_required,
                                                         traffic_command,traffic_policy.blocked);
     // 写未成功后继续重试同一个待发出心跳值；若未成功时仍推进，
@@ -190,9 +195,9 @@ static void monitor_lane_rule(void)
                       (front_guard.held_go?4:0) | (front_status.valid?8:0);
     if (front_state != previous_front)
     {
-        printf("[FRONT_PERSON] detected=%u valid=%u auto=%u forward_hold=%u raw_stop=%u read_ok=%d reg5_write=%d\n",
+        printf("[FRONT_PERSON] detected=%u valid=%u auto=%u forward_hold=%u raw_stop=%u read_ok=%d reg5_write=%d clear_count=%u\n",
                !!front_status.person,front_status.valid,front_guard.auto_enabled,
-               front_guard.held_go,front_guard.raw_request,front_snapshot_ok,written);
+               front_guard.held_go,front_guard.raw_request,front_snapshot_ok,written,front_guard.clear_count);
         previous_front=front_state;
     }
     TrafficGoData go_status = {0};

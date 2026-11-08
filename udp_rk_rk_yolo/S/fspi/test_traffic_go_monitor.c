@@ -83,6 +83,13 @@ static void publish(unsigned color,int fresh,int confirmed) {
     TrafficLightIPC p={3,&signal_segment};traffic_ipc_write(&p,&d);
 }
 static TrafficGoData poll(void) {
+    if (!control_reply_enabled) {
+        FrontPersonData d={0};d.session=999;d.source_id=++writes;d.flags=3;
+        front_person_set_deadline(&d,front_person_clock_ns()+FRONT_PERSON_TTL_NS);
+        FrontPersonIPC fp={6,&front_segment};front_person_ipc_write(&fp,&d);
+        front_guard.session=999;front_guard.source_id=d.source_id-1;front_guard.have_source=1;
+        front_guard.clear_count=3;
+    }
     lane_last_poll=0;monitor_lane_rule();
     TrafficGoData d={0};assert(!traffic_go_read(&traffic_warning,&d));return d;
 }
@@ -122,18 +129,22 @@ int main(void) {
     assert(after.gear==1&&after.link_ok);
     control_reply_enabled=1; contact_reply=31 & ~CONTACT_GO_N & ~CONTACT_LEFT_N;
     publish_front(1);publish(TRAFFIC_GREEN,1,1);poll();
-    assert(!traffic_policy.blocked && front_guard.raw_request && front_guard.held_go && (last_permission&4));
+    assert(traffic_policy.blocked && front_guard.raw_request && front_guard.held_go && (last_permission&4)); // person blocks green release
     // Actual production STOP monitor, still with process-local IPC/SPI substitutes.
     EmergencyBrakeSharedMemory rear={0};rear.frame_count=rear.valid=1;rear.brake_enable=1;
     rear.last_update=(uint32_t)(line_clock_ns()/1000000000ULL);emergency_brake_shm=&rear;
     last_brake_value=1;monitor_emergency_brake();assert(last_stop==0);
     // Once GO is inhibited its contact is high, but the front stop request stays latched.
     contact_reply=31;poll();assert(front_guard.raw_request);
-    publish_front(0);front_guard.release.clear_pending=1;
-    front_guard.release.clear_since_ms=line_clock_ns()/1000000ULL-2100;
-    publish(TRAFFIC_RED,1,1);poll();assert(!front_guard.raw_request && (last_permission&4));
+    publish_front(0);poll();assert(front_guard.clear_count==1 && front_guard.raw_request);
+    poll();poll();assert(front_guard.clear_count==1 && front_guard.raw_request);
+    publish_front(0);poll();assert(front_guard.clear_count==2 && front_guard.raw_request);
+    publish_front(0);poll();assert(!front_guard.raw_request && (last_permission&8));
+    publish(TRAFFIC_RED,1,1);poll();assert(last_permission&4);
     monitor_emergency_brake();assert(last_stop==1 && traffic_policy.blocked);
-    publish(TRAFFIC_GREEN,1,1);poll();assert(!traffic_policy.blocked && (last_permission&8));
+    publish(TRAFFIC_GREEN,1,1);poll();assert(traffic_policy.blocked);
+    for(int i=0;i<3;i++){publish_front(0);poll();}
+    assert(!traffic_policy.blocked && (last_permission&8));
     // Reverse alone does not create a front STOP, while GO remains denied under AUTO.
     publish_front(1);contact_reply=31 & ~CONTACT_BACK_N;poll();
     assert(!front_guard.raw_request && (last_permission&4));
