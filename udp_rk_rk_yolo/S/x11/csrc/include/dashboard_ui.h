@@ -34,6 +34,7 @@ struct ViewStatus
     bool pcie_live = false;
     bool udp_live = false;
     bool person = false;
+    bool front_person = false;
     float fps = 0;      // 该统计供渲染诊断，不作为视频帧率显示。
     float pcie_fps = 0; // S 完整视频输入速率按 frame_id 增量计算。
     float udp_fps = 0;  // M 视频在 S 端完整到达的速率按 frame_id 增量计算。
@@ -198,7 +199,8 @@ class Dashboard
         const uint32_t alert = status.person || status.go_blocked ? 0xFFFF748C : 0xFF6BDBE7;
         fillChamfer(frame_, {1240, 744, 292, 30}, 7,
                     status.person || status.go_blocked ? 0xFF281321 : 0xFF0A1B2A);
-        const char *detection = status.person       ? "PERSON DETECTED"
+        const char *detection = status.front_person ? "FRONT PERSON"
+                                : status.person       ? "PERSON DETECTED"
                                 : status.go_blocked ? "RED LIGHT / GO HOLD"
                                                     : "VISION MONITOR";
         centeredText(frame_, detection, {1240, 744, 292, 30}, 2, alert);

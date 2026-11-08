@@ -40,7 +40,7 @@ static inline uint8_t control_crc_byte(uint8_t crc, uint8_t value)
 }
 static inline int control_decode_packet(const uint8_t b[8], ControlSnapshot *out)
 {
-    ControlSnapshot s = {0};
+    ControlSnapshot s = {{0,0,0,0},0,0,0};
     if (speed_decode_packet(b, &s.speed) || b[4] != 0xd7 ||
         b[7] != control_crc_byte(control_crc_byte(control_crc_byte(0, b[4]), b[5]), b[6]))
         return -1;

@@ -1,4 +1,5 @@
 #include "traffic_detector.h"
+#include "front_person.h"
 #include "rknn_api.h"
 #include <chrono>
 #include <cstring>
@@ -111,9 +112,10 @@ bool Detector::init(const char *path, std::string *error)
     return true;
 }
 bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<Box> &boxes,
-                      std::string *error, unsigned budget_ms)
+                      std::string *error, unsigned budget_ms, PersonResult *persons)
 {
     boxes.clear();
+    if (persons) *persons = PersonResult{};
     auto &p = *impl_;
     if (!p.context || !rgb || w < 1 || h < 1 || stride < w * 3)
         return fail(error, "invalid traffic input");
@@ -121,7 +123,9 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
     // Round-robin views on fresh frames; one NPU pass never delays the next
     // lane job by a three-scale burst. Keep a successful view for tracking.
     const float views[] = {1.f, .5f, .25f};
-    const unsigned view_id = p.hits ? p.locked_view : p.view_cursor++ % 3;
+    // Shared person+signal service always covers the full corrected front image.
+    // Tiny padded views are retained only for the traffic-only offline probes.
+    const unsigned view_id = persons ? 0 : p.hits ? p.locked_view : p.view_cursor++ % 3;
     (void)budget_ms; // Admission still measures the whole call and backs off overruns.
     {
         const float view = views[view_id];
@@ -204,14 +208,18 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                     {
                         int pos = y * gw + x, base = anchor * 85;
                         float obj = at(base + 4, pos), cls = at(base + 5 + 9, pos);
+                        const float person_cls = persons ? at(base + 5, pos) : 0.f;
                         if (!std::isfinite(obj) || !std::isfinite(cls) || obj < -.01f ||
-                            obj > 1.02f || cls < -.01f || cls > 1.02f)
+                            obj > 1.02f || cls < -.01f || cls > 1.02f ||
+                            !std::isfinite(person_cls) || person_cls < -.01f || person_cls > 1.02f)
                         {
                             valid = false;
                             break;
                         }
                         float score = obj * cls;
-                        if (score < locator_score_gate)
+                        const float person_score = obj * person_cls;
+                        if (score < locator_score_gate &&
+                            (!persons || person_score < FRONT_PERSON_CONFIDENCE_THRESHOLD))
                             continue;
                         float dx = at(base, pos), dy = at(base + 1, pos), dw = at(base + 2, pos),
                               dh = at(base + 3, pos);
@@ -227,7 +235,24 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                                         ((2 * dy - .5f + y) * stride_model - bh / 2 - py) / scale,
                                         bw / scale, bh / scale, score),
                                     w, h);
-                        if (b.w >= 3 && b.h >= 4 && b.y + b.h * .5 < h * .88)
+                        bool person_top = persons && person_score >= FRONT_PERSON_CONFIDENCE_THRESHOLD;
+                        // Match S: class 0 must be the highest-scoring COCO class,
+                        // rather than a low secondary score on another object.
+                        for (int id=1;person_top && id<80;++id)
+                        {
+                            const float other=at(base+5+id,pos);
+                            if (!std::isfinite(other)) { valid=false; person_top=false; break; }
+                            if (other>person_cls) person_top=false;
+                        }
+                        // Person safety examines every threshold-passing class-0 anchor,
+                        // independent of signal housing/color/ROI and display limits.
+                        if (person_top && b.w > 0 && b.h > 0)
+                        {
+                            ++persons->count;
+                            if (person_score > persons->best.score)
+                            { persons->best = b; persons->best.score = person_score; }
+                        }
+                        if (score >= locator_score_gate && b.w >= 3 && b.h >= 4 && b.y + b.h * .5 < h * .88)
                             pass_candidates.push_back(b);
                     }
         }

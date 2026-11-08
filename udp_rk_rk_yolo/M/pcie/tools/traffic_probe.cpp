@@ -38,11 +38,14 @@ int main(int argc, char **argv)
     int repeats = argc == 4 ? std::max(1, std::min(50, atoi(argv[3]))) : 1;
     double elapsed = 0;
     std::vector<traffic::Box> boxes;
+    traffic::PersonResult people;
+    const bool person_mode = std::getenv("TRAFFIC_PROBE_PERSON") != nullptr;
     for (int n = 0; n < repeats; ++n)
     {
         auto begin = std::chrono::steady_clock::now();
         if (!detector.detect(rgb.data(), w, h, w * 3, boxes, &error,
-                             traffic::configured_budget_ms(std::getenv("TRAFFIC_NPU_BUDGET_MS"))))
+                             traffic::configured_budget_ms(std::getenv("TRAFFIC_NPU_BUDGET_MS")),
+                             person_mode ? &people : nullptr))
         {
             fprintf(stderr, "%s\n", error.c_str());
             return 1;
@@ -65,6 +68,6 @@ int main(int argc, char **argv)
             "{\"xywh\":[%.3f,%.3f,%.3f,%.3f],\"score\":%.6f,\"color\":\"%s\",\"quality\":%u,\"reason\":%u}",
             b.x, b.y, b.w, b.h, b.score, traffic_state_name(c.state), c.quality, c.reason);
     }
-    puts("]}");
+    printf("],\"person_candidates\":%u,\"person_score\":%.6f}\n", people.count, people.best.score);
     return 0;
 }

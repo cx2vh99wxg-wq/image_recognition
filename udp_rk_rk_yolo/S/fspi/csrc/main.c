@@ -26,6 +26,7 @@
 #include "../include/shared_memory.h"
 #include "lane_rule.h"
 #include "traffic_go_rule.h"
+#include "front_person_guard.h"
 #include "steering_runtime.h"
 #include "../../../common/perception/include/curve_heading.h"
 #include <stdio.h>
@@ -73,6 +74,35 @@ static TrafficLightIPC traffic_input = {-1, NULL};
 static TrafficGoIPC traffic_warning = {-1, NULL};
 static TrafficGoPolicy traffic_policy = {0};
 static int traffic_policy_initialized = 0;
+static FrontPersonIPC front_input = {-1, NULL};
+static FrontGuardIPC front_guard_ipc = {-1, NULL};
+static FrontPersonGuard front_guard = {0};
+static int front_guard_initialized = 0;
+static unsigned front_required = 1;
+static FrontPersonData front_result;
+static int front_snapshot_ok = 0;
+static void monitor_front_person(uint64_t now)
+{
+    front_guard_open(&front_guard_ipc, 1);
+    if (!front_guard_initialized)
+    {
+        FrontGuardData old = {0};
+        if (!front_guard_read(&front_guard_ipc, &old))
+        {
+            front_guard.held_go = !!old.blocked;
+            front_guard.raw_request = !!old.raw_request;
+            front_guard.auto_enabled = !!old.auto_enabled;
+        }
+        front_guard_initialized = 1;
+    }
+    front_person_ipc_open(&front_input, 0);
+    memset(&front_result,0,sizeof(front_result));
+    if (front_person_ipc_read(&front_input,&front_result)) memset(&front_result,0,sizeof(front_result));
+    ControlSnapshot snapshot = {0};
+    front_snapshot_ok = fspi_read_control_snapshot(&snapshot) == 0;
+    front_required = front_person_guard_observe(&front_guard,&front_result,now,&snapshot,front_snapshot_ok);
+}
+
 static SpeedWarningIPC speed_warning = {-1, NULL};
 static void monitor_speed_warning(uint64_t now)
 {
@@ -134,14 +164,37 @@ static void monitor_lane_rule(void)
     int signal_valid = !traffic_ipc_read(&traffic_input, &signal) && traffic_fresh(&signal, now);
     unsigned color = signal_valid ? traffic_go_color(&signal, now) : TRAFFIC_UNKNOWN;
     unsigned traffic_command = traffic_go_prepare(&traffic_policy, color);
+    // Sample contacts BEFORE inhibiting GO; left/right do not hide forward motion.
+    monitor_front_person(now);
+    unsigned permission = front_person_guard_permission(&front_guard,front_required,
+                                                        traffic_command,traffic_policy.blocked);
     // 写未成功后继续重试同一个待发出心跳值；若未成功时仍推进，
     // 下一次已完成写入的值可能被 FPGA 当作旧心跳。
     uint8_t next_heartbeat = lane_heartbeat ^ 0x80;
     int written =
-        fspi_write_data(5, (uint8_t)(0x40 | next_heartbeat | denied | traffic_command)) == 0;
+        fspi_write_data(5, (uint8_t)(0x40 | next_heartbeat | denied | permission)) == 0;
     if (written)
         lane_heartbeat = next_heartbeat;
     traffic_go_commit(&traffic_policy, traffic_command, written);
+    if (written) front_guard.held_go = front_guard.auto_enabled && front_required;
+    FrontGuardData front_status = {0};
+    front_status.blocked = front_guard.held_go;
+    front_status.raw_request = front_guard.raw_request;
+    front_status.auto_enabled = front_guard.auto_enabled; front_status.link_ok = front_snapshot_ok;
+    front_status.person = front_person_fresh(&front_result,now) && (front_result.flags & FRONT_PERSON_FOUND);
+    front_status.valid = front_person_fresh(&front_result,now) && ((front_result.flags & 3)==3);
+    front_guard_set_deadline(&front_status,now+400000000ULL);
+    front_guard_write(&front_guard_ipc,&front_status);
+    static int previous_front = -1;
+    int front_state = (front_status.person?1:0) | (front_guard.raw_request?2:0) |
+                      (front_guard.held_go?4:0) | (front_status.valid?8:0);
+    if (front_state != previous_front)
+    {
+        printf("[FRONT_PERSON] detected=%u valid=%u auto=%u forward_hold=%u raw_stop=%u read_ok=%d reg5_write=%d\n",
+               !!front_status.person,front_status.valid,front_guard.auto_enabled,
+               front_guard.held_go,front_guard.raw_request,front_snapshot_ok,written);
+        previous_front=front_state;
+    }
     TrafficGoData go_status = {0};
     go_status.blocked = traffic_policy.blocked;
     go_status.write_ok = written;
@@ -225,12 +278,14 @@ static int monitor_emergency_brake(void)
 
     int required = brake_required(1, status_valid && clock_ok, person_detected, brake_enable,
                                   last_update, now);
+    required = required || front_guard.raw_request;
 
     enum
     {
         DETECTOR_UNAVAILABLE,
         DETECTOR_STALE,
         PERSON_REQUEST,
+        FRONT_PERSON_REQUEST,
         HOLD_OR_INFERENCE_FAULT,
         CLEAR_REQUEST,
         DIRECTION_WRITE_FAULT
@@ -240,6 +295,7 @@ static int monitor_emergency_brake(void)
                     now - last_update >= BRAKE_STATUS_TIMEOUT_SECONDS)
                      ? DETECTOR_STALE
                  : person_detected   ? PERSON_REQUEST
+                 : front_guard.raw_request ? FRONT_PERSON_REQUEST
                  : brake_enable == 0 ? HOLD_OR_INFERENCE_FAULT
                                      : CLEAR_REQUEST;
     static int previous_reason = -1;
@@ -281,7 +337,7 @@ static int monitor_emergency_brake(void)
     if (reason != previous_reason)
     {
         const char *names[] = {"检测段/首帧/时钟不可用", "检测数据超时",
-                               "有效person请求",         "无人确认期或推理故障（详见PCIe日志）",
+                               "有效person请求", "前方行人/通路故障，前进刹停请求", "无人确认期或推理故障（详见PCIe日志）",
                                "有效无人、请求清除",     "方向寄存器写入故障"};
         printf(
             "[自动刹停链路] %s: valid=%d person=%d brake_enable=%d raw_request=%d -> reg4=%d；AUTO及实际STOP锁存由FPGA决定\n",

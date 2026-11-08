@@ -28,6 +28,7 @@
 #include "video_input_fps.h"
 #include "line_style_ipc.h"
 #include "traffic_light_ipc.h"
+#include "front_person_ipc.h"
 #include "traffic_go_rule.h"
 #include "speed_status.h"
 #include "six_camera_render.h"
@@ -96,7 +97,7 @@ struct VehicleLayerState
 {
     const uint32_t *artwork;
     uint64_t artwork_revision;
-    int person, box_left, box_top, box_right, box_bottom, blink;
+    int person, front_person, box_left, box_top, box_right, box_bottom, blink;
     CurveType curve;
     uint32_t confidence;
     int signed_angle;
@@ -105,7 +106,7 @@ struct VehicleLayerState
     bool operator==(const VehicleLayerState &other) const
     {
         return artwork == other.artwork && artwork_revision == other.artwork_revision &&
-               person == other.person && box_left == other.box_left && box_top == other.box_top &&
+               person == other.person && front_person == other.front_person && box_left == other.box_left && box_top == other.box_top &&
                box_right == other.box_right && box_bottom == other.box_bottom &&
                blink == other.blink && curve == other.curve && confidence == other.confidence &&
                signed_angle == other.signed_angle && left_style == other.left_style &&
@@ -496,6 +497,8 @@ static VehicleLayerState snapshot_vehicle_state()
 static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::ViewStatus &status)
 {
     VehicleLayerState state = snapshot_vehicle_state();
+    state.front_person = status.front_person;
+    if (state.front_person) state.blink = blink_state;
     state.left_style = status.line_left;
     state.right_style = status.line_right;
     // Offline preview only: no IPC writes and no vehicle/control processes.
@@ -535,6 +538,8 @@ static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::View
         int y = edge == 3 ? 480 : (int)(position * 480);
         vehicle_artwork::person_glow(engine->vehicle_layer, COMBINED_IMAGE_WIDTH, x, y, state.blink);
     }
+    if (state.front_person)
+        vehicle_artwork::person_glow(engine->vehicle_layer, COMBINED_IMAGE_WIDTH, 160, 0, state.blink);
     draw_lane_lines(engine->vehicle_layer, 0, 0, 320, 480, state);
     engine->vehicle_state = state;
     engine->vehicle_cached = 1;
@@ -1268,6 +1273,12 @@ int present_dashboard(RenderEngine *engine)
         engine->udp_last_seen && now >= engine->udp_last_seen && now - engine->udp_last_seen < 2000;
     status.person =
         emergency_brake_shm && emergency_brake_shm->valid && emergency_brake_shm->person_detected;
+    static FrontPersonIPC front_ipc = {-1, nullptr};
+    FrontPersonData front = {};
+    if (!engine->headless && !front_person_ipc_open(&front_ipc,0) && !front_person_ipc_read(&front_ipc,&front))
+        status.front_person = front_person_fresh(&front,display_clock_ns()) &&
+                              (front.flags & (FRONT_PERSON_VALID|FRONT_PERSON_FOUND)) == 5;
+    status.person = status.person || status.front_person;
     status.motion = preview_motion;
     if (!status.recorded)
     {

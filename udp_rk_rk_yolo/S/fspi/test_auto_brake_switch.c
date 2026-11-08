@@ -84,6 +84,7 @@ int test_spi_ioctl(int fd, unsigned long request, ...)
         struct spi_ioc_transfer *tr = argument;
         const uint8_t *command = (const uint8_t *)(uintptr_t)tr->tx_buf;
         if(!command && tr->rx_buf) {
+            if(tr->len==8){memset((void*)(uintptr_t)tr->rx_buf,0,8);return 8;}
             if(tr->len==4){memset((void*)(uintptr_t)tr->rx_buf,0,4);return 4;} // 旧 FPGA 不提供可用档位信息。
             expect(tr->len==1 && tr->rx_nbits==4,"lane snapshot is RX-only HMI");
             *(uint8_t *)(uintptr_t)tr->rx_buf=0;

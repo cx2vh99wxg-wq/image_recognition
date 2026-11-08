@@ -9,25 +9,28 @@
   "classes": 80,
   "selected_class": 9,
   "locator_score_gate": 0.15,
-  "max_locator_rate_hz": 1,
+  "max_locator_rate_hz": 5.555555555555555,
   "max_color_rate_hz": 10,
   "soft_gap_budget_ms": 60,
   "soft_gap_budget_override": "TRAFFIC_NPU_BUDGET_MS (60-80)",
   "views": [
-    1,
-    0.5,
-    0.25
+    1
   ],
-  "selected_camera": "M physical middle / S overview upper-middle (0x88)",
-  "control_output": "none",
+  "selected_camera": "M normalized front / S Front Center, radial-corrected before overlay/IPM",
+  "control_output": "metadata to S; shared front GO/STOP arbiter, FPGA AUTO/REARM retained",
   "unknown_policy": "no box / ambiguous color / tracking lost / expired => UNKNOWN",
   "source_rect": [
-    320,
-    240,
+    0,
+    0,
     320,
     240
   ],
   "source_byte_order": "BGR",
   "detector_byte_order": "RGB",
-  "invalid_horizontal_border_pixels": 8
+  "invalid_horizontal_border_pixels": 8,
+  "selected_classes": {
+    "person": 0,
+    "traffic_light": 9
+  },
+  "person_score_gate": 0.15
 }

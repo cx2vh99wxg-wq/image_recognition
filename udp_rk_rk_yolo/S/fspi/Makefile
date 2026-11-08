@@ -221,3 +221,10 @@ info:
 
 # 说明：Shared headers are authoritative; rebuild their consumers when they change.
 -include $(ALL_OBJECTS:.o=.d)
+
+.PHONY: test-front-person
+build/test_front_person: test_front_person.cpp ../include/front_person_guard.h ../../common/perception/include/front_person_wire.h
+	@mkdir -p build
+	$(CXX) -std=c++11 -O2 -Wall -Wextra -Werror $(INCLUDES) $< -o $@
+test-front-person: build/test_front_person
+	./build/test_front_person

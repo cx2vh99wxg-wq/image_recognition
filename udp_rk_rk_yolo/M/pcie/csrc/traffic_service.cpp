@@ -2,6 +2,7 @@
 #include "traffic_detector.h"
 #include "traffic_frame_input.h"
 #include "traffic_light_ipc.h"
+#include "front_person_ipc.h"
 #include <atomic>
 #include <condition_variable>
 #include <cstdio>
@@ -43,6 +44,7 @@ struct Service::Impl
     std::shared_ptr<const Observation> observation;
     std::thread cpu;
     TrafficLightIPC ipc = {-1, nullptr};
+    FrontPersonIPC person_ipc = {-1, nullptr};
     uint32_t session = 0;
     uint64_t report_ns = 0, calls = 0, passes = 0, skipped_curve = 0, skipped_budget = 0,
              total_ns = 0, max_ns = 0;
@@ -55,6 +57,8 @@ struct Service::Impl
         traffic_ipc_open(&ipc, 1);
         TrafficLightData initial = {};
         traffic_ipc_write(&ipc, &initial);
+        front_person_ipc_open(&person_ipc, 1);
+        FrontPersonData empty_person = {}; front_person_ipc_write(&person_ipc, &empty_person);
         if (enabled)
         {
             std::string error;
@@ -66,7 +70,7 @@ struct Service::Impl
                     error.c_str());
         }
         std::printf(
-            "[TRAFFIC] enabled=%d ready=%d input=%d locator_interval_ms=180 max_NPU_passes=1 color_rate=10Hz budget_ms=%u single_NPU_owner=lane_worker control_output=none\n",
+            "[TRAFFIC] enabled=%d ready=%d input=%d locator_interval_ms=180 max_NPU_passes=1 color_rate=10Hz budget_ms=%u single_NPU_owner=lane_worker classes=person:0,traffic_light:9 view=full-front control_output=metadata\n",
             enabled, ready, detector.input_size(), admission.budget_ms());
         std::printf(
             "[TRAFFIC INPUT] geometry=%s source_rect=%d,%d,320,240 source_order=%s detector_order=RGB\n",
@@ -86,6 +90,8 @@ struct Service::Impl
         TrafficLightData empty = {};
         traffic_ipc_write(&ipc, &empty);
         traffic_ipc_close(&ipc);
+        FrontPersonData empty_person = {}; front_person_ipc_write(&person_ipc, &empty_person);
+        front_person_ipc_close(&person_ipc);
     }
     void submit(const uint8_t *rgb, int w, int h, uint64_t id, uint64_t captured)
     {
@@ -129,9 +135,24 @@ struct Service::Impl
             return;
         uint64_t start = traffic_clock_ns();
         std::vector<Box> boxes;
+        PersonResult people;
         std::string error;
         bool okay = detector.detect(frame.pixels.data(), 320, 240, 320 * 3, boxes, &error,
-                                    admission.budget_ms());
+                                    admission.budget_ms(), &people);
+        FrontPersonData person = {};
+        person.session = session; person.source_id = (uint32_t)frame.id;
+        person.flags = ready ? FRONT_PERSON_READY : 0;
+        if (okay) person.flags |= FRONT_PERSON_VALID;
+        if (okay && people.count)
+        {
+            person.flags |= FRONT_PERSON_FOUND; person.count = people.count;
+            person.quality = (uint32_t)std::min(100.f, people.best.score * 100.f);
+            person.x = (uint32_t)people.best.x; person.y = (uint32_t)people.best.y;
+            person.width = std::min(320-person.x, std::max(1u,(uint32_t)std::ceil(people.best.w)));
+            person.height = std::min(240-person.y, std::max(1u,(uint32_t)std::ceil(people.best.h)));
+        }
+        front_person_set_deadline(&person, frame.captured + FRONT_PERSON_TTL_NS);
+        front_person_ipc_open(&person_ipc, 1); front_person_ipc_write(&person_ipc, &person);
         auto result = std::make_shared<Observation>();
         result->reference.id = frame.id;
         result->reference.captured = frame.captured;
@@ -178,10 +199,10 @@ struct Service::Impl
         {
             double seconds = report_ns ? (end - report_ns) / 1e9 : 1;
             std::printf(
-                "[TRAFFIC PERF] locator_hz=%.2f npu_hz=%.2f calls=%llu mean_ms=%.2f max_ms=%.2f skip_curve=%llu skip_budget=%llu boxes=%zu budget_backoff=%u\n",
+                "[TRAFFIC PERF] locator_hz=%.2f npu_hz=%.2f calls=%llu mean_ms=%.2f max_ms=%.2f person_candidates=%u person_valid=%d skip_curve=%llu skip_budget=%llu boxes=%zu budget_backoff=%u\n",
                 calls / seconds, passes / seconds, (unsigned long long)calls,
                 calls ? total_ns / 1e6 / calls : 0., max_ns / 1e6,
-                (unsigned long long)skipped_curve, (unsigned long long)skipped_budget, boxes.size(),
+                people.count, okay, (unsigned long long)skipped_curve, (unsigned long long)skipped_budget, boxes.size(),
                 admission.violations());
             report_ns = end;
             calls = passes = skipped_curve = skipped_budget = total_ns = max_ns = 0;

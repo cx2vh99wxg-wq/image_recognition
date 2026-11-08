@@ -5,6 +5,7 @@
 #include <string>
 namespace traffic
 {
+struct PersonResult { Box best; unsigned count = 0; }; // threshold-passing person anchors (not a head count)
 class Detector
 {
     struct Impl;
@@ -17,7 +18,8 @@ class Detector
     Detector &operator=(const Detector &) = delete;
     bool init(const char *path, std::string *error = nullptr);
     bool detect(const uint8_t *rgb, int w, int h, int stride, std::vector<Box> &boxes,
-                std::string *error = nullptr, unsigned budget_ms = default_budget_ms);
+                std::string *error = nullptr, unsigned budget_ms = default_budget_ms,
+                PersonResult *persons = nullptr);
     int input_size() const;
     unsigned last_passes() const;
 };

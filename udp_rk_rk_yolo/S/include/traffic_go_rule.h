@@ -20,7 +20,7 @@ static inline unsigned traffic_go_color(const TrafficLightData *d, uint64_t now)
     if (!traffic_fresh(d, now) || (d->flags & required) != required ||
         (d->flags & TRAFFIC_DISABLED) || d->state != d->raw_state)
         return TRAFFIC_UNKNOWN;
-    return d->state <= TRAFFIC_GREEN ? d->state : TRAFFIC_UNKNOWN;
+    return d->state <= TRAFFIC_GREEN ? d->state : (unsigned)TRAFFIC_UNKNOWN;
 }
 static inline unsigned traffic_go_prepare(TrafficGoPolicy *p, unsigned color)
 {

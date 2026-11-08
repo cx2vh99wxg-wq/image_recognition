@@ -1,3 +1,4 @@
+#include "front_person_wire.h"
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
@@ -488,6 +489,8 @@ int main(int argc, char *argv[])
     SourceConnection source;
     LineStyleIPC line_ipc = {-1, nullptr};
     TrafficLightIPC traffic_ipc = {-1, nullptr};
+    FrontPersonIPC person_ipc = {-1, nullptr};
+    uint64_t last_person_send = 0;
     uint64_t last_line_send = 0;
     uint64_t last_traffic_send = 0;
     printf(
@@ -498,6 +501,15 @@ int main(int argc, char *argv[])
         uint64_t now = monotonic_ns();
         report_sender(&network);
         probe_source(source, network, now);
+        if (!last_person_send || now - last_person_send >= 50000000ULL)
+        {
+            front_person_ipc_open(&person_ipc, 0);
+            FrontPersonData person = {}; uint8_t packet[front_person_wire::SIZE];
+            if (!front_person_ipc_read(&person_ipc, &person) && front_person_wire::encode(packet, person, now))
+                sendto(network.socket_fd, packet, sizeof(packet), MSG_DONTWAIT,
+                       (sockaddr *)&network.target_addr, sizeof(network.target_addr));
+            last_person_send = now;
+        }
         if (!last_traffic_send || now - last_traffic_send >= 100000000ULL)
         {
             traffic_ipc_open(&traffic_ipc, 0);
@@ -582,6 +594,7 @@ int main(int argc, char *argv[])
     }
     line_ipc_close(&line_ipc);
     traffic_ipc_close(&traffic_ipc);
+    front_person_ipc_close(&person_ipc);
     detach_source(source);
     free(pixels);
     network_manager_cleanup(&network);

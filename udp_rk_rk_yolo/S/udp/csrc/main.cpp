@@ -1,3 +1,4 @@
+#include "front_person_wire.h"
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
@@ -24,6 +25,8 @@ static LineStyleIPC line_ipc = {-1, nullptr};
 static line_wire::Receiver line_receiver;
 static TrafficLightIPC traffic_ipc = {-1, nullptr};
 static traffic_wire::Receiver traffic_receiver;
+static FrontPersonIPC person_ipc = {-1, nullptr};
+static front_person_wire::Receiver person_receiver;
 #define IMAGE_WIDTH 640
 #define IMAGE_HEIGHT 480
 #define UDP_PORT 8888
@@ -273,6 +276,13 @@ static void ingest_datagram(NetworkReceiver *r, const Datagram &packet)
         return;
     uint64_t now = monotonic_ns();
     FrameHeader old_header = {};
+    if (front_person_wire::is_packet(packet.data, packet.size))
+    {
+        FrontPersonData person = {};
+        if (person_receiver.ingest(packet.data, packet.size, packet.received_ns, now, person))
+            front_person_ipc_write(&person_ipc, &person);
+        return;
+    }
     if (traffic_wire::is_packet(packet.data, packet.size))
     {
         TrafficLightData traffic = {};
@@ -489,6 +499,8 @@ int main()
     if (shared_memory_init_udp(&shm_manager, 1))
         return 1;
     line_ipc_open(&line_ipc, LINE_STYLE_KEY, 1);
+    front_person_ipc_open(&person_ipc, 1);
+    FrontPersonData person_initial = {}; front_person_ipc_write(&person_ipc, &person_initial);
     traffic_ipc_open(&traffic_ipc, 1);
     TrafficLightData traffic_initial = {};
     traffic_ipc_write(&traffic_ipc, &traffic_initial);
@@ -523,6 +535,7 @@ int main()
     shared_memory_cleanup(&shm_manager);
     line_ipc_close(&line_ipc);
     traffic_ipc_close(&traffic_ipc);
+    front_person_ipc_close(&person_ipc);
     if (curve_detection_available)
         curve_detection_shm_cleanup();
     return 0;

@@ -296,3 +296,10 @@ $(BUILD_DIR)/test_marking_profile: tests/test_marking_profile.cpp include/lane_m
 	$(CXX) -std=c++11 -O2 -Wall -Wextra -Werror $(INCLUDES) $< -o $@
 test-marking-profile: $(BUILD_DIR)/test_marking_profile
 	./$(BUILD_DIR)/test_marking_profile
+
+.PHONY: test-front-person
+build/test_front_person_detector: tests/test_front_person_detector.cpp csrc/traffic_detector.cpp include/traffic_detector.h ../include/front_person.h
+	@mkdir -p build
+	$(CXX) -std=c++11 -O2 -Wall -Wextra -Werror $(INCLUDES) tests/test_front_person_detector.cpp csrc/traffic_detector.cpp -o $@
+test-front-person: build/test_front_person_detector
+	./build/test_front_person_detector
