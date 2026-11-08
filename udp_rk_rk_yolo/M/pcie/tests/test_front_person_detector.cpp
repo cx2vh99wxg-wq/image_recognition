@@ -40,10 +40,12 @@ int main(){
  PersonResult people;calls=0;
  assert(d.detect(rgb.data(),320,240,960,traffic,&error,60,&people));
  assert(calls==1 && people.count==1 && people.best.score==.15f && people.best.y>190 && traffic.empty());
+ assert(people.candidates.size()==1 && people.candidates[0].score==people.best.score);
  mode=1;assert(d.detect(rgb.data(),320,240,960,traffic,&error,60,&people) && !people.count);
  mode=2;assert(d.detect(rgb.data(),320,240,960,traffic,&error,60,&people) && !people.count);
  mode=4;assert(d.detect(rgb.data(),320,240,960,traffic,&error,60,&people) && !people.count);
  mode=0;assert(d.detect(rgb.data(),320,240,960,traffic,&error) && traffic.empty()); // person isn't a signal
  mode=3;assert(!d.detect(rgb.data(),320,240,960,traffic,&error,60,&people) && !people.count);
+ assert(people.candidates.empty());
  std::remove(model);puts("FRONT PERSON DECODER PASS: COCO class0, exact float threshold, full frame, no housing/color filter, one NPU call, clear/error");
 }

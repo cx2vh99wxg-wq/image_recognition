@@ -416,11 +416,26 @@ class ColorConfirmation
 };
 /* NPU 作业统一由车道工作线程提交；
  * 本策略只决定可选检测器能否使用发布车道结果后的空闲时间。 */
+// Borrowed only for synchronous after_lane(); never retain engine output pointers.
+// Both arrays describe the SAME corrected front frame, before restore/IPM/overlay.
+struct FrontRoadFrame
+{
+    const uint8_t *pixels = nullptr;
+    const float *road = nullptr; // planar background, drivable logits
+    int width = 0, height = 0;
+    uint64_t source = 0, captured = 0;
+    bool matches(uint64_t id, uint64_t stamp) const
+    {
+        return pixels && road && width == 320 && height == 240 && captured &&
+               source == id && captured == stamp;
+    }
+};
 struct LaneBudget
 {
     uint64_t source = 0, captured = 0, completed = 0, duration = 0;
     bool fresh = false, curve_active = false;
     float reference_x = 160;
+    FrontRoadFrame front;
 };
 class NpuTask
 {

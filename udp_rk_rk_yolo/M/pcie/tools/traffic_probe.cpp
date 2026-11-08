@@ -1,4 +1,5 @@
 #include "traffic_detector.h"
+#include "person_road_association.h"
 #include "traffic_offline_guard.h"
 #include <fstream>
 #include <cstdio>
@@ -68,6 +69,23 @@ int main(int argc, char **argv)
             "{\"xywh\":[%.3f,%.3f,%.3f,%.3f],\"score\":%.6f,\"color\":\"%s\",\"quality\":%u,\"reason\":%u}",
             b.x, b.y, b.w, b.h, b.score, traffic_state_name(c.state), c.quality, c.reason);
     }
-    printf("],\"person_candidates\":%u,\"person_score\":%.6f}\n", people.count, people.best.score);
+    // Deterministic road fixtures exercise real model boxes + production ROI
+    // association. They do NOT measure road segmentation accuracy.
+    std::vector<float> road(320*240*2,0.f);
+    traffic::FrontRoadFrame frame;frame.pixels=rgb.data();frame.road=road.data();
+    frame.width=320;frame.height=240;frame.source=1;frame.captured=1;
+    traffic::PersonRoadAssociation association;
+    FrontPersonData all={},off={},missing={};all.flags=off.flags=missing.flags=3;
+    if(person_mode && w==320 && h==240) {
+        std::fill(road.begin()+320*240,road.end(),1.f);
+        association.annotate(people,frame,1,1,all);
+        // Small corner patch, far from every detected foot; >=64 pixels validates mask.
+        std::fill(road.begin(),road.end(),0.f);
+        for(int y=0;y<8;++y)for(int x=0;x<8;++x)road[320*240+y*320+x]=1;
+        association.annotate(people,frame,1,1,off);
+        association.annotate(people,traffic::FrontRoadFrame{},1,1,missing);
+    }
+    printf("],\"person_candidates\":%u,\"person_score\":%.6f,\"all_road_risk\":%u,\"all_road_unknown\":%u,\"off_road_count\":%u,\"off_road_unknown\":%u,\"missing_road_unknown\":%u}\n",
+           people.count, people.best.score,all.risk_count,all.unknown_count,off.outside_count,off.unknown_count,missing.unknown_count);
     return 0;
 }

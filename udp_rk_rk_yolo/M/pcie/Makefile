@@ -303,3 +303,10 @@ build/test_front_person_detector: tests/test_front_person_detector.cpp csrc/traf
 	$(CXX) -std=c++11 -O2 -Wall -Wextra -Werror $(INCLUDES) tests/test_front_person_detector.cpp csrc/traffic_detector.cpp -o $@
 test-front-person: build/test_front_person_detector
 	./build/test_front_person_detector
+
+.PHONY: test-person-road
+build/test_person_road: tests/test_person_road.cpp include/person_road_association.h include/traffic_vision.h ../include/front_person.h
+	@mkdir -p build
+	$(CXX) -std=c++11 -O3 -Wall -Wextra -Werror $(INCLUDES) $< -o $@
+test-person-road: build/test_person_road
+	./build/test_person_road

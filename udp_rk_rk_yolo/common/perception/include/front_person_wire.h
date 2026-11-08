@@ -30,7 +30,18 @@ inline bool is_packet(const uint8_t *p, size_t n)
 }
 inline bool valid(const FrontPersonData &d)
 {
-    return d.session && (d.flags & ~7u)==0 && d.quality<=100 && d.count<=100000 &&
+    const bool roi=(d.flags & FRONT_PERSON_ROI_MODE)!=0;
+    const bool road=(d.flags & FRONT_PERSON_ROAD_VALID)!=0;
+    if (roi) {
+        if (d.risk_count>100000 || d.outside_count>100000 || d.unknown_count>100000 ||
+            d.count!=d.risk_count+d.outside_count+d.unknown_count || d.road_pixels>320*240 ||
+            !!(d.flags & FRONT_PERSON_IN_PATH)!=!!d.risk_count ||
+            !!(d.flags & FRONT_PERSON_PATH_UNKNOWN)!=!!d.unknown_count ||
+            (road && (d.road_pixels<64 || d.road_source_id!=d.source_id)) ||
+            (!road && (d.risk_count || d.outside_count))) return false;
+    } else if ((d.flags & ~7u) || d.risk_count || d.outside_count || d.unknown_count ||
+               d.road_pixels || d.road_source_id) return false;
+    return d.session && (d.flags & ~127u)==0 && d.quality<=100 && d.count<=100000 &&
            d.x<=320 && d.y<=240 && d.width<=320-d.x && d.height<=240-d.y &&
            (!(d.flags & FRONT_PERSON_FOUND) ||
             ((d.flags & (FRONT_PERSON_VALID|FRONT_PERSON_READY))==3 && d.count && d.width && d.height)) &&
@@ -43,8 +54,9 @@ inline bool encode(uint8_t *p, const FrontPersonData &d, uint64_t now)
     const uint32_t age =
         (uint32_t)((FRONT_PERSON_TTL_NS - (front_person_deadline(&d) - now) + 999999ULL) / 1000000ULL);
     const uint32_t v[] = {
-        0x46505331u, 0x00010048u, d.session, d.source_id, d.count, age,
-        d.flags, d.quality, d.x, d.y, d.width, d.height, 0,0,0,0,0};
+        0x46505331u, 0x00020048u, d.session, d.source_id, d.count, age,
+        d.flags, d.quality, d.x, d.y, d.width, d.height, d.risk_count,d.outside_count,
+        d.unknown_count,d.road_pixels,d.road_source_id};
     for (int i = 0; i < 17; ++i)
         put(p + i * 4, v[i]);
     put(p + 68, checksum(p, 68));
@@ -59,7 +71,8 @@ class Receiver
   public:
     bool ingest(const uint8_t *p, size_t n, uint64_t received, uint64_t now, FrontPersonData &d)
     {
-        if (n != SIZE || get(p) != 0x46505331u || get(p + 4) != 0x00010048u ||
+        if (n != SIZE || get(p) != 0x46505331u ||
+            (get(p + 4) != 0x00010048u && get(p + 4) != 0x00020048u) ||
             get(p + 68) != checksum(p, 68))
             return false;
         uint32_t session = get(p + 8), id = get(p + 12), age = get(p + 20);
@@ -70,7 +83,13 @@ class Receiver
         q.source_id = id;
         q.count=get(p+16); q.flags=get(p+24); q.quality=get(p+28);
         q.x=get(p+32); q.y=get(p+36); q.width=get(p+40); q.height=get(p+44);
-        for (int i=48;i<68;i+=4) if(get(p+i)) return false;
+        if (get(p+4)==0x00010048u) {
+            if (q.flags & ~7u) return false;
+            for (int i=48;i<68;i+=4) if(get(p+i)) return false;
+        } else {
+            q.risk_count=get(p+48); q.outside_count=get(p+52); q.unknown_count=get(p+56);
+            q.road_pixels=get(p+60); q.road_source_id=get(p+64);
+        }
         if (!valid(q))
             return false;
         bool changed = session != session_;

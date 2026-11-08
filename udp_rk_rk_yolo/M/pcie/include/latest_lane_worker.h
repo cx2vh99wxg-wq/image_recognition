@@ -190,6 +190,7 @@ class LatestWorker
                 result->source_id = source;
                 result->captured_ns = captured;
                 yolopv2_result_t raw = {};
+                traffic::FrontRoadFrame front_road;
                 uint64_t start = clock_ns();
                 if (front_input_)
                     front_input_->render(working_pixels_.data(), front_rgb_.data());
@@ -211,6 +212,12 @@ class LatestWorker
                         start = now;
                         if (front_input_)
                         {
+                            front_road.pixels = front_rgb_.data();
+                            front_road.road = raw.drivable_area_data;
+                            front_road.width = raw.width;
+                            front_road.height = raw.height;
+                            front_road.source = source;
+                            front_road.captured = captured;
                             front_input_->restore_front_masks(raw.lane_line_data, raw.drivable_area_data,
                                                               raw_lane_.data(), raw_road_.data());
                             raw = {raw_lane_.data(), raw_road_.data(), width_, height_};
@@ -415,6 +422,7 @@ class LatestWorker
                 {
                     traffic::LaneBudget budget;
                     budget.source = source;
+                    budget.front = front_road;
                     budget.captured = captured;
                     budget.completed = result->completed_ns;
                     budget.duration = inference_time + analysis_time;

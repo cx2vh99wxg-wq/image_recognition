@@ -249,6 +249,8 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                         if (person_top && b.w > 0 && b.h > 0)
                         {
                             ++persons->count;
+                            Box person_box = b; person_box.score = person_score;
+                            persons->candidates.push_back(person_box);
                             if (person_score > persons->best.score)
                             { persons->best = b; persons->best.score = person_score; }
                         }

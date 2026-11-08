@@ -80,7 +80,7 @@ inline EgoCurve fit_ego_centers(const double (&centers)[5], double span, double 
     constexpr double low_curvature_limit = .312; // equivalent to 0.0013 px^-1 at 240 px height
     const bool low_curvature = curvature * height <= low_curvature_limit;
     constexpr double degrees_per_radian = 57.29577951308232;
-    constexpr double low_curvature_turn_deg = 40.;
+    constexpr double low_curvature_turn_deg = 30.;
     const double heading_deg = std::atan(std::abs(slope)) * degrees_per_radian;
     out.signed_angle_deg = 0.;
     if (std::abs(slope) >= straight_slope &&
@@ -93,7 +93,7 @@ inline EgoCurve fit_ego_centers(const double (&centers)[5], double span, double 
     }
     /* 整个小航向带均归为直道，不再用内层半带排除
      * 3.7px 的真实直道样本并反复打断确认；
-     * 时间确认由相邻两次新识别结果的角度差决定。 */
+     * 每个有效的新识别结果立即生效。 */
     out.confidence = source_span >= height * .30 ? 85 : source_span >= height * .20 ? 75 : 60;
     out.reason = 0;
     return out;

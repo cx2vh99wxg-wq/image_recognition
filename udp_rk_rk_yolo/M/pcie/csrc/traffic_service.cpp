@@ -3,6 +3,7 @@
 #include "traffic_frame_input.h"
 #include "traffic_light_ipc.h"
 #include "front_person_ipc.h"
+#include "person_road_association.h"
 #include <atomic>
 #include <condition_variable>
 #include <cstdio>
@@ -30,6 +31,7 @@ struct Observation
 struct Service::Impl
 {
     Detector detector;
+    PersonRoadAssociation road_association;
     Admission admission{configured_budget_ms(std::getenv("TRAFFIC_NPU_BUDGET_MS"))};
     bool ready = false, enabled = true;
     const InputView view;
@@ -125,13 +127,23 @@ struct Service::Impl
         if (!ready || !enabled || model_failed.load() || reason)
             return;
         Frame frame;
+        const bool matched=lane.front.matches(lane.source,lane.captured);
+        if (matched)
+        {
+            // Borrowed lane input is still alive on this same NPU-owner thread.
+            // Normalize its byte order once; do not use the newer color mailbox.
+            if (!copy_camera_rgb(lane.front.pixels,320,240,320*3,
+                                 InputView(0,0,view.order),frame.pixels)) return;
+            frame.id=lane.source; frame.captured=lane.captured;
+        }
+        else
         {
             std::lock_guard<std::mutex> lock(mutex);
             if (stopping || latest.pixels.empty())
                 return;
             frame = latest;
         }
-        if (now < frame.captured || now - frame.captured > 200000000ULL)
+        if (now < frame.captured || now - frame.captured > 300000000ULL)
             return;
         uint64_t start = traffic_clock_ns();
         std::vector<Box> boxes;
@@ -142,15 +154,10 @@ struct Service::Impl
         FrontPersonData person = {};
         person.session = session; person.source_id = (uint32_t)frame.id;
         person.flags = ready ? FRONT_PERSON_READY : 0;
-        if (okay) person.flags |= FRONT_PERSON_VALID;
-        if (okay && people.count)
-        {
-            person.flags |= FRONT_PERSON_FOUND; person.count = people.count;
-            person.quality = (uint32_t)std::min(100.f, people.best.score * 100.f);
-            person.x = (uint32_t)people.best.x; person.y = (uint32_t)people.best.y;
-            person.width = std::min(320-person.x, std::max(1u,(uint32_t)std::ceil(people.best.w)));
-            person.height = std::min(240-person.y, std::max(1u,(uint32_t)std::ceil(people.best.h)));
-        }
+        if (okay && traffic_clock_ns()-frame.captured<=500000000ULL)
+            person.flags |= FRONT_PERSON_VALID;
+        road_association.annotate(people,matched ? lane.front : FrontRoadFrame{},
+                                  frame.id,frame.captured,person);
         front_person_set_deadline(&person, frame.captured + FRONT_PERSON_TTL_NS);
         front_person_ipc_open(&person_ipc, 1); front_person_ipc_write(&person_ipc, &person);
         auto result = std::make_shared<Observation>();
@@ -199,11 +206,12 @@ struct Service::Impl
         {
             double seconds = report_ns ? (end - report_ns) / 1e9 : 1;
             std::printf(
-                "[TRAFFIC PERF] locator_hz=%.2f npu_hz=%.2f calls=%llu mean_ms=%.2f max_ms=%.2f person_candidates=%u person_valid=%d skip_curve=%llu skip_budget=%llu boxes=%zu budget_backoff=%u\n",
+                "[TRAFFIC PERF] locator_hz=%.2f npu_hz=%.2f calls=%llu mean_ms=%.2f max_ms=%.2f person_candidates=%u person_valid=%d skip_curve=%llu skip_budget=%llu boxes=%zu budget_backoff=%u road_source=%u person_source=%u road_pixels=%u in_path=%u outside=%u uncertain=%u matched=%d\n",
                 calls / seconds, passes / seconds, (unsigned long long)calls,
                 calls ? total_ns / 1e6 / calls : 0., max_ns / 1e6,
                 people.count, okay, (unsigned long long)skipped_curve, (unsigned long long)skipped_budget, boxes.size(),
-                admission.violations());
+                admission.violations(),person.road_source_id,person.source_id,person.road_pixels,
+                person.risk_count,person.outside_count,person.unknown_count,matched);
             report_ns = end;
             calls = passes = skipped_curve = skipped_budget = total_ns = max_ns = 0;
         }

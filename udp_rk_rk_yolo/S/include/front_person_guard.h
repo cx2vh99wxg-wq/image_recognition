@@ -5,7 +5,7 @@
 #include "traffic_go_rule.h"
 #define FRONT_GUARD_KEY (0x12345678 + 15)
 /* Recovery requires confirmed GREEN and three distinct fresh person-inference
- * results with no person. Repeated UDP/monitor reads never advance the count.
+ * results with no in-path/uncertain person. Repeated reads never advance the count.
  * This restores GO permission only; FPGA STOP still requires manual REARM. */
 typedef struct {
     uint32_t session, source_id;
@@ -19,13 +19,18 @@ static inline unsigned front_person_guard_observe(FrontPersonGuard *p, const Fro
 {
     const unsigned valid = d && front_person_fresh(d,now) &&
                            (d->flags & (FRONT_PERSON_VALID|FRONT_PERSON_READY)) == 3;
-    const unsigned found = valid && (d->flags & FRONT_PERSON_FOUND);
+    const unsigned found = valid && front_person_hazard(d);
     if (snapshot_ok) p->auto_enabled = (snapshot->gates & GATE_AUTO) != 0;
     const unsigned forward = snapshot_ok && !(snapshot->contacts & CONTACT_GO_N) &&
                               (snapshot->contacts & CONTACT_BACK_N);
+    const unsigned auto_off = snapshot_ok && !p->auto_enabled;
+    // While OFF, publish only the current raw hazard, like the rear detector.
+    // Do not carry an OFF-era person into a later ON as a latched old request.
+    // This never clears the hardware STOP latch or the independent red hold.
+    if (auto_off) { p->raw_request=0; p->recovery_pending=0; }
     // Require green for recovery after a real person/red/fault stop. Initial
     // clear road and leaving an already-passed green light must remain usable.
-    if (found || color==TRAFFIC_RED || (!valid && (forward || p->raw_request)))
+    if (!auto_off && (found || color==TRAFFIC_RED || (!valid && (forward || p->raw_request))))
         p->recovery_pending=1;
     const unsigned green_ok=!p->recovery_pending || color==TRAFFIC_GREEN;
     if (!valid || found || !green_ok) p->clear_count=0;

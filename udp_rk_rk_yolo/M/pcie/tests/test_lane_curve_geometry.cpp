@@ -93,10 +93,10 @@ int main(int argc, char **argv){
         assert(bird.confidence>=60&&bird.type==(slope<0?1u:slope>0?2u:0u));
         assert(bird.angle==(slope?14u:0u));
     }
-    // Check both sides of 40 degrees before rounding the transmitted angle.
+    // Check both sides of 30 degrees before rounding the transmitted angle.
     constexpr float radians_per_degree=.017453292519943295f;
-    const float below=240.f*.52f*std::tan(39.9f*radians_per_degree);
-    const float above=240.f*.52f*std::tan(40.1f*radians_per_degree);
+    const float below=240.f*.52f*std::tan(29.9f*radians_per_degree);
+    const float above=240.f*.52f*std::tan(30.1f*radians_per_degree);
     for(float heading:{below,-below}){
         auto low=m_lane::estimate_ego_curve(corridor(heading));
         assert(low.type==0&&low.confidence>=60&&low.angle==0);
@@ -111,8 +111,16 @@ int main(int argc, char **argv){
     assert(moderate.type==2&&moderate.confidence>=60&&moderate.angle==13);
     auto left=corridor(above);auto right=corridor(-above);
     auto l=m_lane::estimate_ego_curve(left);auto r=m_lane::estimate_ego_curve(right);
-    assert(l.type==1&&l.confidence>=60&&l.angle==40);
-    assert(r.type==2&&r.confidence>=60&&r.angle==40);
+    assert(l.type==1&&l.confidence>=60&&l.angle==30);
+    assert(r.type==2&&r.confidence>=60&&r.angle==30);
+    // Production IPM point tracks use the same low-curvature threshold.
+    for(double degrees:{-35.,-30.1,-29.9,0.,29.9,30.1,35.}) {
+        double centers[5];
+        for(int i=0;i<5;++i) centers[i]=160.+(2-i)*20.*std::tan(degrees*.017453292519943295);
+        const auto ipm=m_lane::fit_ego_centers(centers,80,80,320,240,true,true);
+        assert(ipm.confidence>=60 && ipm.curvature<1e-6);
+        assert(ipm.type==(degrees<-30 ? 1u : degrees>30 ? 2u : 0u));
+    }
     auto translated=right;translated.left.fit_a+=20;translated.right.fit_a+=20;
     assert(m_lane::estimate_ego_curve(translated).angle==r.angle);
     // The shared 140..220 interval has midpoint y=180, where this curve gives 14 degrees.

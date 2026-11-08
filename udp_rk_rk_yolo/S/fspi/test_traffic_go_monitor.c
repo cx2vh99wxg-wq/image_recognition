@@ -24,6 +24,7 @@ static FrontPersonSegment front_segment;
 static FrontGuardSegment front_control_segment;
 static int control_reply_enabled;
 static uint8_t contact_reply=31;
+static uint8_t gates_reply=GATE_AUTO;
 static int last_stop=-1;
 static unsigned speed_reply=0xc1;
 static int speed_failed;
@@ -50,7 +51,7 @@ int test_spi_ioctl(int fd,unsigned long request,...) {
         if(t->len==8){
             uint8_t* b=(void*)(uintptr_t)t->rx_buf;memset(b,0,8);
             if(control_reply_enabled){b[0]=0xcc;b[1]=0xa7;b[2]=0xc1;b[3]=speed_crc8(b[2]);
-                b[4]=0xd7;b[5]=contact_reply;b[6]=GATE_AUTO;
+                b[4]=0xd7;b[5]=contact_reply;b[6]=gates_reply;
                 b[7]=control_crc_byte(control_crc_byte(control_crc_byte(0,b[4]),b[5]),b[6]);}
             return 8;
         }
@@ -81,6 +82,15 @@ static void publish(unsigned color,int fresh,int confirmed) {
     d.state=d.raw_state=color;d.flags=TRAFFIC_BOX|TRAFFIC_MODEL_READY|(confirmed?TRAFFIC_CONFIRMED:0);
     traffic_set_deadline(&d,traffic_clock_ns()+(fresh?500000000ULL:0));
     TrafficLightIPC p={3,&signal_segment};traffic_ipc_write(&p,&d);
+}
+static void publish_roi(unsigned relation) {
+    FrontPersonData d={0};d.session=20;d.source_id=++writes;d.flags=3|4|64;
+    d.count=1;d.x=100;d.y=40;d.width=30;d.height=100;
+    if(relation==2){d.flags|=32;d.unknown_count=1;}
+    else {d.flags|=8;d.road_pixels=1000;d.road_source_id=d.source_id;
+          if(relation){d.flags|=16;d.risk_count=1;}else d.outside_count=1;}
+    front_person_set_deadline(&d,front_person_clock_ns()+FRONT_PERSON_TTL_NS);
+    FrontPersonIPC p={6,&front_segment};front_person_ipc_write(&p,&d);
 }
 static TrafficGoData poll(void) {
     if (!control_reply_enabled) {
@@ -150,6 +160,39 @@ int main(void) {
     assert(!front_guard.raw_request && (last_permission&4));
     // Either steering contact can coexist with forward; right also triggers STOP.
     contact_reply=31 & ~CONTACT_GO_N & ~CONTACT_RIGHT_N;poll();assert(front_guard.raw_request);
+    // Production controller receives the exact v2 association fields (no real SPI).
+    for(int i=0;i<3;i++){publish_roi(0);poll();}
+    assert(!front_guard.raw_request && (last_permission&8));
+    monitor_emergency_brake();assert(last_stop==1); // outside doesn't request STOP
+    publish_roi(1);poll();monitor_emergency_brake();assert(front_guard.raw_request && last_stop==0);
+    publish_roi(2);poll();assert(front_guard.raw_request); // missing/ambiguous road cannot clear
+    publish_roi(0);poll();assert(front_guard.clear_count==1);
+    poll();assert(front_guard.clear_count==1); // duplicate isn't a new observation
+    for(int i=0;i<2;i++){publish_roi(0);poll();}
+    monitor_emergency_brake();assert(!front_guard.raw_request && last_stop==1);
+    rear.person_detected=1;rear.frame_count++;rear.last_update=(uint32_t)(line_clock_ns()/1000000000ULL);
+    monitor_emergency_brake();assert(last_stop==0); // rear protection is independent
+    // Auto Brake OFF: persons never add a GO inhibition or prevent GREEN
+    // recovery. RED remains independent. Combined raw reg4 requests are still
+    // published for the FPGA's same enable gate, just like the rear detector.
+    gates_reply=0;publish_roi(1);publish(TRAFFIC_RED,1,1);poll();
+    assert(!front_guard.auto_enabled && !front_guard.held_go && traffic_policy.blocked && (last_permission&4));
+    publish(TRAFFIC_GREEN,1,1);poll();
+    assert(!traffic_policy.blocked && !front_guard.held_go && (last_permission&8) && !(last_permission&4));
+    monitor_emergency_brake();assert(last_stop==0); // raw request, not physical STOP
+    publish_roi(2);poll();assert(!front_guard.held_go && !(last_permission&4));
+    // OFF-era detections don't latch an old recovery hold into a later ON.
+    rear.person_detected=0;rear.brake_enable=1;rear.frame_count++;
+    rear.last_update=(uint32_t)(line_clock_ns()/1000000000ULL);
+    publish(TRAFFIC_UNKNOWN,1,0);
+    for(int i=0;i<3;i++){publish_front(0);poll();}
+    assert(!front_guard.raw_request && !front_guard.recovery_pending);
+    monitor_emergency_brake();assert(last_stop==1);
+    gates_reply=GATE_AUTO;poll();
+    assert(!front_guard.held_go && !front_guard.raw_request && !(last_permission&4));
+    // Turning the switch back ON immediately restores both front guards.
+    gates_reply=GATE_AUTO;publish_roi(1);poll();
+    assert(front_guard.auto_enabled && front_guard.held_go && front_guard.raw_request && (last_permission&4));
     puts("production monitor: atomic lane+traffic permissions, red/unknown/yellow/green, SPI retry, UI telemetry, restart PASS");
     return 0;
 }

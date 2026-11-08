@@ -5,7 +5,11 @@
 #include <string>
 namespace traffic
 {
-struct PersonResult { Box best; unsigned count = 0; }; // threshold-passing person anchors (not a head count)
+struct PersonResult {
+    Box best;
+    unsigned count = 0;
+    std::vector<Box> candidates; // all threshold-passing anchors, not a head count
+};
 class Detector
 {
     struct Impl;

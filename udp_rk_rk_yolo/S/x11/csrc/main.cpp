@@ -1279,9 +1279,14 @@ int present_dashboard(RenderEngine *engine)
         emergency_brake_shm && emergency_brake_shm->valid && emergency_brake_shm->person_detected;
     static FrontPersonIPC front_ipc = {-1, nullptr};
     FrontPersonData front = {};
-    if (!engine->headless && !front_person_ipc_open(&front_ipc,0) && !front_person_ipc_read(&front_ipc,&front))
-        status.front_person = front_person_fresh(&front,display_clock_ns()) &&
-                              (front.flags & (FRONT_PERSON_VALID|FRONT_PERSON_FOUND)) == 5;
+    if (!engine->headless && !front_person_ipc_open(&front_ipc,0) && !front_person_ipc_read(&front_ipc,&front)) {
+        const bool found=front_person_fresh(&front,display_clock_ns()) &&
+                         (front.flags & (FRONT_PERSON_VALID|FRONT_PERSON_FOUND)) == 5;
+        status.front_person = found && front_person_hazard(&front);
+        status.front_person_outside=found && !status.front_person;
+        status.front_road_unknown=found && (front.flags & FRONT_PERSON_ROI_MODE) &&
+            (!(front.flags & FRONT_PERSON_ROAD_VALID) || (front.flags & FRONT_PERSON_PATH_UNKNOWN));
+    }
     status.person = status.person || status.front_person;
     status.motion = preview_motion;
     if (!status.recorded)

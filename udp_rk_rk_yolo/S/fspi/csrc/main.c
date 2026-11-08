@@ -168,8 +168,11 @@ static void monitor_lane_rule(void)
     unsigned traffic_command = traffic_go_prepare(&traffic_policy, color);
     // Sample contacts BEFORE inhibiting GO; left/right do not hide forward motion.
     monitor_front_person(now,color);
-    // Green alone cannot clear an existing red hold before three fresh no-person results.
-    if (traffic_command==TRAFFIC_GO_CLEAR && front_required && traffic_policy.blocked)
+    // Front-person recovery participates only while HMI Auto Brake is ON.
+    // OFF must not let a detected person prevent a confirmed GREEN from
+    // clearing an independent red-light hold. Raw STOP stays FPGA-gated.
+    if (traffic_command==TRAFFIC_GO_CLEAR && front_guard.auto_enabled &&
+        front_required && traffic_policy.blocked)
         traffic_command=TRAFFIC_GO_SET;
     unsigned permission = front_person_guard_permission(&front_guard,front_required,
                                                         traffic_command,traffic_policy.blocked);
@@ -186,7 +189,7 @@ static void monitor_lane_rule(void)
     front_status.blocked = front_guard.held_go;
     front_status.raw_request = front_guard.raw_request;
     front_status.auto_enabled = front_guard.auto_enabled; front_status.link_ok = front_snapshot_ok;
-    front_status.person = front_person_fresh(&front_result,now) && (front_result.flags & FRONT_PERSON_FOUND);
+    front_status.person = front_person_fresh(&front_result,now) && front_person_hazard(&front_result);
     front_status.valid = front_person_fresh(&front_result,now) && ((front_result.flags & 3)==3);
     front_guard_set_deadline(&front_status,now+400000000ULL);
     front_guard_write(&front_guard_ipc,&front_status);
