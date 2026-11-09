@@ -12,6 +12,8 @@ def main():
     parser.add_argument('--hybrid-prefix', type=Path, help='Prefix of Toolkit-generated .model/.data/.quantization.cfg')
     parser.add_argument('--proposal-images', type=int, default=3)
     parser.add_argument('--no-proposal', action='store_true', help='Generate editable hybrid config without automatic precision proposals')
+    parser.add_argument('--optimization-level', type=int, choices=(2, 3), default=3,
+                        help='Toolkit optimization; QAT exports may need level 2 for numerical consistency')
     args = parser.parse_args()
     if args.precision in ('int8', 'hybrid1') and (not args.dataset or not args.dataset.is_file()):
         parser.error('INT8/hybrid1 requires an existing --dataset')
@@ -24,7 +26,7 @@ def main():
     model = RKNN()
     try:
         steps = [
-            ('config', lambda: model.config(target_platform='rk3568', mean_values=[[0, 0, 0]],
+            ('config', lambda: model.config(target_platform='rk3568', optimization_level=args.optimization_level, mean_values=[[0, 0, 0]],
                                             std_values=[[255, 255, 255]])),
         ]
         if args.precision == 'hybrid2':
