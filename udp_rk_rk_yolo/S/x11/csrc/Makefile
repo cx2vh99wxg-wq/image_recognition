@@ -199,3 +199,25 @@ $(BUILD_DIR)/test_vehicle_artwork: tests/test_vehicle_artwork.cpp include/vehicl
 	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror -Iinclude $< -o $@
 test-vehicle-artwork: $(BUILD_DIR)/test_vehicle_artwork
 	./$(BUILD_DIR)/test_vehicle_artwork
+
+.PHONY: test-pedestrian-scene
+$(BUILD_DIR)/test_pedestrian_scene: tests/test_pedestrian_scene.cpp include/pedestrian_scene.h include/lane_angle_cue.h include/vehicle_artwork.h ../../../common/perception/include/display_people.h ../../../common/perception/include/display_people_wire.h ../..//pcie/include/person_scene_snapshot.h | $(BUILD_DIR)
+	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@
+test-pedestrian-scene: $(BUILD_DIR)/test_pedestrian_scene
+	./$(BUILD_DIR)/test_pedestrian_scene
+
+$(BUILD_DIR)/main.o: include/pedestrian_scene.h include/lane_angle_cue.h include/vehicle_artwork.h ../../../common/perception/include/display_people.h
+
+.PHONY: test-front-brake-cue
+$(BUILD_DIR)/test_front_brake_cue: tests/test_front_brake_cue.cpp include/front_brake_cue.h include/lane_angle_cue.h ../../include/front_person_guard.h | $(BUILD_DIR)
+	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@
+test-front-brake-cue: $(BUILD_DIR)/test_front_brake_cue
+	./$(BUILD_DIR)/test_front_brake_cue
+$(BUILD_DIR)/main.o: include/front_brake_cue.h ../../include/front_person_guard.h
+$(BUILD_DIR)/main.o: ../../../common/performance/frame_intervals.h
+
+.PHONY: test-frame-intervals
+$(BUILD_DIR)/test_frame_intervals: tests/test_frame_intervals.cpp ../../../common/performance/frame_intervals.h | $(BUILD_DIR)
+	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@
+test-frame-intervals: $(BUILD_DIR)/test_frame_intervals
+	./$(BUILD_DIR)/test_frame_intervals

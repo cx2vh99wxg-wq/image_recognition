@@ -4,6 +4,8 @@
 #include "traffic_light_ipc.h"
 #include "front_person_ipc.h"
 #include "person_road_association.h"
+#include "traffic_structure.h"
+#include "../../../common/perception/include/display_people.h"
 #include <atomic>
 #include <condition_variable>
 #include <cstdio>
@@ -25,7 +27,7 @@ struct Observation
 {
     Box box;
     Frame reference;
-    bool valid = false, ambiguous = false;
+    bool valid = false, ambiguous = false, structural = false;
 };
 }
 struct Service::Impl
@@ -48,9 +50,12 @@ struct Service::Impl
     std::thread cpu;
     TrafficLightIPC ipc = {-1, nullptr};
     FrontPersonIPC person_ipc = {-1, nullptr};
+    display_people::IPC display_ipc;
+    const m_lane::GroundProjection display_ground=m_lane::GroundProjection::for_camera(nullptr,"front_ipm_test.conf");
     uint32_t session = 0;
     uint64_t report_ns = 0, calls = 0, passes = 0, skipped_curve = 0, skipped_budget = 0,
              total_ns = 0, max_ns = 0;
+    DetectorTiming detector_totals;
     explicit Impl(const char *path, InputView input, const m_lane::FrontRadialPreview *front)
         : view(input), correction(front)
     {
@@ -152,6 +157,10 @@ struct Service::Impl
         std::string error;
         bool okay = detector.detect(frame.pixels.data(), 320, 240, 320 * 3, boxes, &error,
                                     admission.budget_ms(), &people);
+        const auto dt=detector.last_timing();
+        detector_totals.prepare+=dt.prepare;detector_totals.inputs+=dt.inputs;
+        detector_totals.run+=dt.run;detector_totals.outputs+=dt.outputs;
+        detector_totals.decode+=dt.decode;detector_totals.release+=dt.release;detector_totals.filter+=dt.filter;
         FrontPersonData person = {};
         person.session = session; person.source_id = (uint32_t)frame.id;
         person.flags = ready ? FRONT_PERSON_READY : 0;
@@ -161,7 +170,33 @@ struct Service::Impl
                                   frame.id,frame.captured,person);
         front_person_set_deadline(&person, frame.captured + FRONT_PERSON_TTL_NS);
         front_person_ipc_open(&person_ipc, 1); front_person_ipc_write(&person_ipc, &person);
+        // Independent, bounded visual metadata. Brake/control records above
+        // remain unchanged, including all threshold-passing anchor statistics.
+        display_people::Snapshot scene={};scene.session=session;scene.source=(uint32_t)frame.id;
+        scene.ready=(person.flags&FRONT_PERSON_VALID)?1:0;
+        display_people::expires(scene,frame.captured+display_people::TTL);
+        if(scene.ready)for(const auto&b:people.candidates){
+            if(!std::isfinite(b.x)||!std::isfinite(b.y)||!std::isfinite(b.w)||!std::isfinite(b.h)||b.w<=0||b.h<=0)continue;
+            auto glyph=display_people::box(display_people::Front,(int)b.x,(int)b.y,(int)std::ceil(b.w),(int)std::ceil(b.h),b.score);
+            const auto relation=road_association.classify(b);
+            if(relation==FootRelation::Inside)glyph.flags|=display_people::InRoad;
+            else if(relation==FootRelation::Outside)glyph.flags|=display_people::OffRoad;
+            const double scale=correction?correction->display_scale():1.;
+            m_lane::ImagePoint foot={159.5+(b.x+b.w*.5-159.5)/scale,119.5+(b.y+b.h-119.5)/scale};
+            if(display_ground.ground_at(foot,320,240)){
+                glyph.flags|=display_people::Ground;
+                glyph.gx=(int32_t)std::lround((foot.x/160.+.5)*1000.);
+                glyph.gy=(int32_t)std::lround(foot.y/(160.*display_ground.aspect())*1000.);
+            }
+            display_people::add(scene,glyph);
+        }
+        if(display_ipc.open(display_people::FRONT_KEY,true))display_ipc.write(scene);
+        // Keep the existing person/brake publication above ahead of any
+        // optional CPU signal search. This path does not alter its candidates.
+        const bool structural=okay&&boxes.empty();
+        if(structural)boxes=locate_three_lamp_housings(frame.pixels.data(),320,240,320*3);
         auto result = std::make_shared<Observation>();
+        result->structural=structural&&!boxes.empty();
         result->reference.id = frame.id;
         result->reference.captured = frame.captured;
         if (!okay)
@@ -184,12 +219,12 @@ struct Service::Impl
             result->valid = true;
             result->reference.pixels = std::move(frame.pixels);
             Color first =
-                classify_color(result->reference.pixels.data(), 320, 240, 320 * 3, boxes[0]);
+                classify_color(result->reference.pixels.data(), 320, 240, 320 * 3, boxes[0],result->structural);
             for (size_t i = 1; i < boxes.size(); ++i)
                 if (rank(boxes[i]) >= rank(boxes[0]) * .8f && overlap(boxes[i], boxes[0]) < .2f)
                 {
                     Color other = classify_color(result->reference.pixels.data(), 320, 240, 320 * 3,
-                                                 boxes[i]);
+                                                 boxes[i],result->structural);
                     if (first.state && other.state && first.state != other.state)
                         result->ambiguous = true;
                 }
@@ -206,6 +241,11 @@ struct Service::Impl
         if (!report_ns || end - report_ns >= 5000000000ULL)
         {
             double seconds = report_ns ? (end - report_ns) / 1e9 : 1;
+            const double divisor=1e6*std::max<uint64_t>(1,calls);
+            std::printf("[PERF TRAFFIC] prepare_ms=%.3f inputs_ms=%.3f run_ms=%.3f outputs_ms=%.3f decode_ms=%.3f release_ms=%.3f filter_ms=%.3f\n",
+                detector_totals.prepare/divisor,detector_totals.inputs/divisor,detector_totals.run/divisor,detector_totals.outputs/divisor,
+                detector_totals.decode/divisor,detector_totals.release/divisor,detector_totals.filter/divisor);
+            detector_totals={};
             std::printf(
                 "[TRAFFIC PERF] locator_hz=%.2f npu_hz=%.2f calls=%llu mean_ms=%.2f max_ms=%.2f person_candidates=%u person_valid=%d skip_curve=%llu skip_budget=%llu boxes=%zu budget_backoff=%u road_source=%u person_source=%u road_pixels=%u in_path=%u outside=%u uncertain=%u matched=%d\n",
                 calls / seconds, passes / seconds, (unsigned long long)calls,
@@ -277,7 +317,7 @@ struct Service::Impl
                         if (housing && !box->ambiguous)
                         {
                             Color color =
-                                classify_color(frame.pixels.data(), 320, 240, 320 * 3, tracked);
+                                classify_color(frame.pixels.data(), 320, 240, 320 * 3, tracked,box->structural);
                             data.raw_state = color.state;
                             data.color_quality = color.quality;
                             data.reason = color.reason;
@@ -314,11 +354,11 @@ struct Service::Impl
                 if (!last_log || now - last_log >= 2000000000ULL)
                 {
                     std::printf(
-                        "[TRAFFIC] source=%u detector=%u state=%s raw=%s color_q=%u detector_q=%u age_ms=%u reason=%u flags=%u box=%u,%u,%u,%u\n",
+                        "[TRAFFIC] source=%u detector=%u state=%s raw=%s color_q=%u detector_q=%u age_ms=%u reason=%u flags=%u box=%u,%u,%u,%u locator=%s\n",
                         data.source_id, data.detector_id, traffic_state_name(data.state),
                         traffic_state_name(data.raw_state), data.color_quality,
                         data.detector_quality, data.detection_age_ms, data.reason, data.flags,
-                        data.x, data.y, data.width, data.height);
+                        data.x, data.y, data.width, data.height,box&&box->structural?"three-lamp-structure":"YOLOv5n");
                     last_log = now;
                 }
             }

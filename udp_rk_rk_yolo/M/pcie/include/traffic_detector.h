@@ -10,6 +10,9 @@ struct PersonResult {
     unsigned count = 0;
     std::vector<Box> candidates; // all threshold-passing anchors, not a head count
 };
+struct DetectorTiming {
+    uint64_t prepare=0, inputs=0, run=0, outputs=0, decode=0, release=0, filter=0;
+};
 class Detector
 {
     struct Impl;
@@ -26,6 +29,7 @@ class Detector
                 PersonResult *persons = nullptr);
     int input_size() const;
     unsigned last_passes() const;
+    DetectorTiming last_timing() const;
 };
 }
 #endif

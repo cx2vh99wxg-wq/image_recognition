@@ -368,3 +368,17 @@ test-signal-competition: build/test_signal_competition
 
 # These header-only algorithms are also instantiated by existing regressions.
 build/test_line_style build/test_ego_lane build/test_marking_profile build/test_npu_scheduling build/test_front_ipm build/test_lane_curve_geometry build/test_direct_mask_ipm build/test_front_radial: include/lane_paint_evidence.h
+
+.PHONY: test-traffic-structure
+build/test_traffic_structure: tests/test_traffic_structure.cpp include/traffic_structure.h include/traffic_vision.h
+	@mkdir -p build
+	$(CXX) -std=c++11 -O3 -Wall -Wextra -Werror $(INCLUDES) $< -o $@
+test-traffic-structure: build/test_traffic_structure
+	./build/test_traffic_structure
+
+.PHONY: test-traffic-letterbox
+build/test_traffic_letterbox: tests/test_traffic_letterbox.cpp include/traffic_letterbox.h
+	@mkdir -p build
+	$(CXX) -std=c++11 -O2 -Wall -Wextra -Werror $(INCLUDES) $< -o $@
+test-traffic-letterbox: build/test_traffic_letterbox
+	./build/test_traffic_letterbox

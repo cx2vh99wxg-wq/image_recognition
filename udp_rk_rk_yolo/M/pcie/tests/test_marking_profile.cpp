@@ -5,6 +5,17 @@
 #include <chrono>
 #include <cstdio>
 
+static bool same_points(const std::vector<m_lane::LaneRowPoint>&a,const std::vector<m_lane::LaneRowPoint>&b){
+    if(a.size()!=b.size())return false;
+    for(size_t i=0;i<a.size();++i)if(a[i].x!=b[i].x||a[i].t!=b[i].t||a[i].y!=b[i].y||a[i].width!=b[i].width||a[i].nn!=b[i].nn)return false;
+    return true;
+}
+static void same_pair(const m_lane::PointLanePair&a,const m_lane::PointLanePair&b){
+    assert(a.width==b.width&&a.height==b.height&&a.candidates==b.candidates&&a.first==b.first&&a.last==b.last&&a.sampled==b.sampled);
+    assert(a.left_x==b.left_x&&a.right_x==b.right_x&&a.left_y==b.left_y&&a.right_y==b.right_y);
+    assert(same_points(a.left,b.left)&&same_points(a.right,b.right));
+}
+
 int main()
 {
     const int w = 320, h = 240;
@@ -33,6 +44,10 @@ int main()
                     const auto steering = m_lane::select_point_lanes(mask.data(), w, h);
                     const auto old = m_lane::EgoLaneSelector::describe_points(steering, rgb.data(), true);
                     const auto points = m_lane::marking_profile(mask.data(), steering);
+                    const auto rows=m_lane::lane_mask_rows(mask.data(),w,h,0,h);
+                    const auto reused=m_lane::select_point_lanes(mask.data(),w,h,&rows);
+                    same_pair(steering,reused);
+                    same_pair(points,m_lane::marking_profile(mask.data(),reused,&rows));
                     const auto actual = m_lane::EgoLaneSelector::describe_points(points, rgb.data(), true, coverage.data());
                     before += old.left.type == left; before += old.right.type == right;
                     after += actual.left.type == left; after += actual.right.type == right; total += 2;

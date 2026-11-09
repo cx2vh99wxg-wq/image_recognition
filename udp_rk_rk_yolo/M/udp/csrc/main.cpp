@@ -1,4 +1,5 @@
 #include "front_person_wire.h"
+#include "../../../common/perception/include/display_people_wire.h"
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
@@ -15,6 +16,8 @@
 #include "video_transport_v2.h"
 #include "line_style_wire.h"
 #include "traffic_light_wire.h"
+#include "../../../common/transport/include/curve_result_wire.h"
+#include "../../../common/transport/include/result_schedule.h"
 #include <errno.h>
 #include <signal.h>
 #include <sys/uio.h>
@@ -25,6 +28,10 @@
 // 网络传输：*实现功能：UDP网络传输模块，负责将图像数据发出到S端
 // 网络传输：*传输格式：支持同步的帧传输，包含帧头、行头、行数据、帧尾
 // ── 网络传输 ──
+
+static void (*metadata_pump_callback)(void*)=nullptr;
+static void* metadata_pump_context=nullptr;
+static void pump_metadata_now(){if(metadata_pump_callback)metadata_pump_callback(metadata_pump_context);}
 
 static_assert(sizeof(SharedMemoryControl) == 104, "Image control ABI must remain 104 bytes");
 static_assert(sizeof(CurveDetectionSharedMemory) == 72, "Curve shared ABI must remain 72 bytes");
@@ -312,6 +319,7 @@ static int network_send_frame_source(NetworkManager *net_mgr, const uint8_t *fra
     uint64_t wire_bytes = 0;
     for (unsigned first = 0; first < IMAGE_HEIGHT && sender_running; first += video_v2::BATCH)
     {
+        pump_metadata_now();
         unsigned count = std::min(video_v2::BATCH, IMAGE_HEIGHT - first);
         video_v2::WireHeader headers[video_v2::BATCH];
         struct iovec vectors[video_v2::BATCH][2] = {};
@@ -472,6 +480,64 @@ static void probe_source(SourceConnection &source, NetworkManager &net, uint64_t
     source.curve_failure_since = 0;
     source.curve_attached = curve_detection_shm_init(0) == 0;
 }
+
+// A separate datagram is published immediately, without waiting for a video
+// frame to assemble. Poll between bounded video batches and while idle. One
+// owner retains all IPC/source state, avoiding reader-lifetime data races.
+struct MetadataPump {
+    NetworkManager& network;SourceConnection& source;
+    LineStyleIPC line_ipc={-1,nullptr};TrafficLightIPC traffic_ipc={-1,nullptr};
+    FrontPersonIPC person_ipc={-1,nullptr};display_people::IPC display_ipc;
+    result_transport::Schedule people_send,traffic_send,line_send,display_send,curve_send;
+    uint64_t last_poll=0,report=0,polls=0,gaps=0,max_gap=0,sends=0;
+    MetadataPump(NetworkManager&n,SourceConnection&s):network(n),source(s){}
+    ~MetadataPump(){line_ipc_close(&line_ipc);traffic_ipc_close(&traffic_ipc);front_person_ipc_close(&person_ipc);}
+    void send(uint8_t*p,size_t bytes,size_t age,result_transport::Schedule&schedule,uint64_t now,uint64_t heartbeat){
+        if(schedule.due(p,bytes,age,now,heartbeat)&&sendto(network.socket_fd,p,bytes,MSG_DONTWAIT,
+            (sockaddr*)&network.target_addr,sizeof(network.target_addr))==(ssize_t)bytes)++sends;
+    }
+    void tick(){
+        const uint64_t now=monotonic_ns();if(last_poll&&now-last_poll<2000000ULL)return;
+        if(last_poll){gaps+=now-last_poll;max_gap=std::max(max_gap,now-last_poll);}last_poll=now;++polls;
+    if (source.curve_attached)
+        {
+            uint32_t id, confidence, angle;
+            CurveType type;
+            uint64_t capture_ns;
+            if (!curve_detection_read_source(&id, &type, &confidence, &angle, &capture_ns))
+            {
+                source.curve.observe(id, (uint32_t)type, confidence, angle, capture_ns, now);
+                source.curve_failure_since = 0;
+            }
+            else
+            {
+                // seqlock 竞争不能阻塞视频，也不能给过期弯道元数据续期。
+                if (!source.curve_failure_since)
+                    source.curve_failure_since = now;
+                if (now - source.curve_failure_since > 1000000000ULL)
+                {
+                    curve_detection_shm_cleanup();
+                    source.curve_attached = false;
+                    source.curve_failure_since = 0;
+                }
+            }
+        }
+
+        video_v2::Metadata m;m.session_id=network.session_id;source.curve.fill(m,now);
+        uint8_t c[curve_wire::SIZE];if(curve_wire::encode(c,m))send(c,sizeof(c),28,curve_send,now,50000000ULL);
+        front_person_ipc_open(&person_ipc,0);FrontPersonData person={};uint8_t p[front_person_wire::SIZE];
+        if(!front_person_ipc_read(&person_ipc,&person)&&front_person_wire::encode(p,person,now))send(p,sizeof(p),20,people_send,now,50000000ULL);
+        traffic_ipc_open(&traffic_ipc,0);TrafficLightData traffic={};uint8_t t[traffic_wire::SIZE];
+        if(!traffic_ipc_read(&traffic_ipc,&traffic)&&traffic_wire::encode(t,traffic,now))send(t,sizeof(t),20,traffic_send,now,100000000ULL);
+        line_ipc_open(&line_ipc,LINE_STYLE_KEY,0);LineStyleData line={};uint8_t l[line_wire::SIZE];
+        if(!line_ipc_read(&line_ipc,&line)&&line_wire::encode(l,line,now))send(l,sizeof(l),16,line_send,now,50000000ULL);
+        display_people::Snapshot scene={};uint8_t d[display_people::WIRE_SIZE];
+        if(display_ipc.open(display_people::FRONT_KEY,false)&&display_ipc.read(scene)&&display_people::encode(d,scene,now))send(d,sizeof(d),20,display_send,now,50000000ULL);
+        if(!report)report=now;
+        if(now-report>=5000000000ULL){printf("[META_TX] polls=%llu mean_poll_ms=%.3f max_poll_ms=%.3f datagrams=%llu separate_curve=1\n",(unsigned long long)polls,gaps/(1e6*std::max<uint64_t>(1,polls)),max_gap/1e6,(unsigned long long)sends);report=now;polls=gaps=max_gap=sends=0;}
+    }
+};
+
 int main(int argc, char *argv[])
 {
     setvbuf(stdout, NULL, _IOLBF, 0);
@@ -487,12 +553,9 @@ int main(int argc, char *argv[])
         return 1;
     }
     SourceConnection source;
-    LineStyleIPC line_ipc = {-1, nullptr};
-    TrafficLightIPC traffic_ipc = {-1, nullptr};
-    FrontPersonIPC person_ipc = {-1, nullptr};
-    uint64_t last_person_send = 0;
-    uint64_t last_line_send = 0;
-    uint64_t last_traffic_send = 0;
+    MetadataPump metadata(network,source);
+    metadata_pump_context=&metadata;
+    metadata_pump_callback=[](void*p){static_cast<MetadataPump*>(p)->tick();};
     printf(
         "[UDP_TX] protocol=V3 packet=%zu curve_ttl_ms=500 (legacy/V2 video has no trusted NN identity)\n",
         sizeof(video_v2::WireHeader) + video_v2::LINE_BYTES);
@@ -501,36 +564,7 @@ int main(int argc, char *argv[])
         uint64_t now = monotonic_ns();
         report_sender(&network);
         probe_source(source, network, now);
-        if (!last_person_send || now - last_person_send >= 50000000ULL)
-        {
-            front_person_ipc_open(&person_ipc, 0);
-            FrontPersonData person = {}; uint8_t packet[front_person_wire::SIZE];
-            if (!front_person_ipc_read(&person_ipc, &person) && front_person_wire::encode(packet, person, now))
-                sendto(network.socket_fd, packet, sizeof(packet), MSG_DONTWAIT,
-                       (sockaddr *)&network.target_addr, sizeof(network.target_addr));
-            last_person_send = now;
-        }
-        if (!last_traffic_send || now - last_traffic_send >= 100000000ULL)
-        {
-            traffic_ipc_open(&traffic_ipc, 0);
-            TrafficLightData traffic = {};
-            uint8_t packet[traffic_wire::SIZE];
-            if (!traffic_ipc_read(&traffic_ipc, &traffic) &&
-                traffic_wire::encode(packet, traffic, now))
-                sendto(network.socket_fd, packet, sizeof(packet), MSG_DONTWAIT,
-                       (sockaddr *)&network.target_addr, sizeof(network.target_addr));
-            last_traffic_send = now;
-        }
-        if (!last_line_send || now - last_line_send >= 50000000ULL)
-        {
-            line_ipc_open(&line_ipc, LINE_STYLE_KEY, 0);
-            LineStyleData line = {};
-            uint8_t packet[line_wire::SIZE];
-            if (!line_ipc_read(&line_ipc, &line) && line_wire::encode(packet, line, now))
-                sendto(network.socket_fd, packet, sizeof(packet), MSG_DONTWAIT,
-                       (sockaddr *)&network.target_addr, sizeof(network.target_addr));
-            last_line_send = now;
-        }
+        metadata.tick();
         if (!source.attached)
         {
             usleep(10000);
@@ -564,37 +598,12 @@ int main(int argc, char *argv[])
         source.have_input = true;
         if (width != IMAGE_WIDTH || height != IMAGE_HEIGHT)
             continue;
-        if (source.curve_attached)
-        {
-            uint32_t id, confidence, angle;
-            CurveType type;
-            uint64_t capture_ns;
-            if (!curve_detection_read_source(&id, &type, &confidence, &angle, &capture_ns))
-            {
-                source.curve.observe(id, (uint32_t)type, confidence, angle, capture_ns, now);
-                source.curve_failure_since = 0;
-            }
-            else
-            {
-                // seqlock 竞争不能阻塞视频，也不能给过期弯道元数据续期。
-                if (!source.curve_failure_since)
-                    source.curve_failure_since = now;
-                if (now - source.curve_failure_since > 1000000000ULL)
-                {
-                    curve_detection_shm_cleanup();
-                    source.curve_attached = false;
-                    source.curve_failure_since = 0;
-                }
-            }
-        }
         video_v2::Metadata meta;
         meta.source_frame_id = frame_id;
         source.curve.fill(meta, monotonic_ns());
         network_send_frame_source(&network, pixels, meta);
     }
-    line_ipc_close(&line_ipc);
-    traffic_ipc_close(&traffic_ipc);
-    front_person_ipc_close(&person_ipc);
+    metadata_pump_callback=nullptr;metadata_pump_context=nullptr;
     detach_source(source);
     free(pixels);
     network_manager_cleanup(&network);

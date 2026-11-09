@@ -1,4 +1,5 @@
 #include "traffic_detector.h"
+#include "traffic_letterbox.h"
 #include "front_person.h"
 #include "rknn_api.h"
 #include <chrono>
@@ -9,6 +10,7 @@ namespace traffic
 {
 namespace
 {
+uint64_t detector_clock_ns() { return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count(); }
 const int anchors[3][6] = {
     {10, 13, 16, 30, 33, 23}, {30, 61, 62, 45, 59, 119}, {116, 90, 156, 198, 373, 326}};
 bool fail(std::string *error, const std::string &text)
@@ -26,6 +28,7 @@ struct Detector::Impl
     unsigned passes = 0, view_cursor = 0, locked_view = 0, hits = 0;
     std::vector<rknn_tensor_attr> attrs;
     std::vector<uint8_t> pixels;
+    DetectorTiming timing;
     ~Impl()
     {
         if (context)
@@ -44,6 +47,7 @@ unsigned Detector::last_passes() const
 {
     return impl_->passes;
 }
+DetectorTiming Detector::last_timing() const { return impl_->timing; }
 bool Detector::init(const char *path, std::string *error)
 {
     impl_.reset(new Impl);
@@ -120,6 +124,7 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
     if (!p.context || !rgb || w < 1 || h < 1 || stride < w * 3)
         return fail(error, "invalid traffic input");
     p.passes = 0;
+    p.timing = {};
     // Round-robin views on fresh frames; one NPU pass never delays the next
     // lane job by a three-scale burst. Keep a successful view for tracking.
     const float views[] = {1.f, .5f, .25f};
@@ -129,40 +134,22 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
     (void)budget_ms; // Admission still measures the whole call and backs off overruns.
     {
         const float view = views[view_id];
-        const float scale = std::min(float(p.width) / w, float(p.height) / h) * view;
-        int rw = std::max(1, (int)std::lround(w * scale)),
-            rh = std::max(1, (int)std::lround(h * scale));
-        int px = (p.width - rw) / 2, py = (p.height - rh) / 2;
-        std::fill(p.pixels.begin(), p.pixels.end(), 114);
-        for (int y = 0; y < rh; ++y)
-        {
-            float fy = std::max(0.f, (y + .5f) / scale - .5f);
-            int y0 = std::min(h - 1, (int)fy), y1 = std::min(h - 1, y0 + 1);
-            float ay = fy - y0;
-            for (int x = 0; x < rw; ++x)
-            {
-                float fx = std::max(0.f, (x + .5f) / scale - .5f);
-                int x0 = std::min(w - 1, (int)fx), x1 = std::min(w - 1, x0 + 1);
-                float ax = fx - x0;
-                for (int c = 0; c < 3; ++c)
-                {
-                    float top = rgb[y0 * stride + x0 * 3 + c] * (1 - ax) +
-                                rgb[y0 * stride + x1 * 3 + c] * ax,
-                          bot = rgb[y1 * stride + x0 * 3 + c] * (1 - ax) +
-                                rgb[y1 * stride + x1 * 3 + c] * ax;
-                    p.pixels[((y + py) * p.width + x + px) * 3 + c] =
-                        (uint8_t)std::lround(top * (1 - ay) + bot * ay);
-                }
-            }
-        }
+        const uint64_t started=detector_clock_ns();
+        const auto shape=prepare_letterbox(rgb,w,h,stride,p.width,p.height,view,p.pixels);
+        const float scale=shape.scale;
+        const int px=shape.x,py=shape.y;
+        const uint64_t prepared=detector_clock_ns();p.timing.prepare=prepared-started;
         rknn_input input = {};
         input.index = 0;
         input.buf = p.pixels.data();
         input.size = p.pixels.size();
         input.type = RKNN_TENSOR_UINT8;
         input.fmt = RKNN_TENSOR_NHWC;
-        if (rknn_inputs_set(p.context, 1, &input) || rknn_run(p.context, nullptr))
+        if (rknn_inputs_set(p.context, 1, &input))
             return fail(error, "traffic RKNN execution failed");
+        const uint64_t submitted=detector_clock_ns();p.timing.inputs=submitted-prepared;
+        if (rknn_run(p.context, nullptr))return fail(error,"traffic RKNN execution failed");
+        const uint64_t ran=detector_clock_ns();p.timing.run=ran-submitted;
         ++p.passes;
         rknn_output outputs[3] = {};
         for (unsigned i = 0; i < 3; ++i)
@@ -172,6 +159,7 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
         }
         if (rknn_outputs_get(p.context, 3, outputs, nullptr))
             return fail(error, "traffic outputs_get failed");
+        const uint64_t obtained=detector_clock_ns();p.timing.outputs=obtained-ran;
         std::vector<Box> pass_candidates;
         bool valid = true;
         unsigned levels = 0;
@@ -263,7 +251,9 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                             pass_candidates.push_back(b);
                     }
         }
+        const uint64_t decoded=detector_clock_ns();p.timing.decode=decoded-obtained;
         rknn_outputs_release(p.context, 3, outputs);
+        const uint64_t released=detector_clock_ns();p.timing.release=released-decoded;
         if (!valid || levels != 7)
             return fail(error, "unexpected YOLOv5 head layout/activation; refusing to decode");
         // Locator uses only the model score and color-independent housing evidence.
@@ -293,9 +283,11 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
             boxes.swap(selected);
             p.locked_view = view_id;
             p.hits = 1;
+            p.timing.filter=detector_clock_ns()-released;
             return true;
         }
         p.hits = 0;
+        p.timing.filter=detector_clock_ns()-released;
     }
     return true;
 }

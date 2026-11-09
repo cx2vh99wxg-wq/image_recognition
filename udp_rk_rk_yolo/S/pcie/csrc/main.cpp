@@ -7,6 +7,7 @@
 #include "yolo_integration.h"
 #include "latest_detection.h"
 #include "person_brake_trigger.h"
+#include "person_scene_snapshot.h"
 #include "camera_orientation.h"
 #include "../../include/shared_memory.h"
 #include <stdio.h>
@@ -634,6 +635,7 @@ void shift_columns_up(uint8_t *image_buffer, int width, int height, int start_co
 int main()
 {
     setvbuf(stdout, NULL, _IOLBF, 0);
+    const unsigned detection_submit_interval=s_vision::configured_submit_interval(std::getenv("S_YOLO_SUBMIT_INTERVAL"));
     PipelineProfile profile = {};
     std::unique_ptr<s_vision::LatestDetection> latest_detection;
     uint64_t last_async_capture = 0;
@@ -762,6 +764,7 @@ int main()
         }
     }
     printf("[S-VISION] %s\n", latest_detection ? "latest-frame worker" : "synchronous");
+    if(latest_detection)printf("[S-VISION] async_submit_interval=%u latest_only=1\n",detection_submit_interval);
 
     printf("\n=== 系统初始化完成 ===\n");
     printf("图像尺寸: %dx%d\n", IMAGE_WIDTH, IMAGE_HEIGHT);
@@ -844,7 +847,7 @@ int main()
 
         if (latest_detection)
         {
-            if (frame_count % YOLO_DETECT_INTERVAL == 0)
+            if (frame_count % detection_submit_interval == 0)
                 latest_detection->submit(image_buf_888, captured);
             const auto result = latest_detection->latest();
             if (result.captured > last_async_capture)
@@ -915,6 +918,12 @@ int main()
                                           person_box_bottom);
         }
 
+        // Display sidecar never feeds the emergency-brake shared segment.
+        static display_people::IPC people_ipc;
+        static const uint32_t people_session=(uint32_t)(pipeline_clock_ns()^((uint64_t)getpid()<<19))|1u;
+        const auto scene=s_vision::person_scene(detection_results,detection_valid,
+            latest_detection?last_async_capture:captured,people_session,(uint32_t)frame_count);
+        if(people_ipc.open(display_people::REAR_KEY,true))people_ipc.write(scene);
         phase_started = pipeline_clock_ns();
         if (detection_results.count > 0)
         {

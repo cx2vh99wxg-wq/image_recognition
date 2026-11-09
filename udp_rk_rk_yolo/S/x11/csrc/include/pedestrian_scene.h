@@ -1,0 +1,95 @@
+#ifndef S_PEDESTRIAN_SCENE_H
+#define S_PEDESTRIAN_SCENE_H
+#include "lane_angle_cue.h"
+#include "../../../../common/perception/include/display_people.h"
+#include <array>
+namespace pedestrian_scene {
+using display_people::Person;
+struct Actors {
+ unsigned count=0;Person people[24]={};
+ bool operator==(const Actors&o)const{return count==o.count&&!std::memcmp(people,o.people,count*sizeof(Person));}
+ void append(const display_people::Snapshot&s){for(unsigned i=0;i<s.count&&count<24;++i)people[count++]=s.people[i];}
+};
+struct Placement {double x,y,height;bool calibrated;};
+inline Placement locate(const Person&p,int angle,int width=320,int height=480){
+ const auto r=lane_cue::picture_rect(width,height);
+ const double nx=(p.x+p.w*.5)/320.,ny=std::min(1.,(p.y+p.h)/240.);
+ Placement out={0,0,0,false};
+ if(p.view==display_people::Front){
+  const double top=r.y+r.height*lane_cue::TOP,seam=r.y+r.height*lane_cue::SEAM,bottom=r.y+r.height*lane_cue::BOTTOM;
+  const double depth=(p.flags&display_people::Ground)?std::max(0.,std::min(1.,(p.gy/1000.+.8)/2.)):ny;
+  out.y=top+20+(seam-top-24)*depth;
+  const double t=(seam-out.y)/(seam-top),road_depth=(out.y-top)/(bottom-top);
+  const double theta=std::max(-85,std::min(85,angle))*.017453292519943295;
+  const double bend=std::max(-r.width*.28,std::min(r.width*.28,(seam-top)*.5*std::tan(theta)));
+  const double center=width*.5+bend*t*t,half=r.width*(.12+.25*road_depth);
+  double lateral=(p.flags&display_people::Ground)?2*(p.gx/1000.-.5):2*(nx-.5);
+  if(p.flags&display_people::InRoad)lateral=std::max(-.78,std::min(.78,lateral));
+  if(p.flags&display_people::OffRoad)lateral=(lateral<0?-1:1)*std::max(1.25,std::min(1.6,std::abs(lateral)));
+  out.x=center+half*lateral;out.height=19+15*depth;out.calibrated=(p.flags&display_people::Ground)!=0;
+ }else if(p.view==display_people::Rear){
+  out.x=width*.5+(nx-.5)*r.width*.6;out.y=r.y+r.height*(.935+.045*(1-ny));out.height=28+8*ny;
+ }else{
+  out.x=r.x+r.width*(p.view==display_people::LeftRear?.035+.14*nx:.825+.14*nx);
+  out.y=r.y+r.height*(.77+.14*(1-ny));out.height=28+9*ny;
+ }
+ out.x=std::max(out.height*.26,std::min(width-1-out.height*.26,out.x));
+ out.y=std::max(out.height+2,std::min(height-3.,out.y));return out;
+}
+// Cached software 3D mannequin: lit ellipsoids with depth compositing, not
+// a stick icon or a copy of the user's low-resolution reference picture.
+struct Sprite {
+ static constexpr int W=64,H=128;
+ std::array<uint32_t,W*H> pixels;
+ Sprite(){
+  struct Volume{double x,y,rx,ry,z,rz;};
+  const Volume body[]={
+   {0,.90,.070,.084,0,.067},{0,.80,.035,.047,0,.034},
+   {0,.64,.135,.181,0,.085},{0,.445,.113,.077,0,.070},
+   {-.170,.676,.047,.112,0,.047},{.170,.676,.047,.112,0,.047},
+   {-.193,.507,.038,.106,.010,.039},{.193,.507,.038,.106,.010,.039},
+   {-.195,.405,.039,.043,.014,.034},{.195,.405,.039,.043,.014,.034},
+   {-.061,.314,.055,.128,0,.052},{.061,.314,.055,.128,0,.052},
+   {-.066,.130,.040,.119,.008,.041},{.066,.130,.040,.119,.008,.041},
+   {-.068,.020,.049,.026,.025,.060},{.068,.020,.049,.026,.025,.060}};
+  for(int y=0;y<H;++y)for(int x=0;x<W;++x){
+   unsigned total=0,hits=0;
+   for(int sy=0;sy<2;++sy)for(int sx=0;sx<2;++sx){
+    const double px=((x+(sx+.5)/2)/W-.5)*.56,py=1-(y+(sy+.5)/2)/H;
+    double nearest=-1;unsigned shade=0;
+    for(const auto&b:body){const double dx=(px-b.x)/b.rx,dy=(py-b.y)/b.ry,q=dx*dx+dy*dy;
+     if(q>1)continue;
+     const double z=std::sqrt(1-q),depth=b.z+b.rz*z;
+     if(depth<nearest)continue;
+     nearest=depth;
+     double nx=dx/b.rx,ny=dy/b.ry,nz=z/b.rz,n=std::sqrt(nx*nx+ny*ny+nz*nz);
+     const double light=std::max(0.,(-.38*nx+.35*ny+.86*nz)/n);
+     shade=(unsigned)(145+109*light);
+    }
+    if(nearest>=0){++hits;total+=shade;}
+   }
+   if(!hits){pixels[y*W+x]=0;continue;}
+   const unsigned c=total/hits,a=hits*255/4;pixels[y*W+x]=(a<<24)|(c<<16)|(c<<8)|c;
+  }
+ }
+};
+inline void draw_person(uint32_t*pixels,int stride,int width,int height,const Placement&p){
+ static const Sprite sprite;
+ const int h=(int)std::lround(p.height),w=(int)std::lround(h*.5),left=(int)std::lround(p.x-w*.5),top=(int)std::lround(p.y-h);
+ for(int y=0;y<h;++y)for(int x=0;x<w;++x){
+  if(left+x<0||left+x>=width||top+y<0||top+y>=height)continue;
+  const auto c=sprite.pixels[(y*Sprite::H/h)*Sprite::W+x*Sprite::W/w];const unsigned a=c>>24;if(!a)continue;
+  auto&dst=pixels[(top+y)*stride+left+x];uint32_t out=0xff000000u;
+  for(unsigned shift:{0u,8u,16u})out|=((unsigned((dst>>shift)&255)*(255-a)+unsigned((c>>shift)&255)*a+127)/255)<<shift;
+  dst=out;
+ }
+}
+inline void draw(uint32_t*pixels,int stride,int width,int height,const Actors&actors,int angle){
+ if(!pixels||stride<width||width<8||height<8)return;
+ std::array<Placement,24> where;std::array<unsigned,24> order;
+ for(unsigned i=0;i<actors.count;++i){where[i]=locate(actors.people[i],angle,width,height);order[i]=i;}
+ std::sort(order.begin(),order.begin()+actors.count,[&](unsigned a,unsigned b){return where[a].y<where[b].y;});
+ for(unsigned i=0;i<actors.count;++i)draw_person(pixels,stride,width,height,where[order[i]]);
+}
+}
+#endif

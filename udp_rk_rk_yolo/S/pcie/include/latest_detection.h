@@ -5,6 +5,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <cstring>
+#include <cstdlib>
 #include <functional>
 #include <mutex>
 #include <thread>
@@ -12,6 +13,12 @@
 
 namespace s_vision
 {
+inline unsigned configured_submit_interval(const char*text,unsigned fallback=3)
+{
+    if(!text||!*text)return fallback;
+    char*end=nullptr;unsigned long value=std::strtoul(text,&end,10);
+    return end&&!*end&&value>=1&&value<=5?(unsigned)value:fallback;
+}
 struct DetectionSnapshot
 {
     detect_result_group_t results = {};

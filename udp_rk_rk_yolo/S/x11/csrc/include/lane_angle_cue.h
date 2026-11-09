@@ -31,7 +31,8 @@ struct HeadingHistory
     }
 };
 constexpr uint32_t WHITE = 0xffffffffu, WARNING_RED = 0xffff3030u, UNKNOWN_GRAY = 0xff7d8696u;
-constexpr double SEAM = .53; // Reference only; no horizontal guide is drawn.
+constexpr double SEAM = .575; // New artwork: reference at the car's front lip; never drawn.
+constexpr double TOP = .24, BOTTOM = .885;
 struct PictureRect { double x, y, width, height; };
 inline PictureRect picture_rect(int width, int height)
 {
@@ -51,14 +52,14 @@ inline unsigned warning_sides(unsigned blocked, unsigned left, unsigned right)
 // heading in gray; a missing side style has a gray placeholder rather than disappearing.
 inline void draw(uint32_t *pixels, int stride, int width, int height, int angle,
                  unsigned left_style, unsigned right_style, unsigned blocked = 0,
-                 bool red_phase = false, bool angle_known = true)
+                 bool red_phase = false, bool angle_known = true, bool front_stop = false)
 {
     if (!pixels || width < 8 || height < 8 || stride < width || (angle_known && (angle < -90 || angle > 90)))
         return;
     const auto rect = picture_rect(width, height);
-    const double top = rect.y + rect.height * .17;
+    const double top = rect.y + rect.height * TOP;
     const double seam = rect.y + rect.height * SEAM;
-    const double bottom = rect.y + rect.height * .91;
+    const double bottom = rect.y + rect.height * BOTTOM;
     const double theta = std::max(-85, std::min(85, angle >= -90 && angle <= 90 ? angle : 0)) * .017453292519943295;
     const double limit = rect.width * .28;
     const double bend = std::max(-limit, std::min(limit, (seam - top) * .5 * std::tan(theta)));
@@ -70,7 +71,7 @@ inline void draw(uint32_t *pixels, int stride, int width, int height, int angle,
         dash_phase += 1. / (12. + 38. * depth);
         const double t = y < seam ? (seam - y) / (seam - top) : 0.;
         const double center = width * .5 + bend * t * t;
-        const double half_width = rect.width * (.15 + .27 * depth);
+        const double half_width = rect.width * (.12 + .25 * depth);
         // Green corridor only above the reference seam and only for a valid
         // current heading. Integer alpha blending keeps the underlying artwork.
         if (angle_known && y < seam)
@@ -80,9 +81,9 @@ inline void draw(uint32_t *pixels, int stride, int width, int height, int angle,
             for (int x=left;x<=right;++x)
             {
                 const uint32_t old=pixels[y*stride+x];
-                const unsigned r=(((old>>16)&255u)*3u+24u)/4u;
-                const unsigned g=(((old>>8)&255u)*3u+210u)/4u;
-                const unsigned b=((old&255u)*3u+90u)/4u;
+                const unsigned r=(((old>>16)&255u)*3u+(front_stop?235u:24u))/4u;
+                const unsigned g=(((old>>8)&255u)*3u+(front_stop?32u:210u))/4u;
+                const unsigned b=((old&255u)*3u+(front_stop?48u:90u))/4u;
                 pixels[y*stride+x]=0xff000000u|(r<<16)|(g<<8)|b;
             }
         }

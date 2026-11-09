@@ -118,7 +118,8 @@ inline bool signal_housing(const uint8_t *rgb, int w, int h, int stride, Box box
 }
 /* 输入限于原始 RGB；掩码、界面像素及已标注视频均无效。
  * 这里色相用角度制，不采用 OpenCV 的半角单位。 */
-inline Color classify_color(const uint8_t *rgb, int w, int h, int stride, Box box)
+inline Color classify_color(const uint8_t *rgb, int w, int h, int stride, Box box,
+                            bool verified_three_lamp = false)
 {
     Color result;
     box = clipped(box, w, h);
@@ -251,10 +252,10 @@ inline Color classify_color(const uint8_t *rgb, int w, int h, int stride, Box bo
             cx /= queue.size() * bw;
             cy /= queue.size() * bh;
             // 只有外壳几何明确符合相应形状时，才使用灯位排列规则。
-            if (bh > bw * 1.5 &&
+            if (!verified_three_lamp && bh > bw * 1.5 &&
                 ((state == TRAFFIC_RED && cy > .72) || (state == TRAFFIC_GREEN && cy < .28)))
                 continue;
-            if (bw > bh * 1.8 &&
+            if (!verified_three_lamp && bw > bh * 1.8 &&
                 ((state == TRAFFIC_RED && cx > .72) || (state == TRAFFIC_GREEN && cx < .28)))
                 continue;
             if (strength > scores[state])
@@ -383,35 +384,22 @@ class HousingTracker
 class ColorConfirmation
 {
     uint64_t last_id_ = 0, last_capture_ = 0;
-    unsigned candidate_ = 0, count_ = 0;
 
   public:
     void reset()
     {
         last_id_ = last_capture_ = 0;
-        candidate_ = count_ = 0;
     }
     unsigned observe(unsigned state, uint64_t id, uint64_t captured)
     {
         if (!captured || captured <= last_capture_ || id == last_id_)
             return TRAFFIC_UNKNOWN;
-        if (last_capture_ && captured - last_capture_ > 350000000ULL)
-            candidate_ = count_ = 0;
         last_id_ = id;
         last_capture_ = captured;
-        if (!state)
-        {
-            candidate_ = count_ = 0;
-            return 0;
-        }
-        if (candidate_ != state)
-        {
-            candidate_ = state;
-            count_ = 0;
-        }
-        if (count_ < 3)
-            ++count_;
-        return count_ >= 3 ? candidate_ : unsigned(TRAFFIC_UNKNOWN);
+        // A single fresh, structurally/color-qualified observation is valid.
+        // Duplicate/old frames above remain rejected; no color is invented
+        // for missing or ambiguous evidence. Brake recovery is independent.
+        return state <= TRAFFIC_GREEN ? state : unsigned(TRAFFIC_UNKNOWN);
     }
 };
 /* NPU 作业统一由车道工作线程提交；

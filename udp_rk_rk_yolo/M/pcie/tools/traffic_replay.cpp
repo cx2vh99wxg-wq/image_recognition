@@ -44,17 +44,18 @@ int main(int argc, char **argv)
     else
         puts("Stationary integration test: publishing live traffic-control metadata.");
     bool middle = argc == 6 && !std::strcmp(argv[5], "--middle-bgr");
-    if (argc != 4 && !middle)
+    bool three_rgb = argc == 6 && !std::strcmp(argv[5], "--three-rgb");
+    if (argc != 4 && !middle && !three_rgb)
     {
         fprintf(
             stderr,
-            "Saved-only: traffic_replay model.rknn red.ppm green.ppm [yellow.ppm --middle-bgr]\n");
+            "Saved-only: traffic_replay model.rknn red.ppm green.ppm [yellow.ppm --three-rgb|--middle-bgr]\n");
         return 2;
     }
     int width = middle ? 640 : 320, height = middle ? 480 : 240;
     auto red = load(argv[2], width, height), green = load(argv[3], width, height);
-    auto yellow = middle ? load(argv[4], width, height) : std::vector<uint8_t>();
-    if (red.empty() || green.empty() || (middle && yellow.empty()))
+    auto yellow = (middle || three_rgb) ? load(argv[4], width, height) : std::vector<uint8_t>();
+    if (red.empty() || green.empty() || ((middle || three_rgb) && yellow.empty()))
         return 2;
     std::vector<uint8_t> gray((size_t)width * height * 3, 110);
     traffic::Service service(argv[1], middle
@@ -64,7 +65,7 @@ int main(int argc, char **argv)
     uint64_t id = 0;
     std::vector<const std::vector<uint8_t> *> frames = {&red, &green};
     std::vector<unsigned> expected = {1, 3};
-    if (middle)
+    if (middle || three_rgb)
     {
         frames.push_back(&yellow);
         expected.push_back(2);

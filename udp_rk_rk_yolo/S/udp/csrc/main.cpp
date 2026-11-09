@@ -1,4 +1,5 @@
 #include "front_person_wire.h"
+#include "../../../common/perception/include/display_people_wire.h"
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
@@ -6,6 +7,7 @@
 #include "video_transport_v2.h"
 #include "line_style_wire.h"
 #include "traffic_light_wire.h"
+#include "../../../common/transport/include/curve_result_wire.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -27,6 +29,9 @@ static TrafficLightIPC traffic_ipc = {-1, nullptr};
 static traffic_wire::Receiver traffic_receiver;
 static FrontPersonIPC person_ipc = {-1, nullptr};
 static front_person_wire::Receiver person_receiver;
+static display_people::IPC display_ipc;
+static display_people::Receiver display_receiver;
+static curve_wire::Receiver curve_packets;
 #define IMAGE_WIDTH 640
 #define IMAGE_HEIGHT 480
 #define UDP_PORT 8888
@@ -270,12 +275,28 @@ static void ingest_legacy(NetworkReceiver *r, const uint8_t *data, size_t size, 
     ++r->legacy_corrupt;
     reset_legacy(r, true);
 }
+static void publish_curve(const video_v2::CurveEvent &event);
 static void ingest_datagram(NetworkReceiver *r, const Datagram &packet)
 {
     if (!packet.size || packet.size > MAX_PACKET_SIZE)
         return;
     uint64_t now = monotonic_ns();
     FrameHeader old_header = {};
+    if(curve_wire::packet(packet.data,packet.size)){
+        video_v2::Metadata meta;video_v2::CurveEvent event;
+        const uint64_t peer=((uint64_t)packet.source.sin_addr.s_addr<<16)|packet.source.sin_port;
+        if(curve_packets.ingest(packet.data,packet.size,peer,packet.received_ns,now,meta)&&r->curve.observe(meta,now,event)){
+            publish_curve(event);
+            static uint64_t logged=0;
+            if(!logged||now-logged>=2000000000ULL){printf("[CURVE_RX_DIRECT] source=%u confidence=%u age_ms=%u type=%u angle=%u\n",meta.curve_frame_id,meta.curve_confidence,meta.curve_age_ms,meta.curve_type,meta.curve_angle);logged=now;}
+        }
+        return;
+    }
+    if(display_people::packet(packet.data,packet.size)){
+        display_people::Snapshot scene={};
+        if(display_receiver.ingest(packet.data,packet.size,packet.received_ns,now,scene)&&display_ipc.open(display_people::FRONT_KEY,true))display_ipc.write(scene);
+        return;
+    }
     if (front_person_wire::is_packet(packet.data, packet.size))
     {
         FrontPersonData person = {};
@@ -465,7 +486,7 @@ int network_receive_with_sync(NetworkReceiver *r)
             "[UDP_RX] legacy/V2 video accepted; curve confidence forced to zero (no NN identity/age)\n");
         r->compatibility_logged = true;
     }
-    if (r->curve.observe(meta, monotonic_ns(), curve_event))
+    if (curve_packets.allow_video(meta,monotonic_ns()) && r->curve.observe(meta, monotonic_ns(), curve_event))
         publish_curve(curve_event);
     ++r->report_published;
     return FRAME_BUFFER_SIZE;

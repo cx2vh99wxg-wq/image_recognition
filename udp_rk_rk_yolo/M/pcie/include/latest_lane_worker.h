@@ -305,8 +305,9 @@ class LatestWorker
                                 ipm_test_->render(working_pixels_.data(), ipm_rgb_.data());
                                 if (use_point_lanes())
                                 {
-                                    auto points = select_point_lanes(ipm_lane_.data(), width_ / 2, height_ / 2);
-                                    style_points = marking_profile(ipm_lane_.data(), points);
+                                    const auto rows=lane_mask_rows(ipm_lane_.data(),width_/2,height_/2,0,height_/2);
+                                    auto points = select_point_lanes(ipm_lane_.data(), width_ / 2, height_ / 2,&rows);
+                                    style_points = marking_profile(ipm_lane_.data(), points,&rows);
                                     bird = EgoLaneSelector::describe_points(style_points, ipm_rgb_.data(),
                                                                             true, ipm_coverage_.data());
                                     trace.near_y = points.last;

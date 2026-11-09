@@ -62,9 +62,10 @@ int main(){
     assert(tracker.update(shifted.data(),W,H,W*3,box,tracked));assert(std::abs(tracked.x-64)<2.1);
     Image lost(W*H*3,250);assert(!tracker.update(lost.data(),W,H,W*3,box,tracked));
     ColorConfirmation confirm;
-    assert(!confirm.observe(1,1,1000000000ULL));assert(!confirm.observe(1,2,1100000000ULL));assert(confirm.observe(1,3,1200000000ULL)==1);
-    assert(!confirm.observe(1,3,1200000000ULL));assert(!confirm.observe(3,4,1300000000ULL));assert(!confirm.observe(3,5,1400000000ULL));assert(confirm.observe(3,6,1500000000ULL)==3);
-    assert(!confirm.observe(3,7,2000000000ULL));assert(!confirm.observe(0,8,2100000000ULL));
+    assert(confirm.observe(1,1,1000000000ULL)==1);assert(confirm.observe(1,2,1100000000ULL)==1);assert(confirm.observe(1,3,1200000000ULL)==1);
+    assert(!confirm.observe(1,3,1200000000ULL));assert(confirm.observe(3,4,1300000000ULL)==3);assert(confirm.observe(2,5,1400000000ULL)==2);assert(confirm.observe(1,6,1500000000ULL)==1);
+    assert(confirm.observe(3,7,2000000000ULL)==3);assert(!confirm.observe(0,8,2100000000ULL));
+    assert(!confirm.observe(1,9,2099999999ULL));assert(!confirm.observe(99,9,2200000000ULL));confirm.reset();assert(confirm.observe(2,10,2300000000ULL)==2);
     Admission admission;LaneBudget lane;lane.source=1;lane.captured=1000000000ULL;lane.completed=1280000000ULL;lane.duration=280000000ULL;lane.fresh=true;
     assert(admission.allow(lane,1280000000ULL));lane.curve_active=true;assert(admission.allow(lane,1280000000ULL));lane.curve_active=false;
     lane.duration=360000000ULL;assert(!admission.allow(lane,1280000000ULL));lane.duration=280000000ULL;assert(!admission.allow(lane,1400000000ULL));

@@ -35,7 +35,10 @@
 #include "six_camera_render.h"
 #include "lane_angle_cue.h"
 #include "vehicle_artwork.h"
+#include "pedestrian_scene.h"
+#include "front_brake_cue.h"
 #include "../../../common/image/frame_pixels.h"
+#include "../../../common/performance/frame_intervals.h"
 
 /* aligned_alloc 的声明需要先启用 _ISOC11_SOURCE。 */
 #ifndef _ISOC11_SOURCE
@@ -104,6 +107,9 @@ struct VehicleLayerState
     int signed_angle;
     unsigned left_style, right_style, blocked;
     bool warning_red;
+    bool front_stop;
+    pedestrian_scene::Actors actors;
+    unsigned warning_views;
     bool operator==(const VehicleLayerState &other) const
     {
         return artwork == other.artwork && artwork_revision == other.artwork_revision &&
@@ -112,7 +118,7 @@ struct VehicleLayerState
                blink == other.blink && curve == other.curve && confidence == other.confidence &&
                signed_angle == other.signed_angle && left_style == other.left_style &&
                right_style == other.right_style && blocked == other.blocked &&
-               warning_red == other.warning_red;
+               warning_red == other.warning_red && front_stop == other.front_stop && warning_views == other.warning_views && actors == other.actors;
     }
 };
 
@@ -462,7 +468,7 @@ void draw_lane_lines(uint32_t *display_pixels, int dst_x, int dst_y, int dst_wid
     lane_cue::draw(display_pixels + dst_y * COMBINED_IMAGE_WIDTH + dst_x,
                    COMBINED_IMAGE_WIDTH, dst_width, dst_height, state.signed_angle,
                    state.left_style, state.right_style, state.blocked, state.warning_red,
-                   state.confidence >= 60);
+                   state.confidence >= 60,state.front_stop);
 }
 
 // One immutable snapshot controls the cached vehicle panel and alarm phase.
@@ -504,6 +510,11 @@ static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::View
     if (state.front_person) state.blink = blink_state;
     state.left_style = status.line_left;
     state.right_style = status.line_right;
+    if(!engine->headless){
+        static FrontGuardIPC guard_ipc={-1,nullptr};FrontGuardData guard={};
+        if(!front_guard_open(&guard_ipc,0)&&!front_guard_read(&guard_ipc,&guard))
+            state.front_stop=lane_cue::front_stop_tint(guard,display_clock_ns());
+    }else state.front_stop=std::getenv("VISION_PREVIEW_FRONT_STOP")!=nullptr;
     // Offline preview only: no IPC writes and no vehicle/control processes.
     if (engine->headless)
     {
@@ -522,6 +533,41 @@ static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::View
     state.signed_angle = engine->heading_history.observe(state.signed_angle,state.confidence>=60);
     state.blocked = lane_cue::warning_sides(status.lane_blocked, state.left_style, state.right_style);
     state.warning_red = state.blocked && (display_clock_ns() / 300000000ULL) % 2;
+    if(!engine->headless){
+        static display_people::IPC rear_ipc,front_ipc;
+        display_people::Snapshot rear={},front={};const uint64_t now=display_clock_ns();
+        bool have_rear=rear_ipc.open(display_people::REAR_KEY,false)&&rear_ipc.read(rear)&&display_people::fresh(rear,now);
+        bool have_front=front_ipc.open(display_people::FRONT_KEY,false)&&front_ipc.read(front)&&display_people::fresh(front,now);
+        if(have_rear)state.actors.append(rear);
+        if(have_front)state.actors.append(front);
+        if(state.person&&!have_rear){
+            const int cx=(state.box_left+state.box_right)/2,cy=(state.box_top+state.box_bottom)/2;
+            const unsigned tile=(cx>=320?1:0)+(cy>=240?2:0);
+            auto p=display_people::box(tile==1?display_people::RightRear:tile==2?display_people::LeftRear:display_people::Rear,
+                state.box_left-(cx>=320?320:0),state.box_top-(cy>=240?240:0),
+                state.box_right-state.box_left,state.box_bottom-state.box_top,1.f);
+            p.y=240-p.y-p.h;
+            state.actors.people[state.actors.count++]=p;
+        }
+        if(!have_front){
+            static FrontPersonIPC fallback={-1,nullptr};FrontPersonData p={};
+            if(!front_person_ipc_open(&fallback,0)&&!front_person_ipc_read(&fallback,&p)&&front_person_fresh(&p,now)&&
+               (p.flags&(FRONT_PERSON_FOUND|FRONT_PERSON_VALID))==5){
+                auto actor=display_people::box(display_people::Front,p.x,p.y,p.width,p.height,p.quality*.01f);
+                actor.flags=(p.flags&FRONT_PERSON_IN_PATH)?display_people::InRoad:0;
+                if(state.actors.count<24)state.actors.people[state.actors.count++]=actor;
+            }
+        }
+    }
+    if(state.person)for(unsigned i=0;i<state.actors.count;++i)
+        if(state.actors.people[i].view!=display_people::Front)state.warning_views|=1u<<state.actors.people[i].view;
+    if(engine->headless&&std::getenv("VISION_PREVIEW_PEOPLE")){
+        display_people::Snapshot demo={};demo.count=4;
+        demo.people[0]=display_people::box(display_people::Front,170,100,25,80,.9f);
+        demo.people[0].flags=display_people::Ground|display_people::InRoad;demo.people[0].gx=680;demo.people[0].gy=500;
+        for(unsigned i=1;i<4;++i)demo.people[i]=display_people::box(i,130,100,35,90,.9f);
+        state.actors.append(demo);state.person=1;state.warning_views=14;state.blink=1;
+    }
     if (engine->headless && state.blocked)
         if (const char *phase = std::getenv("VISION_PREVIEW_WARNING_RED"))
             state.warning_red = std::strcmp(phase, "0") != 0;
@@ -535,18 +581,30 @@ static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::View
         if (state.artwork) std::copy_n(state.artwork + y * 320, 320, row);
         else std::fill_n(row, 320, 0xff080b20u);
     }
-    if (state.person)
+    if (state.person && !state.warning_views)
     {
         int edge; float position;
         calculate_car_edge_position(state.box_left, state.box_top, state.box_right,
                                     state.box_bottom, &edge, &position);
         int x = edge == 3 ? (int)(position * 320) : edge == 2 ? 320 : 0;
-        int y = edge == 3 ? 480 : (int)(position * 480);
+        int y = edge == 3 ? 480 : (int)std::lround(480*.78);
         vehicle_artwork::person_glow(engine->vehicle_layer, COMBINED_IMAGE_WIDTH, x, y, state.blink);
+    }
+    if(state.warning_views&(1u<<display_people::LeftRear))
+        vehicle_artwork::person_glow(engine->vehicle_layer,COMBINED_IMAGE_WIDTH,0,374,state.blink);
+    if(state.warning_views&(1u<<display_people::RightRear))
+        vehicle_artwork::person_glow(engine->vehicle_layer,COMBINED_IMAGE_WIDTH,320,374,state.blink);
+    if(state.warning_views&(1u<<display_people::Rear)){
+        int edge;float position;calculate_car_edge_position(state.box_left,state.box_top,state.box_right,state.box_bottom,&edge,&position);
+        if(edge!=3)for(unsigned i=0;i<state.actors.count;++i)if(state.actors.people[i].view==display_people::Rear){
+            const auto&p=state.actors.people[i];position=1.f-(p.y+p.h*.5f)/240.f;break;
+        }
+        vehicle_artwork::person_glow(engine->vehicle_layer,COMBINED_IMAGE_WIDTH,(int)(position*320),480,state.blink);
     }
     if (state.front_person)
         vehicle_artwork::person_glow(engine->vehicle_layer, COMBINED_IMAGE_WIDTH, 160, 0, state.blink);
     draw_lane_lines(engine->vehicle_layer, 0, 0, 320, 480, state);
+    pedestrian_scene::draw(engine->vehicle_layer,COMBINED_IMAGE_WIDTH,320,480,state.actors,state.signed_angle);
     engine->vehicle_state = state;
     engine->vehicle_cached = 1;
     return true;
@@ -1189,8 +1247,8 @@ int resize_presentation(RenderEngine *engine, int width, int height)
     }
 #endif
     const char *sync_mode = getenv("VISION_SHM_SYNC");
-    engine->use_shm_completion = engine->use_shm && !engine->shm_completion_disabled && sync_mode &&
-                                 !strcmp(sync_mode, "completion");
+    engine->use_shm_completion = engine->use_shm && !engine->shm_completion_disabled &&
+                                 (!sync_mode || !strcmp(sync_mode, "completion"));
     if (engine->use_shm_completion)
         engine->shm_completion_type = XShmGetEventBase(engine->display) + ShmCompletion;
     engine->needs_redraw = 1;
@@ -1204,6 +1262,8 @@ static void record_display_perf(RenderEngine *engine, uint64_t start, uint64_t c
                                 uint64_t compose_done, uint64_t scale_done, uint64_t end,
                                 bool car_redrawn)
 {
+    static performance::FrameIntervals intervals;
+    intervals.observe(end);
     if (!engine->profile_start)
     {
         engine->profile_start = start;
@@ -1237,6 +1297,8 @@ static void record_display_perf(RenderEngine *engine, uint64_t start, uint64_t c
     uint64_t span = end - engine->profile_start;
     if (span >= 5000000000ULL)
     {
+        const auto timing=intervals.take();
+        printf("[PERF DISPLAY INTERVAL] submit_p50_ms=%.2f submit_p95_ms=%.2f submit_p99_ms=%.2f submit_max_ms=%.2f\n",timing.p50,timing.p95,timing.p99,timing.worst);
         double seconds = span / 1e9;
         engine->display_fps = engine->profile_frames / seconds;
         engine->pcie_shown_fps = engine->profile_s_shown / seconds;
@@ -2318,6 +2380,7 @@ int main(int argc, char **argv)
     // 持续获取输入并提交呈现帧。
     while (keep_running)
     {
+        const uint64_t loop_started_ns=display_clock_ns();
         int pcie_updated = 0, udp_updated = 0;
         uint32_t pcie_width, pcie_height, pcie_frame_id;
         uint32_t udp_width, udp_height, udp_frame_id;
@@ -2494,15 +2557,12 @@ int main(int argc, char **argv)
             break;
         }
 
-        // 呈现合成：动画期间提高渲染频率，平时降低CPU占用
-        if (render_engine.transition.is_active)
-        {
-            usleep(16667); // 呈现合成：约60fps (16.67ms)
-        }
-        else
-        {
-            usleep(1000); // 参数记录为 1ms。
-        }
+        // Rendering time is part of the frame budget. A slow frame must not
+        // pay another fixed 16.7ms during a view transition. Bound idle waits
+        // to 1ms so input, metadata and exit events stay responsive.
+        const uint64_t cadence=render_engine.transition.is_active?16666667ULL:33333333ULL;
+        const uint64_t elapsed=display_clock_ns()-loop_started_ns;
+        if(elapsed<cadence)usleep((useconds_t)std::min<uint64_t>(1000,(cadence-elapsed+999)/1000));
     }
 
     // 记录处理耗时及吞吐。

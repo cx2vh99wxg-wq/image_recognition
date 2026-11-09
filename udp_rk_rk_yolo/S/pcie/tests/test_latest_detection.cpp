@@ -5,6 +5,10 @@
 
 int main()
 {
+    assert(s_vision::configured_submit_interval(nullptr)==3);
+    assert(s_vision::configured_submit_interval("1")==1);
+    assert(s_vision::configured_submit_interval("2")==2);
+    for(const char* bad:{"0","6","-1","2ms",""})assert(s_vision::configured_submit_interval(bad)==3);
     std::promise<void> entered, release;
     auto first_started = entered.get_future();
     auto release_first = release.get_future();

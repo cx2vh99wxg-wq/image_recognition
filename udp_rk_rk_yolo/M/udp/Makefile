@@ -64,6 +64,12 @@ test-protocol:
 	$(CXX) $(CXXFLAGS) -UNDEBUG -Iinclude tests/test_video_transport_v2.cpp -o $(BUILD_DIR)/test_video_transport_v2
 	$(BUILD_DIR)/test_video_transport_v2
 
+.PHONY: test-result-transport
+test-result-transport:
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -Wall -Wextra -Werror -UNDEBUG -Iinclude tests/test_result_transport.cpp -o $(BUILD_DIR)/test_result_transport
+	$(BUILD_DIR)/test_result_transport
+
 #############################################################################
 # 构建信息
 #############################################################################

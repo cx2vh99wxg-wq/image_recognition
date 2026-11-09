@@ -6,7 +6,8 @@ namespace m_lane
 {
 // Style evidence only: associate visible paint fragments across dash gaps.
 // Steering still uses select_point_lanes() and its original 10px links.
-inline PointLanePair marking_profile(const float *mask, const PointLanePair &steering)
+inline PointLanePair marking_profile(const float *mask, const PointLanePair &steering,
+                                     const LaneMaskRows *shared_rows=nullptr)
 {
     PointLanePair out;
     out.width = steering.width;
@@ -14,7 +15,9 @@ inline PointLanePair marking_profile(const float *mask, const PointLanePair &ste
     const int w = out.width, h = out.height;
     if (!mask || w < 80 || h < 60)
         return out;
-    const auto rows = lane_mask_rows(mask, w, h, 0, h);
+    if(shared_rows && shared_rows->size()!=(size_t)h)return out;
+    const auto owned_rows=shared_rows?LaneMaskRows{}:lane_mask_rows(mask,w,h,0,h);
+    const auto& rows=shared_rows?*shared_rows:owned_rows;
     std::vector<std::vector<LaneRowPoint>> tracks;
     std::vector<size_t> active;
     const int max_gap = std::max(12, h / 4);

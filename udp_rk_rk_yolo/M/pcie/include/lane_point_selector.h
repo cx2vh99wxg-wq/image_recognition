@@ -14,6 +14,7 @@ struct LaneRowPoint
     int y, width;
     bool nn;
 };
+using LaneMaskRows = std::vector<std::vector<LaneRowPoint>>;
 
 inline std::vector<std::vector<LaneRowPoint>> lane_mask_rows(const float *mask, int w, int h,
                                                             int first, int end)
@@ -65,7 +66,8 @@ inline const LaneRowPoint *lane_point_near_row(const std::vector<LaneRowPoint> &
     return upper_gap <= 3 ? &*upper : nullptr;
 }
 
-inline PointLanePair select_point_lanes(const float *mask, int w, int h)
+inline PointLanePair select_point_lanes(const float *mask, int w, int h,
+                                       const LaneMaskRows *shared_rows=nullptr)
 {
     PointLanePair result;
     result.width = w;
@@ -75,7 +77,9 @@ inline PointLanePair select_point_lanes(const float *mask, int w, int h)
 
     constexpr int distance_limit = 10;
     constexpr int min_span = 30;
-    const auto rows = lane_mask_rows(mask, w, h, 0, h);
+    if(shared_rows && shared_rows->size()!=(size_t)h)return result;
+    const auto owned_rows=shared_rows?LaneMaskRows{}:lane_mask_rows(mask,w,h,0,h);
+    const auto& rows=shared_rows?*shared_rows:owned_rows;
     struct Link
     {
         size_t track, point;
