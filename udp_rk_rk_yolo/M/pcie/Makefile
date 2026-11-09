@@ -87,7 +87,24 @@ endif
 #############################################################################
 .PHONY: all clean install debug release info
 
-all: info $(BUILD_DIR)/$(TARGET)
+all: info test-camera-guard $(BUILD_DIR)/$(TARGET)
+
+# Transport padding is never image data, even when it is not pure BBWW.
+# Keep this regression in normal M builds: last-row flicker must not return.
+.PHONY: test-camera-guard
+$(BUILD_DIR)/test_camera_guard_rows: ../../common/image/tests/test_camera_guard_rows.cpp ../../common/image/camera_valid_rows.h ../../common/image/frame_pixels.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) -std=c++11 -O2 -Wall -Wextra -Werror $< -o $@
+
+test-camera-guard: $(BUILD_DIR)/test_camera_guard_rows
+	./$(BUILD_DIR)/test_camera_guard_rows
+
+.PHONY: camera-edge-probe
+$(BUILD_DIR)/camera_edge_probe: tools/camera_edge_probe.cpp ../include/shared_memory.h ../../common/image/frame_pixels.h $(SHARED_MEMORY_OBJ)
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) -std=c++11 -O2 -Wall -Wextra -Werror $(INCLUDES) $< $(SHARED_MEMORY_OBJ) -pthread -lrt -o $@
+
+camera-edge-probe: $(BUILD_DIR)/camera_edge_probe
 
 .PHONY: test-pixels
 $(BUILD_DIR)/test_frame_pixels: ../../common/image/tests/test_frame_pixels.cpp ../../common/image/frame_pixels.h

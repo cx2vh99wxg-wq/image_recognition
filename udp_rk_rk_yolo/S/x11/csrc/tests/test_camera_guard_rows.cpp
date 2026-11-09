@@ -15,7 +15,7 @@ int main()
     camera_extend_padding_rows(clean.data(),640,480,240);
     for(int y : {238,478})
         for(int x=0;x<640;++x)
-            assert(clean[y*640+x]==image[y*640+(x%320<8?x-x%320+8:x)]);
+            assert(clean[y*640+x]==image[(y-(x%320>=160))*640+(x%320<8?x-x%320+8:x)]);
     // Simulate transport padding and spill from the preceding camera.
     for(int y=0;y<480;++y)
         for(int x=0;x<8;++x)
@@ -54,5 +54,5 @@ int main()
                    six_camera::argb(valid[sy*640+source_x]));
         }
     camera_extend_padding_rows(image.data(),640,480,1);
-    std::puts("CAMERA GUARD PASS: actual 8-pixel prefix + BBWW tail cannot propagate; clean penultimate row/valid half unchanged; S six-view edges correct");
+    std::puts("CAMERA GUARD PASS: 8-pixel prefix + invalid tail repaired regardless of contents; valid half unchanged; S six-view edges correct");
 }

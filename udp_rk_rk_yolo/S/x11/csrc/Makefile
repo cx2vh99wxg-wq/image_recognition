@@ -60,7 +60,14 @@ endif
 .PHONY: all clean help run preview test-fps test-speed-warning test-six-camera
 
 # 直接调用 make 时采用的入口
-all: $(BIN)
+all: test-camera-guard $(BIN)
+
+.PHONY: test-camera-guard
+$(BUILD_DIR)/test_camera_guard_rows: tests/test_camera_guard_rows.cpp ../../../common/image/camera_valid_rows.h include/six_camera_render.h ../../../common/image/frame_pixels.h | $(BUILD_DIR)
+	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@
+
+test-camera-guard: $(BUILD_DIR)/test_camera_guard_rows
+	./$(BUILD_DIR)/test_camera_guard_rows
 
 $(BUILD_DIR)/test_dashboard_ui_cache: tests/test_dashboard_ui_cache.cpp include/dashboard_ui.h include/six_camera_render.h include/speed_warning_glyphs.h ../../include/camera_views.h | $(BUILD_DIR)
 	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@

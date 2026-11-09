@@ -5,8 +5,11 @@
 #include <string.h>
 
 // The shipped 2x2/3-camera FPGA stream has two trailing guard regions per
-// tile: an invalid last row, plus alternating 0xffff/0x0000 words in the
-// right half of the penultimate row (152/160 pixels observed). Repair that
+// tile: an invalid last row, plus an invalid right half of the penultimate
+// row. Its values vary (BBWW, partial BBWW, stale pixels, arbitrary words).
+// This is a transport-validity boundary, NOT a color-detection problem.
+// A >=90% black/white heuristic leaked 122/160 and 142/160 extreme pixels
+// on real M frames on 2026-11-09. Always repair that known invalid
 // half from the preceding valid row BEFORE extending the final row. Using
 // the original penultimate row as the source propagates its checkerboard.
 // Apply before rotation/lens correction/inference/publishing so both boards
@@ -38,22 +41,8 @@ static inline void camera_extend_padding_rows(uint16_t *pixels, int width, int h
         {
             const size_t x = (size_t)tile_x + tile_width / 2;
             uint16_t *tail = pixels + (size_t)(end - 2) * width + x;
-            const int count = tile_width / 2;
-            int black = 0, white = 0, transitions = 0;
-            for (int i = 0; i < count; ++i)
-            {
-                black += tail[i] == 0;
-                white += tail[i] == 65535;
-                if (i && (tail[i] == 0 || tail[i] == 65535) &&
-                    (tail[i - 1] == 0 || tail[i - 1] == 65535))
-                    transitions += tail[i] != tail[i - 1];
-            }
-            // Observed signature: eight valid pixels followed by BBWW repeats.
-            // A dark/bright real road edge alone is not this transport pattern.
-            if (black + white >= count * 9 / 10 && black >= count / 4 &&
-                white >= count / 4 && transitions >= count / 3)
-                memcpy(tail, pixels + (size_t)(end - 3) * width + x,
-                       (size_t)count * sizeof(*pixels));
+            memcpy(tail, pixels + (size_t)(end - 3) * width + x,
+                   (size_t)(tile_width / 2) * sizeof(*pixels));
         }
         memcpy(pixels + (size_t)(end - 1) * width,
                pixels + (size_t)(end - 2) * width, (size_t)width * sizeof(*pixels));
