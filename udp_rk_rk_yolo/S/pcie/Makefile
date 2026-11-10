@@ -88,6 +88,12 @@ $(BUILDDIR)/test_detection_layers: $(BUILDDIR)/test_detection_layers.o $(BUILDDI
 test-detection-layers: $(BUILDDIR)/test_detection_layers
 	./$(BUILDDIR)/test_detection_layers
 
+.PHONY: test-native-overlay
+$(BUILDDIR)/test_native_overlay: tests/test_native_overlay.cpp $(BUILDDIR)/yolo_integration.o $(BUILDDIR)/preprocess.o $(BUILDDIR)/postprocess.o $(BUILDDIR)/test_cached_alerts.o include/camera_orientation.h
+	$(CXX) -std=c++11 -O3 $(INCLUDES) $< $(filter %.o,$^) $(LIBDIRS) $(LIBS) -o $@
+test-native-overlay: $(BUILDDIR)/test_native_overlay
+	./$(BUILDDIR)/test_native_overlay
+
 $(TARGET): $(OBJECTS) | $(BUILDDIR)
 	@echo "生成目标程序文件: $@"
 	$(CXX) $(OBJECTS) $(LIBDIRS) $(LIBS) -o $@

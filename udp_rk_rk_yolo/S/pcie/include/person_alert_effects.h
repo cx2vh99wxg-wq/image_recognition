@@ -63,6 +63,9 @@ extern "C"
     /* 图像处理：遍历检测结果，只对类别名为 person 的框绘制警示效果。 */
     void apply_person_alert_effects(uint8_t *rgb_data, int width, int height,
                                     const detect_result_group_t *results);
+    // scratch has width*height*3 bytes, used only by the exact legacy fallback.
+    int apply_person_alert_effects565(uint16_t *pixels,int width,int height,
+                                      const detect_result_group_t *results,uint8_t *scratch);
 
 #ifdef __cplusplus
 }

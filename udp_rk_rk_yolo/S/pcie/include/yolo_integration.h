@@ -60,6 +60,10 @@ extern "C"
                               const detect_result_group_t *results);
     void draw_detection_alerts(uint8_t *rgb_data, int width, int height,
                                const detect_result_group_t *results);
+    void draw_detection_boxes565(uint16_t *pixels,int width,int height,
+                                 const detect_result_group_t *results);
+    int draw_detection_alerts565(uint16_t *pixels,int width,int height,
+                                 const detect_result_group_t *results,uint8_t *scratch);
 
     // RGB565转RGB888（针对PCIE数据流）
     void rgb565_to_rgb888_yolo(const uint16_t *rgb565_data, uint8_t *rgb888_data, int width,

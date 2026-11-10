@@ -198,7 +198,13 @@ void yolo_engine_cleanup(YOLOEngine *engine)
 }
 
 // 简单的字符绘制函数 - 绘制5x7像素的字符
-static void draw_char(uint8_t *rgb_data, int width, int height, int x, int y, char c, uint8_t r,
+typedef struct { uint8_t *data; int native565; } DrawTarget;
+static inline void draw_target_pixel(DrawTarget *t,int index,uint8_t r,uint8_t g,uint8_t b)
+{
+    if(t->native565)((uint16_t*)t->data)[index]=(uint16_t)(((r&248u)<<8)|((g&252u)<<3)|(b>>3));
+    else {t->data[index*3]=r;t->data[index*3+1]=g;t->data[index*3+2]=b;}
+}
+static void draw_char(DrawTarget *target, int width, int height, int x, int y, char c, uint8_t r,
                       uint8_t g, uint8_t b)
 {
     // 简化的5x7字体点阵 - 主要字符
@@ -299,10 +305,7 @@ static void draw_char(uint8_t *rgb_data, int width, int height, int x, int y, ch
                 int py = y + row;
                 if (px >= 0 && px < width && py >= 0 && py < height)
                 {
-                    int idx = (py * width + px) * 3;
-                    rgb_data[idx] = r;
-                    rgb_data[idx + 1] = g;
-                    rgb_data[idx + 2] = b;
+                    draw_target_pixel(target, py * width + px, r, g, b);
                 }
             }
         }
@@ -310,7 +313,7 @@ static void draw_char(uint8_t *rgb_data, int width, int height, int x, int y, ch
 }
 
 // 把字符串逐字绘入图像。
-static void draw_text(uint8_t *rgb_data, int width, int height, int x, int y, const char *text,
+static void draw_text(DrawTarget *target, int width, int height, int x, int y, const char *text,
                       uint8_t r, uint8_t g, uint8_t b)
 {
     int char_width = 6; // 5像素宽度 + 1像素间距
@@ -320,14 +323,14 @@ static void draw_text(uint8_t *rgb_data, int width, int height, int x, int y, co
     {
         if (pos_x >= 0 && y >= 0 && y + 7 < height)
         {
-            draw_char(rgb_data, width, height, pos_x, y, text[i], r, g, b);
+            draw_char(target, width, height, pos_x, y, text[i], r, g, b);
         }
         pos_x += char_width;
     }
 }
 
 // 绘制填充的矩形背景
-static void draw_filled_rect(uint8_t *rgb_data, int width, int height, int x1, int y1, int x2,
+static void draw_filled_rect(DrawTarget *target, int width, int height, int x1, int y1, int x2,
                              int y2, uint8_t r, uint8_t g, uint8_t b)
 {
     for (int y = y1; y <= y2 && y < height; y++)
@@ -336,10 +339,7 @@ static void draw_filled_rect(uint8_t *rgb_data, int width, int height, int x1, i
         {
             if (x >= 0 && y >= 0)
             {
-                int idx = (y * width + x) * 3;
-                rgb_data[idx] = r;
-                rgb_data[idx + 1] = g;
-                rgb_data[idx + 2] = b;
+                draw_target_pixel(target, y * width + x, r, g, b);
             }
         }
     }
@@ -464,10 +464,12 @@ static const char *display_class_name(const char *name)
 }
 
 static void draw_detection_impl(uint8_t *rgb_data, int width, int height,
-                                const detect_result_group_t *results, int alerts)
+                                const detect_result_group_t *results, int alerts, int native565)
 {
     if (!rgb_data || !results)
         return;
+
+    DrawTarget target = {rgb_data,native565};
 
     // 创建可修改的副本进行去重
     detect_result_group_t filtered_results = *results;
@@ -531,13 +533,13 @@ static void draw_detection_impl(uint8_t *rgb_data, int width, int height,
         }
 
         // 每条边从其端点向内画三像素。极窄框也按画布裁剪。
-        draw_filled_rect(rgb_data, width, height, left, top, right, top + 2,
+        draw_filled_rect(&target, width, height, left, top, right, top + 2,
                          box_r, box_g, box_b);
-        draw_filled_rect(rgb_data, width, height, left, bottom - 2, right, bottom,
+        draw_filled_rect(&target, width, height, left, bottom - 2, right, bottom,
                          box_r, box_g, box_b);
-        draw_filled_rect(rgb_data, width, height, left, top, left + 2, bottom,
+        draw_filled_rect(&target, width, height, left, top, left + 2, bottom,
                          box_r, box_g, box_b);
-        draw_filled_rect(rgb_data, width, height, right - 2, top, right, bottom,
+        draw_filled_rect(&target, width, height, right - 2, top, right, bottom,
                          box_r, box_g, box_b);
 
         char label_text[64];
@@ -639,7 +641,7 @@ static void draw_detection_impl(uint8_t *rgb_data, int width, int height,
 
         // 扩大背景区域以提高可读性
         int bg_padding = 2;
-        draw_filled_rect(rgb_data, width, height, label_x - bg_padding, label_y - bg_padding,
+        draw_filled_rect(&target, width, height, label_x - bg_padding, label_y - bg_padding,
                          label_x + text_width + bg_padding, label_y + text_height + bg_padding, 0,
                          0, 0); // 标签底色取黑色。
 
@@ -648,13 +650,13 @@ static void draw_detection_impl(uint8_t *rgb_data, int width, int height,
         const int y0 = label_y - bg_padding;
         const int x1 = label_x + text_width + bg_padding;
         const int y1 = label_y + text_height + bg_padding;
-        draw_filled_rect(rgb_data, width, height, x0, y0, x1, y0, 255, 255, 255);
-        draw_filled_rect(rgb_data, width, height, x0, y1, x1, y1, 255, 255, 255);
-        draw_filled_rect(rgb_data, width, height, x0, y0, x0, y1, 255, 255, 255);
-        draw_filled_rect(rgb_data, width, height, x1, y0, x1, y1, 255, 255, 255);
+        draw_filled_rect(&target, width, height, x0, y0, x1, y0, 255, 255, 255);
+        draw_filled_rect(&target, width, height, x0, y1, x1, y1, 255, 255, 255);
+        draw_filled_rect(&target, width, height, x0, y0, x0, y1, 255, 255, 255);
+        draw_filled_rect(&target, width, height, x1, y0, x1, y1, 255, 255, 255);
 
         // 绘制标签文字（黄色，更显眼）
-        draw_text(rgb_data, width, height, label_x, label_y + 1, label_text, 255, 255,
+        draw_text(&target, width, height, label_x, label_y + 1, label_text, 255, 255,
                   0); // 显示文字采用黄色。
     }
 }
@@ -662,13 +664,13 @@ static void draw_detection_impl(uint8_t *rgb_data, int width, int height,
 void draw_detection_results(uint8_t *rgb_data, int width, int height,
                             const detect_result_group_t *results)
 {
-    draw_detection_impl(rgb_data, width, height, results, 1);
+    draw_detection_impl(rgb_data, width, height, results, 1, 0);
 }
 
 void draw_detection_boxes(uint8_t *rgb_data, int width, int height,
                           const detect_result_group_t *results)
 {
-    draw_detection_impl(rgb_data, width, height, results, 0);
+    draw_detection_impl(rgb_data, width, height, results, 0, 0);
 }
 
 void draw_detection_alerts(uint8_t *rgb_data, int width, int height,
@@ -680,6 +682,20 @@ void draw_detection_alerts(uint8_t *rgb_data, int width, int height,
     deduplicate_detections(&filtered, DEDUP_IOU_THRESHOLD);
 #endif
     apply_person_alert_effects(rgb_data, width, height, &filtered);
+}
+
+void draw_detection_boxes565(uint16_t *pixels,int width,int height,const detect_result_group_t *results)
+{
+    draw_detection_impl((uint8_t*)pixels,width,height,results,0,1);
+}
+int draw_detection_alerts565(uint16_t *pixels,int width,int height,const detect_result_group_t *results,uint8_t *scratch)
+{
+    if(!pixels||!results||!scratch)return -1;
+    detect_result_group_t filtered=*results;
+#if ENABLE_DETECTION_DEDUP
+    deduplicate_detections(&filtered,DEDUP_IOU_THRESHOLD);
+#endif
+    return apply_person_alert_effects565(pixels,width,height,&filtered,scratch);
 }
 
 void rgb565_to_rgb888_yolo(const uint16_t *rgb565_data, uint8_t *rgb888_data, int width, int height)

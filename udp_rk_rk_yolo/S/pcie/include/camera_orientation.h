@@ -96,4 +96,23 @@ static inline void unpack_rgb565_tiles_180(const uint16_t *source, uint8_t *rgb,
             }
 }
 
+// Exact native-format counterpart of unpack_rgb565_tiles_180 followed by
+// frame_pack_rgb565. Keep camera0 wrapped-row/edge repairs in both paths.
+static inline void orient_rgb565_tiles_180(const uint16_t *source,uint16_t *target,
+    int width,int height,int tw,int th,bool restore_camera0=false)
+{
+    if(!source||!target||source==target||width<=0||height<=0||tw<=0||th<=0||width%tw||height%th)return;
+    for(int ty=0;ty<height;ty+=th)for(int tx=0;tx<width;tx+=tw)for(int y=0;y<th;++y){
+        const bool camera0=restore_camera0&&width==640&&height==480&&tw==320&&th==240&&tx/320==ty/240;
+        int sy=th-1-y;if(camera0)sy=(sy+3)%th;
+        const auto*row=source+(size_t)(ty+sy)*width+tx;
+        auto*out=target+(size_t)(ty+y)*width+tx;int x=0;
+#ifdef FRAME_PIXELS_NEON
+        for(;x<=tw-8;x+=8)vst1q_u16(out+x,frame_reverse_u16x8(vld1q_u16(row+tw-x-8)));
+#endif
+        for(;x<tw;++x)out[x]=row[tw-1-x];
+        if(camera0)for(int edge=tw-9;edge<tw;++edge)out[edge]=out[tw-10];
+    }
+}
+
 #endif

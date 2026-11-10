@@ -23,6 +23,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <memory>
+#include <vector>
 
 /* aligned_alloc 的声明需要先启用 _ISOC11_SOURCE。 */
 #ifndef _ISOC11_SOURCE
@@ -641,6 +642,10 @@ int main()
     std::unique_ptr<s_vision::LatestDetection> latest_detection;
     uint64_t last_async_capture = 0;
     const char *async = getenv("S_VISION_ASYNC");
+    const char *native_option=getenv("S_VISION_NATIVE_565");
+    const bool use_native=!native_option||strcmp(native_option,"0")!=0;
+    std::vector<uint16_t> native_pixels(use_native?IMAGE_WIDTH*IMAGE_HEIGHT:0);
+    bool last_frame_native=false;
     auto stop_async = [&] {
         if (!latest_detection)
             return;
@@ -765,6 +770,7 @@ int main()
         }
     }
     printf("[S-VISION] %s\n", latest_detection ? "latest-frame worker" : "synchronous");
+    printf("[S-VISION] native565_overlay=%d input_pixels_unchanged=1\n",use_native?1:0);
     if(latest_detection)printf("[S-VISION] async_submit_interval=%u latest_only=1\n",detection_submit_interval);
 
     printf("\n=== 系统初始化完成 ===\n");
@@ -836,8 +842,13 @@ int main()
         profile.orient_ns += pipeline_clock_ns() - phase_started;
         phase_started = pipeline_clock_ns();
 
-        /* One pass: rotate each tile 180 degrees and convert to RGB888. */
-        unpack_rgb565_tiles_180((const uint16_t *)image_buf_temp, image_buf_888,
+        bool frame_native=use_native;
+        const bool input_due=frame_count%(latest_detection?detection_submit_interval:YOLO_DETECT_INTERVAL)==0;
+        if(use_native){
+            orient_rgb565_tiles_180((const uint16_t*)image_buf_temp,native_pixels.data(),
+                IMAGE_WIDTH,IMAGE_HEIGHT,CAMERA_TILE_WIDTH,CAMERA_TILE_HEIGHT,true);
+            if(input_due)frame_unpack_rgb565(native_pixels.data(),image_buf_888,IMAGE_WIDTH*IMAGE_HEIGHT);
+        }else unpack_rgb565_tiles_180((const uint16_t *)image_buf_temp, image_buf_888,
                                IMAGE_WIDTH, IMAGE_HEIGHT, CAMERA_TILE_WIDTH, CAMERA_TILE_HEIGHT, true);
 
         profile.color_ns += pipeline_clock_ns() - phase_started;
@@ -949,12 +960,20 @@ int main()
         phase_started = pipeline_clock_ns();
         // The one-second history affects boxes and avatars, not warning
         // evidence. Keep the original fresh-result glow and its blink timing.
-        if (detection_results.count > 0)
-            draw_detection_alerts(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, &detection_results);
+        if (detection_results.count > 0){
+            if(frame_native){
+                if(draw_detection_alerts565(native_pixels.data(),IMAGE_WIDTH,IMAGE_HEIGHT,&detection_results,image_buf_888)){
+                    frame_unpack_rgb565(native_pixels.data(),image_buf_888,IMAGE_WIDTH*IMAGE_HEIGHT);
+                    frame_native=false;
+                    draw_detection_alerts(image_buf_888,IMAGE_WIDTH,IMAGE_HEIGHT,&detection_results);
+                }
+            }else draw_detection_alerts(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, &detection_results);
+        }
         if (display_results.count > 0)
         {
             // 把识别信息叠加到输出图像。
-            draw_detection_boxes(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, &display_results);
+            if(frame_native)draw_detection_boxes565(native_pixels.data(),IMAGE_WIDTH,IMAGE_HEIGHT,&display_results);
+            else draw_detection_boxes(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, &display_results);
         }
 
         profile.draw_ns += pipeline_clock_ns() - phase_started;
@@ -967,7 +986,10 @@ int main()
         phase_started = pipeline_clock_ns();
 
         /* 图像处理：步骤4: 通过共享内存发出带有识别结果的图像 */
-        if (shm_manager_send_frame_with_detections(&shm_manager, image_buf_888) != 0)
+        const int publish_result=frame_native?
+            shared_memory_write_image(&shm_manager,(uint8_t*)native_pixels.data(),PCIE_IMAGE_WIDTH,PCIE_IMAGE_HEIGHT):
+            shm_manager_send_frame_with_detections(&shm_manager,image_buf_888);
+        if (publish_result != 0)
         {
             emergency_stop("共享内存发送失败", "共享内存传输");
             printf("!!! 可能的原因: !!!\n");
@@ -985,6 +1007,7 @@ int main()
 
         profile.publish_ns += pipeline_clock_ns() - phase_started;
         profile.frames++;
+        last_frame_native=frame_native;
         report_pipeline_profile(&profile, pcie_manager.dma_rows);
         frame_count++;
 
@@ -1012,8 +1035,10 @@ int main()
 
     /* 保留最后一帧为PPM文件以供后续使用。 */
     printf("\n=== 保存最后一帧 ===\n");
-    if (frame_count > 0)
+    if (frame_count > 0){
+        if(last_frame_native)frame_unpack_rgb565(native_pixels.data(),image_buf_888,IMAGE_WIDTH*IMAGE_HEIGHT);
         save_frame_to_ppm(image_buf_888, "last_frame_with_detections.ppm");
+    }
 
     // ── 图像处理 ──
     // 本阶段集中释放系统资源。

@@ -2,6 +2,7 @@
 #define _GNU_SOURCE
 #endif
 #include "person_alert_effects.h"
+#include "../../../common/image/frame_pixels.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -558,6 +559,44 @@ static void blend_cached_alert(uint8_t *rgb, const uint16_t *alpha,
     }
 }
 
+static void blend_cached_alert565(uint16_t *pixels,const uint16_t *alpha,
+                                  const uint8_t *active,size_t count)
+{
+    for(size_t block=0;block<(count+63)/64;++block){
+        if(!active[block])continue;
+        size_t first=block*64,end=count-first<64?count:first+64,i=first;
+#if defined(__ARM_NEON) || defined(__aarch64__)
+        for(;i+8<=end;i+=8){
+            const uint16x8_t p=vld1q_u16(pixels+i),a=vld1q_u16(alpha+i),inv=vsubq_u16(vdupq_n_u16(256),a);
+            uint16x8_t hi=vshrq_n_u16(p,11),mid=vandq_u16(vshrq_n_u16(p,5),vdupq_n_u16(63)),lo=vandq_u16(p,vdupq_n_u16(31));
+            hi=vorrq_u16(vshlq_n_u16(hi,3),vshrq_n_u16(hi,2));mid=vorrq_u16(vshlq_n_u16(mid,2),vshrq_n_u16(mid,4));lo=vorrq_u16(vshlq_n_u16(lo,3),vshrq_n_u16(lo,2));
+            hi=vshrq_n_u16(vmulq_u16(hi,inv),8);mid=vshrq_n_u16(vmulq_u16(mid,inv),8);
+            lo=vshrq_n_u16(vmlaq_n_u16(vmulq_u16(lo,inv),a,255),8);
+            vst1q_u16(pixels+i,vorrq_u16(vorrq_u16(vshlq_n_u16(vandq_u16(hi,vdupq_n_u16(248)),8),vshlq_n_u16(vandq_u16(mid,vdupq_n_u16(252)),3)),vshrq_n_u16(lo,3)));
+        }
+#endif
+        for(;i<end;++i){
+            const unsigned p=pixels[i],a=alpha[i],inv=256-a;
+            const unsigned hi=frame_expand_5bit(p>>11),g=(p>>5)&63,mid=(g<<2)|(g>>4),lo=frame_expand_5bit(p&31);
+            pixels[i]=(uint16_t)((((hi*inv>>8)&248)<<8)|(((mid*inv>>8)&252)<<3)|((lo*inv+255*a)>>11));
+        }
+    }
+}
+
+static void blend_alert_target(uint8_t *rgb,uint16_t *native,const AlertMaskCache *c,int width,int height)
+{
+    const int on=g_alert_state.blink_state;
+    if(native)blend_cached_alert565(native,on?c->alpha_on:c->alpha_off,on?c->blocks_on:c->blocks_off,(size_t)width*height);
+    else blend_cached_alert(rgb,on?c->alpha_on:c->alpha_off,on?c->blocks_on:c->blocks_off,(size_t)width*height);
+}
+static void draw_alert_fallback(uint8_t *rgb,uint16_t *native,uint8_t *scratch,int width,int height,const BOX_RECT *boxes,int count)
+{
+    uint8_t *out=native?scratch:rgb;
+    if(native)frame_unpack_rgb565(native,out,(size_t)width*height);
+    for(int i=0;i<count;++i)draw_person_alert_effect(out,width,height,boxes+i,&g_alert_state);
+    if(native)frame_pack_rgb565(out,native,(size_t)width*height);
+}
+
 typedef struct
 {
     pthread_mutex_t mutex;
@@ -636,10 +675,10 @@ int person_alert_cache_wait(unsigned timeout_ms)
 #endif
 
 /* 为全局状态后遍历检测结果，仅对名称为 person 的框绘制特效。建立初始状态。 */
-void apply_person_alert_effects(uint8_t *rgb_data, int width, int height,
-                                const detect_result_group_t *results)
+static void apply_person_alert_impl(uint8_t *rgb_data,uint16_t *native,uint8_t *scratch,
+                                    int width,int height,const detect_result_group_t *results)
 {
-    if (!rgb_data || !results)
+    if ((!rgb_data&&!native) || !results)
         return;
 
     if (!g_alert_state.is_initialized)
@@ -662,20 +701,16 @@ void apply_person_alert_effects(uint8_t *rgb_data, int width, int height,
     // rounding instead of accumulating a visible composition difference.
     if (count > 8 || width != SCREEN_WIDTH || height != SCREEN_HEIGHT)
     {
-        for (int i = 0; i < count; ++i)
-            draw_person_alert_effect(rgb_data, width, height, boxes + i, &g_alert_state);
+        draw_alert_fallback(rgb_data,native,scratch,width,height,boxes,count);
         return;
     }
     if (!start_alert_worker())
     {
         AlertMaskCache *cache = &alert_caches[0];
         if (prepare_alert_cache(cache, width, height, boxes, count))
-            blend_cached_alert(rgb_data, g_alert_state.blink_state ? cache->alpha_on : cache->alpha_off,
-                               g_alert_state.blink_state ? cache->blocks_on : cache->blocks_off,
-                               (size_t)width * height);
+            blend_alert_target(rgb_data,native,cache,width,height);
         else
-            for (int i = 0; i < count; ++i)
-                draw_person_alert_effect(rgb_data, width, height, boxes + i, &g_alert_state);
+            draw_alert_fallback(rgb_data,native,scratch,width,height,boxes,count);
         return;
     }
     pthread_mutex_lock(&alert_worker.mutex);
@@ -692,9 +727,17 @@ void apply_person_alert_effects(uint8_t *rgb_data, int width, int height,
     if (alert_worker.active >= 0)
     {
         AlertMaskCache *cache = &alert_caches[alert_worker.active];
-        blend_cached_alert(rgb_data, g_alert_state.blink_state ? cache->alpha_on : cache->alpha_off,
-                           g_alert_state.blink_state ? cache->blocks_on : cache->blocks_off,
-                           (size_t)width * height);
+        blend_alert_target(rgb_data,native,cache,width,height);
     }
     pthread_mutex_unlock(&alert_worker.mutex);
+}
+
+void apply_person_alert_effects(uint8_t *rgb,int width,int height,const detect_result_group_t *results)
+{
+    apply_person_alert_impl(rgb,NULL,NULL,width,height,results);
+}
+int apply_person_alert_effects565(uint16_t *pixels,int width,int height,const detect_result_group_t *results,uint8_t *scratch)
+{
+    if(!pixels||!scratch||!results||width<=0||height<=0)return -1;
+    apply_person_alert_impl(NULL,pixels,scratch,width,height,results);return 0;
 }
