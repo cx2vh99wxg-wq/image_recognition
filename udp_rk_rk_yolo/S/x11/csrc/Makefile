@@ -15,7 +15,9 @@ SRC_DIR = .
 INC_DIR = include
 
 # 参与构建的文件
-CXXSRCS = $(wildcard $(SRC_DIR)/*.cpp)
+# The production executable has one entry point. Temporary replay/profiling
+# translation units must not be picked up as additional application sources.
+CXXSRCS = $(SRC_DIR)/main.cpp
 CSRCS = ../../csrc/shared_memory.c  # 说明：添加共享内存源文件
 INCLUDES = $(wildcard $(INC_DIR)/*.h) $(wildcard ../../include/*.h)  # 说明：添加上级头文件
 CXX_OBJECTS = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(CXXSRCS))
@@ -232,4 +234,13 @@ $(BUILD_DIR)/test_crosswalk_scene: tests/test_crosswalk_scene.cpp include/crossw
 	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@
 test-crosswalk-scene: $(BUILD_DIR)/test_crosswalk_scene
 	./$(BUILD_DIR)/test_crosswalk_scene
+
+.PHONY: test-vehicle-state-key
+$(BUILD_DIR)/test_vehicle_state_key: tests/test_vehicle_state_key.cpp include/vehicle_layer_state.h include/pedestrian_scene.h include/lane_angle_cue.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@ -lm -pthread
+test-vehicle-state-key: $(BUILD_DIR)/test_vehicle_state_key
+	./$(BUILD_DIR)/test_vehicle_state_key
+
+$(BUILD_DIR)/main.o: include/vehicle_layer_state.h
 $(BUILD_DIR)/main.o: include/crosswalk_scene.h ../../../common/perception/include/crosswalk_display.h

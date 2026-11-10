@@ -1,0 +1,56 @@
+{
+  "case_count": 15,
+  "cases_are_not_independent": true,
+  "baseline_agreement_is_not_accuracy": true,
+  "models": {
+    "fp16": {
+      "median_ms": 186.6279,
+      "geometry_equal": null,
+      "marking_equal": null,
+      "person_relation_equal": null
+    },
+    "int8": {
+      "median_ms": 72.478,
+      "geometry_equal": 15,
+      "marking_equal": 12,
+      "person_relation_equal": 14
+    },
+    "mixed-heads": {
+      "median_ms": 103.2238,
+      "geometry_equal": 15,
+      "marking_equal": 13,
+      "person_relation_equal": 14
+    },
+    "mixed-error-guided": {
+      "median_ms": 144.6944,
+      "geometry_equal": 15,
+      "marking_equal": 14,
+      "person_relation_equal": 14
+    },
+    "twin-small": {
+      "median_ms": 62.4995,
+      "geometry_equal": 4,
+      "marking_equal": 1,
+      "person_relation_equal": 8
+    },
+    "twin-medium": {
+      "median_ms": 112.4773,
+      "geometry_equal": 4,
+      "marking_equal": 3,
+      "person_relation_equal": 8
+    },
+    "twin-small-x2": {
+      "median_ms": 296.7774,
+      "geometry_equal": 9,
+      "marking_equal": 10,
+      "person_relation_equal": 7
+    },
+    "twin-medium-x2": {
+      "median_ms": 444.6352,
+      "geometry_equal": 9,
+      "marking_equal": 10,
+      "person_relation_equal": 7
+    }
+  },
+  "production_promoted": false
+}

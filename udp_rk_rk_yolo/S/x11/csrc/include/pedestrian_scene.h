@@ -9,7 +9,16 @@ namespace pedestrian_scene {
 using display_people::Person;
 struct Actors {
  unsigned count=0;Person people[24]={};Motion motion[24]={};
- bool operator==(const Actors&o)const{return count==o.count&&!std::memcmp(people,o.people,count*sizeof(Person))&&!std::memcmp(motion,o.motion,count*sizeof(Motion));}
+ // Confidence selects tracks before this point, but is not a drawn pixel.
+ // Keep it in the snapshot; do not invalidate the image cache for score jitter.
+ bool operator==(const Actors&o)const{
+  if(count!=o.count)return false;
+  for(unsigned i=0;i<count;++i){const auto&a=people[i];const auto&b=o.people[i];
+   if(a.view!=b.view||a.x!=b.x||a.y!=b.y||a.w!=b.w||a.h!=b.h||a.flags!=b.flags||a.gx!=b.gx||a.gy!=b.gy)return false;
+   if(motion[i].walking!=o.motion[i].walking||motion[i].direction!=o.motion[i].direction||motion[i].phase!=o.motion[i].phase)return false;
+  }
+  return true;
+ }
  void append(const display_people::Snapshot&s){for(unsigned i=0;i<s.count&&count<24;++i)people[count++]=s.people[i];}
 };
 struct Placement {double x,y,height;bool calibrated;};
