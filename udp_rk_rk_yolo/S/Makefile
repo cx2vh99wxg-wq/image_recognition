@@ -191,12 +191,13 @@ run: all tune-network prepare-display
 	@# 运行FSPI控制程序
 	@echo "3. 运行FSPI按钮控制程序..."
 	@if [ -f /etc/adas-vision-only ]; then \
-		echo "ADAS vision-only: vehicle control and steering feedback remain stopped"; \
+		echo "ADAS vision-only: brake/permission monitor active; automatic steering and IMU remain stopped"; \
+		cd fspi && sudo bash -c './build/vehicle_control --brake-only & echo $$! > fspi.pid'; \
 	else \
 		cd fspi && sudo bash -c 'python3 ../steering/tools/launch_vehicle_control.py & echo $$! > fspi.pid'; \
 	fi
 	@sleep 3
-	@if [ ! -f /etc/adas-vision-only ]; then \
+	@{ \
 		fspi_pid=$$(cat fspi/fspi.pid 2>/dev/null); \
 		case "$$fspi_pid" in ''|*[!0-9]*) echo "异常: FSPI PID 无效，自动刹停不可用"; exit 1;; esac; \
 		if ! ps -p "$$fspi_pid" -o stat=,comm= 2>/dev/null | awk '$$1 !~ /^Z/ && $$2 == "vehicle_control" { running=1 } END { exit !running }'; then \
@@ -204,7 +205,7 @@ run: all tune-network prepare-display
 			exit 1; \
 		fi; \
 		echo "说明：FSPI车控程序已运行 (PID=$$fspi_pid)"; \
-	fi
+	}
 	@echo "说明：模式控制: 读取六视角编号及99全景；11/55兼容归并到中间视角"
 	@echo ""
 	@# 运行X11呈现程序（前台运行）

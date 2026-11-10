@@ -38,6 +38,10 @@ typedef struct _detect_result_group_t
      * 代表框选择满足条件且置信度最高的 person。 */
     int person_brake_count;
     detect_result_t person_brake_result;
+    /* Independent bounded display reservoir. Brake statistics above still
+     * include every qualifying anchor, without display suppression. */
+    int person_display_count;
+    detect_result_t person_display_results[16];
 } detect_result_group_t;
 
 #ifdef __cplusplus

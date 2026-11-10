@@ -11,7 +11,7 @@ constexpr unsigned CAPACITY=12;
 constexpr int FRONT_KEY=0x12345678+16, REAR_KEY=0x12345678+17;
 constexpr uint64_t TTL=750000000ULL;
 enum View : uint32_t {Front=0,Rear=1,LeftRear=2,RightRear=3};
-enum Flag : uint32_t {Ground=1,InRoad=2,OffRoad=4};
+enum Flag : uint32_t {Ground=1,InRoad=2,OffRoad=4,RoadAligned=8};
 struct Person {uint32_t view,x,y,w,h,quality,flags; int32_t gx,gy;};
 struct Snapshot {uint32_t session,source,count,ready,deadline_lo,deadline_hi; Person people[CAPACITY];};
 static_assert(sizeof(Snapshot)==24+CAPACITY*36,"display-only ABI");
@@ -22,7 +22,7 @@ inline bool valid(const Snapshot&s){
  if(!s.session || s.count>CAPACITY || s.ready>1)return false;
  for(unsigned i=0;i<s.count;++i){const auto&p=s.people[i];
   if(p.view>3 || p.x>=320 || p.y>=240 || !p.w || !p.h || p.w>320-p.x || p.h>240-p.y ||
-     p.quality>100 || (p.flags&~7u) || ((p.flags&6u)==6u) || std::abs(int64_t(p.gx))>100000 || std::abs(int64_t(p.gy))>100000)return false;}
+     p.quality>100 || (p.flags&~15u) || ((p.flags&6u)==6u) || std::abs(int64_t(p.gx))>100000 || std::abs(int64_t(p.gy))>100000)return false;}
  return true;
 }
 inline float overlap(const Person&a,const Person&b){

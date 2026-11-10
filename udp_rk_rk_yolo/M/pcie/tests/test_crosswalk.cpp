@@ -19,6 +19,7 @@ int main(int argc,char**argv){
  std::fill(im.begin(),im.end(),200);assert(!detector.detect(im.data(),coverage.data()).count);
  std::fill(im.begin(),im.end(),55);fill(im,40,175,280,185,220);assert(!detector.detect(im.data(),coverage.data()).count);
  std::fill(im.begin(),im.end(),55);for(int x:{90,220})for(int y:{145,175,205})fill(im,x,y,x+6,y+18,220);assert(!detector.detect(im.data(),coverage.data()).count);
+ std::fill(im.begin(),im.end(),55);for(int x:{70,100,130,160,190,220})fill(im,x,0,x+6,240,220);assert(!detector.detect(im.data(),coverage.data()).count); // long parallel lanes are not one crossing
  std::fill(coverage.begin(),coverage.end(),0);assert(!detector.detect(im.data(),coverage.data()).count);std::fill(coverage.begin(),coverage.end(),1);
  if(argc==3){std::ifstream f(argv[1],std::ios::binary);std::string magic;int w,h,v;f>>magic>>w>>h>>v;f.get();assert(magic=="P6"&&w==320&&h==240&&v==255);f.read((char*)im.data(),im.size());assert(f);
   for(size_t i=0;i<im.size();i+=3)std::swap(im[i],im[i+2]);

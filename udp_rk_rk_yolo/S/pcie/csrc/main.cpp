@@ -8,6 +8,7 @@
 #include "latest_detection.h"
 #include "person_brake_trigger.h"
 #include "person_scene_snapshot.h"
+#include "../../../common/perception/include/people_history.h"
 #include "camera_orientation.h"
 #include "../../include/shared_memory.h"
 #include <stdio.h>
@@ -844,6 +845,8 @@ int main()
         /* 图像处理：步骤3: 使用YOLO进行目标识别 (通过宏控制识别间隔) */
         static detect_result_group_t cached_results = {0};
         static int detection_valid = 0;
+        static uint32_t people_source=0;
+        static uint64_t people_capture=0;
 
         if (latest_detection)
         {
@@ -853,6 +856,7 @@ int main()
             if (result.captured > last_async_capture)
             {
                 last_async_capture = result.captured;
+                people_capture=result.captured;++people_source;
                 ++profile.infer_jobs;
                 profile.infer_ns += result.elapsed;
             }
@@ -863,6 +867,7 @@ int main()
         {
             phase_started = pipeline_clock_ns();
             profile.infer_jobs++;
+            people_capture=captured;++people_source;
             // 按宏定义的间隔执行识别
             memset(&detection_results, 0, sizeof(detection_results));
             if (yolo_engine_detect(&yolo_engine, image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT,
@@ -922,13 +927,34 @@ int main()
         static display_people::IPC people_ipc;
         static const uint32_t people_session=(uint32_t)(pipeline_clock_ns()^((uint64_t)getpid()<<19))|1u;
         const auto scene=s_vision::person_scene(detection_results,detection_valid,
-            latest_detection?last_async_capture:captured,people_session,(uint32_t)frame_count);
+            people_capture,people_session,people_source);
         if(people_ipc.open(display_people::REAR_KEY,true))people_ipc.write(scene);
+        // Retained boxes are presentation only. Do not feed them back into
+        // emergency_brake_update_status or give old inference a new source ID.
+        static display_people::History people_history;
+        people_history.update(&scene,pipeline_clock_ns());
+        detect_result_group_t display_results=detection_results;display_results.count=0;
+        for(int i=0;i<detection_results.count&&display_results.count<32;++i)
+            if(strcmp(detection_results.results[i].name,"person"))display_results.results[display_results.count++]=detection_results.results[i];
+        for(const auto&t:people_history.tracks)if(t.active){
+            const auto&p=t.shown;
+            for(unsigned duplicate=0;duplicate<(p.view==display_people::Rear?2u:1u);++duplicate){
+                const unsigned tile=p.view==display_people::RightRear?1:p.view==display_people::LeftRear?2:duplicate?3:0;
+                if(display_results.count>=OBJ_NUMB_MAX_SIZE)break;
+                auto&r=display_results.results[display_results.count++];memset(&r,0,sizeof(r));strcpy(r.name,"person");r.prop=p.quality*.01f;
+                r.box.left=int(tile%2*320+p.x);r.box.right=r.box.left+p.w;
+                r.box.top=int(tile/2*240+240-p.y-p.h);r.box.bottom=r.box.top+p.h;
+            }
+        }
         phase_started = pipeline_clock_ns();
+        // The one-second history affects boxes and avatars, not warning
+        // evidence. Keep the original fresh-result glow and its blink timing.
         if (detection_results.count > 0)
+            draw_detection_alerts(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, &detection_results);
+        if (display_results.count > 0)
         {
             // 把识别信息叠加到输出图像。
-            draw_detection_results(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, &detection_results);
+            draw_detection_boxes(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, &display_results);
         }
 
         profile.draw_ns += pipeline_clock_ns() - phase_started;

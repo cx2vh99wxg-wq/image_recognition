@@ -55,6 +55,11 @@ extern "C"
     // 绘制检测结果到图像上
     void draw_detection_results(uint8_t *rgb_data, int width, int height,
                                 const detect_result_group_t *results);
+    // Presentation history may retain boxes; warning effects use fresh results.
+    void draw_detection_boxes(uint8_t *rgb_data, int width, int height,
+                              const detect_result_group_t *results);
+    void draw_detection_alerts(uint8_t *rgb_data, int width, int height,
+                               const detect_result_group_t *results);
 
     // RGB565转RGB888（针对PCIE数据流）
     void rgb565_to_rgb888_yolo(const uint16_t *rgb565_data, uint8_t *rgb888_data, int width,

@@ -541,11 +541,19 @@ static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::View
         bool have_rear=rear_ipc.open(display_people::REAR_KEY,false)&&rear_ipc.read(rear)&&display_people::fresh(rear,now);
         bool have_front=front_ipc.open(display_people::FRONT_KEY,false)&&front_ipc.read(front)&&display_people::fresh(front,now);
         static pedestrian_scene::MotionTracker rear_motion,front_motion;
-        if(have_rear){rear_motion.append(rear,now,state.signed_angle,state.actors.motion,state.actors.count,24,pedestrian_scene::project_foot);state.actors.append(rear);}
-        if(have_front){front_motion.append(front,now,state.signed_angle,state.actors.motion,state.actors.count,24,pedestrian_scene::project_foot);state.actors.append(front);}
+        const unsigned kept_rear=rear_motion.collect(have_rear?&rear:nullptr,now,state.signed_angle,state.actors.people,state.actors.motion,state.actors.count,24,pedestrian_scene::project_foot);
+        state.actors.count+=kept_rear;
+        const unsigned kept_front=front_motion.collect(have_front?&front:nullptr,now,state.signed_angle,state.actors.people,state.actors.motion,state.actors.count,24,pedestrian_scene::project_foot);
+        state.actors.count+=kept_front;
         static crosswalk_display::IPC crosswalk_ipc;crosswalk_display::Snapshot zebra={};
-        if(crosswalk_ipc.open(false)&&crosswalk_ipc.read(zebra)&&crosswalk_display::fresh(zebra,now))state.crosswalk.set(zebra);
-        if(state.person&&!have_rear){
+        static crosswalk_display::Geometry kept_zebra;
+        static uint32_t zebra_session=0,zebra_source=0;static uint64_t zebra_seen=0;
+        if(crosswalk_ipc.open(false)&&crosswalk_ipc.read(zebra)&&crosswalk_display::fresh(zebra,now)){
+            if(zebra.session!=zebra_session){kept_zebra={};zebra_seen=0;zebra_source=zebra.source-1;zebra_session=zebra.session;}
+            if(int32_t(zebra.source-zebra_source)>0){zebra_source=zebra.source;if(zebra.count){kept_zebra.set(zebra);zebra_seen=now;}}
+        }
+        if(zebra_seen&&now>=zebra_seen&&now-zebra_seen<1000000000ULL)state.crosswalk=kept_zebra;
+        if(state.person&&!have_rear&&!kept_rear){
             const int cx=(state.box_left+state.box_right)/2,cy=(state.box_top+state.box_bottom)/2;
             const unsigned tile=(cx>=320?1:0)+(cy>=240?2:0);
             auto p=display_people::box(tile==1?display_people::RightRear:tile==2?display_people::LeftRear:display_people::Rear,
@@ -554,7 +562,7 @@ static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::View
             p.y=240-p.y-p.h;
             state.actors.people[state.actors.count++]=p;
         }
-        if(!have_front){
+        if(!have_front&&!kept_front){
             static FrontPersonIPC fallback={-1,nullptr};FrontPersonData p={};
             if(!front_person_ipc_open(&fallback,0)&&!front_person_ipc_read(&fallback,&p)&&front_person_fresh(&p,now)&&
                (p.flags&(FRONT_PERSON_FOUND|FRONT_PERSON_VALID))==5){

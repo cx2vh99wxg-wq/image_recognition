@@ -80,6 +80,14 @@ $(BUILDDIR)/test_person_alert_cache: tests/test_person_alert_cache.c $(BUILDDIR)
 test-person-alert-cache: $(BUILDDIR)/test_person_alert_cache
 	./$(BUILDDIR)/test_person_alert_cache
 
+.PHONY: test-detection-layers
+$(BUILDDIR)/test_detection_layers.o: tests/test_detection_layers.c | $(BUILDDIR)
+	$(CC) -std=c11 -O3 $(INCLUDES) -c $< -o $@
+$(BUILDDIR)/test_detection_layers: $(BUILDDIR)/test_detection_layers.o $(BUILDDIR)/yolo_integration.o $(BUILDDIR)/preprocess.o $(BUILDDIR)/postprocess.o $(BUILDDIR)/test_cached_alerts.o
+	$(CXX) $^ $(LIBDIRS) $(LIBS) -o $@
+test-detection-layers: $(BUILDDIR)/test_detection_layers
+	./$(BUILDDIR)/test_detection_layers
+
 $(TARGET): $(OBJECTS) | $(BUILDDIR)
 	@echo "生成目标程序文件: $@"
 	$(CXX) $(OBJECTS) $(LIBDIRS) $(LIBS) -o $@
@@ -112,6 +120,11 @@ $(BUILDDIR)/test_latest_detection: tests/test_latest_detection.cpp $(INCDIR)/lat
 
 test-latest-detection: $(BUILDDIR)/test_latest_detection
 	./$(BUILDDIR)/test_latest_detection
+
+$(BUILDDIR)/test_person_display: tests/test_person_display.cpp include/person_display_candidates.h include/person_scene_snapshot.h include/postprocess.h | $(BUILDDIR)
+	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 $(INCLUDES) $< -o $@
+test-person-display: $(BUILDDIR)/test_person_display
+	./$(BUILDDIR)/test_person_display
 
 # 回收编译产物
 clean:

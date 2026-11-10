@@ -26,8 +26,9 @@ inline Placement locate(const Person&p,int angle,int width=320,int height=480){
   const double bend=std::max(-r.width*.28,std::min(r.width*.28,(seam-top)*.5*std::tan(theta)));
   const double center=width*.5+bend*t*t,half=r.width*(.12+.25*road_depth);
   double lateral=(p.flags&display_people::Ground)?2*(p.gx/1000.-.5):2*(nx-.5);
-  if(p.flags&display_people::InRoad)lateral=std::max(-.78,std::min(.78,lateral));
-  if(p.flags&display_people::OffRoad)lateral=(lateral<0?-1:1)*std::max(1.25,std::min(1.6,std::abs(lateral)));
+  if(p.flags&display_people::RoadAligned)lateral=2*(p.gx/1000.-.5);
+  if(p.flags&display_people::InRoad)lateral=std::max(-.94,std::min(.94,lateral));
+  if(p.flags&display_people::OffRoad)lateral=(lateral<0?-1:1)*std::max(1.08,std::min(1.8,std::abs(lateral)));
   out.x=center+half*lateral;out.height=19+15*depth;out.calibrated=(p.flags&display_people::Ground)!=0;
  }else if(p.view==display_people::Rear){
   out.x=width*.5+(nx-.5)*r.width*.6;out.y=r.y+r.height*(.935+.045*(1-ny));out.height=28+8*ny;
@@ -35,6 +36,7 @@ inline Placement locate(const Person&p,int angle,int width=320,int height=480){
   out.x=r.x+r.width*(p.view==display_people::LeftRear?.035+.14*nx:.825+.14*nx);
   out.y=r.y+r.height*(.77+.14*(1-ny));out.height=28+9*ny;
  }
+ out.height*=1.35;
  out.x=std::max(out.height*.26,std::min(width-1-out.height*.26,out.x));
  out.y=std::max(out.height+2,std::min(height-3.,out.y));return out;
 }

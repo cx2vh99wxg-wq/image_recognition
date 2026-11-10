@@ -463,8 +463,8 @@ static const char *display_class_name(const char *name)
     return name;
 }
 
-void draw_detection_results(uint8_t *rgb_data, int width, int height,
-                            const detect_result_group_t *results)
+static void draw_detection_impl(uint8_t *rgb_data, int width, int height,
+                                const detect_result_group_t *results, int alerts)
 {
     if (!rgb_data || !results)
         return;
@@ -478,7 +478,8 @@ void draw_detection_results(uint8_t *rgb_data, int width, int height,
 #endif
 
     // 先应用人员警示特效 (在绘制边框以前)
-    apply_person_alert_effects(rgb_data, width, height, &filtered_results);
+    if (alerts)
+        apply_person_alert_effects(rgb_data, width, height, &filtered_results);
 
     for (int i = 0; i < filtered_results.count; i++)
     {
@@ -656,6 +657,29 @@ void draw_detection_results(uint8_t *rgb_data, int width, int height,
         draw_text(rgb_data, width, height, label_x, label_y + 1, label_text, 255, 255,
                   0); // 显示文字采用黄色。
     }
+}
+
+void draw_detection_results(uint8_t *rgb_data, int width, int height,
+                            const detect_result_group_t *results)
+{
+    draw_detection_impl(rgb_data, width, height, results, 1);
+}
+
+void draw_detection_boxes(uint8_t *rgb_data, int width, int height,
+                          const detect_result_group_t *results)
+{
+    draw_detection_impl(rgb_data, width, height, results, 0);
+}
+
+void draw_detection_alerts(uint8_t *rgb_data, int width, int height,
+                           const detect_result_group_t *results)
+{
+    if (!rgb_data || !results) return;
+    detect_result_group_t filtered = *results;
+#if ENABLE_DETECTION_DEDUP
+    deduplicate_detections(&filtered, DEDUP_IOU_THRESHOLD);
+#endif
+    apply_person_alert_effects(rgb_data, width, height, &filtered);
 }
 
 void rgb565_to_rgb888_yolo(const uint16_t *rgb565_data, uint8_t *rgb888_data, int width, int height)

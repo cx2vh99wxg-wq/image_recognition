@@ -9,19 +9,62 @@ struct Stripe {double x,y,length,width,ax,ay,fill;crosswalk_display::Quad quad;}
 // Fixed-size CPU evidence: neutral bright components, elongation, shared band,
 // comparable widths/lengths and regularly spaced repetition. No model/controls.
 class Detector {
- std::vector<int> integral_,queue_;
- std::vector<uint8_t> mask_,seen_;
+ std::vector<int> integral_,paint_integral_,queue_;
+ std::vector<uint8_t> mask_,seen_,luma_,filtered_;
  public:
  crosswalk_display::Geometry detect(const uint8_t*bgr,const uint8_t*coverage,int w=320,int h=240){
+  crosswalk_display::Geometry empty;if(!bgr||!coverage||w!=320||h!=240)return empty;
+  integral_.assign((w+1)*(h+1),0);luma_.resize(w*h);
+  for(int y=0;y<h;++y){int row=0;for(int x=0;x<w;++x){const auto*p=bgr+(y*w+x)*3;luma_[y*w+x]=(29*p[0]+150*p[1]+77*p[2]+128)>>8;row+=luma_[y*w+x];integral_[(y+1)*(w+1)+x+1]=integral_[y*(w+1)+x+1]+row;}}
   auto result=detect_band(bgr,coverage,w,h,h*55/100);
   if(!result.count)result=detect_band(bgr,coverage,w,h,h*65/100);
+  if(!result.count)result=detect_rows(bgr,coverage,w,h);
   return result;
  }
  private:
+ crosswalk_display::Geometry detect_rows(const uint8_t*bgr,const uint8_t*coverage,int w,int h){
+  crosswalk_display::Geometry out;mask_.assign(w*h,0);paint_integral_.assign((w+1)*(h+1),0);
+  for(int y=0;y<h;++y){int row=0;for(int x=0;x<w;++x){const auto*p=bgr+(y*w+x)*3;int hi=std::max(p[0],std::max(p[1],p[2])),lo=std::min(p[0],std::min(p[1],p[2]));
+   int x0=std::max(0,x-9),x1=std::min(w,x+10),y0=std::max(0,y-9),y1=std::min(h,y+10);
+   int sum=integral_[y1*(w+1)+x1]-integral_[y0*(w+1)+x1]-integral_[y1*(w+1)+x0]+integral_[y0*(w+1)+x0];
+   mask_[y*w+x]=coverage[y*w+x]&&luma_[y*w+x]>=55&&(hi-lo)*100<=hi*45&&(int(luma_[y*w+x])-8)*(x1-x0)*(y1-y0)>sum;
+   row+=mask_[y*w+x];paint_integral_[(y+1)*(w+1)+x+1]=paint_integral_[y*(w+1)+x+1]+row;
+  }}
+  filtered_=mask_;
+  for(int y=6;y<h-6;++y)for(int x=1;x<w-1;++x)if(mask_[y*w+x]){
+   int sum=paint_integral_[(y+7)*(w+1)+x+2]-paint_integral_[(y-6)*(w+1)+x+2]-paint_integral_[(y+7)*(w+1)+x-1]+paint_integral_[(y-6)*(w+1)+x-1];filtered_[y*w+x]=sum>=8;
+  }
+  struct Run {int l,r;double center()const{return (l+r)*.5;}int width()const{return r-l;}};
+  Run best[32];unsigned best_count=0;int best_y=0;
+  for(int y=h*54/100;y<h*88/100;y+=2){Run runs[32];unsigned run_count=0;bool overflow=false;
+   for(int x=0;x<w;){if(!filtered_[y*w+x]){++x;continue;}int l=x;while(x<w&&filtered_[y*w+x])++x;if(x-l>=2&&x-l<=24){if(run_count==32){overflow=true;break;}runs[run_count++]={l,x};}}
+   if(overflow)continue;
+   auto mean=[&](int l,int r){return double(integral_[(y+1)*(w+1)+r]-integral_[y*(w+1)+r]-integral_[(y+1)*(w+1)+l]+integral_[y*(w+1)+l])/std::max(1,r-l);};
+   for(unsigned a=0;a<run_count;++a)for(unsigned b=a+1;b<run_count;++b){
+    double step=runs[b].center()-runs[a].center();if(step<7||step>45)continue;
+    if(runs[b].l-runs[a].r<2||mean(runs[a].l,runs[a].r)-mean(runs[a].r,runs[b].l)<7)continue;
+    int minw=std::min(runs[a].width(),runs[b].width()),maxw=std::max(runs[a].width(),runs[b].width());if(maxw>minw*2.8)continue;
+    Run chain[32];chain[0]=runs[a];chain[1]=runs[b];unsigned chain_count=2;
+    for(unsigned c=b+1;c<run_count;++c){const auto&last=chain[chain_count-1];const auto&r=runs[c];
+     if(std::abs(r.center()-last.center()-step)>step*.4||r.l-last.r<2)continue;
+     int lo=std::min(minw,r.width()),hi=std::max(maxw,r.width());if(hi>lo*2.8||mean(last.l,last.r)-mean(last.r,r.l)<7)continue;
+     chain[chain_count++]=r;minw=lo;maxw=hi;
+    }
+    if(chain_count<6||chain_count<=best_count||chain[chain_count-1].center()-chain[0].center()<45)continue;
+    unsigned long_lines=0;
+    for(unsigned i=0;i<chain_count;++i){const auto&r=chain[i];int x=int(r.center()),above=std::max(0,y-45),below=std::min(h-1,y+45);bool top=false,bottom=false;
+     for(int dx=-2;dx<=2;++dx){int xx=std::max(0,std::min(w-1,x+dx));top|=mask_[above*w+xx];bottom|=mask_[below*w+xx];}long_lines+=top&&bottom;}
+    if(long_lines*2>=chain_count)continue;
+    std::copy_n(chain,chain_count,best);best_count=chain_count;best_y=y;
+   }
+  }
+  if(best_count>=6){out.count=std::min<unsigned>(best_count,crosswalk_display::CAPACITY);out.quality=std::min(90u,55u+out.count*4);
+   for(unsigned i=0;i<out.count;++i){const auto&r=best[i];crosswalk_display::Quad q={{unsigned(r.l),unsigned(best_y-6),unsigned(r.r-1),unsigned(best_y-6),unsigned(r.r-1),unsigned(best_y+6),unsigned(r.l),unsigned(best_y+6)}};out.stripes[i]=q;}}
+  return out;
+ }
  crosswalk_display::Geometry detect_band(const uint8_t*bgr,const uint8_t*coverage,int w,int h,int first_y){
   crosswalk_display::Geometry out;if(!bgr||!coverage||w!=320||h!=240)return out;
-  const unsigned n=w*h;integral_.assign((w+1)*(h+1),0);mask_.assign(n,0);seen_.assign(n,0);queue_.reserve(n);
-  for(int y=0;y<h;++y){int row=0;for(int x=0;x<w;++x){const auto*p=bgr+(y*w+x)*3;row+=(29*p[0]+150*p[1]+77*p[2]+128)>>8;integral_[(y+1)*(w+1)+x+1]=integral_[y*(w+1)+x+1]+row;}}
+  const unsigned n=w*h;mask_.assign(n,0);seen_.assign(n,0);queue_.reserve(n);
   for(int y=first_y;y<h-2;++y)for(int x=2;x<w-2;++x){int at=y*w+x;if(!coverage[at])continue;const auto*p=bgr+at*3;
    int hi=std::max(p[0],std::max(p[1],p[2])),lo=std::min(p[0],std::min(p[1],p[2])),lum=(29*p[0]+150*p[1]+77*p[2]+128)>>8;
    if(lum<75||(hi-lo)*100>hi*40)continue;
@@ -38,6 +81,8 @@ class Detector {
    for(size_t k=0;k<queue_.size();++k){int at=queue_[k],x=at%w,y=at/w;sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;syy+=y*y;
     for(int dy=-1;dy<=1;++dy)for(int dx=-1;dx<=1;++dx){int xx=x+dx,yy=y+dy;if(xx<0||xx>=w||yy<0||yy>=h)continue;int j=yy*w+xx;if(mask_[j]&&!seen_[j]){seen_[j]=1;queue_.push_back(j);}}}
    const double count=queue_.size();if(count<12||count>1800)continue;
+   int min_y=h,max_y=0;for(int at:queue_){min_y=std::min(min_y,at/w);max_y=std::max(max_y,at/w);}
+   if(min_y<=first_y+1&&max_y>=h-4)continue;
    Stripe s={};s.x=sx/count;s.y=sy/count;double xx=sxx/count-s.x*s.x,xy=sxy/count-s.x*s.y,yy=syy/count-s.y*s.y;
    double theta=.5*std::atan2(2*xy,xx-yy);s.ax=std::cos(theta);s.ay=std::sin(theta);if(s.ay<0){s.ax=-s.ax;s.ay=-s.ay;}
    double a0=1e9,a1=-1e9,b0=1e9,b1=-1e9;

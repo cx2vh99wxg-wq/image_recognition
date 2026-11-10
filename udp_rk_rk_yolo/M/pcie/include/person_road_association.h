@@ -30,6 +30,18 @@ class PersonRoadAssociation {
         return valid_;
     }
     unsigned pixels() const { return pixels_; }
+    // Display-only lateral position relative to the SAME mask used for risk.
+    // Green boundaries can be shifted in the image; do not anchor every person
+    // to the global camera center or an unrelated calibration rectangle.
+    bool display_lateral(const Box&b,double&normalized) const {
+        if(!valid_)return false;
+        const int x=int(b.x+b.w*.5f),foot=int(std::ceil(b.y+b.h));
+        int left=320,right=-1;
+        for(int y=std::max(0,foot);y<=std::min(239,foot+5);++y)
+            for(int i=0;i<320;++i)if(road_[y*320+i]){left=std::min(left,i);right=std::max(right,i);}
+        if(right-left<12)return false;
+        normalized=(x-left)/double(right-left);return true;
+    }
     FootRelation classify(const Box &b) const {
         if (!valid_ || !std::isfinite(b.x) || !std::isfinite(b.y) ||
             !std::isfinite(b.w) || !std::isfinite(b.h) || b.w<3 || b.h<8 ||

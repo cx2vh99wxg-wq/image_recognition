@@ -6,7 +6,7 @@
 namespace s_vision {
 inline display_people::Snapshot person_scene(const detect_result_group_t&r,bool valid,uint64_t captured,uint32_t session,uint32_t source){
  display_people::Snapshot s={};s.session=session;s.source=source;s.ready=valid;
- display_people::expires(s,captured+350000000ULL);
+ display_people::expires(s,captured+display_people::TTL);
  if(!valid)return s;
  const auto add=[&](const detect_result_t&d){
   if(!person_brake_should_trigger(d.name,d.prop))return;
@@ -24,7 +24,8 @@ inline display_people::Snapshot person_scene(const detect_result_group_t&r,bool 
       left-tx,ty+240-bottom,std::min(tx+320,b.right)-left,bottom-top,d.prop);
   display_people::add(s,p);
  };
- for(int i=0;i<std::min(r.count,OBJ_NUMB_MAX_SIZE);++i)add(r.results[i]);
+ if(r.person_display_count>0){for(int i=0;i<std::min(16,r.person_display_count);++i)add(r.person_display_results[i]);}
+ else for(int i=0;i<std::min(r.count,OBJ_NUMB_MAX_SIZE);++i)add(r.results[i]);
  if(r.person_brake_count)add(r.person_brake_result);
  return s;
 }

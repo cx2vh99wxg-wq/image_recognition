@@ -1,6 +1,7 @@
 #include "postprocess.h"
 #include "../../../common/perception/include/yolo_quantized_decode.h"
 #include "person_brake_trigger.h"
+#include "person_display_candidates.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,6 +41,7 @@ extern "C"
                 ++group->person_brake_count;
                 if (group->person_brake_count == 1 || result.prop > group->person_brake_result.prop)
                     group->person_brake_result = result;
+                person_display_add(*group,result);
             }
             if (display_eligible && group->count < OBJ_NUMB_MAX_SIZE)
                 group->results[group->count++] = result;

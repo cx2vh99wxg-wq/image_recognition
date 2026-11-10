@@ -265,7 +265,9 @@ struct Service::Impl
         display_people::Snapshot scene={};scene.session=session;scene.source=(uint32_t)frame.id;
         scene.ready=(person.flags&FRONT_PERSON_VALID)?1:0;
         display_people::expires(scene,frame.captured+display_people::TTL);
-        if(scene.ready)for(const auto&b:people.candidates){
+        auto display_candidates=people.candidates;
+        std::sort(display_candidates.begin(),display_candidates.end(),[](const Box&a,const Box&b){return a.score>b.score;});
+        if(scene.ready)for(const auto&b:display_candidates){
             if(!std::isfinite(b.x)||!std::isfinite(b.y)||!std::isfinite(b.w)||!std::isfinite(b.h)||b.w<=0||b.h<=0)continue;
             auto glyph=display_people::box(display_people::Front,(int)b.x,(int)b.y,(int)std::ceil(b.w),(int)std::ceil(b.h),b.score);
             const auto relation=road_association.classify(b);
@@ -277,6 +279,11 @@ struct Service::Impl
                 glyph.flags|=display_people::Ground;
                 glyph.gx=(int32_t)std::lround((foot.x/160.+.5)*1000.);
                 glyph.gy=(int32_t)std::lround(foot.y/(160.*display_ground.aspect())*1000.);
+            }
+            double lateral=0;
+            if(road_association.display_lateral(b,lateral)){
+                glyph.flags|=display_people::RoadAligned;
+                glyph.gx=(int32_t)std::lround(std::max(-2.,std::min(3.,lateral))*1000.);
             }
             display_people::add(scene,glyph);
         }
