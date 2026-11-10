@@ -23,6 +23,17 @@ struct Frame
     std::vector<uint8_t> pixels;
     uint64_t id = 0, captured = 0;
 };
+struct PreparedDetection {
+    Frame frame;
+    std::vector<Box> boxes;
+    PersonResult people;
+    bool matched=false,okay=false;
+    std::string error;
+    DetectorTiming timing;
+    DetectorSchedule checkpoint;
+    unsigned passes=0;
+    uint64_t compute_ns=0;
+};
 struct Observation
 {
     Box box;
@@ -56,6 +67,8 @@ struct Service::Impl
     uint64_t report_ns = 0, calls = 0, passes = 0, skipped_curve = 0, skipped_budget = 0,
              total_ns = 0, max_ns = 0;
     DetectorTiming detector_totals;
+    std::unique_ptr<PreparedDetection> prepared;
+    uint64_t prepared_used=0,prepared_discarded=0;
     explicit Impl(const char *path, InputView input, const m_lane::FrontRadialPreview *front)
         : view(input), correction(front)
     {
@@ -120,6 +133,38 @@ struct Service::Impl
         }
         wake.notify_one();
     }
+    void cancel() noexcept {
+        if(prepared){detector.restore_schedule(prepared->checkpoint);prepared.reset();++prepared_discarded;}
+    }
+    std::unique_ptr<PreparedDetection> compute(const LaneBudget &lane,uint64_t now){
+        std::unique_ptr<PreparedDetection> d(new PreparedDetection);
+        auto &frame=d->frame;d->matched=lane.front.matches(lane.source,lane.captured);
+        if(d->matched){
+            if(!copy_camera_rgb(lane.front.pixels,320,240,320*3,InputView(0,0,view.order),frame.pixels))return nullptr;
+            frame.id=lane.source;frame.captured=lane.captured;
+        }else{
+            std::lock_guard<std::mutex> lock(mutex);
+            if(stopping||latest.pixels.empty())return nullptr;
+            frame=latest;
+        }
+        if(now<frame.captured || now-frame.captured>300000000ULL)return nullptr;
+        d->checkpoint=detector.schedule();
+        const uint64_t start=traffic_clock_ns();
+        try{
+            d->okay=detector.detect(frame.pixels.data(),320,240,320*3,d->boxes,&d->error,admission.budget_ms(),&d->people);
+        }catch(...){detector.restore_schedule(d->checkpoint);throw;}
+        d->timing=detector.last_timing();d->passes=detector.last_passes();d->compute_ns=traffic_clock_ns()-start;
+        return d;
+    }
+    void prepare(const LaneBudget &lane){
+        cancel();
+        const uint64_t now=traffic_clock_ns();
+        // Admission here is only a compute hint. The final, post-analysis
+        // budget and freshness guard below remains authoritative. A rejected
+        // prepared result restores crop/track scheduling and publishes nothing.
+        if(!ready||!enabled||model_failed.load()||!lane.front.matches(lane.source,lane.captured)||!admission.allow(lane,now))return;
+        prepared=compute(lane,now);
+    }
     void npu(const LaneBudget &lane)
     {
         uint64_t now = traffic_clock_ns();
@@ -130,34 +175,19 @@ struct Service::Impl
             reason |= TRAFFIC_BUDGET;
         }
         deferred.store(reason);
-        if (!ready || !enabled || model_failed.load() || reason)
-            return;
-        Frame frame;
-        const bool matched=lane.front.matches(lane.source,lane.captured);
-        if (matched)
-        {
-            // Borrowed lane input is still alive on this same NPU-owner thread.
-            // Normalize its byte order once; do not use the newer color mailbox.
-            if (!copy_camera_rgb(lane.front.pixels,320,240,320*3,
-                                 InputView(0,0,view.order),frame.pixels)) return;
-            frame.id=lane.source; frame.captured=lane.captured;
+        if (!ready || !enabled || model_failed.load() || reason){cancel();return;}
+        std::unique_ptr<PreparedDetection> detection;
+        if(prepared && prepared->frame.id==lane.source && prepared->frame.captured==lane.captured){
+            detection=std::move(prepared);++prepared_used;
+        }else{
+            cancel();detection=compute(lane,now);
         }
-        else
-        {
-            std::lock_guard<std::mutex> lock(mutex);
-            if (stopping || latest.pixels.empty())
-                return;
-            frame = latest;
-        }
-        if (now < frame.captured || now - frame.captured > 300000000ULL)
-            return;
-        uint64_t start = traffic_clock_ns();
-        std::vector<Box> boxes;
-        PersonResult people;
-        std::string error;
-        bool okay = detector.detect(frame.pixels.data(), 320, 240, 320 * 3, boxes, &error,
-                                    admission.budget_ms(), &people);
-        const auto dt=detector.last_timing();
+        if(!detection)return;
+        auto &frame=detection->frame;auto &boxes=detection->boxes;auto &people=detection->people;
+        const bool matched=detection->matched,okay=detection->okay;
+        const auto &error=detection->error;
+        const uint64_t commit_started=traffic_clock_ns();
+        const auto dt=detection->timing;
         detector_totals.prepare+=dt.prepare;detector_totals.inputs+=dt.inputs;
         detector_totals.run+=dt.run;detector_totals.outputs+=dt.outputs;
         detector_totals.decode+=dt.decode;detector_totals.release+=dt.release;detector_totals.filter+=dt.filter;
@@ -232,10 +262,10 @@ struct Service::Impl
         std::shared_ptr<const Observation> immutable = result;
         std::atomic_store(&observation, immutable);
         // CPU 候选仲裁的时间也计入车道间隙预算。
-        uint64_t end = traffic_clock_ns(), elapsed = end - start;
+        uint64_t end = traffic_clock_ns(), elapsed = detection->compute_ns + end - commit_started;
         admission.completed(end, elapsed);
         ++calls;
-        passes += detector.last_passes();
+        passes += detection->passes;
         total_ns += elapsed;
         max_ns = std::max(max_ns, elapsed);
         if (!report_ns || end - report_ns >= 5000000000ULL)
@@ -247,13 +277,14 @@ struct Service::Impl
                 detector_totals.decode/divisor,detector_totals.release/divisor,detector_totals.filter/divisor);
             detector_totals={};
             std::printf(
-                "[TRAFFIC PERF] locator_hz=%.2f npu_hz=%.2f calls=%llu mean_ms=%.2f max_ms=%.2f person_candidates=%u person_valid=%d skip_curve=%llu skip_budget=%llu boxes=%zu budget_backoff=%u road_source=%u person_source=%u road_pixels=%u in_path=%u outside=%u uncertain=%u matched=%d\n",
+                "[TRAFFIC PERF] locator_hz=%.2f npu_hz=%.2f calls=%llu mean_ms=%.2f max_ms=%.2f person_candidates=%u person_valid=%d skip_curve=%llu skip_budget=%llu boxes=%zu budget_backoff=%u road_source=%u person_source=%u road_pixels=%u in_path=%u outside=%u uncertain=%u matched=%d prepared_used=%llu prepared_discarded=%llu\n",
                 calls / seconds, passes / seconds, (unsigned long long)calls,
                 calls ? total_ns / 1e6 / calls : 0., max_ns / 1e6,
                 people.count, okay, (unsigned long long)skipped_curve, (unsigned long long)skipped_budget, boxes.size(),
                 admission.violations(),person.road_source_id,person.source_id,person.road_pixels,
-                person.risk_count,person.outside_count,person.unknown_count,matched);
-            report_ns = end;
+                person.risk_count,person.outside_count,person.unknown_count,matched,
+                (unsigned long long)prepared_used,(unsigned long long)prepared_discarded);
+            report_ns = end;prepared_used=prepared_discarded=0;
             calls = passes = skipped_curve = skipped_budget = total_ns = max_ns = 0;
         }
     }
@@ -382,6 +413,11 @@ void Service::submit_raw(const uint8_t *p, int w, int h, uint64_t id, uint64_t c
 {
     impl_->submit(p, w, h, id, captured);
 }
+void Service::prepare_lane(const LaneBudget &b)
+{
+    try{impl_->prepare(b);}catch(...){impl_->cancel();impl_->model_failed.store(true);}
+}
+void Service::cancel_prepared() noexcept { impl_->cancel(); }
 void Service::after_lane(const LaneBudget &b)
 {
     try
@@ -390,7 +426,7 @@ void Service::after_lane(const LaneBudget &b)
     }
     catch (...)
     {
-        impl_->model_failed.store(true);
+        impl_->cancel();impl_->model_failed.store(true);
     }
 }
 }

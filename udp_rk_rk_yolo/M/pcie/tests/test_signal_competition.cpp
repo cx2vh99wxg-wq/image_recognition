@@ -53,13 +53,19 @@ int main(){
         quant=q;nhwc=f;mode=0;Detector d;std::string error;assert(d.init(model,&error));
         for(int scenario=0;scenario<4;++scenario){mode=scenario;calls=0;std::vector<Box> signals;PersonResult people;
             assert(d.detect(rgb.data(),320,240,960,signals,&error,60,&people));
-            const bool expected=scenario==0||scenario==2;
+            const bool expected=scenario!=3;
             assert(calls==1&&people.count==1&&people.candidates.size()==1);
             if(signals.empty()==expected){std::printf("SIGNAL FAIL quant=%d nhwc=%d scenario=%d boxes=%zu\n",q,f,scenario,signals.size());std::fflush(stdout);}
             assert(signals.size()==(expected?1u:0u));
             if(expected)assert(classify_color(rgb.data(),320,240,960,signals[0]).state==TRAFFIC_RED);
             ++tests;
         }
+        const auto saved=d.schedule();mode=0;std::vector<Box> extra;
+        assert(d.detect(rgb.data(),320,240,960,extra,&error));d.restore_schedule(saved);
+        const auto restored=d.schedule();
+        assert(saved.passes==restored.passes&&saved.view_cursor==restored.view_cursor&&
+               saved.locked_view==restored.locked_view&&saved.hits==restored.hits&&saved.timing.run==restored.timing.run);
     }
-    std::remove(model);std::printf("SIGNAL COMPETITION PASS: %u cases; top-class/ties/strong competitor/low score, INT8/float, NHWC/NCHW, person preservation and one NPU call\n",tests);
+    std::remove(model);std::printf("SIGNAL SCORE PASS: %u cases; stronger other class allowed, low signal rejected, INT8/float, NHWC/NCHW, person preservation and one NPU call\n",tests);
+    return 0;
 }

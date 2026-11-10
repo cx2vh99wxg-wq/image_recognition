@@ -171,12 +171,30 @@ $(BUILD_DIR)/test_traffic: tests/test_traffic.cpp include/traffic_vision.h ../in
 test-traffic: $(BUILD_DIR)/test_traffic
 	./$(BUILD_DIR)/test_traffic
 
-$(BUILD_DIR)/test_npu_scheduling: tests/test_npu_scheduling.cpp include/latest_lane_worker.h include/traffic_vision.h
+$(BUILD_DIR)/test_npu_scheduling: tests/test_npu_scheduling.cpp include/latest_lane_worker.h include/lane_cpu_stage.h include/traffic_vision.h
 	@mkdir -p $(BUILD_DIR)
 	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 -pthread $(INCLUDES) $< -o $@
 
 test-npu-scheduling: $(BUILD_DIR)/test_npu_scheduling
 	./$(BUILD_DIR)/test_npu_scheduling
+
+$(BUILD_DIR)/test_lane_overlap: tests/test_lane_overlap.cpp include/latest_lane_worker.h include/lane_cpu_stage.h include/traffic_vision.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 -pthread $(INCLUDES) $< -o $@
+test-lane-overlap: $(BUILD_DIR)/test_lane_overlap
+	./$(BUILD_DIR)/test_lane_overlap
+
+$(BUILD_DIR)/test_service_overlap: tests/test_service_overlap.cpp tests/test_signal_competition.cpp csrc/traffic_detector.cpp csrc/traffic_service.cpp include/traffic_service.h include/traffic_detector.h include/traffic_vision.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 -pthread $(INCLUDES) $< csrc/traffic_detector.cpp csrc/traffic_service.cpp -o $@
+test-service-overlap: $(BUILD_DIR)/test_service_overlap
+	./$(BUILD_DIR)/test_service_overlap
+
+$(BUILD_DIR)/lane_overlap_replay: tools/lane_overlap_replay.cpp include/latest_lane_worker.h include/lane_cpu_stage.h $(BUILD_DIR)/yolo_integration.o $(BUILD_DIR)/traffic_detector.o $(BUILD_DIR)/traffic_service.o
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 -pthread $(INCLUDES) $< $(BUILD_DIR)/yolo_integration.o $(BUILD_DIR)/traffic_detector.o $(BUILD_DIR)/traffic_service.o -o $@ $(LIBS) -lm
+.PHONY: test-lane-overlap test-service-overlap lane-overlap-replay
+lane-overlap-replay: $(BUILD_DIR)/lane_overlap_replay
 
 $(BUILD_DIR)/traffic_probe: tools/traffic_probe.cpp $(BUILD_DIR)/traffic_detector.o include/traffic_detector.h include/traffic_vision.h include/traffic_offline_guard.h ../include/traffic_light.h
 	@mkdir -p $(BUILD_DIR)

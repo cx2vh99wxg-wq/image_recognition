@@ -10,6 +10,7 @@
 #include "ground_projection.h"
 #include "../../../common/perception/include/curve_heading.h"
 #include "traffic_vision.h"
+#include "lane_cpu_stage.h"
 #include <cstdio>
 #include <cstdlib>
 #include <atomic>
@@ -123,7 +124,6 @@ class LatestWorker
         if (front_input_)
         {
             const size_t pixels = (size_t)width * height;
-            front_rgb_.resize(3 * (pixels / 4));
             if(ipm_test_ && ego_curve_ && use_ipm_heading() &&
                (!std::getenv("VISION_DIRECT_MASK_IPM") || std::strcmp(std::getenv("VISION_DIRECT_MASK_IPM"),"0"))) {
                 restore_map_=front_input_->mask_restore();
@@ -131,6 +131,10 @@ class LatestWorker
             }
             if(!mask_pull_.enabled()) {raw_lane_.resize(pixels);raw_road_.resize(2*pixels);}
         }
+        const char *overlap=std::getenv("VISION_LANE_NPU_OVERLAP");
+        if(optional_task_ && optional_task_->overlap_capable() && (!overlap||std::strcmp(overlap,"0")))
+            cpu_stage_.reset(new LaneCpuStage);
+        std::fprintf(stderr,"[LANE PIPELINE] CPU/NPU overlap=%d single_NPU_owner=1 owned_same_frame=1\n",cpu_stage_?1:0);
         thread_ = std::thread(&LatestWorker::run, this);
     }
     ~LatestWorker()
@@ -183,39 +187,35 @@ class LatestWorker
         ready_.notify_one();
         if (thread_.joinable())
             thread_.join();
+        if(cpu_stage_)cpu_stage_->stop();
     }
 
   private:
-    void run()
+    struct AnalysisJob {
+        uint64_t source=0,captured=0,inference_time=0,front_time=0,analysis_time=0;
+        int status=-1,model_width=0,model_height=0;
+        YOLOTiming timing={};
+        std::vector<uint8_t> pixels,front_rgb;
+        std::vector<float> lane,road;
+        std::shared_ptr<Snapshot> result;
+        traffic::LaneBudget budget;
+        yolopv2_result_t raw(){return {lane.data(),road.data(),model_width,model_height};}
+        traffic::FrontRoadFrame front() const {
+            traffic::FrontRoadFrame f;
+            if(status==0&&!front_rgb.empty()&&!road.empty()){
+                f.pixels=front_rgb.data();f.road=road.data();f.width=model_width;f.height=model_height;
+                f.source=source;f.captured=captured;
+            }
+            return f;
+        }
+    };
+    void analyze(AnalysisJob &job)
     {
-        try
-        {
-            for (;;)
-            {
-                uint64_t source, captured;
-                {
-                    std::unique_lock<std::mutex> lock(mutex_);
-                    ready_.wait(lock, [this] { return stopping_ || pending_; });
-                    if (stopping_)
-                        return;
-                    pending_pixels_.swap(working_pixels_);
-                    source = pending_id_;
-                    captured = pending_capture_ns_;
-                    pending_ = false;
-                }
-                std::shared_ptr<Snapshot> result = std::make_shared<Snapshot>();
-                result->source_id = source;
-                result->captured_ns = captured;
-                yolopv2_result_t raw = {};
-                traffic::FrontRoadFrame front_road;
-                uint64_t start = clock_ns();
-                if (front_input_)
-                    front_input_->render(working_pixels_.data(), front_rgb_.data());
-                const uint64_t front_time=clock_ns()-start;
-                int status = yolo_engine_detect(engine_,
-                    front_input_ ? front_rgb_.data() : working_pixels_.data(),
-                    front_input_ ? width_ / 2 : width_, front_input_ ? height_ / 2 : height_, &raw);
-                uint64_t inference_time = clock_ns() - start;
+        auto result=job.result;auto raw=job.raw();
+        auto &working_pixels_=job.pixels;
+        const auto source=job.source,captured=job.captured;
+        const auto inference_time=job.inference_time,front_time=job.front_time;
+        int status=job.status;uint64_t start=clock_ns();
                 uint64_t analysis_time = 0;
                 if (status == 0 &&
                     (!engine_ || !raw.lane_line_data || !raw.drivable_area_data || raw.width <= 0 ||
@@ -230,12 +230,6 @@ class LatestWorker
                         start = now;
                         if (front_input_)
                         {
-                            front_road.pixels = front_rgb_.data();
-                            front_road.road = raw.drivable_area_data;
-                            front_road.width = raw.width;
-                            front_road.height = raw.height;
-                            front_road.source = source;
-                            front_road.captured = captured;
                             if(mask_pull_.enabled()){
                                 const size_t n=(size_t)raw.width*raw.height;
                                 result->width=width_;result->height=height_;result->restore_map=restore_map_;
@@ -434,7 +428,7 @@ class LatestWorker
                     ++calls_;
                     inference_ns_ += inference_time;
                     front_ns_ += front_time;
-                    if(status==0 && engine_){const auto &t=engine_->timing;
+                    if(status==0 && engine_){const auto &t=job.timing;
                         prepare_ns_+=t.prepare_ns;inputs_ns_+=t.inputs_ns;run_ns_+=t.run_ns;
                         outputs_ns_+=t.outputs_ns;copy_ns_+=t.copy_ns;release_ns_+=t.release_ns;}
                     analysis_ns_ += analysis_time;
@@ -450,40 +444,79 @@ class LatestWorker
                 // 两张掩码向量各自拥有副本，不引用引擎下一帧的输出缓冲区。
                 std::shared_ptr<const Snapshot> immutable = result;
                 std::atomic_store(&latest_, immutable);
-                // 先发布车道结果；不另开第二个 NPU
-                // 推理线程，也不为过期交通灯帧建立队列。
-                if (optional_task_)
+
+        job.analysis_time=analysis_time;job.budget=traffic::LaneBudget{};
+        job.budget.source=source;job.budget.front=job.front();job.budget.captured=captured;
+        job.budget.completed=result->completed_ns;job.budget.duration=inference_time+analysis_time;
+        job.budget.fresh=result->fresh(clock_ns());
+        job.budget.curve_active=result->curve.curve_type!=0&&result->curve.confidence>0;
+        if(result->line_style.road_area)job.budget.reference_x=result->line_style.reference_x;
+    }
+    void run()
+    {
+        try {
+            AnalysisJob job;
+            for(;;){
+                job.result=std::make_shared<Snapshot>();
                 {
-                    traffic::LaneBudget budget;
-                    budget.source = source;
-                    budget.front = front_road;
-                    budget.captured = captured;
-                    budget.completed = result->completed_ns;
-                    budget.duration = inference_time + analysis_time;
-                    budget.fresh = result->fresh(clock_ns());
-                    budget.curve_active =
-                        result->curve.curve_type != 0 && result->curve.confidence > 0;
-                    if (result->line_style.road_area)
-                        budget.reference_x = result->line_style.reference_x;
-                    try
-                    {
-                        optional_task_->after_lane(budget);
-                    }
-                    catch (...)
-                    {
-                        optional_task_ = nullptr;
-                        std::fprintf(stderr,
-                                     "Optional traffic task stopped; lane worker continues\n");
-                    }
+                    std::unique_lock<std::mutex> lock(mutex_);
+                    ready_.wait(lock,[&]{return stopping_||pending_;});
+                    if(stopping_)return;
+                    pending_pixels_.swap(working_pixels_);pending_=false;
+                    job.source=pending_id_;job.captured=pending_capture_ns_;
+                }
+                job.pixels.swap(working_pixels_);
+                job.result->source_id=job.source;job.result->captured_ns=job.captured;
+                uint64_t started=clock_ns();
+                if(front_input_){job.front_rgb.resize((size_t)width_*height_*3/4);front_input_->render(job.pixels.data(),job.front_rgb.data());}
+                job.front_time=clock_ns()-started;
+                yolopv2_result_t raw={};
+                job.status=yolo_engine_detect(engine_,front_input_?job.front_rgb.data():job.pixels.data(),
+                    front_input_?width_/2:width_,front_input_?height_/2:height_,&raw);
+                job.inference_time=clock_ns()-started;
+                if(job.status==0 && (!engine_||!raw.lane_line_data||!raw.drivable_area_data||raw.width<=0||raw.height<=0||
+                    raw.width!=engine_->model_width||raw.height!=engine_->model_height))job.status=-1;
+                if(job.status==0){
+                    job.model_width=raw.width;job.model_height=raw.height;job.timing=engine_->timing;
+                    const size_t n=(size_t)raw.width*raw.height;
+                    job.lane.assign(raw.lane_line_data,raw.lane_line_data+n);
+                    job.road.assign(raw.drivable_area_data,raw.drivable_area_data+2*n);
+                }
+                const uint64_t freeze_done=clock_ns();
+                if(cpu_stage_ && optional_task_ && optional_task_->overlap_capable() && job.status==0){
+                    auto work=cpu_stage_->submit([&]{analyze(job);});
+                    traffic::LaneBudget preliminary;
+                    preliminary.source=job.source;preliminary.captured=job.captured;preliminary.front=job.front();
+                    preliminary.completed=freeze_done;preliminary.duration=job.inference_time;
+                    preliminary.fresh=job.captured&&freeze_done>=job.captured&&freeze_done-job.captured<=MAX_RESULT_AGE_NS;
+                    try{optional_task_->prepare_lane(preliminary);}
+                    catch(...){optional_task_->cancel_prepared();optional_task_=nullptr;}
+                    // Always join, including the optional failure path. The next
+                    // inference cannot overwrite inputs used by either consumer.
+                    try{work.get();}catch(...){if(optional_task_)optional_task_->cancel_prepared();throw;}
+                }else analyze(job);
+                {
+                    std::lock_guard<std::mutex> lock(mutex_);
+                    if(stopping_){if(optional_task_)optional_task_->cancel_prepared();return;}
+                }
+                if(optional_task_){
+                    try{optional_task_->after_lane(job.budget);}
+                    catch(...){optional_task_->cancel_prepared();optional_task_=nullptr;
+                        std::fprintf(stderr,"Optional traffic task stopped; lane worker continues\n");}
+                }
+                job.pixels.swap(working_pixels_);
+                const uint64_t cycle=clock_ns()-started;
+                ++pipeline_calls_;pipeline_cycle_ns_+=cycle;pipeline_freeze_ns_+=freeze_done-started-job.inference_time;
+                const uint64_t now=clock_ns();
+                if(!pipeline_report_ns_)pipeline_report_ns_=now;
+                if(now-pipeline_report_ns_>=5000000000ULL){
+                    std::fprintf(stderr,"[LANE PIPELINE] overlap=%d cycle_ms=%.3f freeze_ms=%.3f jobs=%llu\n",
+                        cpu_stage_?1:0,pipeline_cycle_ns_/(1e6*pipeline_calls_),pipeline_freeze_ns_/(1e6*pipeline_calls_),
+                        (unsigned long long)pipeline_calls_);
+                    pipeline_calls_=pipeline_cycle_ns_=pipeline_freeze_ns_=0;pipeline_report_ns_=now;
                 }
             }
-        }
-        catch (...)
-        {
-            // 发生故障时采集线程将弯道置信度置为无效，同时继续
-            // 发布原始视频；不能在线程仍使用 RKNN 上下文时释放它。
-            failed_ = true;
-        }
+        }catch(...){failed_=true;}
     }
 
     YOLOEngine *engine_;
@@ -507,12 +540,13 @@ class LatestWorker
     mutable std::mutex mutex_;
     std::condition_variable ready_;
     std::thread thread_;
+    std::unique_ptr<LaneCpuStage> cpu_stage_;
+    uint64_t pipeline_report_ns_=0,pipeline_calls_=0,pipeline_cycle_ns_=0,pipeline_freeze_ns_=0;
     bool stopping_ = false, pending_ = false;
     uint64_t pending_id_ = 0, pending_capture_ns_ = 0;
     std::vector<uint8_t> pending_pixels_, working_pixels_;
     const FrontRadialPreview *ipm_test_;
     const FrontRadialPreview *front_input_;
-    std::vector<uint8_t> front_rgb_;
     std::vector<float> raw_lane_, raw_road_;
     std::shared_ptr<const FrontMaskRestore> restore_map_;
     FrontMaskPull mask_pull_;

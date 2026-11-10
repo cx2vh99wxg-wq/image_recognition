@@ -13,6 +13,10 @@ struct PersonResult {
 struct DetectorTiming {
     uint64_t prepare=0, inputs=0, run=0, outputs=0, decode=0, release=0, filter=0;
 };
+struct DetectorSchedule {
+    unsigned passes=0, view_cursor=0, locked_view=0, hits=0;
+    DetectorTiming timing;
+};
 class Detector
 {
     struct Impl;
@@ -30,6 +34,8 @@ class Detector
     int input_size() const;
     unsigned last_passes() const;
     DetectorTiming last_timing() const;
+    DetectorSchedule schedule() const;
+    void restore_schedule(const DetectorSchedule &state) noexcept;
 };
 }
 #endif

@@ -48,6 +48,14 @@ unsigned Detector::last_passes() const
     return impl_->passes;
 }
 DetectorTiming Detector::last_timing() const { return impl_->timing; }
+DetectorSchedule Detector::schedule() const {
+    DetectorSchedule s;s.passes=impl_->passes;s.view_cursor=impl_->view_cursor;
+    s.locked_view=impl_->locked_view;s.hits=impl_->hits;s.timing=impl_->timing;return s;
+}
+void Detector::restore_schedule(const DetectorSchedule &s) noexcept {
+    impl_->passes=s.passes;impl_->view_cursor=s.view_cursor;impl_->locked_view=s.locked_view;
+    impl_->hits=s.hits;impl_->timing=s.timing;
+}
 bool Detector::init(const char *path, std::string *error)
 {
     impl_.reset(new Impl);
@@ -225,17 +233,15 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                                     w, h);
                         bool person_top = persons && person_score >= FRONT_PERSON_CONFIDENCE_THRESHOLD;
                         bool signal_top = score >= locator_score_gate;
-                        // Both classes compete with all COCO categories. A red
-                        // object with a stronger non-signal class cannot become
-                        // a traffic light merely by passing the housing filter.
-                        // Person admission remains independent of signal filters.
+                        // Keep person competition unchanged. Signal class-9
+                        // score is independent of other category scores; housing,
+                        // color, ambiguity and freshness checks still apply.
                         for (int id=0;(person_top || signal_top) && id<80;++id)
                         {
                             const float other=at(base+5+id,pos);
                             if (!std::isfinite(other) || other<-.01f || other>1.02f)
                             { valid=false; person_top=signal_top=false; break; }
                             if (id!=0 && other>person_cls) person_top=false;
-                            if (id!=9 && other>cls) signal_top=false;
                         }
                         // Person safety examines every threshold-passing class-0 anchor,
                         // independent of signal housing/color/ROI and display limits.

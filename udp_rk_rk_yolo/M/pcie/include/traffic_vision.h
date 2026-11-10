@@ -404,7 +404,8 @@ class ColorConfirmation
 };
 /* NPU 作业统一由车道工作线程提交；
  * 本策略只决定可选检测器能否使用发布车道结果后的空闲时间。 */
-// Borrowed only for synchronous after_lane(); never retain engine output pointers.
+// Borrowed for one owner-thread transaction only. Overlap callers supply owned
+// input/mask snapshots and join CPU analysis before committing or advancing them.
 // Both arrays describe the SAME corrected front frame, before restore/IPM/overlay.
 struct FrontRoadFrame
 {
@@ -429,6 +430,10 @@ class NpuTask
 {
   public:
     virtual ~NpuTask() {};
+    virtual bool overlap_capable() const { return false; }
+    // May compute only. No metadata publication or recovery-state updates.
+    virtual void prepare_lane(const LaneBudget &) {}
+    virtual void cancel_prepared() noexcept {}
     virtual void after_lane(const LaneBudget &lane) = 0;
 };
 constexpr unsigned default_budget_ms = 60, max_budget_ms = 80;

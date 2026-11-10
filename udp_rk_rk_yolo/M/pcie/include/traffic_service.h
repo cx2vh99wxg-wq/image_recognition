@@ -24,6 +24,9 @@ class Service : public NpuTask
     Service &operator=(const Service &) = delete;
     void submit_raw(const uint8_t *rgb, int width, int height, uint64_t source, uint64_t captured);
     void after_lane(const LaneBudget &lane) override;
+    bool overlap_capable() const override { return true; }
+    void prepare_lane(const LaneBudget &lane) override;
+    void cancel_prepared() noexcept override;
 };
 }
 #endif
