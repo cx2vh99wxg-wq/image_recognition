@@ -82,7 +82,8 @@ inline int image_edge(float edge, float scale)
 template <typename Emit>
 void scan(int8_t *const (&outputs)[3], int height, int width, float display_threshold,
           float scan_threshold, bool inclusive_class_scan, BOX_RECT pads,
-          float scale_w, float scale_h, const Labels &labels, Emit emit)
+          float scale_w, float scale_h, const Labels &labels, Emit emit,
+          const unsigned char *allowed_classes = nullptr)
 {
     static const int anchors[3][6] = {{10,13,16,30,33,23},
                                       {30,61,62,45,59,119},
@@ -123,6 +124,8 @@ void scan(int8_t *const (&outputs)[3], int height, int width, float display_thre
                     }
                 }
                 if (class_score < scan_cutoff || (!inclusive_class_scan && class_score == scan_cutoff))
+                    continue;
+                if (allowed_classes && !allowed_classes[class_id])
                     continue;
 
                 float x = read(values[0]) * 2.0 - 0.5;

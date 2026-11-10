@@ -509,13 +509,14 @@ static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::View
 {
     VehicleLayerState state = snapshot_vehicle_state();
     state.front_person = status.front_person;
+    state.front_stop = status.front_person; // visual risk, independent of actuator enable
     if (state.front_person) state.blink = blink_state;
     state.left_style = status.line_left;
     state.right_style = status.line_right;
     if(!engine->headless){
         static FrontGuardIPC guard_ipc={-1,nullptr};FrontGuardData guard={};
         if(!front_guard_open(&guard_ipc,0)&&!front_guard_read(&guard_ipc,&guard))
-            state.front_stop=lane_cue::front_stop_tint(guard,display_clock_ns());
+            state.front_stop=state.front_stop||lane_cue::front_stop_tint(guard,display_clock_ns());
     }else state.front_stop=std::getenv("VISION_PREVIEW_FRONT_STOP")!=nullptr;
     // Offline preview only: no IPC writes and no vehicle/control processes.
     if (engine->headless)
@@ -545,6 +546,9 @@ static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::View
         state.actors.count+=kept_rear;
         const unsigned kept_front=front_motion.collect(have_front?&front:nullptr,now,state.signed_angle,state.actors.people,state.actors.motion,state.actors.count,24,pedestrian_scene::project_foot);
         state.actors.count+=kept_front;
+        // Same one-second visual hold as the avatar; never feeds a brake IPC.
+        for(unsigned i=kept_rear;i<state.actors.count;++i)
+            if(!(state.actors.people[i].flags&display_people::OffRoad))state.front_stop=true;
         static crosswalk_display::IPC crosswalk_ipc;crosswalk_display::Snapshot zebra={};
         static crosswalk_display::Geometry kept_zebra;
         static uint32_t zebra_session=0,zebra_source=0;static uint64_t zebra_seen=0;

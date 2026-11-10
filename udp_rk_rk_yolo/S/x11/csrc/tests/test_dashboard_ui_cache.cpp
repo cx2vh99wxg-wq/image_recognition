@@ -64,5 +64,14 @@ int main(){
         const auto *optimized=cached.compose(v,1280,car,320,true,-1,"ALL",status,false);
         assert(std::equal(full,full+WIDTH*HEIGHT,optimized));
     }
-    std::printf("DASHBOARD CACHE PASS: %u reused UI frames; every output pixel equals full redraw across video, angle, styles, alarms, gear, motion, focus and source loss\n",reused);
+    ViewStatus light;light.traffic_live=true;
+    for(unsigned color=1;color<=3;++color){light.traffic=color;
+        const auto *p=cached.compose(video.data(),1280,vehicle.data(),320,true,-1,"ALL",light,false);
+        const uint32_t expected[]={0,0xFFFF4358,0xFFFFCF50,0xFF39EC91};
+        assert(p[292*WIDTH+1360+(color-1)*26]==expected[color]);
+    }
+    light.traffic_live=false;
+    auto *cleared=cached.compose(video.data(),1280,vehicle.data(),320,true,-1,"ALL",light,false);
+    assert(cleared[292*WIDTH+1412]!=0xFF39EC91);
+    std::printf("DASHBOARD CACHE PASS: %u reused UI frames; every output pixel equals full redraw; front traffic R/Y/G and expiry below ANGLE\n",reused);
 }

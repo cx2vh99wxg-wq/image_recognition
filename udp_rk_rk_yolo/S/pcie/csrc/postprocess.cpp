@@ -2,6 +2,7 @@
 #include "../../../common/perception/include/yolo_quantized_decode.h"
 #include "person_brake_trigger.h"
 #include "person_display_candidates.h"
+#include "detection_classes.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,7 +47,7 @@ extern "C"
             if (display_eligible && group->count < OBJ_NUMB_MAX_SIZE)
                 group->results[group->count++] = result;
             return true;
-        });
+        },s_detection_classes());
         return 0;
     }
 

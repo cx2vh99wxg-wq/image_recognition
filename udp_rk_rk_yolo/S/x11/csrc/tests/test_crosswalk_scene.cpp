@@ -14,6 +14,15 @@ int main(){const unsigned width=320,height=480,stride=336,guard=128;const uint32
  canvas=first;crosswalk_scene::draw(canvas.data()+guard,stride,width,height,shifted,0);assert(canvas!=straight);
  unsigned left=0,right=0;for(unsigned y=0;y<height;++y)for(unsigned x=0;x<width;++x)if(straight[guard+y*stride+x]!=base){if(x<width/2)++left;else ++right;}
  assert(left>20&&right>20);
+ // Paint evidence length must not resize the display band; its center moves.
+ auto short_paint=g;for(unsigned i=0;i<g.count;++i)for(unsigned j=0;j<4;++j)
+     short_paint.stripes[i].xy[j*2+1]=j<2?170:175;
+ canvas=first;crosswalk_scene::draw(canvas.data()+guard,stride,width,height,short_paint,0);
+ auto extent=[&](const std::vector<uint32_t>&c){unsigned lo=height,hi=0;
+  for(unsigned y=0;y<height;++y)for(unsigned x=0;x<width;++x)if(c[guard+y*stride+x]!=base){lo=std::min(lo,y);hi=std::max(hi,y);}
+  return hi-lo+1;
+ };
+ assert(extent(straight)==42&&extent(canvas)==42);
  g.count=0;canvas=first;crosswalk_scene::draw(canvas.data()+guard,stride,width,height,g,20);assert(canvas==first);
  puts("CROSSWALK_SCENE_PASS: bounded white paint, angled placement, empty clears, no car/control mutation");
 }

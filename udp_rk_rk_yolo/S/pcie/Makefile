@@ -126,6 +126,12 @@ $(BUILDDIR)/test_person_display: tests/test_person_display.cpp include/person_di
 test-person-display: $(BUILDDIR)/test_person_display
 	./$(BUILDDIR)/test_person_display
 
+.PHONY: test-detection-classes
+$(BUILDDIR)/test_detection_classes: tests/test_detection_classes.cpp $(BUILDDIR)/postprocess.o include/detection_classes.h
+	$(CXX) -std=c++11 -O2 $(INCLUDES) $< $(BUILDDIR)/postprocess.o -o $@
+test-detection-classes: $(BUILDDIR)/test_detection_classes
+	./$(BUILDDIR)/test_detection_classes
+
 # 回收编译产物
 clean:
 	@echo "移除构建文件"

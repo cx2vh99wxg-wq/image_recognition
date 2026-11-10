@@ -7,15 +7,16 @@ int main(){
  constexpr uint64_t now=1000000000ULL;
  FrontGuardData status={};status.auto_enabled=1;status.raw_request=1;status.person=1;status.valid=1;front_guard_set_deadline(&status,now+400000000ULL);
  const auto before=status;assert(lane_cue::front_stop_tint(status,now));assert(!memcmp(&status,&before,sizeof(status)));
- status.auto_enabled=0;assert(!lane_cue::front_stop_tint(status,now));status.auto_enabled=1;
- status.raw_request=0;assert(!lane_cue::front_stop_tint(status,now));status.raw_request=1;
+ status.auto_enabled=0;assert(lane_cue::front_stop_tint(status,now)); // visual hazard with AUTO OFF
+ status.raw_request=0;assert(lane_cue::front_stop_tint(status,now));status.raw_request=1;status.auto_enabled=1;
  status.raw_request=0;status.blocked=1;assert(lane_cue::front_stop_tint(status,now));
- status.auto_enabled=0;assert(!lane_cue::front_stop_tint(status,now));status.auto_enabled=1;
+ status.auto_enabled=0;assert(lane_cue::front_stop_tint(status,now));status.auto_enabled=1;
  status.valid=0;assert(!lane_cue::front_stop_tint(status,now));status.valid=1;status.raw_request=1;
  assert(!lane_cue::front_stop_tint(status,now+400000000ULL));
  // Honor the existing hold until the controller clears it, without making a
  // second "three clear frames" or color decision in the renderer.
  status.person=0;assert(lane_cue::front_stop_tint(status,now));
+ status.auto_enabled=0;assert(!lane_cue::front_stop_tint(status,now));status.auto_enabled=1;
  constexpr int W=320,H=480;const uint32_t bg=0xff102030;
  std::vector<uint32_t> green(W*H,bg),red=green;
  lane_cue::draw(green.data(),W,W,H,15,1,2,1,true,true,false);
@@ -31,5 +32,5 @@ int main(){
  lane_cue::draw(green.data(),W,W,H,15,1,2,0,false,false,false);
  lane_cue::draw(red.data(),W,W,H,15,1,2,0,false,false,true);assert(green!=red);
  for(int y=seam;y<H;++y)for(int x=0;x<W;++x)assert(green[y*W+x]==red[y*W+x]);
- puts("FRONT BRAKE CUE PASS: controller request/active person GO hold, Auto gate/TTL, unknown-angle red protection, unchanged lower road and controls");
+ puts("FRONT BRAKE CUE PASS: fresh hazard visible with AUTO OFF, latched AUTO request/TTL, unknown-angle red protection, unchanged lower road and controls");
 }

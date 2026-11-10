@@ -180,6 +180,7 @@ class Dashboard
             drawMotionCue(status.motion);
         if (status.go_blocked)
             drawTrafficGoWarning(status);
+        drawForwardTraffic(status);
         const char *names[] = {"UNKNOWN", "SOLID", "DASHED"};
         char line_text[80];
         unsigned lt = status.line_left ? status.line_left : status.line_left_raw;
@@ -341,17 +342,28 @@ class Dashboard
     {
         // 提示位于车图前方，并留出左右 X 的位置，
         // 让既有人员报警也能同时保持可见。
-        const Point triangle[] = {{1386, 237}, {1418, 293}, {1354, 293}, {1386, 237}};
+        const Point triangle[] = {{1276, 275}, {1292, 303}, {1260, 303}, {1276, 275}};
         fillPolygon(frame_, triangle, 3, 0xFF6D142B, 0xFF26101D, 235);
         path(frame_, triangle, 4, 0xFFFF526D, false);
-        line(frame_, {1386, 254}, {1386, 272}, 0xFFFFE5EB, 5, 255);
-        circle(frame_, 1386, 282, 3.f, 0xFFFFE5EB, 255);
-        fillChamfer(frame_, {1258, 304, 256, 44}, 7, 0xFF2A1020);
-        centeredText(frame_, "RED LIGHT / GO HOLD", {1258, 307, 256, 18}, 1, 0xFFFF8296);
+        line(frame_, {1276, 284}, {1276, 292}, 0xFFFFE5EB, 3, 255);
+        circle(frame_, 1276, 298, 1.5f, 0xFFFFE5EB, 255);
+        fillChamfer(frame_, {1258, 315, 256, 30}, 5, 0xFF2A1020);
+        centeredText(frame_, "FORWARD PERMISSION HOLD", {1258, 316, 256, 14}, 1, 0xFFFF8296);
         const char *detail = !status.go_control_live ? "CONTROL LINK LOST"
                              : !status.go_write_ok   ? "SPI WRITE RETRY"
                                                      : "WAIT CONFIRMED GREEN";
-        centeredText(frame_, detail, {1258, 327, 256, 14}, 1, 0xFFFFC6D0);
+        centeredText(frame_, detail, {1258, 330, 256, 14}, 1, 0xFFFFC6D0);
+    }
+
+    void drawForwardTraffic(const ViewStatus &status)
+    {
+        if (!status.traffic_live || status.traffic < 1 || status.traffic > 3) return;
+        // Below ANGLE and above the schematic lane ends; status is the same
+        // fresh confirmed result used by the existing top-bar traffic display.
+        fillChamfer(frame_, {1338, 277, 96, 31}, 5, 0xFF121B27);
+        const uint32_t colors[]={0,0xFFFF4358,0xFFFFCF50,0xFF39EC91};
+        for(unsigned i=1;i<=3;++i)
+            circle(frame_,1360+int(i-1)*26,292,8, i==status.traffic?colors[i]:0xFF263241,255);
     }
 
     void drawTraffic(const ViewStatus &status)
