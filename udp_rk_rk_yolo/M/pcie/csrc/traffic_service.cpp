@@ -1,4 +1,5 @@
 #include "traffic_service.h"
+#include "traffic_signal_geometry.h"
 #include "traffic_detector.h"
 #include "traffic_frame_input.h"
 #include "traffic_light_ipc.h"
@@ -33,10 +34,16 @@ struct PreparedDetection {
     DetectorSchedule checkpoint;
     unsigned passes=0;
     uint64_t compute_ns=0;
+    bool scouted=false;
+    uint64_t next_scout=0;
+    unsigned next_cursor=0;
+    unsigned next_seen=0;
+    std::array<float,3> merits={{0,0,0}};
 };
 struct Observation
 {
     Box box;
+    bool regional=false;
     Frame reference;
     bool valid = false, ambiguous = false, structural = false;
 };
@@ -69,6 +76,10 @@ struct Service::Impl
     DetectorTiming detector_totals;
     std::unique_ptr<PreparedDetection> prepared;
     uint64_t prepared_used=0,prepared_discarded=0;
+    uint64_t scout_after=0;
+    unsigned scout_cursor=0;
+    unsigned scout_seen=0;
+    std::array<float,3> scout_merits={{0,0,0}};
     explicit Impl(const char *path, InputView input, const m_lane::FrontRadialPreview *front)
         : view(input), correction(front)
     {
@@ -91,7 +102,7 @@ struct Service::Impl
                     error.c_str());
         }
         std::printf(
-            "[TRAFFIC] enabled=%d ready=%d input=%d locator_interval_ms=%u max_NPU_passes=1 color_rate=10Hz budget_ms=%u single_NPU_owner=lane_worker classes=person:0,traffic_light:9 view=full-front control_output=metadata\n",
+                "[TRAFFIC] enabled=%d ready=%d input=%d locator_interval_ms=%u max_NPU_passes=2 extra_signal_ROI=conditional color_rate=10Hz budget_ms=%u single_NPU_owner=lane_worker classes=person:0,traffic_light:9 view=full-front control_output=metadata\n",
             enabled, ready, detector.input_size(), admission.interval_ms(), admission.budget_ms());
         std::printf(
             "[TRAFFIC INPUT] geometry=%s source_rect=%d,%d,320,240 source_order=%s detector_order=RGB\n",
@@ -150,10 +161,51 @@ struct Service::Impl
         if(now<frame.captured || now-frame.captured>300000000ULL)return nullptr;
         d->checkpoint=detector.schedule();
         const uint64_t start=traffic_clock_ns();
+        std::vector<Box> hints;
         try{
-            d->okay=detector.detect(frame.pixels.data(),320,240,320*3,d->boxes,&d->error,admission.budget_ms(),&d->people);
+            d->okay=detector.detect(frame.pixels.data(),320,240,320*3,d->boxes,&d->error,admission.budget_ms(),&d->people,false,&hints);
         }catch(...){detector.restore_schedule(d->checkpoint);throw;}
-        d->timing=detector.last_timing();d->passes=detector.last_passes();d->compute_ns=traffic_clock_ns()-start;
+        d->timing=detector.last_timing();d->passes=detector.last_passes();
+        d->next_scout=scout_after;d->next_cursor=scout_cursor;d->next_seen=scout_seen;d->merits=scout_merits;
+        float strongest=0;bool conflict=false;std::vector<unsigned> colors;
+        for(const auto&b:d->boxes){auto c=classify_signal_color(frame.pixels.data(),320,240,960,b);colors.push_back(c.state);if(c.state)strongest=std::max(strongest,b.score);}
+        for(size_t i=0;i<d->boxes.size();++i)for(size_t j=0;j<i;++j)
+            if(colors[i]&&colors[j]&&colors[i]!=colors[j]&&same_signal_bar(d->boxes[i],d->boxes[j]))conflict=true;
+        // Preserve the full-frame person pass. A bounded extra signal-only
+        // crop is allowed for weak/missing heads. An initial empty sweep can
+        // try the next view on the next job; steady searches remain at 600 ms.
+        if(d->okay&&now>=scout_after&&(strongest<.30f||conflict)&&!hints.empty()){
+            unsigned index=scout_cursor%3;
+            if(!scout_seen){
+                float best=0;
+                for(const auto&hint:hints){
+                    bool explained=false;for(const auto&b:d->boxes)if(overlap(hint,b)>.3f)explained=true;
+                    if(!explained&&hint.score>best){best=hint.score;float x=hint.x+hint.w*.5f;index=x<120?0:x<200?1:2;}
+                }
+            }
+            index=next_signal_window(scout_seen,scout_cursor,scout_merits,index);
+            const int x0=(int)index*80;std::vector<uint8_t> crop(160*160*3);
+            for(int y=0;y<160;++y)std::memcpy(crop.data()+y*480,frame.pixels.data()+y*960+x0*3,480);
+            std::vector<Box> local;std::string crop_error;
+            const bool okay=detector.detect(crop.data(),160,160,480,local,&crop_error,admission.budget_ms(),nullptr,true);
+            const auto t=detector.last_timing();d->timing.prepare+=t.prepare;d->timing.inputs+=t.inputs;d->timing.run+=t.run;d->timing.outputs+=t.outputs;d->timing.decode+=t.decode;d->timing.release+=t.release;d->timing.filter+=t.filter;d->passes+=detector.last_passes();
+            if(okay){
+                d->scouted=true;d->next_cursor=scout_cursor+1;d->next_seen=scout_seen|(1u<<index);d->merits[index]=0;
+                for(auto b:local){
+                    if(b.x<3||b.y<2||b.x+b.w>157||b.y+b.h>158)continue;
+                    b.x+=x0;
+                    if(classify_signal_color(frame.pixels.data(),320,240,960,b).state)
+                        d->merits[index]=std::max(d->merits[index],signal_relevance(b,lane.reference_x));
+                    bool duplicate=false;
+                    for(auto&old:d->boxes)if(overlap(old,b)>.45f){if(b.score>old.score)old=b;duplicate=true;break;}
+                    if(!duplicate)d->boxes.push_back(b);
+                }
+                if(*std::max_element(scout_merits.begin(),scout_merits.end())>0&&*std::max_element(d->merits.begin(),d->merits.end())<=0)d->next_seen=1u<<index;
+                d->next_scout=now+signal_scout_delay(d->merits,d->next_seen);
+                std::fprintf(stderr,"[TRAFFIC SCOUT] source=%llu window=%u seen=%u boxes=%zu merit=%.3f/%.3f/%.3f\n",(unsigned long long)frame.id,index,d->next_seen,local.size(),d->merits[0],d->merits[1],d->merits[2]);
+            }
+        }
+        d->compute_ns=traffic_clock_ns()-start;
         return d;
     }
     void prepare(const LaneBudget &lane){
@@ -183,6 +235,7 @@ struct Service::Impl
             cancel();detection=compute(lane,now);
         }
         if(!detection)return;
+        scout_after=detection->next_scout;scout_cursor=detection->next_cursor;scout_seen=detection->next_seen;scout_merits=detection->merits;
         auto &frame=detection->frame;auto &boxes=detection->boxes;auto &people=detection->people;
         const bool matched=detection->matched,okay=detection->okay;
         const auto &error=detection->error;
@@ -226,6 +279,7 @@ struct Service::Impl
         const bool structural=okay&&boxes.empty();
         if(structural)boxes=locate_three_lamp_housings(frame.pixels.data(),320,240,320*3);
         auto result = std::make_shared<Observation>();
+        result->regional=detection->scouted;
         result->structural=structural&&!boxes.empty();
         result->reference.id = frame.id;
         result->reference.captured = frame.captured;
@@ -240,8 +294,7 @@ struct Service::Impl
             float reference = std::max(0.f, std::min(320.f, lane.reference_x));
             auto rank = [&](const Box &b)
             {
-                float dx = std::abs(b.x + b.w / 2 - reference) / 320.f;
-                return b.score / (1 + 2 * dx);
+                return signal_relevance(b,reference);
             };
             std::sort(boxes.begin(), boxes.end(),
                       [&](const Box &a, const Box &b) { return rank(a) > rank(b); });
@@ -249,17 +302,27 @@ struct Service::Impl
             result->valid = true;
             result->reference.pixels = std::move(frame.pixels);
             Color first =
-                classify_color(result->reference.pixels.data(), 320, 240, 320 * 3, boxes[0],result->structural);
+                classify_signal_color(result->reference.pixels.data(), 320, 240, 320 * 3, boxes[0],result->structural);
             for (size_t i = 1; i < boxes.size(); ++i)
-                if (rank(boxes[i]) >= rank(boxes[0]) * .8f && overlap(boxes[i], boxes[0]) < .2f)
+                if ((rank(boxes[i]) >= rank(boxes[0]) * .8f||same_signal_bar(boxes[i],boxes[0])) && overlap(boxes[i], boxes[0]) < .2f)
                 {
-                    Color other = classify_color(result->reference.pixels.data(), 320, 240, 320 * 3,
+                    Color other = classify_signal_color(result->reference.pixels.data(), 320, 240, 320 * 3,
                                                  boxes[i],result->structural);
                     if (first.state && other.state && first.state != other.state)
                         result->ambiguous = true;
                 }
         }
         std::shared_ptr<const Observation> immutable = result;
+        const auto previous=std::atomic_load(&observation);
+        // A full-frame miss must not erase a more confident regional head in
+        // between scouts. Keep its ORIGINAL NN frame/time; do not renew its age.
+        // The color thread still rechecks/tracks the current camera pixels.
+        const uint8_t*current=result->reference.pixels.empty()?frame.pixels.data():result->reference.pixels.data();
+        if(!result->ambiguous&&previous&&previous->regional&&previous->valid&&
+           frame.captured>=previous->reference.captured&&frame.captured-previous->reference.captured<=1500000000ULL&&
+           (!result->valid||(overlap(previous->box,result->box)<.2f&&signal_relevance(previous->box,lane.reference_x)>signal_relevance(result->box,lane.reference_x)*1.1f))&&
+           signal_frame_housing(current,320,240,960,previous->box)&&
+           classify_signal_color(current,320,240,960,previous->box,previous->structural).state)immutable=previous;
         std::atomic_store(&observation, immutable);
         // CPU 候选仲裁的时间也计入车道间隙预算。
         uint64_t end = traffic_clock_ns(), elapsed = detection->compute_ns + end - commit_started;
@@ -344,11 +407,11 @@ struct Service::Impl
                         have_track = have_track && tracker.update(frame.pixels.data(), 320, 240,
                                                                   320 * 3, box->box, tracked);
                         const bool housing = have_track &&
-                            signal_housing(frame.pixels.data(), 320, 240, 320 * 3, tracked);
+                            signal_frame_housing(frame.pixels.data(), 320, 240, 320 * 3, tracked);
                         if (housing && !box->ambiguous)
                         {
                             Color color =
-                                classify_color(frame.pixels.data(), 320, 240, 320 * 3, tracked,box->structural);
+                                classify_signal_color(frame.pixels.data(), 320, 240, 320 * 3, tracked,box->structural);
                             data.raw_state = color.state;
                             data.color_quality = color.quality;
                             data.reason = color.reason;

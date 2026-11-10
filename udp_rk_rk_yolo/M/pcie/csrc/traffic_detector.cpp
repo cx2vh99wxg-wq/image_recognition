@@ -1,4 +1,5 @@
 #include "traffic_detector.h"
+#include "traffic_signal_geometry.h"
 #include "traffic_letterbox.h"
 #include "front_person.h"
 #include "rknn_api.h"
@@ -124,9 +125,11 @@ bool Detector::init(const char *path, std::string *error)
     return true;
 }
 bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<Box> &boxes,
-                      std::string *error, unsigned budget_ms, PersonResult *persons)
+                      std::string *error, unsigned budget_ms, PersonResult *persons,
+                      bool full_view, std::vector<Box> *signal_hints)
 {
     boxes.clear();
+    if(signal_hints)signal_hints->clear();
     if (persons) *persons = PersonResult{};
     auto &p = *impl_;
     if (!p.context || !rgb || w < 1 || h < 1 || stride < w * 3)
@@ -138,7 +141,7 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
     const float views[] = {1.f, .5f, .25f};
     // Shared person+signal service always covers the full corrected front image.
     // Tiny padded views are retained only for the traffic-only offline probes.
-    const unsigned view_id = persons ? 0 : p.hits ? p.locked_view : p.view_cursor++ % 3;
+    const unsigned view_id = (persons||full_view) ? 0 : p.hits ? p.locked_view : p.view_cursor++ % 3;
     (void)budget_ms; // Admission still measures the whole call and backs off overruns.
     {
         const float view = views[view_id];
@@ -214,7 +217,7 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                         }
                         float score = obj * cls;
                         const float person_score = obj * person_cls;
-                        if (score < locator_score_gate &&
+                        if (score < (signal_hints?.04f:locator_score_gate) &&
                             (!persons || person_score < FRONT_PERSON_CONFIDENCE_THRESHOLD))
                             continue;
                         float dx = at(base, pos), dy = at(base + 1, pos), dw = at(base + 2, pos),
@@ -231,6 +234,8 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                                         ((2 * dy - .5f + y) * stride_model - bh / 2 - py) / scale,
                                         bw / scale, bh / scale, score),
                                     w, h);
+                        if(signal_hints&&score>=.04f&&b.w>=3&&b.h>=5&&b.y+b.h*.5<h*.75)
+                            signal_hints->push_back(b); // crop hints only, never published as a detection
                         bool person_top = persons && person_score >= FRONT_PERSON_CONFIDENCE_THRESHOLD;
                         bool signal_top = score >= locator_score_gate;
                         // Keep person competition unchanged. Signal class-9
@@ -267,20 +272,25 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                   [](const Box &a, const Box &b) { return a.score > b.score; });
         if (pass_candidates.size() > 64)
             pass_candidates.resize(64);
-        std::vector<Box> selected;
+        std::vector<Box> selected,groups;
+        std::vector<unsigned> group_counts;
         for (const auto &b : pass_candidates)
         {
-            if (!signal_housing(rgb, w, h, stride, b))
-                continue;
+            Box aligned=b;
+            if(!signal_housing(rgb,w,h,stride,b)){
+                size_t group=0;for(;group<groups.size();++group)if(overlap(groups[group],b)>.5f)break;
+                if(group==groups.size()){if(groups.size()>=8)continue;groups.push_back(b);group_counts.push_back(0);}
+                if(++group_counts[group]>3||!refine_signal_box(rgb,w,h,stride,b,aligned))continue;
+            }
             bool keep = true;
             for (const auto &old : selected)
-                if (overlap(b, old) > .45f)
+                if (overlap(aligned, old) > .45f)
                 {
                     keep = false;
                     break;
                 }
             if (keep)
-                selected.push_back(b);
+                selected.push_back(aligned);
             if (selected.size() >= 16)
                 break;
         }

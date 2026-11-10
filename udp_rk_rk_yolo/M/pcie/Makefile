@@ -190,6 +190,14 @@ $(BUILD_DIR)/test_service_overlap: tests/test_service_overlap.cpp tests/test_sig
 test-service-overlap: $(BUILD_DIR)/test_service_overlap
 	./$(BUILD_DIR)/test_service_overlap
 
+$(BUILD_DIR)/test_signal_geometry: tests/test_signal_geometry.cpp include/traffic_signal_geometry.h include/traffic_vision.h
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 $(INCLUDES) $< -o $@
+test-signal-geometry: $(BUILD_DIR)/test_signal_geometry
+	./$(BUILD_DIR)/test_signal_geometry
+.PHONY: test-signal-geometry
+$(BUILD_DIR)/test_signal_competition $(BUILD_DIR)/test_service_overlap: include/traffic_signal_geometry.h include/traffic_letterbox.h
+
 $(BUILD_DIR)/lane_overlap_replay: tools/lane_overlap_replay.cpp include/latest_lane_worker.h include/lane_cpu_stage.h $(BUILD_DIR)/yolo_integration.o $(BUILD_DIR)/traffic_detector.o $(BUILD_DIR)/traffic_service.o
 	@mkdir -p $(BUILD_DIR)
 	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 -pthread $(INCLUDES) $< $(BUILD_DIR)/yolo_integration.o $(BUILD_DIR)/traffic_detector.o $(BUILD_DIR)/traffic_service.o -o $@ $(LIBS) -lm
