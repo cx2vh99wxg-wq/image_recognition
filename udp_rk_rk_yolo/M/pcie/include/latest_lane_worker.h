@@ -200,11 +200,14 @@ class LatestWorker
         std::vector<float> lane,road;
         std::shared_ptr<Snapshot> result;
         traffic::LaneBudget budget;
-        yolopv2_result_t raw(){return {lane.data(),road.data(),model_width,model_height};}
+        bool masks_in_snapshot=false;
+        yolopv2_result_t raw(){return {masks_in_snapshot?result->lane.data():lane.data(),
+            masks_in_snapshot?result->drivable.data():road.data(),model_width,model_height};}
         traffic::FrontRoadFrame front() const {
             traffic::FrontRoadFrame f;
-            if(status==0&&!front_rgb.empty()&&!road.empty()){
-                f.pixels=front_rgb.data();f.road=road.data();f.width=model_width;f.height=model_height;
+            const auto& owned_road=masks_in_snapshot?result->drivable:road;
+            if(status==0&&!front_rgb.empty()&&!owned_road.empty()){
+                f.pixels=front_rgb.data();f.road=owned_road.data();f.width=model_width;f.height=model_height;
                 f.source=source;f.captured=captured;
             }
             return f;
@@ -232,10 +235,10 @@ class LatestWorker
                         if (front_input_)
                         {
                             if(mask_pull_.enabled()){
-                                const size_t n=(size_t)raw.width*raw.height;
                                 result->width=width_;result->height=height_;result->restore_map=restore_map_;
-                                result->lane.assign(raw.lane_line_data,raw.lane_line_data+n);
-                                result->drivable.assign(raw.drivable_area_data,raw.drivable_area_data+2*n);
+                                // Frozen once by the NPU owner. CPU analysis,
+                                // person association and published readers share
+                                // these immutable, independently owned masks.
                             }else{
                                 front_input_->restore_front_masks(raw.lane_line_data, raw.drivable_area_data,
                                                                   raw_lane_.data(), raw_road_.data());
@@ -476,6 +479,7 @@ class LatestWorker
                     job.source=pending_id_;job.captured=pending_capture_ns_;
                 }
                 job.pixels.swap(working_pixels_);
+                job.masks_in_snapshot=mask_pull_.enabled();
                 job.result->source_id=job.source;job.result->captured_ns=job.captured;
                 uint64_t started=clock_ns();
                 if(front_input_){job.front_rgb.resize((size_t)width_*height_*3/4);front_input_->render(job.pixels.data(),job.front_rgb.data());}
@@ -489,8 +493,10 @@ class LatestWorker
                 if(job.status==0){
                     job.model_width=raw.width;job.model_height=raw.height;job.timing=engine_->timing;
                     const size_t n=(size_t)raw.width*raw.height;
-                    job.lane.assign(raw.lane_line_data,raw.lane_line_data+n);
-                    job.road.assign(raw.drivable_area_data,raw.drivable_area_data+2*n);
+                    auto& owned_lane=job.masks_in_snapshot?job.result->lane:job.lane;
+                    auto& owned_road=job.masks_in_snapshot?job.result->drivable:job.road;
+                    owned_lane.assign(raw.lane_line_data,raw.lane_line_data+n);
+                    owned_road.assign(raw.drivable_area_data,raw.drivable_area_data+2*n);
                 }
                 const uint64_t freeze_done=clock_ns();
                 if(cpu_stage_ && optional_task_ && optional_task_->overlap_capable() && job.status==0){
