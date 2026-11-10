@@ -582,8 +582,24 @@ static int read_steering_lane(void *context, uint32_t *frame, unsigned *type, un
     return rc;
 }
 
+/* Algorithm-test profile: SAME production brake/permission policies, without
+ * starting IMU, auto-centering or steering pulses. Never asserts reg0..3. */
+static void run_brake_only(unsigned max_iterations)
+{
+    unsigned iterations = 0;
+    printf("[BRAKE_ONLY] production front/rear/traffic/lane monitors; automatic steering and IMU disabled\n");
+    while (g_running && (!max_iterations || iterations < max_iterations))
+    {
+        monitor_emergency_brake();
+        ++iterations;
+        if (!max_iterations || iterations < max_iterations) usleep(100000);
+    }
+}
+
 int main(int argc, char *argv[])
 {
+    const int brake_only = argc == 2 && !strcmp(argv[1], "--brake-only");
+    if (argc != 1 && !brake_only) { fprintf(stderr,"Usage: %s [--brake-only]\n",argv[0]); return 2; }
     /* 显式台架会话应能跨越人工观察停顿；
      * 在任何可能写触点的 SPI 初始化或移除前先检查会话。 */
     if (access("/tmp/steering-bench.active", F_OK) == 0)
@@ -595,8 +611,6 @@ int main(int argc, char *argv[])
     }
     // 寄存器访问：调试日志重定向到文件时也逐行输出，便于实机核对制动请求。
     setvbuf(stdout, NULL, _IOLBF, 0);
-    (void)argc;
-    (void)argv;
     printf("=== 车辆控制程序 (弯道检测自动转向) ===\n");
     printf("版本: 8.2 (SMDT原生三字节FSPI + 按轴转向 + 制动心跳隔离)\n");
     printf("作者: 科研轮转\n");
@@ -630,6 +644,14 @@ int main(int argc, char *argv[])
         return -1;
     }
     printf("FSPI初始化完成！\n");
+    if (brake_only)
+    {
+        run_brake_only(0);
+        fspi_write_data(4, 0); /* Existing fault request; hardware AUTO gate still applies. */
+        if (emergency_brake_shm) emergency_brake_shm_cleanup(emergency_brake_shm, 0);
+        fspi_cleanup();
+        return 0;
+    }
     int closed_loop = steering_runtime_requested();
 
     // 寄存器访问：先初始化原始请求与方向为释放；写1不解除已有的FPGA锁存。

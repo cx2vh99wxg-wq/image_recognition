@@ -11,6 +11,7 @@
 #include "../../../common/perception/include/curve_heading.h"
 #include "traffic_vision.h"
 #include "lane_cpu_stage.h"
+#include "crosswalk_detector.h"
 #include <cstdio>
 #include <cstdlib>
 #include <atomic>
@@ -297,6 +298,15 @@ class LatestWorker
                                 LineStyleTrace trace;
                                 YOLOLineStyleResult bird = {};
                                 ipm_test_->render(working_pixels_.data(), ipm_rgb_.data());
+                                const uint64_t zebra_started=clock_ns();
+                                const auto zebra=crosswalk_detector_.detect(ipm_rgb_.data(),ipm_coverage_.data());
+                                crosswalk_display::Snapshot crosswalk={};
+                                crosswalk.session=crosswalk_session_;crosswalk.source=(uint32_t)source;
+                                crosswalk.count=zebra.count;crosswalk.quality=zebra.quality;
+                                std::copy_n(zebra.stripes,zebra.count,crosswalk.stripes);
+                                crosswalk_display::expires(crosswalk,captured+crosswalk_display::TTL);
+                                if(crosswalk_ipc_.open(true))crosswalk_ipc_.write(crosswalk);
+                                if(log_ipm)std::fprintf(stderr,"[CROSSWALK] source=%llu geometry=ipm stripes=%u quality=%u cpu_ms=%.3f display_only=1\n",(unsigned long long)source,zebra.count,zebra.quality,(clock_ns()-zebra_started)/1e6);
                                 if (use_point_lanes())
                                 {
                                     const auto rows=lane_mask_rows(ipm_lane_.data(),width_/2,height_/2,0,height_/2);
@@ -552,6 +562,9 @@ class LatestWorker
     FrontMaskPull mask_pull_;
     std::vector<uint8_t> ipm_rgb_, ipm_green_, ipm_coverage_;
     std::vector<float> ipm_lane_;
+    crosswalk::Detector crosswalk_detector_;
+    crosswalk_display::IPC crosswalk_ipc_;
+    const uint32_t crosswalk_session_=uint32_t(clock_ns())|1u;
     uint64_t ipm_log_ns_ = 0;
     unsigned ipm_frames_ = 0, ipm_valid_ = 0;
     std::shared_ptr<const Snapshot> latest_;

@@ -36,6 +36,7 @@
 #include "lane_angle_cue.h"
 #include "vehicle_artwork.h"
 #include "pedestrian_scene.h"
+#include "crosswalk_scene.h"
 #include "front_brake_cue.h"
 #include "../../../common/image/frame_pixels.h"
 #include "../../../common/performance/frame_intervals.h"
@@ -109,6 +110,7 @@ struct VehicleLayerState
     bool warning_red;
     bool front_stop;
     pedestrian_scene::Actors actors;
+    crosswalk_display::Geometry crosswalk;
     unsigned warning_views;
     bool operator==(const VehicleLayerState &other) const
     {
@@ -118,7 +120,7 @@ struct VehicleLayerState
                blink == other.blink && curve == other.curve && confidence == other.confidence &&
                signed_angle == other.signed_angle && left_style == other.left_style &&
                right_style == other.right_style && blocked == other.blocked &&
-               warning_red == other.warning_red && front_stop == other.front_stop && warning_views == other.warning_views && actors == other.actors;
+               warning_red == other.warning_red && front_stop == other.front_stop && warning_views == other.warning_views && actors == other.actors && crosswalk == other.crosswalk;
     }
 };
 
@@ -538,8 +540,11 @@ static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::View
         display_people::Snapshot rear={},front={};const uint64_t now=display_clock_ns();
         bool have_rear=rear_ipc.open(display_people::REAR_KEY,false)&&rear_ipc.read(rear)&&display_people::fresh(rear,now);
         bool have_front=front_ipc.open(display_people::FRONT_KEY,false)&&front_ipc.read(front)&&display_people::fresh(front,now);
-        if(have_rear)state.actors.append(rear);
-        if(have_front)state.actors.append(front);
+        static pedestrian_scene::MotionTracker rear_motion,front_motion;
+        if(have_rear){rear_motion.append(rear,now,state.signed_angle,state.actors.motion,state.actors.count,24,pedestrian_scene::project_foot);state.actors.append(rear);}
+        if(have_front){front_motion.append(front,now,state.signed_angle,state.actors.motion,state.actors.count,24,pedestrian_scene::project_foot);state.actors.append(front);}
+        static crosswalk_display::IPC crosswalk_ipc;crosswalk_display::Snapshot zebra={};
+        if(crosswalk_ipc.open(false)&&crosswalk_ipc.read(zebra)&&crosswalk_display::fresh(zebra,now))state.crosswalk.set(zebra);
         if(state.person&&!have_rear){
             const int cx=(state.box_left+state.box_right)/2,cy=(state.box_top+state.box_bottom)/2;
             const unsigned tile=(cx>=320?1:0)+(cy>=240?2:0);
@@ -604,6 +609,7 @@ static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::View
     if (state.front_person)
         vehicle_artwork::person_glow(engine->vehicle_layer, COMBINED_IMAGE_WIDTH, 160, 0, state.blink);
     draw_lane_lines(engine->vehicle_layer, 0, 0, 320, 480, state);
+    crosswalk_scene::draw(engine->vehicle_layer,COMBINED_IMAGE_WIDTH,320,480,state.crosswalk,state.signed_angle);
     pedestrian_scene::draw(engine->vehicle_layer,COMBINED_IMAGE_WIDTH,320,480,state.actors,state.signed_angle);
     engine->vehicle_state = state;
     engine->vehicle_cached = 1;
@@ -1997,6 +2003,7 @@ static int find_display_asset(const char *name, char *output, size_t capacity)
 
 static int load_vehicle_artwork()
 {
+    (void)pedestrian_scene::gait_atlas(); // Precompute before the first displayed frame.
     char path[PATH_MAX];
     return find_display_asset("assets/car_third_person.jpg", path, sizeof(path)) == 0 ? load_car_artwork(path) : -1;
 }

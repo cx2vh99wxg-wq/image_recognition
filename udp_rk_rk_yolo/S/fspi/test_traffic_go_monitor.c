@@ -193,6 +193,8 @@ int main(void) {
     // Turning the switch back ON immediately restores both front guards.
     gates_reply=GATE_AUTO;publish_roi(1);poll();
     assert(front_guard.auto_enabled && front_guard.held_go && front_guard.raw_request && (last_permission&4));
+    lane_last_poll=0;last_stop=-1;run_brake_only(1);
+    assert(last_stop==0&&front_guard.held_go&&front_guard.raw_request);
     puts("production monitor: atomic lane+traffic permissions, red/unknown/yellow/green, SPI retry, UI telemetry, restart PASS");
     return 0;
 }

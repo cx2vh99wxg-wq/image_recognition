@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <chrono>
 int main(){
-    for(int w:{1,159,160,319,320,640})for(int h:{1,120,160,239,240,320,480})
+    for(int w:{1,128,159,160,319,320,640})for(int h:{1,120,128,160,239,240,320,480})
         for(int pad:{0,17})for(float view:{1.f,.5f,.25f}){
             int stride=w*3+pad;std::vector<uint8_t> raw((size_t)stride*h);
             for(size_t i=0;i<raw.size();++i)raw[i]=(uint8_t)((i*73+i/256)%256);
@@ -18,11 +18,17 @@ int main(){
         for(int i=0;i<100;++i){traffic::prepare_letterbox(raw.data(),320,240,960,320,320,1.f,out,fast);checksum+=out[i];}
         printf("LETTERBOX fast=%d mean_ms=%.4f\n",fast,std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-start).count()/100);
     }
+    raw.resize(128*128*3);
+    for(bool fast:{false,true}){
+        auto start=std::chrono::steady_clock::now();
+        for(int i=0;i<100;++i){traffic::prepare_letterbox(raw.data(),128,128,384,320,320,1.f,out,fast);checksum+=out[i];}
+        printf("LETTERBOX 2.5x fast=%d mean_ms=%.4f\n",fast,std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-start).count()/100);
+    }
     raw.resize(160*160*3);
     for(bool fast:{false,true}){
         auto start=std::chrono::steady_clock::now();
         for(int i=0;i<100;++i){traffic::prepare_letterbox(raw.data(),160,160,480,320,320,1.f,out,fast);checksum+=out[i];}
         printf("LETTERBOX 2x fast=%d mean_ms=%.4f\n",fast,std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-start).count()/100);
     }
-    printf("LETTERBOX PASS: byte-identical generic/unit/exact-2x paths, padded stride, down/up-sampling, three views, raw immutable (%u)\n",checksum);
+    printf("LETTERBOX PASS: byte-identical generic/unit/2x/2.5x paths, padded stride, down/up-sampling, three views, raw immutable (%u)\n",checksum);
 }

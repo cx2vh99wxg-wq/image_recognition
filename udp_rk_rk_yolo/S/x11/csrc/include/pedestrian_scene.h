@@ -3,11 +3,13 @@
 #include "lane_angle_cue.h"
 #include "../../../../common/perception/include/display_people.h"
 #include <array>
+#include "pedestrian_motion.h"
+#include "pedestrian_gait.h"
 namespace pedestrian_scene {
 using display_people::Person;
 struct Actors {
- unsigned count=0;Person people[24]={};
- bool operator==(const Actors&o)const{return count==o.count&&!std::memcmp(people,o.people,count*sizeof(Person));}
+ unsigned count=0;Person people[24]={};Motion motion[24]={};
+ bool operator==(const Actors&o)const{return count==o.count&&!std::memcmp(people,o.people,count*sizeof(Person))&&!std::memcmp(motion,o.motion,count*sizeof(Motion));}
  void append(const display_people::Snapshot&s){for(unsigned i=0;i<s.count&&count<24;++i)people[count++]=s.people[i];}
 };
 struct Placement {double x,y,height;bool calibrated;};
@@ -73,12 +75,14 @@ struct Sprite {
   }
  }
 };
-inline void draw_person(uint32_t*pixels,int stride,int width,int height,const Placement&p){
+inline void project_foot(const Person&p,int angle,double&x,double&y){const auto q=locate(p,angle);x=q.x;y=q.y;}
+inline void draw_person(uint32_t*pixels,int stride,int width,int height,const Placement&p,const Motion&motion=Motion{}){
  static const Sprite sprite;
+ const uint32_t*source=motion.walking?gait_atlas().frame(motion.direction,motion.phase):sprite.pixels.data();
  const int h=(int)std::lround(p.height),w=(int)std::lround(h*.5),left=(int)std::lround(p.x-w*.5),top=(int)std::lround(p.y-h);
  for(int y=0;y<h;++y)for(int x=0;x<w;++x){
   if(left+x<0||left+x>=width||top+y<0||top+y>=height)continue;
-  const auto c=sprite.pixels[(y*Sprite::H/h)*Sprite::W+x*Sprite::W/w];const unsigned a=c>>24;if(!a)continue;
+  const auto c=source[(y*Sprite::H/h)*Sprite::W+x*Sprite::W/w];const unsigned a=c>>24;if(!a)continue;
   auto&dst=pixels[(top+y)*stride+left+x];uint32_t out=0xff000000u;
   for(unsigned shift:{0u,8u,16u})out|=((unsigned((dst>>shift)&255)*(255-a)+unsigned((c>>shift)&255)*a+127)/255)<<shift;
   dst=out;
@@ -89,7 +93,7 @@ inline void draw(uint32_t*pixels,int stride,int width,int height,const Actors&ac
  std::array<Placement,24> where;std::array<unsigned,24> order;
  for(unsigned i=0;i<actors.count;++i){where[i]=locate(actors.people[i],angle,width,height);order[i]=i;}
  std::sort(order.begin(),order.begin()+actors.count,[&](unsigned a,unsigned b){return where[a].y<where[b].y;});
- for(unsigned i=0;i<actors.count;++i)draw_person(pixels,stride,width,height,where[order[i]]);
+ for(unsigned i=0;i<actors.count;++i)draw_person(pixels,stride,width,height,where[order[i]],actors.motion[order[i]]);
 }
 }
 #endif

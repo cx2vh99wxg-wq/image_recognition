@@ -8,9 +8,11 @@ inline bool exposed_signal_housing(const uint8_t*rgb,int w,int h,int stride,Box 
     if(!rgb||stride<w*3||!std::isfinite(b.x+b.y+b.w+b.h+b.score)||b.score<.30f)return false;
     b=clipped(b,w,h);int x0=(int)b.x,y0=(int)b.y,bw=(int)b.w,bh=(int)b.h;
     if(bw<5||bh<9||bh<bw*1.5||bh>bw*5.5||x0<2||x0+bw>w-2||y0<2||y0+bh>h-2)return false;
-    unsigned peak=0,core=0;for(int y=0;y<bh;++y)for(int x=0;x<bw;++x){const auto*p=rgb+(y+y0)*stride+(x+x0)*3;unsigned hi=std::max(p[0],std::max(p[1],p[2])),lo=std::min(p[0],std::min(p[1],p[2]));peak=std::max(peak,hi);core+=hi>=235&&lo*100>=hi*72;}
+    unsigned peak=0,core=0;for(int y=0;y<bh;++y)for(int x=0;x<bw;++x){const auto*p=rgb+(y+y0)*stride+(x+x0)*3;peak=std::max<unsigned>(peak,std::max(p[0],std::max(p[1],p[2])));}
+    if(peak<160)return false;
+    for(int y=0;y<bh;++y)for(int x=0;x<bw;++x){const auto*p=rgb+(y+y0)*stride+(x+x0)*3;unsigned hi=std::max(p[0],std::max(p[1],p[2])),lo=std::min(p[0],std::min(p[1],p[2]));core+=hi*100>=peak*90&&lo*100>=hi*72;}
     if(core<3)return false;
-    const unsigned limit=std::min(180u,peak*80/100);
+    const unsigned limit=peak*80/100;
     const int inset=bw/5,cap=std::max(2,bh/4);
     unsigned dark=0,sides[2]={},ends[2]={};
     for(int y=0;y<bh;++y)for(int x=0;x<bw;++x){const auto*p=rgb+(y+y0)*stride+(x+x0)*3;bool dim=std::max(p[0],std::max(p[1],p[2]))<(int)limit;dark+=dim;if(x==(int)inset)sides[0]+=dim;if(x==bw-1-(int)inset)sides[1]+=dim;if(y<cap)ends[0]+=dim;if(y>=bh-cap)ends[1]+=dim;}
@@ -55,13 +57,24 @@ inline float signal_relevance(const Box&b,float reference){
     const float vertical=std::max(0.f,std::min(1.f,(b.y+b.h*.5f)/240.f));
     return b.score/(1+2*dx+2*vertical);
 }
-inline unsigned next_signal_window(unsigned seen,unsigned cursor,const std::array<float,3>&merits,unsigned preferred){
-    if(!seen)return preferred%3;
-    if(seen!=7){for(unsigned n=0;n<3;++n){unsigned k=(cursor+n)%3;if(!(seen&(1u<<k)))return k;}}
-    unsigned index=(unsigned)(std::max_element(merits.begin(),merits.end())-merits.begin());
-    if(merits[index]<=0)return cursor%3;
-    return cursor%9==8?(index+1+(cursor/9)%2)%3:index;
+inline bool signal_competing_head(const Box&selected,const Box&other,float selected_rank,float other_rank){
+    if(same_signal_bar(selected,other))return true;
+    // Similar scores alone do not make a low pedestrian/tail lamp belong to
+    // the selected overhead signal group. Color conflict INSIDE one housing
+    // remains rejected by classify_color independently.
+    return other_rank>=selected_rank*.8f&&
+        std::abs(selected.y+selected.h*.5f-other.y-other.h*.5f)<=std::max(selected.h,other.h)*.60f;
 }
-inline uint64_t signal_scout_delay(const std::array<float,3>&merits,unsigned seen){return seen!=7&&*std::max_element(merits.begin(),merits.end())<=0?100000000ULL:600000000ULL;}
+constexpr unsigned SIGNAL_WINDOWS=4,ALL_SIGNAL_WINDOWS=(1u<<SIGNAL_WINDOWS)-1;
+struct SignalWindow {int x,y,size;};
+inline SignalWindow signal_window(unsigned i){return i==3?SignalWindow{104,32,128}:SignalWindow{int(i%3)*80,0,160};}
+inline unsigned next_signal_window(unsigned seen,unsigned cursor,const std::array<float,SIGNAL_WINDOWS>&merits,unsigned preferred){
+    if(!seen)return preferred%SIGNAL_WINDOWS;
+    if(seen!=ALL_SIGNAL_WINDOWS){for(unsigned n=0;n<SIGNAL_WINDOWS;++n){unsigned k=(cursor+n)%SIGNAL_WINDOWS;if(!(seen&(1u<<k)))return k;}}
+    unsigned index=(unsigned)(std::max_element(merits.begin(),merits.end())-merits.begin());
+    if(merits[index]<=0)return cursor%SIGNAL_WINDOWS;
+    return cursor%9==8?(index+1+(cursor/9)%(SIGNAL_WINDOWS-1))%SIGNAL_WINDOWS:index;
+}
+inline uint64_t signal_scout_delay(const std::array<float,SIGNAL_WINDOWS>&merits,unsigned seen){return seen!=ALL_SIGNAL_WINDOWS&&*std::max_element(merits.begin(),merits.end())<=0?100000000ULL:600000000ULL;}
 }
 #endif

@@ -74,7 +74,7 @@ inline void draw(uint32_t *pixels, int stride, int width, int height, int angle,
         const double half_width = rect.width * (.12 + .25 * depth);
         // Green corridor only above the reference seam and only for a valid
         // current heading. Integer alpha blending keeps the underlying artwork.
-        if (angle_known && y < seam)
+        if ((angle_known || front_stop) && y < seam)
         {
             const int left = std::max(0, (int)std::ceil(center-half_width)+4);
             const int right = std::min(width-1, (int)std::floor(center+half_width)-4);

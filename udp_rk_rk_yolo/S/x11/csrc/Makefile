@@ -62,6 +62,11 @@ endif
 # 直接调用 make 时采用的入口
 all: test-camera-guard $(BIN)
 
+$(BUILD_DIR)/test_pedestrian_motion: tests/test_pedestrian_motion.cpp include/pedestrian_motion.h include/pedestrian_gait.h include/pedestrian_scene.h | $(BUILD_DIR)
+	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@
+test-pedestrian-motion: $(BUILD_DIR)/test_pedestrian_motion
+	./$(BUILD_DIR)/test_pedestrian_motion
+
 .PHONY: test-camera-guard
 $(BUILD_DIR)/test_camera_guard_rows: tests/test_camera_guard_rows.cpp ../../../common/image/camera_valid_rows.h include/six_camera_render.h ../../../common/image/frame_pixels.h | $(BUILD_DIR)
 	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@
@@ -221,3 +226,10 @@ $(BUILD_DIR)/test_frame_intervals: tests/test_frame_intervals.cpp ../../../commo
 	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@
 test-frame-intervals: $(BUILD_DIR)/test_frame_intervals
 	./$(BUILD_DIR)/test_frame_intervals
+
+.PHONY: test-crosswalk-scene
+$(BUILD_DIR)/test_crosswalk_scene: tests/test_crosswalk_scene.cpp include/crosswalk_scene.h include/lane_angle_cue.h ../../../common/perception/include/crosswalk_display.h | $(BUILD_DIR)
+	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@
+test-crosswalk-scene: $(BUILD_DIR)/test_crosswalk_scene
+	./$(BUILD_DIR)/test_crosswalk_scene
+$(BUILD_DIR)/main.o: include/crosswalk_scene.h ../../../common/perception/include/crosswalk_display.h

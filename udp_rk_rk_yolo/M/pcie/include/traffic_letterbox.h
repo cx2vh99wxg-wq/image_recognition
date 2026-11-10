@@ -43,6 +43,23 @@ inline Letterbox prepare_letterbox(const uint8_t* rgb,int w,int h,int stride,
         }
         return b;
     }
+    // The tight signal view is 128 -> 320. Cache each horizontally filtered
+    // source row once, retaining the reference float operations and rounding.
+    // Adjacent output rows reuse the same two source rows; no new pixel values
+    // or quantized interpolation weights are introduced.
+    if(unit_copy && b.scale==2.5f) {
+        struct Column{int x0,x1;float ax;};std::vector<Column> cols(b.width);
+        for(int x=0;x<b.width;++x){float fx=std::max(0.f,(x+.5f)/b.scale-.5f);int x0=std::min(w-1,(int)fx);cols[x]={x0,std::min(w-1,x0+1),fx-x0};}
+        std::vector<float> rows((size_t)b.width*3*2);int ids[2]={-1,-1};
+        const auto row=[&](int y){unsigned slot=y%2;float*dst=rows.data()+slot*b.width*3;
+            if(ids[slot]!=y){const uint8_t*src=rgb+y*stride;for(int x=0;x<b.width;++x){const auto&s=cols[x];for(int c=0;c<3;++c)dst[x*3+c]=src[s.x0*3+c]*(1-s.ax)+src[s.x1*3+c]*s.ax;}ids[slot]=y;}
+            return dst;};
+        for(int y=0;y<b.height;++y){float fy=std::max(0.f,(y+.5f)/b.scale-.5f);int y0=std::min(h-1,(int)fy),y1=std::min(h-1,y0+1);float ay=fy-y0;
+            const float*a=row(y0),*z=row(y1);uint8_t*dst=out.data()+((y+b.y)*dw+b.x)*3;
+            for(int i=0;i<b.width*3;++i)dst[i]=(uint8_t)std::lround(a[i]*(1-ay)+z[i]*ay);
+        }
+        return b;
+    }
     for(int y=0;y<b.height;++y) {
         float fy=std::max(0.f,(y+.5f)/b.scale-.5f);
         int y0=std::min(h-1,(int)fy),y1=std::min(h-1,y0+1);float ay=fy-y0;

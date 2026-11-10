@@ -38,7 +38,7 @@ struct PreparedDetection {
     uint64_t next_scout=0;
     unsigned next_cursor=0;
     unsigned next_seen=0;
-    std::array<float,3> merits={{0,0,0}};
+    std::array<float,SIGNAL_WINDOWS> merits={};
 };
 struct Observation
 {
@@ -79,7 +79,7 @@ struct Service::Impl
     uint64_t scout_after=0;
     unsigned scout_cursor=0;
     unsigned scout_seen=0;
-    std::array<float,3> scout_merits={{0,0,0}};
+    std::array<float,SIGNAL_WINDOWS> scout_merits={};
     explicit Impl(const char *path, InputView input, const m_lane::FrontRadialPreview *front)
         : view(input), correction(front)
     {
@@ -174,8 +174,15 @@ struct Service::Impl
         // Preserve the full-frame person pass. A bounded extra signal-only
         // crop is allowed for weak/missing heads. An initial empty sweep can
         // try the next view on the next job; steady searches remain at 600 ms.
-        if(d->okay&&now>=scout_after&&(strongest<.30f||conflict)&&!hints.empty()){
-            unsigned index=scout_cursor%3;
+        const auto prior=std::atomic_load(&observation);
+        // A verified large three-lamp diagram already has the strict CPU
+        // locator below. Skip redundant tiny NN crops; commit still locates
+        // and classifies the CURRENT frame, never reuses its old color.
+        const bool structure_lock=prior&&prior->valid&&prior->structural&&frame.captured>=prior->reference.captured&&frame.captured-prior->reference.captured<=1800000000ULL;
+        bool regional_missing=prior&&prior->valid&&prior->regional&&frame.captured>=prior->reference.captured&&frame.captured-prior->reference.captured<=1500000000ULL;
+        if(regional_missing)for(const auto&b:d->boxes)if(overlap(prior->box,b)>.2f)regional_missing=false;
+        if(d->okay&&!structure_lock&&now>=scout_after&&(strongest<.30f||conflict||regional_missing)&&!hints.empty()){
+            unsigned index=scout_cursor%SIGNAL_WINDOWS;
             if(!scout_seen){
                 float best=0;
                 for(const auto&hint:hints){
@@ -184,25 +191,25 @@ struct Service::Impl
                 }
             }
             index=next_signal_window(scout_seen,scout_cursor,scout_merits,index);
-            const int x0=(int)index*80;std::vector<uint8_t> crop(160*160*3);
-            for(int y=0;y<160;++y)std::memcpy(crop.data()+y*480,frame.pixels.data()+y*960+x0*3,480);
+            const auto window=signal_window(index);const int x0=window.x,y0=window.y,size=window.size;std::vector<uint8_t> crop(size*size*3);
+            for(int y=0;y<size;++y)std::memcpy(crop.data()+y*size*3,frame.pixels.data()+(y+y0)*960+x0*3,size*3);
             std::vector<Box> local;std::string crop_error;
-            const bool okay=detector.detect(crop.data(),160,160,480,local,&crop_error,admission.budget_ms(),nullptr,true);
+            const bool okay=detector.detect(crop.data(),size,size,size*3,local,&crop_error,admission.budget_ms(),nullptr,true);
             const auto t=detector.last_timing();d->timing.prepare+=t.prepare;d->timing.inputs+=t.inputs;d->timing.run+=t.run;d->timing.outputs+=t.outputs;d->timing.decode+=t.decode;d->timing.release+=t.release;d->timing.filter+=t.filter;d->passes+=detector.last_passes();
             if(okay){
                 d->scouted=true;d->next_cursor=scout_cursor+1;d->next_seen=scout_seen|(1u<<index);d->merits[index]=0;
                 for(auto b:local){
-                    if(b.x<3||b.y<2||b.x+b.w>157||b.y+b.h>158)continue;
-                    b.x+=x0;
+                    if(b.x<3||b.y<2||b.x+b.w>size-3||b.y+b.h>size-2)continue;
+                    b.x+=x0;b.y+=y0;
                     if(classify_signal_color(frame.pixels.data(),320,240,960,b).state)
                         d->merits[index]=std::max(d->merits[index],signal_relevance(b,lane.reference_x));
                     bool duplicate=false;
                     for(auto&old:d->boxes)if(overlap(old,b)>.45f){if(b.score>old.score)old=b;duplicate=true;break;}
                     if(!duplicate)d->boxes.push_back(b);
                 }
-                if(*std::max_element(scout_merits.begin(),scout_merits.end())>0&&*std::max_element(d->merits.begin(),d->merits.end())<=0)d->next_seen=1u<<index;
+                if(*std::max_element(scout_merits.begin(),scout_merits.end())>0&&*std::max_element(d->merits.begin(),d->merits.end())<=0){d->next_seen=1u<<index;if(index==1)d->next_cursor=3;}
                 d->next_scout=now+signal_scout_delay(d->merits,d->next_seen);
-                std::fprintf(stderr,"[TRAFFIC SCOUT] source=%llu window=%u seen=%u boxes=%zu merit=%.3f/%.3f/%.3f\n",(unsigned long long)frame.id,index,d->next_seen,local.size(),d->merits[0],d->merits[1],d->merits[2]);
+                std::fprintf(stderr,"[TRAFFIC SCOUT] source=%llu window=%u seen=%u boxes=%zu merit=%.3f/%.3f/%.3f/%.3f\n",(unsigned long long)frame.id,index,d->next_seen,local.size(),d->merits[0],d->merits[1],d->merits[2],d->merits[3]);
             }
         }
         d->compute_ns=traffic_clock_ns()-start;
@@ -304,7 +311,7 @@ struct Service::Impl
             Color first =
                 classify_signal_color(result->reference.pixels.data(), 320, 240, 320 * 3, boxes[0],result->structural);
             for (size_t i = 1; i < boxes.size(); ++i)
-                if ((rank(boxes[i]) >= rank(boxes[0]) * .8f||same_signal_bar(boxes[i],boxes[0])) && overlap(boxes[i], boxes[0]) < .2f)
+                if (signal_competing_head(boxes[0],boxes[i],rank(boxes[0]),rank(boxes[i])) && overlap(boxes[i], boxes[0]) < .2f)
                 {
                     Color other = classify_signal_color(result->reference.pixels.data(), 320, 240, 320 * 3,
                                                  boxes[i],result->structural);
