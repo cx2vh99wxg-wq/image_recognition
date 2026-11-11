@@ -39,6 +39,34 @@ class LanePaintEvidence {
     LanePaintEvidence(const uint8_t *image,int width,int height,const uint8_t *coverage)
         :image_(image),coverage_(coverage),width_(width),height_(height){}
 
+    // Two-sided ridge strength for checking long, coherent troughs in the
+    // paint. A negative value is unmapped, never dark road.
+    int ridge_strength(double x, double y, double slope) const
+    {
+        if(!image_ || width_<1 || height_<1)return -1;
+        const double nx=1./std::sqrt(1.+slope*slope),ny=-slope*nx;
+        int strength=0,supported=0;
+        for(int offset=-4;offset<=4;++offset) {
+            const double px=x+offset;
+            Pixel peak,side[2][3];
+            if(!read(px,y,peak))continue;
+            bool visible=true;
+            for(int sign=0;sign<2;++sign)for(int i=0;i<3;++i) {
+                const int d=(sign?1:-1)*(6+2*i);
+                visible &= read(px+d*nx,y+d*ny,side[sign][i]);
+            }
+            if(!visible)continue;
+            ++supported;
+            if(!paint_color(peak))continue;
+            const int left=median(side[0][0].value,side[0][1].value,side[0][2].value);
+            const int right=median(side[1][0].value,side[1][1].value,side[1][2].value);
+            const int background=std::max(left,right);
+            const int contrast=std::max(0,peak.value-background);
+            strength=std::max(strength,std::min(255,std::max(contrast,48*contrast/(background+8))));
+        }
+        return supported>=5?strength:-1;
+    }
+
     // Weak contrast is separate from missing geometric image coverage. Only
     // the former may be resolved by neighboring, directly observed gap rows.
     // Search a cross-line band anchored to this row; sample its background

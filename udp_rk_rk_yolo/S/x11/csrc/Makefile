@@ -236,11 +236,11 @@ test-crosswalk-scene: $(BUILD_DIR)/test_crosswalk_scene
 	./$(BUILD_DIR)/test_crosswalk_scene
 
 .PHONY: test-vehicle-state-key
-$(BUILD_DIR)/test_vehicle_state_key: tests/test_vehicle_state_key.cpp include/vehicle_layer_state.h include/pedestrian_scene.h include/lane_angle_cue.h
+$(BUILD_DIR)/test_vehicle_state_key: tests/test_vehicle_state_key.cpp include/vehicle_layer_state.h include/vehicle_scene.h include/pedestrian_scene.h include/lane_angle_cue.h
 	@mkdir -p $(BUILD_DIR)
 	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@ -lm -pthread
 test-vehicle-state-key: $(BUILD_DIR)/test_vehicle_state_key
 	./$(BUILD_DIR)/test_vehicle_state_key
 
-$(BUILD_DIR)/main.o: include/vehicle_layer_state.h
+$(BUILD_DIR)/main.o: include/vehicle_layer_state.h include/vehicle_scene.h
 $(BUILD_DIR)/main.o: include/crosswalk_scene.h ../../../common/perception/include/crosswalk_display.h

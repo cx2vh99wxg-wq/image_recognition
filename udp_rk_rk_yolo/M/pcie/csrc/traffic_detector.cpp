@@ -3,6 +3,7 @@
 #include "traffic_letterbox.h"
 #include "front_person.h"
 #include "rknn_api.h"
+#include "../../../common/perception/include/display_vehicles.h"
 #include <chrono>
 #include <cstring>
 #include <fstream>
@@ -126,11 +127,13 @@ bool Detector::init(const char *path, std::string *error)
 }
 bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<Box> &boxes,
                       std::string *error, unsigned budget_ms, PersonResult *persons,
-                      bool full_view, std::vector<Box> *signal_hints)
+                      bool full_view, std::vector<Box> *signal_hints,
+                      std::vector<VehicleDetection> *vehicles)
 {
     boxes.clear();
     if(signal_hints)signal_hints->clear();
     if (persons) *persons = PersonResult{};
+    if (vehicles) vehicles->clear();
     auto &p = *impl_;
     if (!p.context || !rgb || w < 1 || h < 1 || stride < w * 3)
         return fail(error, "invalid traffic input");
@@ -141,7 +144,7 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
     const float views[] = {1.f, .5f, .25f};
     // Shared person+signal service always covers the full corrected front image.
     // Tiny padded views are retained only for the traffic-only offline probes.
-    const unsigned view_id = (persons||full_view) ? 0 : p.hits ? p.locked_view : p.view_cursor++ % 3;
+    const unsigned view_id = (persons||vehicles||full_view) ? 0 : p.hits ? p.locked_view : p.view_cursor++ % 3;
     (void)budget_ms; // Admission still measures the whole call and backs off overruns.
     {
         const float view = views[view_id];
@@ -172,6 +175,7 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
             return fail(error, "traffic outputs_get failed");
         const uint64_t obtained=detector_clock_ns();p.timing.outputs=obtained-ran;
         std::vector<Box> pass_candidates;
+        std::vector<VehicleDetection> vehicle_candidates;
         bool valid = true;
         unsigned levels = 0;
         for (unsigned k = 0; k < 3 && valid; ++k)
@@ -217,8 +221,23 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                         }
                         float score = obj * cls;
                         const float person_score = obj * person_cls;
+                        constexpr float vehicle_threshold = .50f;
+                        int vehicle_class = -1;
+                        float vehicle_class_score = 0;
+                        if (vehicles && obj >= vehicle_threshold) {
+                            for (int id : {display_vehicles::Bicycle, display_vehicles::Car,
+                                           display_vehicles::Motorcycle, display_vehicles::Bus}) {
+                                const float value = at(base + 5 + id, pos);
+                                if (value > vehicle_class_score) {
+                                    vehicle_class = id;
+                                    vehicle_class_score = value;
+                                }
+                            }
+                            if (obj * vehicle_class_score < vehicle_threshold)
+                                vehicle_class = -1;
+                        }
                         if (score < (signal_hints?.04f:locator_score_gate) &&
-                            (!persons || person_score < FRONT_PERSON_CONFIDENCE_THRESHOLD))
+                            (!persons || person_score < FRONT_PERSON_CONFIDENCE_THRESHOLD) && vehicle_class < 0)
                             continue;
                         float dx = at(base, pos), dy = at(base + 1, pos), dw = at(base + 2, pos),
                               dh = at(base + 3, pos);
@@ -241,12 +260,15 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                         // Keep person competition unchanged. Signal class-9
                         // score is independent of other category scores; housing,
                         // color, ambiguity and freshness checks still apply.
-                        for (int id=0;(person_top || signal_top) && id<80;++id)
+                        for (int id=0;(person_top || signal_top || vehicle_class>=0) && id<80;++id)
                         {
                             const float other=at(base+5+id,pos);
                             if (!std::isfinite(other) || other<-.01f || other>1.02f)
-                            { valid=false; person_top=signal_top=false; break; }
+                            { valid=false; person_top=signal_top=false; vehicle_class=-1; break; }
                             if (id!=0 && other>person_cls) person_top=false;
+                            if (vehicle_class >= 0 && (other > vehicle_class_score ||
+                                (id < vehicle_class && other == vehicle_class_score)))
+                                vehicle_class = -1;
                         }
                         // Person safety examines every threshold-passing class-0 anchor,
                         // independent of signal housing/color/ROI and display limits.
@@ -260,6 +282,10 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                         }
                         if (signal_top && b.w >= 3 && b.h >= 4 && b.y + b.h * .5 < h * .88)
                             pass_candidates.push_back(b);
+                        if (vehicle_class >= 0 && b.w >= 4 && b.h >= 4) {
+                            b.score = obj * vehicle_class_score;
+                            vehicle_candidates.push_back({unsigned(vehicle_class), b});
+                        }
                     }
         }
         const uint64_t decoded=detector_clock_ns();p.timing.decode=decoded-obtained;
@@ -267,6 +293,23 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
         const uint64_t released=detector_clock_ns();p.timing.release=released-decoded;
         if (!valid || levels != 7)
             return fail(error, "unexpected YOLOv5 head layout/activation; refusing to decode");
+        if (vehicles) {
+            std::stable_sort(vehicle_candidates.begin(), vehicle_candidates.end(),
+                             [](const VehicleDetection &a, const VehicleDetection &b) {
+                                 return a.box.score > b.box.score;
+                             });
+            for (const auto &candidate : vehicle_candidates) {
+                const bool duplicate = std::any_of(vehicles->begin(), vehicles->end(),
+                    [&](const VehicleDetection &accepted) {
+                        return accepted.coco_class == candidate.coco_class &&
+                               overlap(accepted.box, candidate.box) > .45f;
+                    });
+                if (!duplicate)
+                    vehicles->push_back(candidate);
+                if (vehicles->size() == display_vehicles::CAPACITY)
+                    break;
+            }
+        }
         // Locator uses only the model score and color-independent housing evidence.
         std::sort(pass_candidates.begin(), pass_candidates.end(),
                   [](const Box &a, const Box &b) { return a.score > b.score; });

@@ -84,12 +84,14 @@ class Dashboard
     const uint32_t *compose(const uint32_t *legacy, int legacy_stride, const uint32_t *vehicle,
                             int vehicle_stride, bool overview, float transition_progress,
                             const char *mode_label, const ViewStatus &status,bool vehicle_changed=true,
-                            const uint16_t *pcie=nullptr,const uint16_t *udp=nullptr)
+                            const uint16_t *pcie=nullptr,const uint16_t *udp=nullptr,
+                            bool refresh_pcie=true,bool refresh_udp=true)
     {
         const uint64_t started = compositorClock();
         const bool fast = fastComposition();
         const char *label=safeLabel(mode_label,overview);
         const bool full_overview=legacy && legacy_stride>=1280 && overview && transition_progress<0;
+        const bool direct = fast && full_overview && pcie && udp;
         ui_redrawn_=!fast || vehicle_changed || !ui_valid_ || !sameUi(status,ui_status_) ||
                     ui_label_!=label || ui_overview_!=full_overview ||
                     ui_vehicle_!=vehicle || ui_vehicle_stride_!=vehicle_stride;
@@ -113,13 +115,20 @@ class Dashboard
         if (!fast || !full_overview)
             fill(frame_, video.x, video.y, video.w, video.h, 0xFF02060D);
         const uint64_t cleared = compositorClock();
+        // Redrawing the lower toolbar restores a strip across the S row.
+        // Keep the upper M row when its source ID and the overview are unchanged.
+        refresh_pcie = refresh_pcie || !direct || !direct_overview_ || ui_redrawn_;
+        refresh_udp = refresh_udp || !direct || !direct_overview_;
+        direct_overview_ = direct;
+        video_rows_ = (refresh_udp ? 1u : 0u) | (refresh_pcie ? 2u : 0u);
 
         if (legacy && legacy_stride >= 1280)
         {
             if (overview && transition_progress < 0)
             {
                 if(pcie && udp)
-                    six_camera::dashboard_overview(frame_.data(),WIDTH,video.x,video.y,pcie,udp);
+                    six_camera::dashboard_overview(frame_.data(),WIDTH,video.x,video.y,pcie,udp,
+                                                   refresh_pcie,refresh_udp);
                 else
                 for (int row = 0; row < 2; ++row)
                 {
@@ -253,6 +262,7 @@ class Dashboard
         return frame_.data();
     }
     bool uiRedrawn() const { return ui_redrawn_; }
+    unsigned videoRows() const { return video_rows_; }
 
   private:
     struct Rect
@@ -270,6 +280,8 @@ class Dashboard
     std::vector<uint32_t> background_;
     std::vector<uint32_t> frame_;
     bool ui_valid_=false,ui_redrawn_=true,ui_overview_=false;
+    bool direct_overview_ = false;
+    unsigned video_rows_ = 3;
     ViewStatus ui_status_;
     std::string ui_label_;
     const uint32_t *ui_vehicle_=nullptr;

@@ -10,6 +10,10 @@ struct PersonResult {
     unsigned count = 0;
     std::vector<Box> candidates; // all threshold-passing anchors, not a head count
 };
+struct VehicleDetection {
+    unsigned coco_class;
+    Box box;
+};
 struct DetectorTiming {
     uint64_t prepare=0, inputs=0, run=0, outputs=0, decode=0, release=0, filter=0;
 };
@@ -31,7 +35,8 @@ class Detector
     bool detect(const uint8_t *rgb, int w, int h, int stride, std::vector<Box> &boxes,
                 std::string *error = nullptr, unsigned budget_ms = default_budget_ms,
                 PersonResult *persons = nullptr, bool full_view = false,
-                std::vector<Box> *signal_hints = nullptr);
+                std::vector<Box> *signal_hints = nullptr,
+                std::vector<VehicleDetection> *vehicles = nullptr);
     int input_size() const;
     unsigned last_passes() const;
     DetectorTiming last_timing() const;

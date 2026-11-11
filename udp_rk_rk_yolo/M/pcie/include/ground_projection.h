@@ -64,6 +64,13 @@ class GroundProjection
              (m[3] * p.x + m[4] * p.y + m[5]) / w};
         return std::isfinite(p.x) && std::isfinite(p.y);
     }
+    bool normalized_ground_at(ImagePoint &p, int width, int height) const
+    {
+        if (!enabled_ || !valid_ || width < 2 || height < 2)
+            return false;
+        p = {p.x / (width - 1), p.y / (height - 1)};
+        return project(p, to_ground_);
+    }
 
   public:
     explicit GroundProjection(const char *text = nullptr)
@@ -126,14 +133,19 @@ class GroundProjection
 
     bool ground_at(ImagePoint &p, int width, int height) const
     {
-        if (!enabled_ || !valid_ || width < 2 || height < 2)
-            return false;
-        p = {p.x / (width - 1), p.y / (height - 1)};
-        if (!project(p, to_ground_) || p.x < -.25 || p.x > 1.25 || p.y < -.05 || p.y > 1.05)
+        if (!normalized_ground_at(p, width, height) ||
+            p.x < -.25 || p.x > 1.25 || p.y < -.05 || p.y > 1.05)
             return false;
         const double scale = width * .5;
         p = {(p.x - .5) * scale, p.y * scale * aspect_};
         return true;
+    }
+    // Display uses the bird-view depth interval, with lateral room outside
+    // the calibration rectangle for subjects standing beside the road.
+    bool display_ground_at(ImagePoint &p, int width, int height) const
+    {
+        return normalized_ground_at(p, width, height) &&
+               p.x >= -2. && p.x <= 3. && p.y >= -.8 && p.y <= 1.2;
     }
     bool image_at(ImagePoint &p, int width, int height) const
     {

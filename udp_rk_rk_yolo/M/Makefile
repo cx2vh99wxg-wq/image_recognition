@@ -69,10 +69,14 @@ info:
 #############################################################################
 # 说明：子模块构建
 #############################################################################
-shared_memory: | $(BUILDDIR)
+shared_memory: $(SHARED_MEMORY_OBJ)
+
+$(SHARED_MEMORY_OBJ): $(SHARED_MEMORY_SRC) $(INCDIR)/shared_memory.h | $(BUILDDIR)
 	@echo "Preparing Shared Memory Module..."
-	$(CC) $(CFLAGS) $(INCLUDES) -c $(SHARED_MEMORY_SRC) -o $(SHARED_MEMORY_OBJ)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 	@echo "Shared Memory module build finished"
+
+-include $(SHARED_MEMORY_OBJ:.o=.d)
 
 pcie: shared_memory
 	@echo "Preparing PCIe Capture Module..."

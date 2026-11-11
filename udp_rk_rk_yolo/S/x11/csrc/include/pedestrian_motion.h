@@ -5,6 +5,7 @@
 namespace pedestrian_scene {
 struct Motion {unsigned walking=0,direction=0,phase=0;};
 class MotionTracker {
+ static constexpr uint64_t POSE_HOLD_NS=500000000ULL;
  display_people::History history_;
  struct State {uint32_t generation=0,observations=0;uint64_t until=0;Motion pose;};
  std::array<State,display_people::CAPACITY>states_{};
@@ -15,7 +16,7 @@ public:
   history_.update(s,now);unsigned count=0;
   for(unsigned i=0;i<display_people::CAPACITY&&offset+count<capacity;++i){
    const auto&t=history_.tracks[i];if(!t.active)continue;auto&state=states_[i];
-   if(state.generation!=t.generation){state=State{};state.generation=t.generation;state.until=now+display_people::History::HOLD;}
+   if(state.generation!=t.generation){state=State{};state.generation=t.generation;state.until=now+POSE_HOLD_NS;}
    if(state.observations!=t.observations){
     Motion desired;const double dt=t.captured>t.previous_capture?(t.captured-t.previous_capture)*1.e-9:0.;
     if(t.observations>1&&dt>=.05&&dt<=1.){
@@ -28,7 +29,7 @@ public:
      }
     }
     if(now>=state.until&&(desired.walking!=state.pose.walking||desired.direction!=state.pose.direction)){
-     state.pose=desired;state.until=now+display_people::History::HOLD;
+     state.pose=desired;state.until=now+POSE_HOLD_NS;
     }
     state.observations=t.observations;
    }

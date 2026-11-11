@@ -4,9 +4,10 @@
 #include "traffic_frame_input.h"
 #include "traffic_light_ipc.h"
 #include "front_person_ipc.h"
-#include "person_road_association.h"
+#include "front_actor_projection.h"
 #include "traffic_structure.h"
 #include "../../../common/perception/include/display_people.h"
+#include "../../../common/perception/include/display_vehicles.h"
 #include <atomic>
 #include <condition_variable>
 #include <cstdio>
@@ -28,6 +29,7 @@ struct PreparedDetection {
     Frame frame;
     std::vector<Box> boxes;
     PersonResult people;
+    std::vector<VehicleDetection> vehicles;
     bool matched=false,okay=false;
     std::string error;
     DetectorTiming timing;
@@ -69,6 +71,7 @@ struct Service::Impl
     TrafficLightIPC ipc = {-1, nullptr};
     FrontPersonIPC person_ipc = {-1, nullptr};
     display_people::IPC display_ipc;
+    display_vehicles::IPC vehicle_ipc;
     const m_lane::GroundProjection display_ground=m_lane::GroundProjection::for_camera(nullptr,"front_ipm_test.conf");
     uint32_t session = 0;
     uint64_t report_ns = 0, calls = 0, passes = 0, skipped_curve = 0, skipped_budget = 0,
@@ -102,7 +105,7 @@ struct Service::Impl
                     error.c_str());
         }
         std::printf(
-                "[TRAFFIC] enabled=%d ready=%d input=%d locator_interval_ms=%u max_NPU_passes=2 extra_signal_ROI=conditional color_rate=10Hz budget_ms=%u single_NPU_owner=lane_worker classes=person:0,traffic_light:9 view=full-front control_output=metadata\n",
+                "[TRAFFIC] enabled=%d ready=%d input=%d locator_interval_ms=%u max_NPU_passes=2 extra_signal_ROI=conditional color_rate=10Hz budget_ms=%u single_NPU_owner=lane_worker classes=person:0,traffic_light:9,vehicles:1/2/3/5 view=full-front control_output=metadata\n",
             enabled, ready, detector.input_size(), admission.interval_ms(), admission.budget_ms());
         std::printf(
             "[TRAFFIC INPUT] geometry=%s source_rect=%d,%d,320,240 source_order=%s detector_order=RGB\n",
@@ -163,7 +166,8 @@ struct Service::Impl
         const uint64_t start=traffic_clock_ns();
         std::vector<Box> hints;
         try{
-            d->okay=detector.detect(frame.pixels.data(),320,240,320*3,d->boxes,&d->error,admission.budget_ms(),&d->people,false,&hints);
+            d->okay=detector.detect(frame.pixels.data(),320,240,320*3,d->boxes,&d->error,
+                                    admission.budget_ms(),&d->people,false,&hints,&d->vehicles);
         }catch(...){detector.restore_schedule(d->checkpoint);throw;}
         d->timing=detector.last_timing();d->passes=detector.last_passes();
         d->next_scout=scout_after;d->next_cursor=scout_cursor;d->next_seen=scout_seen;d->merits=scout_merits;
@@ -265,29 +269,28 @@ struct Service::Impl
         display_people::Snapshot scene={};scene.session=session;scene.source=(uint32_t)frame.id;
         scene.ready=(person.flags&FRONT_PERSON_VALID)?1:0;
         display_people::expires(scene,frame.captured+display_people::TTL);
+        const double scale=correction?correction->display_scale():1.;
+        const auto project = [&](const Box &b) {
+            return front_actor(b, road_association.classify(b), display_ground, scale);
+        };
         auto display_candidates=people.candidates;
         std::sort(display_candidates.begin(),display_candidates.end(),[](const Box&a,const Box&b){return a.score>b.score;});
         if(scene.ready)for(const auto&b:display_candidates){
             if(!std::isfinite(b.x)||!std::isfinite(b.y)||!std::isfinite(b.w)||!std::isfinite(b.h)||b.w<=0||b.h<=0)continue;
-            auto glyph=display_people::box(display_people::Front,(int)b.x,(int)b.y,(int)std::ceil(b.w),(int)std::ceil(b.h),b.score);
-            const auto relation=road_association.classify(b);
-            if(relation==FootRelation::Inside)glyph.flags|=display_people::InRoad;
-            else if(relation==FootRelation::Outside)glyph.flags|=display_people::OffRoad;
-            const double scale=correction?correction->display_scale():1.;
-            m_lane::ImagePoint foot={159.5+(b.x+b.w*.5-159.5)/scale,119.5+(b.y+b.h-119.5)/scale};
-            if(display_ground.ground_at(foot,320,240)){
-                glyph.flags|=display_people::Ground;
-                glyph.gx=(int32_t)std::lround((foot.x/160.+.5)*1000.);
-                glyph.gy=(int32_t)std::lround(foot.y/(160.*display_ground.aspect())*1000.);
-            }
-            double lateral=0;
-            if(road_association.display_lateral(b,lateral)){
-                glyph.flags|=display_people::RoadAligned;
-                glyph.gx=(int32_t)std::lround(std::max(-2.,std::min(3.,lateral))*1000.);
-            }
-            display_people::add(scene,glyph);
+            add_front_person(scene,project(b));
         }
         if(display_ipc.open(display_people::FRONT_KEY,true))display_ipc.write(scene);
+        display_vehicles::Snapshot vehicles = {};
+        vehicles.session = session;
+        vehicles.source = (uint32_t)frame.id;
+        display_vehicles::expires(vehicles, frame.captured + display_vehicles::TTL);
+        if (scene.ready) {
+            for (const auto &vehicle : detection->vehicles) {
+                vehicles.vehicles[vehicles.count++] = {vehicle.coco_class, project(vehicle.box)};
+            }
+        }
+        if (vehicle_ipc.open(display_vehicles::KEY, true))
+            vehicle_ipc.write(vehicles);
         // Keep the existing person/brake publication above ahead of any
         // optional CPU signal search. This path does not alter its candidates.
         const bool structural=okay&&boxes.empty();

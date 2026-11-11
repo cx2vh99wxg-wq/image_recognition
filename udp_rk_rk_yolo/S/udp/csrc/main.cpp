@@ -1,5 +1,6 @@
 #include "front_person_wire.h"
 #include "../../../common/perception/include/display_people_wire.h"
+#include "../../../common/perception/include/display_vehicles.h"
 #include "../../../common/perception/include/crosswalk_display.h"
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -32,6 +33,8 @@ static FrontPersonIPC person_ipc = {-1, nullptr};
 static front_person_wire::Receiver person_receiver;
 static display_people::IPC display_ipc;
 static display_people::Receiver display_receiver;
+static display_vehicles::IPC vehicle_ipc;
+static display_vehicles::Receiver vehicle_receiver;
 static crosswalk_display::IPC crosswalk_ipc;
 static crosswalk_display::Receiver crosswalk_receiver;
 static curve_wire::Receiver curve_packets;
@@ -298,6 +301,13 @@ static void ingest_datagram(NetworkReceiver *r, const Datagram &packet)
     if(display_people::packet(packet.data,packet.size)){
         display_people::Snapshot scene={};
         if(display_receiver.ingest(packet.data,packet.size,packet.received_ns,now,scene)&&display_ipc.open(display_people::FRONT_KEY,true))display_ipc.write(scene);
+        return;
+    }
+    if (display_vehicles::packet(packet.data, packet.size)) {
+        display_vehicles::Snapshot vehicles = {};
+        if (vehicle_receiver.ingest(packet.data, packet.size, packet.received_ns, now, vehicles) &&
+            vehicle_ipc.open(display_vehicles::KEY, true))
+            vehicle_ipc.write(vehicles);
         return;
     }
     if(crosswalk_display::packet(packet.data,packet.size)){

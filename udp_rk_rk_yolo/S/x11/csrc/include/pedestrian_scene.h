@@ -22,23 +22,24 @@ struct Actors {
  void append(const display_people::Snapshot&s){for(unsigned i=0;i<s.count&&count<24;++i)people[count++]=s.people[i];}
 };
 struct Placement {double x,y,height;bool calibrated;};
-inline Placement locate(const Person&p,int angle,int width=320,int height=480){
+inline Placement locate(const Person&p,int /*angle*/,int width=320,int height=480){
  const auto r=lane_cue::picture_rect(width,height);
  const double nx=(p.x+p.w*.5)/320.,ny=std::min(1.,(p.y+p.h)/240.);
  Placement out={0,0,0,false};
  if(p.view==display_people::Front){
   const double top=r.y+r.height*lane_cue::TOP,seam=r.y+r.height*lane_cue::SEAM,bottom=r.y+r.height*lane_cue::BOTTOM;
-  const double depth=(p.flags&display_people::Ground)?std::max(0.,std::min(1.,(p.gy/1000.+.8)/2.)):ny;
-  out.y=top+20+(seam-top-24)*depth;
-  const double t=(seam-out.y)/(seam-top),road_depth=(out.y-top)/(bottom-top);
-  const double theta=std::max(-85,std::min(85,angle))*.017453292519943295;
-  const double bend=std::max(-r.width*.28,std::min(r.width*.28,(seam-top)*.5*std::tan(theta)));
-  const double center=width*.5+bend*t*t,half=r.width*(.12+.25*road_depth);
-  double lateral=(p.flags&display_people::Ground)?2*(p.gx/1000.-.5):2*(nx-.5);
-  if(p.flags&display_people::RoadAligned)lateral=2*(p.gx/1000.-.5);
-  if(p.flags&display_people::InRoad)lateral=std::max(-.94,std::min(.94,lateral));
-  if(p.flags&display_people::OffRoad)lateral=(lateral<0?-1:1)*std::max(1.08,std::min(1.8,std::abs(lateral)));
-  out.x=center+half*lateral;out.height=19+15*depth;out.calibrated=(p.flags&display_people::Ground)!=0;
+  const bool ground=(p.flags&display_people::Ground)!=0;
+  const bool ground_x=ground&&!(p.flags&display_people::RoadAligned); // older senders reused gx
+  const double proximity=std::max(0.,std::min(1.,ground?(p.gy/1000.+.8)/2.:(ny-.60)/.40));
+  // A fixed virtual camera behind the ego car compresses distant ground.
+  // Only ground position drives the actors; the steering cue is a separate overlay.
+  const double depth=proximity/(1.+.65*(1.-proximity));
+  out.y=top+12+(seam-top-16)*depth;
+  const double road_depth=(out.y-top)/(bottom-top),half=r.width*(.12+.25*road_depth);
+  const double lateral=ground_x?2*(p.gx/1000.-.5):2*(nx-.5);
+  const double excess=std::max(0.,std::abs(lateral)-1.);
+  const double shown=std::copysign(std::min(1.,std::abs(lateral))+excess/(1.+.65*excess),lateral);
+  out.x=width*.5+half*shown;out.height=19+15*depth;out.calibrated=ground;
  }else if(p.view==display_people::Rear){
   out.x=width*.5+(nx-.5)*r.width*.6;out.y=r.y+r.height*(.935+.045*(1-ny));out.height=28+8*ny;
  }else{

@@ -41,11 +41,13 @@ inline Person box(unsigned view,int x,int y,int w,int h,float score){
  p.w=std::max(1,std::min(320-int(p.x),w));p.h=std::max(1,std::min(240-int(p.y),h));
  p.quality=unsigned(std::max(0.f,std::min(100.f,score*100.f)));return p;
 }
-constexpr unsigned WORDS=sizeof(Snapshot)/4;
-struct Segment {uint32_t sequence,magic,words[WORDS];};
-struct IPC {
+template<class Record, uint32_t Magic>
+struct SnapshotIPC {
+ static_assert(sizeof(Record)%4==0,"snapshot must contain complete words");
+ static constexpr unsigned WORDS=sizeof(Record)/4;
+ struct Segment {uint32_t sequence,magic,words[WORDS];};
  int id=-1;Segment*segment=nullptr;
- ~IPC(){if(segment)shmdt(segment);}
+ ~SnapshotIPC(){if(segment)shmdt(segment);}
  bool open(int key,bool writer){
   int next=shmget(key,sizeof(Segment),0666|(writer?IPC_CREAT:0));
   if(next<0){if(segment)shmdt(segment);segment=nullptr;id=-1;return false;}
@@ -53,20 +55,21 @@ struct IPC {
   if(segment)shmdt(segment);
   void*p=shmat(next,nullptr,writer?0:SHM_RDONLY);segment=p==(void*)-1?nullptr:(Segment*)p;id=next;return segment;
  }
- void write(const Snapshot&s){if(!segment)return;uint32_t w[WORDS];memcpy(w,&s,sizeof(s));
+ void write(const Record&s){if(!segment)return;uint32_t w[WORDS];memcpy(w,&s,sizeof(s));
   auto*q=segment;uint32_t seq=__atomic_load_n(&q->sequence,__ATOMIC_RELAXED);
-  __atomic_store_n(&q->sequence,(seq+1)|1u,__ATOMIC_SEQ_CST);__atomic_store_n(&q->magic,0x50475031u,__ATOMIC_RELAXED);
+  __atomic_store_n(&q->sequence,(seq+1)|1u,__ATOMIC_SEQ_CST);__atomic_store_n(&q->magic,Magic,__ATOMIC_RELAXED);
   for(unsigned i=0;i<WORDS;++i)__atomic_store_n(q->words+i,w[i],__ATOMIC_RELAXED);
   __atomic_store_n(&q->sequence,(seq+2)&~1u,__ATOMIC_RELEASE);
  }
- bool read(Snapshot&s)const{if(!segment)return false;uint32_t w[WORDS];auto*q=segment;
+ bool read(Record&s)const{if(!segment)return false;uint32_t w[WORDS];auto*q=segment;
   for(unsigned k=0;k<4;++k){uint32_t seq=__atomic_load_n(&q->sequence,__ATOMIC_ACQUIRE);if(seq&1)continue;
    uint32_t magic=__atomic_load_n(&q->magic,__ATOMIC_RELAXED);
    for(unsigned i=0;i<WORDS;++i)w[i]=__atomic_load_n(q->words+i,__ATOMIC_RELAXED);
    __atomic_thread_fence(__ATOMIC_ACQUIRE);
-   if(seq==__atomic_load_n(&q->sequence,__ATOMIC_RELAXED)&&magic==0x50475031u){memcpy(&s,w,sizeof(s));return valid(s);}}
+   if(seq==__atomic_load_n(&q->sequence,__ATOMIC_RELAXED)&&magic==Magic){memcpy(&s,w,sizeof(s));return valid(s);}}
   return false;
  }
 };
+using IPC=SnapshotIPC<Snapshot,0x50475031u>;
 }
 #endif

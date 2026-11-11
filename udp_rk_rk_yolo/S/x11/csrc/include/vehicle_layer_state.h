@@ -3,6 +3,7 @@
 #include "../../../include/shared_memory.h"
 #include "pedestrian_scene.h"
 #include "crosswalk_scene.h"
+#include "vehicle_scene.h"
 // Pixel cache key only. Raw detection/control metadata keeps its exact values.
 struct VehicleLayerState
 {
@@ -16,6 +17,7 @@ struct VehicleLayerState
     bool warning_red;
     bool front_stop;
     pedestrian_scene::Actors actors;
+    vehicle_scene::Geometry vehicles;
     crosswalk_display::Geometry crosswalk;
     unsigned warning_views;
     bool operator==(const VehicleLayerState &other) const
@@ -26,7 +28,8 @@ struct VehicleLayerState
                blink == other.blink && (confidence >= 60) == (other.confidence >= 60) &&
                signed_angle == other.signed_angle && left_style == other.left_style &&
                right_style == other.right_style && blocked == other.blocked &&
-               warning_red == other.warning_red && front_stop == other.front_stop && warning_views == other.warning_views && actors == other.actors && crosswalk == other.crosswalk;
+               warning_red == other.warning_red && front_stop == other.front_stop && warning_views == other.warning_views &&
+               actors == other.actors && vehicles == other.vehicles && crosswalk == other.crosswalk;
     }
 };
 #endif

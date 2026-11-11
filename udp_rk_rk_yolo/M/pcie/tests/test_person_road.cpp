@@ -1,4 +1,4 @@
-#include "person_road_association.h"
+#include "front_actor_projection.h"
 #include <cassert>
 #include <chrono>
 #include <cstdio>
@@ -46,6 +46,19 @@ int main() {
     p=PersonResult{};d=FrontPersonData{};d.flags=3;a.annotate(p,f,12,100,d);
     assert(!d.count && !front_person_hazard(&d)); // valid no-person inference
     mask[0]=0;
+    const m_lane::GroundProjection ground("0.35,0.65,0.65,0.65,0.80,1,0.20,1,1.36");
+    const auto shown=front_actor(inside,FootRelation::Inside,ground,1.);
+    const auto off=front_actor(inside,FootRelation::Outside,ground,1.);
+    assert((shown.flags&display_people::Ground) && (off.flags&display_people::Ground));
+    assert(shown.gx==off.gx && shown.gy==off.gy && std::abs(shown.gx-500)<10);
+    const auto projected_left=front_actor(outside,FootRelation::Outside,ground,1.);
+    assert((projected_left.flags&display_people::Ground) && projected_left.gx<shown.gx);
+    display_people::Snapshot scene={};
+    add_front_person(scene,shown);
+    add_front_person(scene,front_actor(Box(151,110,18,70,.5f),FootRelation::Unknown,ground,1.));
+    assert(scene.count==1); // overlapping proposals with the same feet
+    add_front_person(scene,front_actor(Box(167,105,30,75,.5f),FootRelation::Unknown,ground,1.));
+    assert(scene.count==2); // nearby but separate feet
     auto start=std::chrono::steady_clock::now();
     for(int i=0;i<1000;++i) { assert(a.prepare(f,12,100)); a.classify(inside); }
     const double ms=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-start).count()/1000;

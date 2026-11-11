@@ -356,7 +356,7 @@ test-front-person: build/test_front_person_detector
 	./build/test_front_person_detector
 
 .PHONY: test-person-road
-build/test_person_road: tests/test_person_road.cpp include/person_road_association.h include/traffic_vision.h ../include/front_person.h
+build/test_person_road: tests/test_person_road.cpp include/person_road_association.h include/front_actor_projection.h include/ground_projection.h include/traffic_vision.h ../include/front_person.h
 	@mkdir -p build
 	$(CXX) -std=c++11 -O3 -Wall -Wextra -Werror $(INCLUDES) $< -o $@
 test-person-road: build/test_person_road

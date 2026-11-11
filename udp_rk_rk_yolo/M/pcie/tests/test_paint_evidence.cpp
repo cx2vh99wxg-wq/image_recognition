@@ -69,6 +69,16 @@ int main(){
     }
     assert(classify(dense).left.type==LINE_DASHED && classify(dense).right.type==LINE_SOLID);
 #ifndef PAINT_BASELINE_MEASURE
+    auto screen=scene(LINE_SOLID,LINE_SOLID,45,210,0,0.);
+    for(int y=55;y<=184;++y)if(y<=76 || (y>=161 && y<=184))
+        for(int dx=-1;dx<=1;++dx)for(int c=0;c<3;++c)
+            screen.rgb[(y*W+95+dx)*3+c]=53; // screen glow across a real gap
+    const auto restored=classify(screen);
+    assert(restored.left.type==LINE_DASHED && restored.left.gaps>=2);
+    assert(restored.right.type==LINE_SOLID);
+    for(int y=55;y<=184;++y)if(y<=76 || (y>=161 && y<=184))
+        for(int x=80;x<=110;++x)screen.coverage[y*W+x]=0;
+    assert(classify(screen).left.type==LINE_UNKNOWN); // the same interval with no visible road
     // IPM black wedges and frame edges must not erase a visible solid line.
     // Missing background is never synthesized into a dark dash gap.
     auto edge=scene(LINE_SOLID,LINE_DASHED,45,210,0,0.);

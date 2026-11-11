@@ -34,6 +34,21 @@ int main(){
         const auto *b=direct.compose(video.data(),1280,vehicle.data(),320,true,-1,"ALL",status,true,pcie.data(),udp.data());
         assert(std::equal(a,a+WIDTH*HEIGHT,b));
     }
+    for (int frame=0; frame<16; ++frame) {
+        const bool update_pcie = frame % 3 == 0;
+        const bool update_udp = frame % 4 == 0;
+        const bool overview = frame != 7 && frame != 8;
+        const bool ui_change = frame % 5 == 0;
+        if (update_pcie) std::fill(pcie.begin(),pcie.end(),uint16_t(301*frame));
+        if (update_udp) std::fill(udp.begin(),udp.end(),uint16_t(719*frame));
+        if (ui_change) status.traffic = (status.traffic + 1) % 4;
+        six_camera::overview(video.data(),pcie.data(),udp.data());
+        const auto *full=intermediate.compose(video.data(),1280,vehicle.data(),320,overview,-1,"ALL",status);
+        const auto *optimized=direct.compose(video.data(),1280,vehicle.data(),320,overview,-1,"ALL",status,
+                                             ui_change,overview?pcie.data():nullptr,overview?udp.data():nullptr,
+                                             update_pcie,update_udp);
+        assert(std::equal(full,full+WIDTH*HEIGHT,optimized));
+    }
     for(int frame=0;frame<32;++frame){
         for(auto &pixel:video){random=random*1664525u+1013904223u;pixel=0xff000000u|(random&0xffffffu);}
         const bool vehicle_changed=frame%8==0;

@@ -521,17 +521,17 @@ static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::View
         state.actors.count+=kept_rear;
         const unsigned kept_front=front_motion.collect(have_front?&front:nullptr,now,state.signed_angle,state.actors.people,state.actors.motion,state.actors.count,24,pedestrian_scene::project_foot);
         state.actors.count+=kept_front;
+        static display_vehicles::IPC vehicle_ipc;
+        static vehicle_scene::Tracker vehicle_tracker;
+        display_vehicles::Snapshot vehicles = {};
+        const bool have_vehicles = vehicle_ipc.open(display_vehicles::KEY, false) && vehicle_ipc.read(vehicles);
+        state.vehicles = vehicle_tracker.update(have_vehicles ? &vehicles : nullptr, now);
         // Same one-second visual hold as the avatar; never feeds a brake IPC.
         for(unsigned i=kept_rear;i<state.actors.count;++i)
             if(!(state.actors.people[i].flags&display_people::OffRoad))state.front_stop=true;
         static crosswalk_display::IPC crosswalk_ipc;crosswalk_display::Snapshot zebra={};
-        static crosswalk_display::Geometry kept_zebra;
-        static uint32_t zebra_session=0,zebra_source=0;static uint64_t zebra_seen=0;
-        if(crosswalk_ipc.open(false)&&crosswalk_ipc.read(zebra)&&crosswalk_display::fresh(zebra,now)){
-            if(zebra.session!=zebra_session){kept_zebra={};zebra_seen=0;zebra_source=zebra.source-1;zebra_session=zebra.session;}
-            if(int32_t(zebra.source-zebra_source)>0){zebra_source=zebra.source;if(zebra.count){kept_zebra.set(zebra);zebra_seen=now;}}
-        }
-        if(zebra_seen&&now>=zebra_seen&&now-zebra_seen<1000000000ULL)state.crosswalk=kept_zebra;
+        if(crosswalk_ipc.open(false)&&crosswalk_ipc.read(zebra)&&crosswalk_display::fresh(zebra,now)&&zebra.count)
+            state.crosswalk.set(zebra);
         if(state.person&&!have_rear&&!kept_rear){
             const int cx=(state.box_left+state.box_right)/2,cy=(state.box_top+state.box_bottom)/2;
             const unsigned tile=(cx>=320?1:0)+(cy>=240?2:0);
@@ -597,6 +597,7 @@ static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::View
         vehicle_artwork::person_glow(engine->vehicle_layer, COMBINED_IMAGE_WIDTH, 160, 0, state.blink);
     draw_lane_lines(engine->vehicle_layer, 0, 0, 320, 480, state);
     crosswalk_scene::draw(engine->vehicle_layer,COMBINED_IMAGE_WIDTH,320,480,state.crosswalk,state.signed_angle);
+    vehicle_scene::draw(engine->vehicle_layer,COMBINED_IMAGE_WIDTH,320,480,state.vehicles,state.signed_angle);
     pedestrian_scene::draw(engine->vehicle_layer,COMBINED_IMAGE_WIDTH,320,480,state.actors,state.signed_angle);
     engine->vehicle_state = state;
     engine->vehicle_cached = 1;
@@ -944,9 +945,10 @@ static void prepare_xrender_upload(RenderEngine *engine, const uint32_t *pixels,
     }
     if(!engine->dashboard->uiRedrawn())
     {
-        // Only the six-camera rectangle changed. Do not scan the unchanged
-        // toolbar/vehicle canvas; copy the video once with its exact bounds.
-        const UploadRegion area={72,224,1092,546};
+        const unsigned rows = engine->dashboard->videoRows();
+        if (!rows)
+            return;
+        const UploadRegion area={72,rows == 2 ? 497 : 224,1092,rows == 3 ? 546 : 273};
         for(int y=0;y<area.height;++y)
             memcpy(image->data+(area.y+y)*image->bytes_per_line+area.x*4,
                    pixels+(area.y+y)*perception_ui::WIDTH+area.x,area.width*4);
@@ -1542,10 +1544,14 @@ int present_dashboard(RenderEngine *engine)
     uint64_t car_done = display_clock_ns();
     status.lane_angle_valid = engine->vehicle_state.confidence >= 60;
     status.lane_angle_deg = engine->vehicle_state.signed_angle;
+    static const char *reuse_setting = std::getenv("VISION_REUSE_VIDEO_ROWS");
+    static const bool reuse_video_rows = !reuse_setting || std::strcmp(reuse_setting, "0") != 0;
     const uint32_t *pixels = engine->dashboard->compose(
         (const uint32_t *)engine->display_buffer, COMBINED_IMAGE_WIDTH, engine->vehicle_layer,
         COMBINED_IMAGE_WIDTH, engine->presented_mode == DISPLAY_MODE_ALL_CAMERAS, progress,
-        mode_label, status,car_redrawn,engine->overview_pcie,engine->overview_udp);
+        mode_label, status,car_redrawn,engine->overview_pcie,engine->overview_udp,
+        !reuse_video_rows || engine->pcie_frame_id != engine->shown_pcie_id,
+        !reuse_video_rows || engine->udp_frame_id != engine->shown_udp_id);
     uint64_t compose_done = display_clock_ns();
     engine->last_presented = now;
     engine->needs_redraw = 0;

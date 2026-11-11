@@ -1,5 +1,6 @@
 #include "front_person_wire.h"
 #include "../../../common/perception/include/display_people_wire.h"
+#include "../../../common/perception/include/display_vehicles.h"
 #include "../../../common/perception/include/crosswalk_display.h"
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -489,8 +490,10 @@ struct MetadataPump {
     NetworkManager& network;SourceConnection& source;
     LineStyleIPC line_ipc={-1,nullptr};TrafficLightIPC traffic_ipc={-1,nullptr};
     FrontPersonIPC person_ipc={-1,nullptr};display_people::IPC display_ipc;crosswalk_display::IPC crosswalk_ipc;
-    result_transport::Schedule people_send,traffic_send,line_send,display_send,curve_send,crosswalk_send;
+    display_vehicles::IPC vehicle_ipc;
+    result_transport::Schedule people_send,traffic_send,line_send,display_send,curve_send,crosswalk_send,vehicle_send;
     uint64_t last_poll=0,report=0,polls=0,gaps=0,max_gap=0,sends=0;
+    uint64_t last_vehicle_poll = 0;
     MetadataPump(NetworkManager&n,SourceConnection&s):network(n),source(s){}
     ~MetadataPump(){line_ipc_close(&line_ipc);traffic_ipc_close(&traffic_ipc);front_person_ipc_close(&person_ipc);}
     void send(uint8_t*p,size_t bytes,size_t age,result_transport::Schedule&schedule,uint64_t now,uint64_t heartbeat){
@@ -534,6 +537,14 @@ struct MetadataPump {
         if(!line_ipc_read(&line_ipc,&line)&&line_wire::encode(l,line,now))send(l,sizeof(l),16,line_send,now,50000000ULL);
         display_people::Snapshot scene={};uint8_t d[display_people::WIRE_SIZE];
         if(display_ipc.open(display_people::FRONT_KEY,false)&&display_ipc.read(scene)&&display_people::encode(d,scene,now))send(d,sizeof(d),20,display_send,now,50000000ULL);
+        if (now - last_vehicle_poll >= 20000000ULL) {
+            last_vehicle_poll = now;
+            display_vehicles::Snapshot vehicles = {};
+            uint8_t vehicle_packet[display_vehicles::WIRE_SIZE];
+            if (vehicle_ipc.open(display_vehicles::KEY, false) && vehicle_ipc.read(vehicles) &&
+                display_vehicles::encode(vehicle_packet, vehicles, now))
+                send(vehicle_packet, sizeof(vehicle_packet), 20, vehicle_send, now, 50000000ULL);
+        }
         crosswalk_display::Snapshot zebra={};uint8_t z[crosswalk_display::WIRE_SIZE];
         if(crosswalk_ipc.open(false)&&crosswalk_ipc.read(zebra)&&crosswalk_display::encode(z,zebra,now))send(z,sizeof(z),20,crosswalk_send,now,100000000ULL);
         if(!report)report=now;

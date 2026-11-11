@@ -1050,17 +1050,63 @@ class EgoLaneSelector
         // 长距离可见线所允许的磨损容差。
         if (valid < h * .18)
             near_continuous = out.duty >= 95 && gaps == 0;
-        if (enough_evidence && solid_evidence && near_continuous && gaps <= 1 && longest <= std::max(4, h * 3 / 100) &&
-            track.length >= required_length)
+        const bool standard_dash = enough_evidence && out.duty >= 15 && spans >= 2 &&
+            ((gaps >= 2 && out.duty <= 88) || (gaps == 1 && out.duty <= 72));
+        // A phone image or distant paint can leave several weak rows across a
+        // real gap. In the ordinary duty metric these rows are omitted. Check
+        // the along-track contrast separately before accepting a solid line.
+        int optical_gaps=0;
+        if(ground && !standard_dash && centers.size()>=30 && (spans>=2 || near_continuous)) {
+            std::vector<int> profile(centers.size(),-1);
+            std::array<unsigned,256> histogram{};
+            unsigned visible=0;
+            for(size_t i=0;i<profile.size();++i) {
+                const size_t lo=i>1?i-2:0,hi=std::min(centers.size()-1,i+2);
+                const double slope=(centers[hi]-centers[lo])/(hi-lo);
+                profile[i]=evidence.ridge_strength(centers[i],track.first+i,slope);
+                if(profile[i]>=0){++histogram[profile[i]];++visible;}
+            }
+            int reference=0;
+            for(unsigned total=0;visible && reference<255;++reference) {
+                total+=histogram[reference];
+                if(total*4>=visible*3)break;
+            }
+            if(visible*100>=profile.size()*75 && reference>=24) {
+                const int low=std::max(4,std::min(24,reference/6)),high=std::max(12,reference/3);
+                const auto strong_neighbor=[&](int index,int direction) {
+                    int strong=0,quiet=0;
+                    for(int d=0;d<14;++d,index+=direction) {
+                        if(index<0 || index>=(int)profile.size() || profile[index]<0)break;
+                        quiet=profile[index]<=low?quiet+1:0;
+                        if(quiet>=3)break;
+                        strong+=profile[index]>=high;
+                    }
+                    return strong>=5;
+                };
+                bool long_gap=false;
+                for(int i=0;i<(int)profile.size();) {
+                    if(profile[i]<0 || profile[i]>low){++i;continue;}
+                    const int begin=i;
+                    while(i<(int)profile.size() && profile[i]>=0 && profile[i]<=low)++i;
+                    if(i-begin<5 || !strong_neighbor(begin-1,-1) || !strong_neighbor(i,1))continue;
+                    ++optical_gaps;
+                    long_gap |= i-begin>=9;
+                }
+                if(optical_gaps<2 && !long_gap)optical_gaps=0;
+            }
+        }
+        if (standard_dash || optical_gaps)
+        {
+            out.type = LINE_DASHED;
+            out.gaps = std::max(gaps,optical_gaps);
+            if(optical_gaps)out.spans=std::max(spans,optical_gaps+1);
+            out.quality = std::min(94u, 60u + std::min(3u,out.spans) * 5u + out.coverage / 10);
+        }
+        else if (enough_evidence && solid_evidence && near_continuous && gaps <= 1 && longest <= std::max(4, h * 3 / 100) &&
+                 track.length >= required_length)
         {
             out.type = LINE_SOLID;
             out.quality = std::min(95u, 68u + (out.duty - 80) / 2 + out.coverage / 10);
-        }
-        else if (enough_evidence && out.duty >= 15 && spans >= 2 &&
-                 ((gaps >= 2 && out.duty <= 88) || (gaps == 1 && out.duty <= 72)))
-        {
-            out.type = LINE_DASHED;
-            out.quality = std::min(94u, 60u + std::min(3, spans) * 5u + out.coverage / 10);
         }
         out.raw_type = out.type;
         out.reason = out.type                         ? LINE_OK

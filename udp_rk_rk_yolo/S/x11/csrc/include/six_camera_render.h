@@ -69,7 +69,8 @@ static inline const uint16_t *source_row(const CameraView &view, const uint16_t 
 // nearest-neighbor mapping. The former 1280x480 ARGB intermediate is not
 // needed in steady overview. Source reads stay within each physical tile.
 static inline void dashboard_overview(uint32_t *pixels,int stride,int left,int top,
-                                     const uint16_t *pcie,const uint16_t *udp)
+                                     const uint16_t *pcie,const uint16_t *udp,
+                                     bool refresh_pcie=true,bool refresh_udp=true)
 {
     struct Mapping {
         int x[364],base[45];uint8_t index[45][16];
@@ -86,6 +87,8 @@ static inline void dashboard_overview(uint32_t *pixels,int stride,int left,int t
     };
     static const Mapping map;
     for(const auto &view:camera_views){
+        if (view.network_source ? !refresh_udp : !refresh_pcie)
+            continue;
         uint32_t *tile=pixels+(top+view.row*273)*stride+left+view.column*364;
         int previous=-1;
         for(int y=0;y<273;++y){

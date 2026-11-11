@@ -302,14 +302,15 @@ class LatestWorker
                                 YOLOLineStyleResult bird = {};
                                 ipm_test_->render(working_pixels_.data(), ipm_rgb_.data());
                                 const uint64_t zebra_started=clock_ns();
-                                const auto zebra=crosswalk_detector_.detect(ipm_rgb_.data(),ipm_coverage_.data());
+                                const auto candidate=crosswalk_detector_.detect(ipm_rgb_.data(),ipm_coverage_.data());
+                                const auto zebra=crosswalk_confirm_.update(candidate,source,captured);
                                 crosswalk_display::Snapshot crosswalk={};
                                 crosswalk.session=crosswalk_session_;crosswalk.source=(uint32_t)source;
                                 crosswalk.count=zebra.count;crosswalk.quality=zebra.quality;
                                 std::copy_n(zebra.stripes,zebra.count,crosswalk.stripes);
                                 crosswalk_display::expires(crosswalk,captured+crosswalk_display::TTL);
                                 if(crosswalk_ipc_.open(true))crosswalk_ipc_.write(crosswalk);
-                                if(log_ipm)std::fprintf(stderr,"[CROSSWALK] source=%llu geometry=ipm stripes=%u quality=%u cpu_ms=%.3f display_only=1\n",(unsigned long long)source,zebra.count,zebra.quality,(clock_ns()-zebra_started)/1e6);
+                                if(log_ipm)std::fprintf(stderr,"[CROSSWALK] source=%llu geometry=ipm stripes=%u quality=%u candidates=%u cpu_ms=%.3f display_only=1\n",(unsigned long long)source,zebra.count,zebra.quality,candidate.count,(clock_ns()-zebra_started)/1e6);
                                 if (use_point_lanes())
                                 {
                                     const auto rows=lane_mask_rows(ipm_lane_.data(),width_/2,height_/2,0,height_/2);
@@ -569,6 +570,7 @@ class LatestWorker
     std::vector<uint8_t> ipm_rgb_, ipm_green_, ipm_coverage_;
     std::vector<float> ipm_lane_;
     crosswalk::Detector crosswalk_detector_;
+    crosswalk::Confirmation crosswalk_confirm_;
     crosswalk_display::IPC crosswalk_ipc_;
     const uint32_t crosswalk_session_=uint32_t(clock_ns())|1u;
     uint64_t ipm_log_ns_ = 0;
