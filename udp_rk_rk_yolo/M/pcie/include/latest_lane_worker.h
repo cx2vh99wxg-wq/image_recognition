@@ -121,6 +121,12 @@ class LatestWorker
             ipm_green_.resize(tile_pixels);
             ipm_coverage_.resize(tile_pixels);
             ipm_test_->coverage_mask(ipm_coverage_.data());
+            const char *async_crosswalk = std::getenv("VISION_CROSSWALK_ASYNC");
+            if (!async_crosswalk || std::strcmp(async_crosswalk, "0") != 0)
+            {
+                crosswalk_rgb_.resize(ipm_rgb_.size());
+                crosswalk_stage_.reset(new LaneCpuStage);
+            }
         }
         if (front_input_)
         {
@@ -189,9 +195,32 @@ class LatestWorker
         if (thread_.joinable())
             thread_.join();
         if(cpu_stage_)cpu_stage_->stop();
+        if (crosswalk_stage_)
+            crosswalk_stage_->stop();
     }
 
   private:
+    void publish_crosswalk(const uint8_t *rgb, uint64_t source, uint64_t captured, bool log)
+    {
+        const uint64_t started = clock_ns();
+        const auto candidate = crosswalk_detector_.detect(rgb, ipm_coverage_.data());
+        const auto zebra = crosswalk_confirm_.update(candidate, source, captured);
+        crosswalk_display::Snapshot snapshot = {};
+        snapshot.session = crosswalk_session_;
+        snapshot.source = static_cast<uint32_t>(source);
+        snapshot.count = zebra.count;
+        snapshot.quality = zebra.quality;
+        std::copy_n(zebra.stripes, zebra.count, snapshot.stripes);
+        crosswalk_display::expires(snapshot, captured + crosswalk_display::TTL);
+        if (crosswalk_ipc_.open(true))
+            crosswalk_ipc_.write(snapshot);
+        if (log)
+            std::fprintf(stderr,
+                         "[CROSSWALK] source=%llu geometry=ipm stripes=%u quality=%u candidates=%u cpu_ms=%.3f display_only=1\n",
+                         (unsigned long long)source, zebra.count, zebra.quality, candidate.count,
+                         (clock_ns() - started) / 1e6);
+    }
+
     struct AnalysisJob {
         uint64_t source=0,captured=0,inference_time=0,front_time=0,analysis_time=0;
         int status=-1,model_width=0,model_height=0;
@@ -220,6 +249,7 @@ class LatestWorker
         const auto source=job.source,captured=job.captured;
         const auto inference_time=job.inference_time,front_time=job.front_time;
         int status=job.status;uint64_t start=clock_ns();
+        bool crosswalk_pending = false, crosswalk_log = false;
                 uint64_t analysis_time = 0;
                 if (status == 0 &&
                     (!engine_ || !raw.lane_line_data || !raw.drivable_area_data || raw.width <= 0 ||
@@ -301,16 +331,13 @@ class LatestWorker
                                 LineStyleTrace trace;
                                 YOLOLineStyleResult bird = {};
                                 ipm_test_->render(working_pixels_.data(), ipm_rgb_.data());
-                                const uint64_t zebra_started=clock_ns();
-                                const auto candidate=crosswalk_detector_.detect(ipm_rgb_.data(),ipm_coverage_.data());
-                                const auto zebra=crosswalk_confirm_.update(candidate,source,captured);
-                                crosswalk_display::Snapshot crosswalk={};
-                                crosswalk.session=crosswalk_session_;crosswalk.source=(uint32_t)source;
-                                crosswalk.count=zebra.count;crosswalk.quality=zebra.quality;
-                                std::copy_n(zebra.stripes,zebra.count,crosswalk.stripes);
-                                crosswalk_display::expires(crosswalk,captured+crosswalk_display::TTL);
-                                if(crosswalk_ipc_.open(true))crosswalk_ipc_.write(crosswalk);
-                                if(log_ipm)std::fprintf(stderr,"[CROSSWALK] source=%llu geometry=ipm stripes=%u quality=%u candidates=%u cpu_ms=%.3f display_only=1\n",(unsigned long long)source,zebra.count,zebra.quality,candidate.count,(clock_ns()-zebra_started)/1e6);
+                                if (crosswalk_stage_)
+                                {
+                                    crosswalk_pending = true;
+                                    crosswalk_log = log_ipm;
+                                }
+                                else
+                                    publish_crosswalk(ipm_rgb_.data(), source, captured, log_ipm);
                                 if (use_point_lanes())
                                 {
                                     const auto rows=lane_mask_rows(ipm_lane_.data(),width_/2,height_/2,0,height_/2);
@@ -458,6 +485,21 @@ class LatestWorker
                 // 两张掩码向量各自拥有副本，不引用引擎下一帧的输出缓冲区。
                 std::shared_ptr<const Snapshot> immutable = result;
                 std::atomic_store(&latest_, immutable);
+                static const bool profile_publication = std::getenv("VISION_LANE_PUBLICATION_PROFILE") != nullptr;
+                if (profile_publication && result->valid)
+                    std::fprintf(stderr, "[LANE PUBLICATION] source=%llu age_ms=%.3f\n",
+                                 (unsigned long long)source, (clock_ns() - captured) / 1e6);
+                if (crosswalk_pending)
+                {
+                    // Preserve every admitted observation and its capture time.
+                    // Waiting on a slow crosswalk job happens after lane publication.
+                    if (crosswalk_job_.valid())
+                        crosswalk_job_.get();
+                    std::copy(ipm_rgb_.begin(), ipm_rgb_.end(), crosswalk_rgb_.begin());
+                    crosswalk_job_ = crosswalk_stage_->submit([this, source, captured, crosswalk_log] {
+                        publish_crosswalk(crosswalk_rgb_.data(), source, captured, crosswalk_log);
+                    });
+                }
 
         job.analysis_time=analysis_time;job.budget=traffic::LaneBudget{};
         job.budget.source=source;job.budget.front=job.front();job.budget.captured=captured;
@@ -573,6 +615,9 @@ class LatestWorker
     crosswalk::Confirmation crosswalk_confirm_;
     crosswalk_display::IPC crosswalk_ipc_;
     const uint32_t crosswalk_session_=uint32_t(clock_ns())|1u;
+    std::vector<uint8_t> crosswalk_rgb_;
+    std::future<void> crosswalk_job_;
+    std::unique_ptr<LaneCpuStage> crosswalk_stage_;
     uint64_t ipm_log_ns_ = 0;
     unsigned ipm_frames_ = 0, ipm_valid_ = 0;
     std::shared_ptr<const Snapshot> latest_;

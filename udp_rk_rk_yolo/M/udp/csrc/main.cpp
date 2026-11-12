@@ -148,7 +148,7 @@ int network_manager_init(NetworkManager *net_mgr, const char *target_ip)
     net_mgr->session_id = (uint32_t)(monotonic_ns() ^ ((uint64_t)getpid() << 17));
     if (!net_mgr->session_id)
         net_mgr->session_id = 1;
-    net_mgr->bitrate_mbit = 200;
+    net_mgr->bitrate_mbit = 250;
     const char *rate = getenv("VIDEO_UDP_MBIT");
     if (rate && *rate)
     {
