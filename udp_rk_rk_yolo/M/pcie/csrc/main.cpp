@@ -1074,11 +1074,17 @@ int main()
     const char *async_option = getenv("VISION_ASYNC");
     const bool asynchronous = !async_option || atoi(async_option) != 0;
     const char *model_path = getenv("VISION_LANE_MODEL");
-    const char *front_model = "model/yolopv2_front_320x240_rk3568.rknn";
-    const bool prefer_front_model = asynchronous && (!model_path || !*model_path) &&
-                                    access(front_model, R_OK) == 0;
+    const char *mixed_front_model = "model/yolopv2_front_320x240_mixed_error_guided_rk3568.rknn";
+    const char *fp16_front_model = "model/yolopv2_front_320x240_rk3568.rknn";
+    const bool auto_front_model = asynchronous && (!model_path || !*model_path);
     if (!model_path || !*model_path)
-        model_path = prefer_front_model ? front_model : YOLOPV2_MODEL_PATH;
+    {
+        model_path = YOLOPV2_MODEL_PATH;
+        if (auto_front_model && access(mixed_front_model, R_OK) == 0)
+            model_path = mixed_front_model;
+        else if (auto_front_model && access(fp16_front_model, R_OK) == 0)
+            model_path = fp16_front_model;
+    }
     const char *labels_path = NULL;
 
     // 设置全局指针用于信号处理。
@@ -1134,7 +1140,15 @@ int main()
     printf("\n=== YOLOPv2引擎初始化 ===\n");
 
     int model_status = yolo_engine_init(&yolo_engine, model_path, labels_path);
-    if (model_status != 0 && prefer_front_model)
+    if (model_status != 0 && auto_front_model && model_path == mixed_front_model &&
+        access(fp16_front_model, R_OK) == 0)
+    {
+        fprintf(stderr, "Mixed-precision model failed to initialize, loading %s\n", fp16_front_model);
+        model_path = fp16_front_model;
+        model_status = yolo_engine_init(&yolo_engine, model_path, labels_path);
+    }
+    if (model_status != 0 && auto_front_model &&
+        (model_path == mixed_front_model || model_path == fp16_front_model))
     {
         fprintf(stderr, "320x240 model failed to initialize, loading %s\n", YOLOPV2_MODEL_PATH);
         model_path = YOLOPV2_MODEL_PATH;

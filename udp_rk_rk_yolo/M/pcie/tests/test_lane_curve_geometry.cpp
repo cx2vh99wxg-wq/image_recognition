@@ -93,10 +93,10 @@ int main(int argc, char **argv){
         assert(bird.confidence>=60&&bird.type==(slope<0?1u:slope>0?2u:0u));
         assert(bird.angle==(slope?14u:0u));
     }
-    // Check both sides of 30 degrees before rounding the transmitted angle.
+    // Check both sides of 25 degrees before rounding the transmitted angle.
     constexpr float radians_per_degree=.017453292519943295f;
-    const float below=240.f*.52f*std::tan(29.9f*radians_per_degree);
-    const float above=240.f*.52f*std::tan(30.1f*radians_per_degree);
+    const float below=240.f*.52f*std::tan(24.9f*radians_per_degree);
+    const float above=240.f*.52f*std::tan(25.1f*radians_per_degree);
     for(float heading:{below,-below}){
         auto low=m_lane::estimate_ego_curve(corridor(heading));
         assert(low.type==0&&low.confidence>=60&&low.angle==0);
@@ -111,15 +111,15 @@ int main(int argc, char **argv){
     assert(moderate.type==2&&moderate.confidence>=60&&moderate.angle==13);
     auto left=corridor(above);auto right=corridor(-above);
     auto l=m_lane::estimate_ego_curve(left);auto r=m_lane::estimate_ego_curve(right);
-    assert(l.type==1&&l.confidence>=60&&l.angle==30);
-    assert(r.type==2&&r.confidence>=60&&r.angle==30);
+    assert(l.type==1&&l.confidence>=60&&l.angle==25);
+    assert(r.type==2&&r.confidence>=60&&r.angle==25);
     // Production IPM point tracks use the same low-curvature threshold.
-    for(double degrees:{-35.,-30.1,-29.9,0.,29.9,30.1,35.}) {
+    for(double degrees:{-35.,-30.,-25.1,-25.,-24.9,0.,24.9,25.,25.1,30.,35.}) {
         double centers[5];
         for(int i=0;i<5;++i) centers[i]=160.+(2-i)*20.*std::tan(degrees*.017453292519943295);
         const auto ipm=m_lane::fit_ego_centers(centers,80,80,320,240,true,true);
         assert(ipm.confidence>=60 && ipm.curvature<1e-6);
-        assert(ipm.type==(degrees<-30 ? 1u : degrees>30 ? 2u : 0u));
+        assert(ipm.type==(degrees<-25 ? 1u : degrees>25 ? 2u : 0u));
     }
     auto translated=right;translated.left.fit_a+=20;translated.right.fit_a+=20;
     assert(m_lane::estimate_ego_curve(translated).angle==r.angle);
@@ -157,5 +157,5 @@ int main(int argc, char **argv){
     }
     auto invalid=raw;invalid.signed_angle_deg=NAN;invalid.angle=100;
     assert(!immediate.update(invalid,9,9000000000ULL).confidence);
-    puts("PASS ego curve geometry: immediate fresh heading, jumps and sign changes, duplicate/time/error rejection, original curvature gate");
+    puts("PASS ego curve geometry: immediate fresh heading, jumps and sign changes, duplicate/time/error rejection, 25-degree low-curvature gate");
 }

@@ -430,7 +430,8 @@ class Assembler
         return 1;
     }
 
-    bool take_latest(uint8_t *output, Metadata &meta)
+  private:
+    Slot *take_latest_slot(Metadata &meta)
     {
         Slot *newest = nullptr;
         for (Slot &slot : slots_)
@@ -438,8 +439,7 @@ class Assembler
                 (!newest || newer(slot.meta.frame_id, newest->meta.frame_id)))
                 newest = &slot;
         if (!newest)
-            return false;
-        std::memcpy(output, newest->pixels.data(), FRAME_BYTES);
+            return nullptr;
         meta = newest->meta;
         published_id_ = meta.frame_id;
         have_published_ = true;
@@ -448,6 +448,29 @@ class Assembler
         for (Slot &slot : slots_)
             if (slot.used && !newer(slot.meta.frame_id, published_id_))
                 abandon(slot);
+        return newest;
+    }
+
+  public:
+    bool take_latest(uint8_t *output, Metadata &meta)
+    {
+        auto *slot = take_latest_slot(meta);
+        if (!slot)
+            return false;
+        std::memcpy(output, slot->pixels.data(), FRAME_BYTES);
+        return true;
+    }
+
+    // Exchange two preallocated frame buffers. The caller retains its published
+    // pixels even if the assembler starts receiving the next frame immediately.
+    bool take_latest(std::vector<uint8_t> &output, Metadata &meta)
+    {
+        if (output.size() != FRAME_BYTES)
+            return false;
+        auto *slot = take_latest_slot(meta);
+        if (!slot)
+            return false;
+        output.swap(slot->pixels);
         return true;
     }
 };

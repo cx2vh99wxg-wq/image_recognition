@@ -25,6 +25,15 @@ int main(){
   assert(a.statistics().complete==1&&a.statistics().duplicates>0);
   assert(!a.take_latest(output.data(),out));
  }
+ {Assembler a;const Bytes first=image;Bytes published(FRAME_BYTES), wrong_size(FRAME_BYTES-1);
+  all(a,2);assert(!a.take_latest(wrong_size,out));const auto *old=published.data();
+  assert(a.take_latest(published,out)&&out.frame_id==2&&published==first&&published.data()!=old);
+  image[0]^=0xff;image.back()^=0xff;
+  auto m=meta(3);for(unsigned n=0;n<HEIGHT-1;++n)row(a,m,n);
+  assert(!a.take_latest(published,out)&&published==first);
+  row(a,m,HEIGHT-1);assert(a.take_latest(published,out)&&out.frame_id==3&&published==image);
+  image=first;
+ }
  {Assembler a;auto m=meta(10);for(unsigned n=1;n<HEIGHT;++n)row(a,m,n);assert(!a.take_latest(output.data(),out));
   all(a,11);all(a,12);assert(a.take_latest(output.data(),out)&&out.frame_id==12&&output==image);assert(a.statistics().incomplete==1);
  }

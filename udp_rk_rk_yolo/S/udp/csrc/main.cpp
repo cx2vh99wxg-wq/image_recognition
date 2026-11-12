@@ -71,7 +71,8 @@ struct Datagram
 struct NetworkReceiver
 {
     int socket_fd;
-    uint8_t *frame_buffer, *legacy_buffer;
+    std::vector<uint8_t> frame_buffer, legacy_buffer;
+    bool swap_frames;
     video_v2::Assembler *assembler;
     video_v2::CurveReceiverState curve;
     bool compatibility_logged;
@@ -86,6 +87,7 @@ struct NetworkReceiver
     uint64_t report_start, report_bytes, report_published;
     uint64_t previous_complete, previous_incomplete, previous_corrupt, previous_assembly_ns;
     uint64_t previous_duplicates, previous_skipped, kernel_drops;
+    uint64_t recv_ns, packet_ns, select_ns, publish_ns, recv_calls;
 };
 static volatile sig_atomic_t keep_running = 1;
 static SharedMemoryManager shm_manager;
@@ -106,11 +108,8 @@ void network_receiver_cleanup(NetworkReceiver *r)
         return;
     if (r->socket_fd >= 0)
         close(r->socket_fd);
-    free(r->frame_buffer);
-    free(r->legacy_buffer);
     delete r->assembler;
     r->socket_fd = -1;
-    r->frame_buffer = r->legacy_buffer = nullptr;
     r->assembler = nullptr;
 }
 int network_receiver_init(NetworkReceiver *r)
@@ -119,18 +118,15 @@ int network_receiver_init(NetworkReceiver *r)
         return -1;
     *r = NetworkReceiver{};
     r->socket_fd = -1;
-    r->frame_buffer = (uint8_t *)std::malloc(FRAME_BUFFER_SIZE);
-    r->legacy_buffer = (uint8_t *)std::malloc(FRAME_BUFFER_SIZE);
+    const char *swap = std::getenv("UDP_FRAME_SWAP");
+    r->swap_frames = !swap || std::strcmp(swap, "0") != 0;
     try
     {
+        r->frame_buffer.resize(FRAME_BUFFER_SIZE);
+        r->legacy_buffer.resize(FRAME_BUFFER_SIZE);
         r->assembler = new video_v2::Assembler();
     }
     catch (const std::bad_alloc &)
-    {
-        network_receiver_cleanup(r);
-        return -1;
-    }
-    if (!r->frame_buffer || !r->legacy_buffer)
     {
         network_receiver_cleanup(r);
         return -1;
@@ -189,6 +185,14 @@ static void report_receiver(NetworkReceiver *r)
         (unsigned long long)(v2.duplicates - r->previous_duplicates),
         (unsigned long long)(v2.skipped_complete - r->previous_skipped),
         (unsigned long long)r->kernel_drops);
+    if (r->report_published)
+    {
+        const double per_frame = 1e-6 / r->report_published;
+        printf("[UDP_RX STAGES] recv_wait_and_call_ms=%.3f packet_processing_ms=%.3f "
+               "select_frame_ms=%.3f shm_publish_ms=%.3f recv_calls_per_frame=%.2f swap=%d\n",
+               r->recv_ns * per_frame, r->packet_ns * per_frame, r->select_ns * per_frame,
+               r->publish_ns * per_frame, double(r->recv_calls) / r->report_published, r->swap_frames);
+    }
     r->previous_complete = complete;
     r->previous_incomplete = incomplete;
     r->previous_corrupt = corrupt;
@@ -197,6 +201,7 @@ static void report_receiver(NetworkReceiver *r)
     r->previous_skipped = v2.skipped_complete;
     r->report_start = now;
     r->report_bytes = r->report_published = 0;
+    r->recv_ns = r->packet_ns = r->select_ns = r->publish_ns = r->recv_calls = 0;
 }
 static bool legacy_header(const uint8_t *data, size_t size, FrameHeader &h)
 {
@@ -241,7 +246,10 @@ static void ingest_legacy(NetworkReceiver *r, const uint8_t *data, size_t size, 
         if (trailer.magic == FRAME_TRAILER_MAGIC && trailer.frame_id == r->legacy_header.frame_id &&
             trailer.total_lines == IMAGE_HEIGHT && trailer.checksum == r->legacy_sum)
         {
-            std::memcpy(r->frame_buffer, r->legacy_buffer, FRAME_BUFFER_SIZE);
+            if (r->swap_frames)
+                r->frame_buffer.swap(r->legacy_buffer);
+            else
+                std::memcpy(r->frame_buffer.data(), r->legacy_buffer.data(), FRAME_BUFFER_SIZE);
             r->legacy_metadata.frame_id = trailer.frame_id;
             r->legacy_metadata.checksum = trailer.checksum;
             r->legacy_metadata.curve_type = r->legacy_header.curve_type;
@@ -272,7 +280,7 @@ static void ingest_legacy(NetworkReceiver *r, const uint8_t *data, size_t size, 
     else if (r->legacy_pending && size == video_v2::LINE_BYTES &&
              video_v2::checksum(data, size) == r->pending_sum)
     {
-        std::memcpy(r->legacy_buffer + r->legacy_line * video_v2::LINE_BYTES, data, size);
+        std::memcpy(r->legacy_buffer.data() + r->legacy_line * video_v2::LINE_BYTES, data, size);
         r->legacy_sum += r->pending_sum;
         ++r->legacy_line;
         r->legacy_pending = false;
@@ -414,11 +422,12 @@ int network_receive_with_sync(NetworkReceiver *r)
     unsigned processed = 0;
     while (keep_running && processed < 2048)
     {
-        Datagram packets[video_v2::BATCH] = {};
+        // recvmsg supplies the packet bytes and address for each returned entry.
+        Datagram packets[video_v2::BATCH];
         iovec vectors[video_v2::BATCH] = {};
         mmsghdr messages[video_v2::BATCH] = {};
         alignas(cmsghdr) unsigned char controls[video_v2::BATCH][CMSG_SPACE(sizeof(uint32_t)) +
-                                                                 CMSG_SPACE(sizeof(timespec))] = {};
+                                                                 CMSG_SPACE(sizeof(timespec))];
         for (unsigned i = 0; i < video_v2::BATCH; ++i)
         {
             vectors[i].iov_base = packets[i].data;
@@ -430,14 +439,20 @@ int network_receive_with_sync(NetworkReceiver *r)
             messages[i].msg_hdr.msg_control = controls[i];
             messages[i].msg_hdr.msg_controllen = sizeof(controls[i]);
         }
+        const uint64_t before_recv = monotonic_ns();
         int count = recvmmsg(r->socket_fd, messages, video_v2::BATCH,
                              processed ? MSG_DONTWAIT : MSG_WAITFORONE, nullptr);
+        const int recv_error = errno;
+        const uint64_t after_recv = monotonic_ns();
+        r->recv_ns += after_recv - before_recv;
+        ++r->recv_calls;
         if (count < 0)
         {
-            if (errno == EINTR && keep_running)
+            if (recv_error == EINTR && keep_running)
                 continue;
-            if (errno != EAGAIN && errno != EWOULDBLOCK && errno != EINTR)
+            if (recv_error != EAGAIN && recv_error != EWOULDBLOCK && recv_error != EINTR)
             {
+                errno = recv_error;
                 perror("UDP receive");
                 return -1;
             }
@@ -482,11 +497,16 @@ int network_receive_with_sync(NetworkReceiver *r)
             packets[i].size = messages[i].msg_len;
             ingest_datagram(r, packets[i]);
         }
+        r->packet_ns += monotonic_ns() - after_recv;
         processed += count;
     }
     video_v2::Metadata meta;
-    bool ready =
-        r->protocol == 2 ? r->assembler->take_latest(r->frame_buffer, meta) : r->legacy_ready;
+    const uint64_t before_select = monotonic_ns();
+    bool ready = r->legacy_ready;
+    if (r->protocol == 2)
+        ready = r->swap_frames ? r->assembler->take_latest(r->frame_buffer, meta)
+                               : r->assembler->take_latest(r->frame_buffer.data(), meta);
+    r->select_ns += monotonic_ns() - before_select;
     if (!ready)
     {
         if (r->curve.expire(monotonic_ns(), curve_event))
@@ -560,16 +580,18 @@ int main()
             break;
         if (!result)
             continue;
-        if (shared_memory_write_image(&shm_manager, receiver.frame_buffer, IMAGE_WIDTH,
+        const uint64_t before_publish = monotonic_ns();
+        if (shared_memory_write_image(&shm_manager, receiver.frame_buffer.data(), IMAGE_WIDTH,
                                       IMAGE_HEIGHT))
         {
             fprintf(stderr, "Could not publish the UDP video frame\n");
             break;
         }
+        receiver.publish_ns += monotonic_ns() - before_publish;
         ++frames;
     }
     if (frames)
-        save_frame(receiver.frame_buffer, "udp_last_frame.ppm");
+        save_frame(receiver.frame_buffer.data(), "udp_last_frame.ppm");
     network_receiver_cleanup(&receiver);
     shared_memory_cleanup(&shm_manager);
     line_ipc_close(&line_ipc);

@@ -81,6 +81,15 @@ static inline int pcie_display_source_row(int row)
 // ── 呈现合成 ──
 // 本对象保存视角过渡的状态。
 // ── 呈现合成 ──
+struct ShmUpload
+{
+    XImage *image;
+    XShmSegmentInfo info;
+    unsigned long serial;
+    Drawable drawable;
+    bool pending;
+};
+
 typedef struct
 {
     int is_active;             /* 呈现合成：是否开始播放动画 */
@@ -112,7 +121,8 @@ typedef struct
     Pixmap pixmap;           /* 呈现合成：双缓冲pixmap */
     int use_fast_mode;       /* 呈现合成：是否使用快速模式 */
     int use_shm;             /* 呈现合成：是否使用共享内存 */
-    XShmSegmentInfo shminfo; /* 呈现合成：共享内存信息 */
+    ShmUpload shm_uploads[2];
+    unsigned shm_count, active_shm, next_shm;
     XFontStruct *font;       /* 本对象描述字形及度量数据。 */
     int is_init;
     TransitionAnimation transition; /* 呈现合成：切换动画状态 */
@@ -134,9 +144,8 @@ typedef struct
     VehicleLayerState vehicle_state;
     lane_cue::HeadingHistory heading_history;
     int vehicle_cached;
-    int use_shm_completion, shm_completion_disabled, shm_completion_type, shm_pending;
-    unsigned long shm_pending_serial;
-    Drawable shm_pending_drawable;
+    int use_shm_completion, shm_completion_disabled, shm_completion_type;
+    uint32_t *upload_reference;
     uint64_t profile_reuse_wait_ns, profile_upload_completions;
     uint64_t profile_upload_bytes, profile_upload_rects;
     int upload_initialized, uploaded_this_frame;
@@ -847,55 +856,77 @@ static int catch_shm_error(Display *, XErrorEvent *event)
     return 0;
 }
 
-// 只有本客户端那一个尚未完成的上传能够释放对应共享图像。
+static ShmUpload *completed_upload(RenderEngine *engine, const XEvent *event)
+{
+    if (event->type != engine->shm_completion_type)
+        return nullptr;
+    const auto *completion = reinterpret_cast<const XShmCompletionEvent *>(event);
+    for (unsigned i = 0; i < engine->shm_count; ++i)
+    {
+        auto &slot = engine->shm_uploads[i];
+        if (slot.pending && completion->shmseg == slot.info.shmseg &&
+            completion->drawable == slot.drawable && completion->serial == slot.serial &&
+            completion->offset == 0)
+            return &slot;
+    }
+    return nullptr;
+}
+
 static Bool pending_shm_completion(Display *, XEvent *event, XPointer context)
 {
-    RenderEngine *engine = reinterpret_cast<RenderEngine *>(context);
-    if (!engine->shm_pending || event->type != engine->shm_completion_type)
-        return False;
-    const XShmCompletionEvent *completion = reinterpret_cast<XShmCompletionEvent *>(event);
-    return completion->shmseg == engine->shminfo.shmseg &&
-           completion->drawable == engine->shm_pending_drawable &&
-           completion->serial == engine->shm_pending_serial && completion->offset == 0;
+    return completed_upload(reinterpret_cast<RenderEngine *>(context), event) != nullptr;
 }
 
 static bool consume_shm_completion(RenderEngine *engine, XEvent *event)
 {
-    if (!pending_shm_completion(engine->display, event, reinterpret_cast<XPointer>(engine)))
+    auto *slot = completed_upload(engine, event);
+    if (!slot)
         return false;
-    engine->shm_pending = 0;
+    slot->pending = false;
     ++engine->profile_upload_completions;
     return true;
 }
 
+static void drain_shm_completions(RenderEngine *engine)
+{
+    XEvent event;
+    while (XCheckIfEvent(engine->display, &event, pending_shm_completion,
+                         reinterpret_cast<XPointer>(engine)))
+        consume_shm_completion(engine, &event);
+}
+
+static void synchronize_shm_uploads(RenderEngine *engine)
+{
+    XSync(engine->display, False);
+    drain_shm_completions(engine);
+    for (unsigned i = 0; i < engine->shm_count; ++i)
+    {
+        auto &slot = engine->shm_uploads[i];
+        if (slot.pending)
+            ++engine->profile_upload_completions;
+        slot.pending = false;
+    }
+}
+
 static void wait_for_shared_image(RenderEngine *engine)
 {
-    if (!engine->shm_pending)
+    if (!engine->shm_count)
+        return;
+    auto &slot = engine->shm_uploads[engine->active_shm];
+    if (!slot.pending)
         return;
     const uint64_t started = display_clock_ns();
     const uint64_t deadline = started + 250000000ULL;
-    XEvent event;
-    while (engine->shm_pending)
+    while (slot.pending)
     {
-        if (XCheckIfEvent(engine->display, &event, pending_shm_completion,
-                          reinterpret_cast<XPointer>(engine)))
-        {
-            consume_shm_completion(engine, &event);
+        drain_shm_completions(engine);
+        if (!slot.pending)
             break;
-        }
         if (!keep_running || engine->shm_completion_disabled || display_clock_ns() >= deadline)
         {
             // 未收到完成事件前，共享图像不能再次写入；
             // 对可能丢事件的服务端，仍提供同步回退。
-            XSync(engine->display, False);
-            if (XCheckIfEvent(engine->display, &event, pending_shm_completion,
-                              reinterpret_cast<XPointer>(engine)))
-                consume_shm_completion(engine, &event);
-            else
-            {
-                engine->shm_pending = 0;
-                ++engine->profile_upload_completions;
-            }
+            synchronize_shm_uploads(engine);
             engine->use_shm_completion = 0;
             engine->shm_completion_disabled = 1;
             fprintf(stderr,
@@ -934,12 +965,18 @@ static void prepare_xrender_upload(RenderEngine *engine, const uint32_t *pixels,
                                    std::vector<UploadRegion> &regions)
 {
     XImage *image = engine->presentation_image;
+    auto *reference = engine->upload_reference;
+    const auto copy_row = [&](int y, int x, int width) {
+        const auto *source = pixels + y * perception_ui::WIDTH + x;
+        std::memcpy(image->data + y * image->bytes_per_line + x * 4, source, width * 4);
+        if (reference)
+            std::memcpy(reference + y * perception_ui::WIDTH + x, source, width * 4);
+    };
     regions.clear();
     if (!partial || !engine->upload_initialized)
     {
         for (int y = 0; y < perception_ui::HEIGHT; ++y)
-            memcpy(image->data + y * image->bytes_per_line, pixels + y * perception_ui::WIDTH,
-                   perception_ui::WIDTH * 4);
+            copy_row(y, 0, perception_ui::WIDTH);
         regions.push_back({0, 0, perception_ui::WIDTH, perception_ui::HEIGHT});
         return;
     }
@@ -950,8 +987,7 @@ static void prepare_xrender_upload(RenderEngine *engine, const uint32_t *pixels,
             return;
         const UploadRegion area={72,rows == 2 ? 497 : 224,1092,rows == 3 ? 546 : 273};
         for(int y=0;y<area.height;++y)
-            memcpy(image->data+(area.y+y)*image->bytes_per_line+area.x*4,
-                   pixels+(area.y+y)*perception_ui::WIDTH+area.x,area.width*4);
+            copy_row(area.y + y, area.x, area.width);
         regions.push_back(area);
         return;
     }
@@ -965,12 +1001,14 @@ static void prepare_xrender_upload(RenderEngine *engine, const uint32_t *pixels,
         int first_row = -1;
         for (int row = 0; row < area.height; ++row)
         {
-            char *destination = image->data + (area.y + row) * image->bytes_per_line + area.x * 4;
+            const void *previous = reference
+                ? static_cast<const void *>(reference + (area.y + row) * perception_ui::WIDTH + area.x)
+                : image->data + (area.y + row) * image->bytes_per_line + area.x * 4;
             const uint32_t *source = pixels + (area.y + row) * perception_ui::WIDTH + area.x;
-            bool differs = memcmp(destination, source, area.width * 4) != 0;
+            bool differs = memcmp(previous, source, area.width * 4) != 0;
             if (differs)
             {
-                memcpy(destination, source, area.width * 4);
+                copy_row(area.y + row, area.x, area.width);
                 changed[area_index] = true;
                 if (first_row < 0)
                     first_row = row;
@@ -990,7 +1028,13 @@ static void prepare_xrender_upload(RenderEngine *engine, const uint32_t *pixels,
         regions.clear();
         for (int i = 0; i < 5; ++i)
             if (changed[i])
-                regions.push_back(areas[i]);
+            {
+                const auto &area = areas[i];
+                if (reference)
+                    for (int y = 0; y < area.height; ++y)
+                        copy_row(area.y + y, area.x, area.width);
+                regions.push_back(area);
+            }
     }
 }
 
@@ -1000,21 +1044,24 @@ static int put_presentation_region(RenderEngine *engine, Drawable target, const 
     const bool completion = engine->use_shm_completion && last_region;
     if (engine->use_shm)
     {
+        auto &slot = engine->shm_uploads[engine->active_shm];
         if (completion)
         {
             // XShmPutImage 可能先刷新已修改的 GC，应给上传请求本身打标记。
             XFlushGC(engine->display, engine->gc);
-            engine->shm_pending_serial = NextRequest(engine->display);
-            engine->shm_pending_drawable = target;
-            engine->shm_pending = 1;
+            slot.serial = NextRequest(engine->display);
+            slot.drawable = target;
         }
         if (!XShmPutImage(engine->display, target, engine->gc, engine->presentation_image, area.x,
                           area.y, area.x, area.y, area.width, area.height,
                           completion ? True : False))
         {
-            engine->shm_pending = 0;
+            // An earlier region may have been submitted without a completion event.
+            synchronize_shm_uploads(engine);
+            engine->upload_initialized = 0;
             return -1;
         }
+        slot.pending = completion;
     }
     else
         XPutImage(engine->display, target, engine->gc, engine->presentation_image, area.x, area.y,
@@ -1037,10 +1084,9 @@ static void flush_presentation(RenderEngine *engine, bool warmup = false)
     {
         // 首次整图上传或缩放可能初始化 GPU 资源，应先完成
         // 该过程再开启流水传输，防止着色器预热耗尽复用期限。
-        XSync(engine->display, False);
-        if (engine->shm_pending)
-            wait_for_shared_image(engine);
-        else if (engine->uploaded_this_frame)
+        const bool pending = engine->shm_count && engine->shm_uploads[engine->active_shm].pending;
+        synchronize_shm_uploads(engine);
+        if (!pending && engine->uploaded_this_frame)
             ++engine->profile_upload_completions;
     }
     else if (engine->use_shm_completion)
@@ -1055,15 +1101,25 @@ static void flush_presentation(RenderEngine *engine, bool warmup = false)
 
 static void release_presentation(RenderEngine *engine)
 {
-    if (engine->display && engine->shm_pending)
+    if (engine->display && engine->shm_count)
     {
+        synchronize_shm_uploads(engine);
+        for (unsigned i = 0; i < engine->shm_count; ++i)
+            XShmDetach(engine->display, &engine->shm_uploads[i].info);
         XSync(engine->display, False);
-        XEvent event;
-        if (XCheckIfEvent(engine->display, &event, pending_shm_completion,
-                          reinterpret_cast<XPointer>(engine)))
-            consume_shm_completion(engine, &event);
-        engine->shm_pending = 0;
+        for (unsigned i = 0; i < engine->shm_count; ++i)
+        {
+            auto &slot = engine->shm_uploads[i];
+            slot.image->data = nullptr;
+            XDestroyImage(slot.image);
+            shmdt(slot.info.shmaddr);
+            slot = {};
+        }
+        engine->presentation_image = nullptr;
     }
+    engine->shm_count = engine->active_shm = engine->next_shm = 0;
+    delete[] engine->upload_reference;
+    engine->upload_reference = nullptr;
 #ifdef PERCEPTION_HAVE_XRENDER
     if (engine->display && engine->source_picture)
         XRenderFreePicture(engine->display, engine->source_picture);
@@ -1073,19 +1129,7 @@ static void release_presentation(RenderEngine *engine)
 #endif
     if (engine->presentation_image)
     {
-        if (engine->use_shm)
-        {
-            XShmDetach(engine->display, &engine->shminfo);
-            XSync(engine->display, False);
-            engine->presentation_image->data = NULL;
-            XDestroyImage(engine->presentation_image);
-            shmdt(engine->shminfo.shmaddr);
-            // 共享段在附加后已立即标记为删除。
-            engine->shminfo.shmaddr = NULL;
-            engine->shminfo.shmid = -1;
-        }
-        else
-            XDestroyImage(engine->presentation_image);
+        XDestroyImage(engine->presentation_image);
         engine->presentation_image = NULL;
     }
     if (engine->pixmap && engine->display)
@@ -1106,6 +1150,46 @@ static void release_gles(RenderEngine *engine)
         engine->gles = NULL;
     }
     engine->use_gles = 0;
+}
+
+static bool create_shm_upload(RenderEngine *engine, ShmUpload &slot, int width, int height)
+{
+    const int screen = DefaultScreen(engine->display);
+    auto &info = slot.info;
+    slot.image = XShmCreateImage(engine->display, DefaultVisual(engine->display, screen),
+                                 DefaultDepth(engine->display, screen), ZPixmap, nullptr,
+                                 &info, width, height);
+    if (!slot.image)
+        return false;
+    const size_t bytes = size_t(slot.image->bytes_per_line) * height;
+    info.shmid = shmget(IPC_PRIVATE, bytes, IPC_CREAT | 0600);
+    bool attached = false;
+    if (info.shmid >= 0)
+    {
+        info.shmaddr = static_cast<char *>(shmat(info.shmid, nullptr, 0));
+        if (info.shmaddr != reinterpret_cast<char *>(-1))
+        {
+            slot.image->data = info.shmaddr;
+            info.readOnly = True;
+            XSync(engine->display, False);
+            shm_attach_error = 0;
+            XErrorHandler previous = XSetErrorHandler(catch_shm_error);
+            const Bool result = XShmAttach(engine->display, &info);
+            XSync(engine->display, False);
+            XSetErrorHandler(previous);
+            attached = result && !shm_attach_error;
+        }
+        shmctl(info.shmid, IPC_RMID, nullptr);
+    }
+    if (!attached)
+    {
+        slot.image->data = nullptr;
+        XDestroyImage(slot.image);
+        if (info.shmaddr && info.shmaddr != reinterpret_cast<char *>(-1))
+            shmdt(info.shmaddr);
+        slot = {};
+    }
+    return attached;
 }
 
 int resize_presentation(RenderEngine *engine, int width, int height)
@@ -1134,47 +1218,29 @@ int resize_presentation(RenderEngine *engine, int width, int height)
     XImage *image = NULL;
     const char *backend = getenv("VISION_RENDER_BACKEND");
     bool allow_shm = !backend || strcmp(backend, "putimage") != 0;
-    // MIT-SHM 仅限本地，须收到完成事件或经过 XSync 才可复用。
-    // MIT-SHM 接口参考：https://www.x.org/releases/X11R7.5/doc/Xext/mit-shm.pdf
-    if (allow_shm && XShmQueryExtension(engine->display))
+    const char *sync_mode = getenv("VISION_SHM_SYNC");
+    const bool completion = !engine->shm_completion_disabled &&
+                            (!sync_mode || !strcmp(sync_mode, "completion"));
+    if (allow_shm && XShmQueryExtension(engine->display) &&
+        create_shm_upload(engine, engine->shm_uploads[0], image_w, image_h))
     {
-        memset(&engine->shminfo, 0, sizeof(engine->shminfo));
-        engine->shminfo.shmid = -1;
-        image = XShmCreateImage(engine->display, DefaultVisual(engine->display, screen),
-                                DefaultDepth(engine->display, screen), ZPixmap, NULL,
-                                &engine->shminfo, image_w, image_h);
-        if (image)
+        engine->use_shm = 1;
+        engine->shm_count = 1;
+        image = engine->shm_uploads[0].image;
+        const char *buffers = getenv("VISION_SHM_BUFFERS");
+        // The board's dual-feed A/B favored a single upload buffer for frame pacing.
+        if (engine->use_xrender && completion && buffers && !strcmp(buffers, "2"))
         {
-            size_t bytes = (size_t)image->bytes_per_line * image_h;
-            engine->shminfo.shmid = shmget(IPC_PRIVATE, bytes, IPC_CREAT | 0600);
-            if (engine->shminfo.shmid >= 0)
+            const bool partial = partial_upload_requested();
+            if (partial)
+                engine->upload_reference = new (std::nothrow) uint32_t[size_t(image_w) * image_h];
+            if ((!partial || engine->upload_reference) &&
+                create_shm_upload(engine, engine->shm_uploads[1], image_w, image_h))
+                engine->shm_count = 2;
+            else
             {
-                engine->shminfo.shmaddr = (char *)shmat(engine->shminfo.shmid, NULL, 0);
-                if (engine->shminfo.shmaddr != (char *)-1)
-                {
-                    image->data = engine->shminfo.shmaddr;
-                    engine->shminfo.readOnly = True;
-                    XSync(engine->display, False);
-                    shm_attach_error = 0;
-                    XErrorHandler previous = XSetErrorHandler(catch_shm_error);
-                    Bool attached = XShmAttach(engine->display, &engine->shminfo);
-                    XSync(engine->display, False);
-                    XSetErrorHandler(previous);
-                    if (attached && !shm_attach_error)
-                        engine->use_shm = 1;
-                }
-            }
-            if (engine->shminfo.shmid >= 0)
-                shmctl(engine->shminfo.shmid, IPC_RMID, NULL);
-            if (!engine->use_shm)
-            {
-                image->data = NULL;
-                XDestroyImage(image);
-                image = NULL;
-                if (engine->shminfo.shmaddr && engine->shminfo.shmaddr != (char *)-1)
-                    shmdt(engine->shminfo.shmaddr);
-                engine->shminfo.shmaddr = NULL;
-                engine->shminfo.shmid = -1;
+                delete[] engine->upload_reference;
+                engine->upload_reference = nullptr;
             }
         }
     }
@@ -1241,15 +1307,13 @@ int resize_presentation(RenderEngine *engine, int width, int height)
         XSetErrorHandler(previous);
     }
 #endif
-    const char *sync_mode = getenv("VISION_SHM_SYNC");
-    engine->use_shm_completion = engine->use_shm && !engine->shm_completion_disabled &&
-                                 (!sync_mode || !strcmp(sync_mode, "completion"));
+    engine->use_shm_completion = engine->use_shm && completion;
     if (engine->use_shm_completion)
         engine->shm_completion_type = XShmGetEventBase(engine->display) + ShmCompletion;
     engine->needs_redraw = 1;
-    printf("[RENDER] scale=%s upload=%s image=%dx%d window=%dx%d\n",
+    printf("[RENDER] scale=%s upload=%s image=%dx%d window=%dx%d shm_buffers=%u\n",
            engine->use_xrender ? "XRender" : "CPU", engine->use_shm ? "MIT-SHM" : "XPutImage",
-           image_w, image_h, width, height);
+           image_w, image_h, width, height, engine->shm_count);
     return 0;
 }
 
@@ -1578,10 +1642,16 @@ int present_dashboard(RenderEngine *engine)
         if (resize_presentation(engine, engine->window_width, engine->window_height) != 0)
             return -1;
     }
+    if (engine->shm_count)
+    {
+        engine->active_shm = engine->next_shm;
+        engine->next_shm = (engine->next_shm + 1) % engine->shm_count;
+        wait_for_shared_image(engine);
+        engine->presentation_image = engine->shm_uploads[engine->active_shm].image;
+    }
     XImage *image = engine->presentation_image;
     if (!image)
         return -1;
-    wait_for_shared_image(engine);
     engine->uploaded_this_frame = 0;
     int draw_w = engine->window_width;
     int draw_h = draw_w * perception_ui::HEIGHT / perception_ui::WIDTH;
