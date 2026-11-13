@@ -1,7 +1,8 @@
 `timescale 1ns / 1ps
 
 module test_hmi_turn_signal;
-  localparam integer CLOCK_HZ = 16;
+  localparam integer CLOCK_HZ = 20;
+  localparam integer PHASE_TICKS = 8;
   reg clk = 1'b0;
   always #10 clk = ~clk;
 
@@ -53,11 +54,11 @@ module test_hmi_turn_signal;
   endtask
 
   // Called on the first lit cycle. Check both pins on every subsequent cycle.
-  task expect_five_flashes(input [1:0] side);
+  task expect_eight_flashes(input [1:0] side);
     integer elapsed;
     begin
-      for (elapsed = 0; elapsed < 10 * CLOCK_HZ; elapsed = elapsed + 1) begin
-        expect_lamps(((elapsed / CLOCK_HZ) % 2 == 0) ? side : 2'b00);
+      for (elapsed = 0; elapsed < 16 * PHASE_TICKS; elapsed = elapsed + 1) begin
+        expect_lamps(((elapsed / PHASE_TICKS) % 2 == 0) ? side : 2'b00);
         tick();
       end
       repeat (2 * CLOCK_HZ) begin
@@ -86,7 +87,7 @@ module test_hmi_turn_signal;
 
     send_key(8'h0c);
     fork
-      expect_five_flashes(2'b01);
+      expect_eight_flashes(2'b01);
       send_key(8'h0c); // Duplicate during a held press must not reset the timer.
     join
     send_key(8'h0c);
@@ -97,22 +98,22 @@ module test_hmi_turn_signal;
 
     send_key(8'h0d);
     fork
-      expect_five_flashes(2'b10);
+      expect_eight_flashes(2'b10);
       send_key(8'h00); // Release must not cut the sequence short.
     join
 
     send_key(8'h0c);
     expect_lamps(2'b01);
     send_key(8'h0d);
-    expect_five_flashes(2'b10);
+    expect_eight_flashes(2'b10);
 
     send_key(8'h00);
     send_key(8'h0c);
-    repeat (CLOCK_HZ) tick();
+    repeat (PHASE_TICKS) tick();
     expect_lamps(2'b00);
     send_key(8'h00);
     send_key(8'h0c); // A new press during OFF starts from ON immediately.
-    expect_five_flashes(2'b01);
+    expect_eight_flashes(2'b01);
 
     send_key(8'h0d);
     expect_lamps(2'b10);

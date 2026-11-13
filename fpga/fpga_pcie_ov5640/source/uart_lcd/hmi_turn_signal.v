@@ -10,15 +10,16 @@ module hmi_turn_signal #(
     output wire       lamp_right
 );
   localparam [1:0] IDLE = 2'b00, LEFT = 2'b01, RIGHT = 2'b10;
-  localparam integer TIMER_WIDTH = (CLOCK_HZ > 1) ? $clog2(CLOCK_HZ) : 1;
-  localparam [TIMER_WIDTH-1:0] LAST_TICK = CLOCK_HZ - 1;
+  localparam integer PHASE_TICKS = 2 * (CLOCK_HZ / 5);
+  localparam integer TIMER_WIDTH = (PHASE_TICKS > 1) ? $clog2(PHASE_TICKS) : 1;
+  localparam [TIMER_WIDTH-1:0] LAST_TICK = (PHASE_TICKS > 0) ? PHASE_TICKS - 1 : 0;
 
   wire [1:0] requested_direction =
       (hmi_code == 4'hc) ? LEFT : (hmi_code == 4'hd) ? RIGHT : IDLE;
   reg [1:0] previous_direction;
   reg [1:0] active_direction;
   reg [TIMER_WIDTH-1:0] ticks;
-  reg [2:0] flashes_remaining;
+  reg [3:0] flashes_remaining;
   reg lit;
 
   assign lamp_left  = lit && active_direction == LEFT;
@@ -37,7 +38,7 @@ module hmi_turn_signal #(
       if (requested_direction != IDLE && requested_direction != previous_direction) begin
         active_direction <= requested_direction;
         ticks <= 0;
-        flashes_remaining <= 3'd5;
+        flashes_remaining <= 4'd8;
         lit <= 1'b1;
       end else if (active_direction != IDLE) begin
         if (ticks != LAST_TICK) begin
@@ -46,7 +47,7 @@ module hmi_turn_signal #(
           ticks <= 0;
           if (lit) begin
             lit <= 1'b0;
-          end else if (flashes_remaining == 3'd1) begin
+          end else if (flashes_remaining == 4'd1) begin
             active_direction <= IDLE;
             flashes_remaining <= 0;
           end else begin

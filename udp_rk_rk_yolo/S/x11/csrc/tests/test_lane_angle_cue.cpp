@@ -8,6 +8,21 @@
 int main(int argc, char **argv)
 {
     lane_cue::HeadingHistory history={};
+    lane_cue::WarningFlash flash={};
+    constexpr uint64_t start=1000000000ULL, phase=100000000ULL;
+    flash.observe(1,2,start);
+    assert(flash.active(start)==0);
+    flash.observe(0,2,start);
+    flash.observe(1,1,start);
+    for(unsigned i=0;i<20;++i){
+        flash.observe(1,1,start+i*phase);
+        assert(flash.active(start+i*phase)==1 && flash.red(start+i*phase)==(i%2==0));
+        assert(flash.red(start+(i+1)*phase-1)==(i%2==0));
+    }
+    assert(flash.active(start+20*phase)==0 && !flash.red(start+20*phase));
+    flash.observe(2,2,start+21*phase);
+    flash.observe(0,0,start+22*phase);
+    assert(flash.active(start+22*phase)==2 && !flash.red(start+22*phase));
     assert(history.observe(30,false)==0);
     assert(history.observe(20,true)==20);
     assert(history.observe(0,false)==20);

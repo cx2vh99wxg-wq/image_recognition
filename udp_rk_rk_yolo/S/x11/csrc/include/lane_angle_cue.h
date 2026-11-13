@@ -30,6 +30,33 @@ struct HeadingHistory
         return last;
     }
 };
+
+// The controller supplies the side that was blocked. The renderer owns the pulse timing.
+struct WarningFlash
+{
+    uint64_t started_ns;
+    unsigned previous_request, side;
+
+    void observe(unsigned request, unsigned blocked, uint64_t now)
+    {
+        if (request != previous_request && (request & blocked))
+        {
+            started_ns = now;
+            side = request & blocked;
+        }
+        previous_request = request;
+    }
+
+    unsigned active(uint64_t now) const
+    {
+        return now - started_ns < 2000000000ULL ? side : 0u;
+    }
+
+    bool red(uint64_t now) const
+    {
+        return active(now) && ((now - started_ns) / 100000000ULL) % 2 == 0;
+    }
+};
 constexpr uint32_t WHITE = 0xffffffffu, WARNING_RED = 0xffff3030u, UNKNOWN_GRAY = 0xff7d8696u;
 constexpr double SEAM = .575; // New artwork: reference at the car's front lip; never drawn.
 constexpr double TOP = .24, BOTTOM = .885;

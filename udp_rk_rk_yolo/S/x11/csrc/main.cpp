@@ -25,6 +25,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "dashboard_ui.h"
+#include "lane_rule.h"
 #include "wheel_speed.h"
 #include "gles_presenter.h"
 #include "video_input_fps.h"
@@ -144,6 +145,7 @@ typedef struct
     GlesPresenter *gles;
     VehicleLayerState vehicle_state;
     lane_cue::HeadingHistory heading_history;
+    lane_cue::WarningFlash lane_flash;
     int vehicle_cached;
     int use_shm_completion, shm_completion_disabled, shm_completion_type;
     uint32_t *upload_reference;
@@ -519,8 +521,9 @@ static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::View
     // Unknown changes display color/validity, not the remembered geometry.
     // Confidence and all control/IPC data retain their actual unknown state.
     state.signed_angle = engine->heading_history.observe(state.signed_angle,state.confidence>=60);
-    state.blocked = lane_cue::warning_sides(status.lane_blocked, state.left_style, state.right_style);
-    state.warning_red = state.blocked && (display_clock_ns() / 300000000ULL) % 2;
+    const uint64_t lane_now = display_clock_ns();
+    state.blocked = engine->headless ? status.lane_blocked : engine->lane_flash.active(lane_now);
+    state.warning_red = engine->headless ? state.blocked != 0 : engine->lane_flash.red(lane_now);
     if(!engine->headless){
         static display_people::IPC rear_ipc,front_ipc;
         display_people::Snapshot rear={},front={};const uint64_t now=display_clock_ns();
@@ -1539,9 +1542,13 @@ int present_dashboard(RenderEngine *engine)
     }
     line_ipc_open(&line_status, LINE_WARNING_KEY, 0);
     LineStyleData line = {};
-    if (!line_ipc_read(&line_status, &line) && line_fresh(&line, display_clock_ns()))
+    const uint64_t lane_now = display_clock_ns();
+    if (!line_ipc_read(&line_status, &line) && line_fresh(&line, lane_now))
     {
         status.lane_blocked = line.blocked & 3;
+        const uint8_t hmi = static_cast<uint8_t>(line.hmi_code);
+        engine->lane_flash.observe(lane_blocked_request(3u, hmi),
+            status.lane_blocked & lane_denied_sides(&line, lane_now), lane_now);
     }
     if (engine->headless)
     {
@@ -2600,6 +2607,7 @@ int main(int argc, char **argv)
         uint64_t render_now = get_current_time_ms();
         unsigned int minimum_interval = render_engine.transition.is_active ? 16 : 33;
         if ((render_engine.needs_redraw || render_engine.transition.is_active ||
+             render_engine.lane_flash.active(input_sample_ns) || render_engine.vehicle_state.blocked ||
              render_now - render_engine.last_presented >= 100) &&
             render_now - render_engine.last_presented >= minimum_interval)
         {

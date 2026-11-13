@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
 module hmi_camera_view #(
-    parameter integer PREVIEW_CYCLES = 500_000_000
+    parameter integer PREVIEW_CYCLES = 320_000_000
 ) (
     input  wire       clk,
     input  wire       rst_n,
