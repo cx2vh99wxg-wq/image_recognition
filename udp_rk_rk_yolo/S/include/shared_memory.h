@@ -79,7 +79,9 @@ extern "C"
         /* 高 32 位为 CLOCK_MONOTONIC 毫秒，低 8 位为
      * VehicleMotionHint。 以一次 64 位原子写入发布；旧读端的字段偏移和段总大小均不变。 */
         volatile uint64_t motion_snapshot;
-        uint8_t reserved[40];
+        /* High word is monotonic ms. Low word is the validated Hall period. */
+        volatile uint64_t wheel_snapshot;
+        uint8_t reserved[32];
     } DisplayControlSharedMemory;
 
 #ifdef __cplusplus

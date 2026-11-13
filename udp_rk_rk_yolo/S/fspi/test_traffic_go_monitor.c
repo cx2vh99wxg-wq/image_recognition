@@ -11,6 +11,7 @@
 #undef main
 #undef ioctl
 static uint8_t view_reply = 0xff;
+static uint16_t wheel_reply = WHEEL_PERIOD_UNKNOWN;
 #undef perror
 #undef shmget
 #undef shmat
@@ -49,9 +50,15 @@ int test_spi_ioctl(int fd,unsigned long request,...) {
     assert(request==SPI_IOC_MESSAGE(1));
     va_list a;va_start(a,request);struct spi_ioc_transfer* t=va_arg(a,void*);va_end(a);
     if(t->rx_buf){
-        if(t->len==8 || t->len==9){
+        if(t->len==8 || t->len==9 || t->len==13){
             uint8_t* b=(void*)(uintptr_t)t->rx_buf;memset(b,0,t->len);
-            if(t->len==9)b[8]=view_reply;
+            if(t->len>=9)b[8]=view_reply;
+            if(t->len==13){
+                b[9]=0xb6;
+                b[10]=(uint8_t)(wheel_reply>>8);
+                b[11]=(uint8_t)wheel_reply;
+                b[12]=control_crc_byte(control_crc_byte(control_crc_byte(0,b[9]),b[10]),b[11]);
+            }
             if(control_reply_enabled){b[0]=0xcc;b[1]=0xa7;b[2]=0xc1;b[3]=speed_crc8(b[2]);
                 b[4]=0xd7;b[5]=contact_reply;b[6]=gates_reply;
                 b[7]=control_crc_byte(control_crc_byte(control_crc_byte(0,b[4]),b[5]),b[6]);}
@@ -199,7 +206,9 @@ int main(void) {
     assert(last_stop==0&&front_guard.held_go&&front_guard.raw_request);
     DisplayControlSharedMemory display={.mode=DISPLAY_MODE_ALL_CAMERAS,.valid=1};
     display_control_shm=&display;
-    view_reply=0x22;poll();
+    view_reply=0x22;wheel_reply=2500;poll();
+    assert((uint32_t)display.wheel_snapshot==2500 && (display.wheel_snapshot>>32));
+    assert(wheel_rpm(2500, 2)==120 && wheel_speed_tenths(2500, 200, 2)==14);
     assert(fpga_camera_view_available && display.mode==DISPLAY_MODE_REAR_LEFT);
     view_reply=0x33;poll();
     assert(display.mode==DISPLAY_MODE_REAR_RIGHT);

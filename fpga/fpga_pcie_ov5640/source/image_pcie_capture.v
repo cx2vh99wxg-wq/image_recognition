@@ -82,7 +82,8 @@ module image_pcie_capture #(
     input RXD,
     output wire hmi_status_txd,
     output wire turn_signal_left,
-    output wire turn_signal_right
+    output wire turn_signal_right,
+    input wire hall_wheel_in
 
 );
 
@@ -374,6 +375,7 @@ module image_pcie_capture #(
   assign stop  = ~stop_pressed;
 
   wire [3:0] hmi_view_code;
+  wire [31:0] wheel_report;
   fspi_slave_top u_fspi_slave_top (
       .sys_clk        (free_clk),
       .rst_n          (board_rst_n),
@@ -382,6 +384,7 @@ module image_pcie_capture #(
       .spi_data       (spi_data),
       .select_rearview(select_rearview),
       .camera_view_async(hmi_view_code),
+      .wheel_report_async(wheel_report),
       .auto_brake_enable(auto_brake_enabled),
       .speed_status_async({speed_ready,speed_pressed,speed_drive,speed_phase_gray}),
       .control_status_async({board_rst_n,speed_ready,fspi_direction_armed,traffic_go_denied,
@@ -438,6 +441,10 @@ module image_pcie_capture #(
       .hmi_code(select_rearview),
       .lamp_left(turn_signal_left),
       .lamp_right(turn_signal_right)
+  );
+
+  hall_wheel_period u_hall_wheel_period (
+      .clk(true_50M), .rst_n(board_rst_n), .hall_in(hall_wheel_in), .report(wheel_report)
   );
 
   hmi_camera_view u_hmi_camera_view (

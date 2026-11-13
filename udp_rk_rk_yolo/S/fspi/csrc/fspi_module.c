@@ -2,6 +2,7 @@
 #define _BSD_SOURCE
 
 #include "fspi_module.h"
+#include "wheel_speed.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <getopt.h>
@@ -313,15 +314,15 @@ int fspi_read_speed_snapshot(SpeedSnapshot *data, uint8_t *raw_status)
     return 0;
 }
 
-static int read_control_packet(ControlSnapshot *data, uint8_t *view)
+static int read_control_packet(ControlSnapshot *data, uint8_t *view, uint16_t *period)
 {
     if (g_spi_fd < 0 || !data)
     {
         errno = !data ? EINVAL : ENODEV;
         return -1;
     }
-    uint8_t bytes[9] = {0};
-    const uint32_t length = view ? sizeof(bytes) : sizeof(bytes) - 1;
+    uint8_t bytes[13] = {0};
+    const uint32_t length = period ? 13u : view ? 9u : 8u;
     g_config.spi_mode = (g_config.spi_mode | SPI_RX_QUAD) & ~SPI_TX_QUAD;
     if (configure_spi_interface(g_spi_fd, &g_config))
         return -1;
@@ -345,12 +346,14 @@ static int read_control_packet(ControlSnapshot *data, uint8_t *view)
     }
     if (view)
         *view = bytes[8];
+    if (period)
+        *period = wheel_decode_period(bytes + 9);
     return 0;
 }
 
 int fspi_read_control_snapshot(ControlSnapshot *data)
 {
-    return read_control_packet(data, NULL);
+    return read_control_packet(data, NULL, NULL);
 }
 
 int fspi_read_control_snapshot_with_view(ControlSnapshot *data, uint8_t *view)
@@ -360,12 +363,25 @@ int fspi_read_control_snapshot_with_view(ControlSnapshot *data, uint8_t *view)
         errno = EINVAL;
         return -1;
     }
-    if (read_control_packet(data, view) == 0)
+    if (read_control_packet(data, view, NULL) == 0)
         return 0;
 
     // A failed optional tail read must not take away the control status.
     *view = 0xff;
     return fspi_read_control_snapshot(data);
+}
+
+int fspi_read_control_snapshot_with_wheel(ControlSnapshot *data, uint8_t *view, uint16_t *period)
+{
+    if (!view || !period)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+    *period = WHEEL_PERIOD_UNKNOWN;
+    if (read_control_packet(data, view, period) == 0)
+        return 0;
+    return fspi_read_control_snapshot_with_view(data, view);
 }
 
 /* 读取独立开关不能采用旧的两次片选路径。两个 transfer

@@ -22,6 +22,7 @@
 #endif
 #define _BSD_SOURCE
 #include "fspi_module.h"
+#include "wheel_speed.h"
 #include "brake_policy.h"
 #include "../include/shared_memory.h"
 #include "lane_rule.h"
@@ -119,9 +120,18 @@ static void monitor_front_person(uint64_t now, unsigned color)
     if (front_person_ipc_read(&front_input,&front_result)) memset(&front_result,0,sizeof(front_result));
     ControlSnapshot snapshot = {0};
     uint8_t view = 0xff;
-    front_snapshot_ok = fspi_read_control_snapshot_with_view(&snapshot, &view) == 0;
+    uint16_t wheel_period = WHEEL_PERIOD_UNKNOWN;
+    front_snapshot_ok = fspi_read_control_snapshot_with_wheel(&snapshot, &view, &wheel_period) == 0;
     if (front_snapshot_ok)
+    {
         fpga_camera_view_available = publish_camera_view(view);
+        if (display_control_shm && display_control_shm->valid && wheel_period != WHEEL_PERIOD_UNKNOWN)
+        {
+            const uint64_t stamp = (uint32_t)(now / 1000000ULL);
+            __atomic_store_n(&display_control_shm->wheel_snapshot,
+                             (stamp << 32) | wheel_period, __ATOMIC_RELEASE);
+        }
+    }
     front_required = front_person_guard_observe(&front_guard,&front_result,now,&snapshot,front_snapshot_ok,color);
 }
 
@@ -151,7 +161,7 @@ static void monitor_speed_warning(uint64_t now)
     if (display_gear != previous || ok != previous_link)
     {
         printf(
-            "[SPEED_GEAR] estimated_gear=%d link=%s errno=%u warning=%s (no speed sensor; no motion writes)\n",
+            "[SPEED_GEAR] estimated_gear=%d link=%s errno=%u warning=%s (gear estimate; no motion writes)\n",
             display_gear, ok ? "OK" : "OFFLINE", state.read_errno,
             display_gear >= 2 ? "HIGH GEAR" : "NONE");
         previous = display_gear;

@@ -26,7 +26,7 @@ module	fspi_slave_m_imu
         .spi_data(spi_data),
         .rst_n(rst_n),
         .select_rearview(select_rearview),
-        .camera_view_async(4'd0),
+        .camera_view_async(4'd0), .wheel_report_async(32'd0),
         .auto_brake_enable(auto_brake_enable),
         .speed_status_async(speed_status_async),
         .control_status_async(control_status_async),

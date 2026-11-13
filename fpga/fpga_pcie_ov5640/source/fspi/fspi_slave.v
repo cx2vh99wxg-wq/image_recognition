@@ -26,7 +26,7 @@ module	fspi_slave
         .spi_data(spi_data),
         .rst_n(rst_n),
         .select_rearview(select_rearview),
-        .camera_view_async(4'd0),
+        .camera_view_async(4'd0), .wheel_report_async(32'd0),
         .auto_brake_enable(auto_brake_enable),
         .speed_status_async(speed_status_async),
         .control_status_async(control_status_async),
@@ -41,7 +41,8 @@ endmodule
 
 module fspi_transport #(
     parameter HAS_IMU = 1'b0,
-    parameter HAS_CAMERA_VIEW = 1'b0
+    parameter HAS_CAMERA_VIEW = 1'b0,
+    parameter HAS_WHEEL_REPORT = 1'b0
 ) (
     input wire [511:0] imu_snapshot,
     output wire status_tx_started_dbg,
@@ -51,6 +52,7 @@ module fspi_transport #(
 	input	wire			rst_n			,
 	input	wire	[3:0]		select_rearview	,
     input wire [3:0] camera_view_async,
+    input wire [31:0] wheel_report_async,
     input   wire            auto_brake_enable,
     input   wire [5:0]      speed_status_async,
     input   wire [15:0]     control_status_async,
@@ -86,7 +88,7 @@ wire [23:0] next_status_header = {status_header[19:0], spi_data};
 
 (* ASYNC_REG="TRUE" *) reg [5:0] speed_meta,speed_sync;
 localparam EXT_INDEX_WIDTH = HAS_IMU ? 8 : 5;
-localparam [EXT_INDEX_WIDTH-1:0] EXT_END = HAS_IMU ? 144 : HAS_CAMERA_VIEW ? 18 : 16;
+localparam [EXT_INDEX_WIDTH-1:0] EXT_END = HAS_IMU ? 144 : HAS_WHEEL_REPORT ? 26 : HAS_CAMERA_VIEW ? 18 : 16;
 reg [EXT_INDEX_WIDTH-1:0] extended_index;
 reg [511:0] imu_latched;
 reg [3:0] extended_nibble;
@@ -97,6 +99,8 @@ reg [15:0] control_snapshot;
 reg [7:0] control_crc;
 (* ASYNC_REG = "TRUE" *) reg [3:0] camera_view_meta, camera_view_sync;
 reg [3:0] camera_view_previous, camera_view_snapshot;
+(* ASYNC_REG = "TRUE" *) reg [31:0] wheel_meta, wheel_sync;
+reg [31:0] wheel_previous, wheel_snapshot;
 reg extended_active;
 function [2:0] decode_gear(input [2:0] g);
     case(g)
@@ -137,23 +141,32 @@ always @(posedge spi_clk or negedge rst_n) begin
       camera_view_meta <= 0;
       camera_view_sync <= 0;
       camera_view_previous <= 0;
+      wheel_meta <= 0;
+      wheel_sync <= 0;
+      wheel_previous <= 0;
     end else begin
       camera_view_meta <= camera_view_async;
       camera_view_sync <= camera_view_meta;
       camera_view_previous <= camera_view_sync;
+      wheel_meta <= wheel_report_async;
+      wheel_sync <= wheel_meta;
+      wheel_previous <= wheel_sync;
     end
 end
 
-// The S-only ninth byte repeats a stable view nibble. The M tail remains IMU data.
+// S appends a view byte then a signed-by-CRC wheel packet. M keeps its IMU tail.
 wire [3:0] extended_tail = HAS_IMU && extended_index < EXT_END ?
     imu_latched[511-(extended_index-16)*4 -: 4] :
-    HAS_CAMERA_VIEW && extended_index < EXT_END ? camera_view_snapshot : 4'hf;
+    HAS_CAMERA_VIEW && extended_index < 18 ? camera_view_snapshot :
+    HAS_WHEEL_REPORT && extended_index < EXT_END ?
+    wheel_snapshot[31-(extended_index-18)*4 -: 4] : 4'hf;
 always @(negedge spi_clk or negedge rst_n or posedge spi_cs) begin
     if(!rst_n||spi_cs) begin
       extended_index<=0;extended_nibble<=4'hf;extended_active<=0;
       hmi_snapshot<=0;speed_snapshot<=0;speed_crc<=0;imu_latched<=0;
       control_snapshot<=0;control_crc<=0;
       camera_view_snapshot<=0;
+      wheel_snapshot<=0;
     end else if(cmd_reg==2'b10) begin
       extended_active<=1;
       if (extended_index < EXT_END)extended_index<=extended_index+1'b1;
@@ -181,6 +194,7 @@ always @(negedge spi_clk or negedge rst_n or posedge spi_cs) begin
         14:begin
           extended_nibble<=control_crc[7:4];
           camera_view_snapshot <= camera_view_sync == camera_view_previous ? camera_view_sync : 4'd0;
+          wheel_snapshot <= wheel_sync == wheel_previous ? wheel_sync : 32'd0;
         end
         15:extended_nibble<=control_crc[3:0];
         default:extended_nibble<=extended_tail;

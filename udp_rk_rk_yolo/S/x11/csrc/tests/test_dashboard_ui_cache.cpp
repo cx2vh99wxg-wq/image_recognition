@@ -61,6 +61,9 @@ int main(){
             status.person=frame>=8&&frame<16;status.front_person=frame>=12&&frame<16;
             status.go_blocked=frame>=16&&frame<20;status.traffic=frame<20?1:3;
             status.gear_known=status.gear_live=true;status.gear=frame<20?3:1;
+            status.wheel_known=frame>=4&&frame<24;
+            status.wheel_metric=frame>=12;
+            status.wheel_value=frame*2;
             status.pcie_live=frame<24;status.udp_fps=frame<28?30.f:0.f;
         }
         const bool overview=frame<24;

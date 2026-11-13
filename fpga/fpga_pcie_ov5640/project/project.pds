@@ -667,6 +667,10 @@
                     (_format verilog)
                     (_timespec "2026-10-19T20:28:37")
                 )
+                (_file "../source/uart_lcd/hall_wheel_period.v"
+                    (_format verilog)
+                    (_timespec "2026-11-13T11:45:12")
+                )
                 (_file "../source/uart_lcd/hmi_camera_view.v"
                     (_format verilog)
                     (_timespec "2026-11-13T00:27:29")

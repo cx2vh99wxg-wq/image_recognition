@@ -21,9 +21,9 @@ module test_hmi_camera_view;
   reg [3:0] host_data = 0;
   tri [3:0] bus;
   assign bus = host_drives ? host_data : 4'bzzzz;
-  fspi_transport #(.HAS_CAMERA_VIEW(1'b1)) transport (
+  fspi_transport #(.HAS_CAMERA_VIEW(1'b1), .HAS_WHEEL_REPORT(1'b1)) transport (
       .spi_clk(spi_clk), .spi_cs(spi_cs), .spi_data(bus), .rst_n(rst_n),
-      .select_rearview(hmi_code), .camera_view_async(view_code),
+      .select_rearview(hmi_code), .camera_view_async(view_code), .wheel_report_async(32'hb609c478),
       .auto_brake_enable(1'b0), .speed_status_async(6'd0),
       .control_status_async(16'h1234), .tx_data(8'd0), .imu_snapshot(512'd0)
   );
@@ -80,7 +80,7 @@ module test_hmi_camera_view;
   endtask
 
   task expect_spi(input [7:0] expected_hmi, input [7:0] expected_view);
-    reg [7:0] packet [0:8];
+    reg [7:0] packet [0:12];
     reg [3:0] hi, lo;
     begin
       host_drives = 1;
@@ -89,7 +89,7 @@ module test_hmi_camera_view;
       spi_write_nibble(4'h8);
       spi_write_nibble(4'h0);
       host_drives = 0;
-      for (integer i = 0; i < 9; i = i + 1) begin
+      for (integer i = 0; i < 13; i = i + 1) begin
         spi_read_nibble(hi);
         spi_read_nibble(lo);
         packet[i] = {hi, lo};
@@ -101,6 +101,8 @@ module test_hmi_camera_view;
           packet[6] !== 8'h12 || packet[8] !== expected_view)
         $fatal(1, "FAIL FSPI raw %h, view %h, expected %h/%h",
                packet[0], packet[8], expected_hmi, expected_view);
+      if ({packet[9], packet[10], packet[11], packet[12]} !== 32'hb609c478)
+        $fatal(1, "FAIL wheel tail %h %h %h %h", packet[9], packet[10], packet[11], packet[12]);
     end
   endtask
 

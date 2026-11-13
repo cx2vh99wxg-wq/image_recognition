@@ -25,6 +25,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "dashboard_ui.h"
+#include "wheel_speed.h"
 #include "gles_presenter.h"
 #include "video_input_fps.h"
 #include "line_style_ipc.h"
@@ -992,7 +993,7 @@ static void prepare_xrender_upload(RenderEngine *engine, const uint32_t *pixels,
         return;
     }
     static const UploadRegion areas[] = {
-        {712, 44, 836, 78}, {0, 180, 1600, 44}, {72, 224, 1092, 504},
+        {642, 44, 906, 78}, {0, 180, 1600, 44}, {72, 224, 1092, 504},
         {0, 728, 1600, 152}, {1188, 230, 412, 498}};
     bool changed[5] = {};
     for (int area_index = 0; area_index < 5; ++area_index)
@@ -1397,6 +1398,16 @@ static void record_display_perf(RenderEngine *engine, uint64_t start, uint64_t c
     }
 }
 
+static unsigned wheel_setting(const char *name, unsigned fallback, unsigned minimum, unsigned maximum)
+{
+    const char *value = getenv(name);
+    if (!value || *value < '0' || *value > '9')
+        return fallback;
+    char *end = nullptr;
+    const unsigned long parsed = strtoul(value, &end, 10);
+    return *end == '\0' && parsed >= minimum && parsed <= maximum ? (unsigned)parsed : fallback;
+}
+
 int present_dashboard(RenderEngine *engine)
 {
     if (!engine || !engine->dashboard || !engine->display_buffer)
@@ -1430,6 +1441,21 @@ int present_dashboard(RenderEngine *engine)
         const uint32_t monotonic_ms = (uint32_t)(display_clock_ns() / 1000000ULL);
         if (display_control_shm && display_control_shm->valid)
         {
+            // 110 mm nominal rear-wheel radius and four equally spaced magnets.
+            static const unsigned circumference =
+                wheel_setting("VISION_WHEEL_CIRCUMFERENCE_MM", 691, 0, 10000);
+            static const unsigned pulses = wheel_setting("VISION_WHEEL_PULSES_PER_TURN", 4, 1, 128);
+            const uint64_t wheel =
+                __atomic_load_n(&display_control_shm->wheel_snapshot, __ATOMIC_ACQUIRE);
+            const uint32_t wheel_ms = (uint32_t)(wheel >> 32);
+            const unsigned ticks = (uint32_t)wheel;
+            if (wheel_ms && monotonic_ms - wheel_ms <= 500 && ticks <= WHEEL_PERIOD_MAX)
+            {
+                status.wheel_known = true;
+                status.wheel_metric = circumference != 0;
+                status.wheel_value = circumference ? wheel_speed_tenths(ticks, circumference, pulses)
+                                                   : wheel_rpm(ticks, pulses);
+            }
             const uint64_t snapshot =
                 __atomic_load_n(&display_control_shm->motion_snapshot, __ATOMIC_ACQUIRE);
             const uint32_t updated_ms = (uint32_t)(snapshot >> 32);

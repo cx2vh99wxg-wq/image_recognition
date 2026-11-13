@@ -60,6 +60,8 @@ struct ViewStatus
     bool go_blocked = false, go_control_live = false, go_write_ok = false;
     unsigned gear = 0;
     bool gear_known = false, gear_live = false, gear_shifting = false;
+    bool wheel_known = false, wheel_metric = false;
+    unsigned wheel_value = 0;
 };
 
 class Dashboard
@@ -98,7 +100,7 @@ class Dashboard
         if (fast && ui_redrawn_)
         {
             restoreBackground({1110, 44, 438, 70});
-            restoreBackground({712, 44, 392, 78});
+            restoreBackground({642, 44, 462, 78});
             // 所有动态文字都落在这些条带内，字体元数据校验
             // 固定的 20/28px 字格；恢复整带宽度也能覆盖
             // 较长或被截断的模式标签，其他画布内容保持静态。
@@ -296,7 +298,7 @@ class Dashboard
             s.line_left_reason,s.line_right_reason,s.line_left_raw,s.line_right_raw,s.lane_angle_valid,
             s.lane_angle_deg,s.traffic,s.traffic_raw,s.traffic_quality,s.traffic_detector_quality,
             s.traffic_flags,s.traffic_live,s.go_blocked,s.go_control_live,s.go_write_ok,s.gear,
-            s.gear_known,s.gear_live,s.gear_shifting);};
+            s.gear_known,s.gear_live,s.gear_shifting,s.wheel_known,s.wheel_metric,s.wheel_value);};
         return key(a)==key(b);
     }
     std::vector<uint8_t> font_atlas_;
@@ -325,8 +327,8 @@ class Dashboard
         bool known = status.gear_known && status.gear >= 1 && status.gear <= 3;
         bool high = known && status.gear >= 2;
         uint32_t color = high ? 0xFFFFBE55 : known && status.gear_live ? 0xFF6BDBE7 : 0xFF8A9AAD;
-        fillChamfer(frame_, {720, 52, 380, 62}, 8, high ? 0xFF2B1E14 : 0xFF0A1428);
-        drawGauge(749, 82, 18, color, known ? status.gear : 1);
+        fillChamfer(frame_, {650, 52, 450, 62}, 8, high ? 0xFF2B1E14 : 0xFF0A1428);
+        drawGauge(679, 82, 18, color, known ? status.gear : 1);
         char label[40];
         if (known)
             std::snprintf(label, sizeof(label), "GEAR %u / %s", status.gear,
@@ -335,11 +337,11 @@ class Dashboard
                                             : "LOW");
         else
             std::snprintf(label, sizeof(label), "GEAR / UNKNOWN");
-        text(frame_, 782, 63, label, 2, color);
+        text(frame_, 712, 63, label, 2, color);
         const char *detail = !status.gear_live      ? "GEAR LINK UNAVAILABLE"
                              : status.gear_shifting ? "SPEED BUTTON HELD"
                                                     : "REMOTE GEAR ESTIMATE";
-        text(frame_, 782, 90, detail, 1, high ? 0xFFE6BC82 : 0xFF8DA5BD);
+        text(frame_, 712, 90, detail, 1, high ? 0xFFE6BC82 : 0xFF8DA5BD);
         if (high)
         {
             // 告警放在档位卡右侧，每帧随卡片一起刷新，
@@ -347,8 +349,27 @@ class Dashboard
             for (int y = 0; y < SPEED_WARNING_HEIGHT; ++y)
                 for (int x = 0; x < SPEED_WARNING_WIDTH; ++x)
                     if (SPEED_WARNING_MASK[y][x / 8] & (0x80 >> (x % 8)))
-                        pixel(frame_, 1008 + x, 61 + y, 0xFFFF526D, 255);
+                        pixel(frame_, 889 + x, 69 + y, 0xFFFF526D, 255);
         }
+        drawWheelSpeed(status);
+    }
+    void drawWheelSpeed(const ViewStatus &status)
+    {
+        fill(frame_, 983, 65, 1, 35, 0xFF39506A);
+        char value[16];
+        if (!status.wheel_known)
+            std::snprintf(value, sizeof(value), "--");
+        else if (status.wheel_metric)
+            std::snprintf(value, sizeof(value), "%u.%u",
+                          status.wheel_value / 10, status.wheel_value % 10);
+        else
+            std::snprintf(value, sizeof(value), "%u", status.wheel_value);
+        const Rect digits = {988, 56, 104, 40};
+        const int scale = textWidth(value, 3) <= digits.w ? 3 : 2;
+        centeredText(frame_, value, digits, scale, status.wheel_known ? 0xFFC1F7FC : 0xFF8A9AAD);
+        if (status.wheel_known)
+            centeredText(frame_, status.wheel_metric ? "km/h" : "RPM",
+                         {990, 94, 100, 15}, 1, 0xFF90ABC4);
     }
     void drawTrafficGoWarning(const ViewStatus &status)
     {

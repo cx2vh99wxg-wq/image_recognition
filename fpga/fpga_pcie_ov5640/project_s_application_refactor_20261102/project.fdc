@@ -994,6 +994,13 @@ define_attribute {p:turn_signal_right} {PAP_IO_STANDARD} {LVCMOS33}
 define_attribute {p:turn_signal_right} {PAP_IO_DRIVE} {4}
 define_attribute {p:turn_signal_right} {PAP_IO_SLEW} {SLOW}
 
+# Rear wheel Hall input, MES-FMC-LPC-IO J3-35, after 3.3 V conversion.
+define_attribute {p:hall_wheel_in} {PAP_IO_DIRECTION} {INPUT}
+define_attribute {p:hall_wheel_in} {PAP_IO_LOC} {A20}
+define_attribute {p:hall_wheel_in} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:hall_wheel_in} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:hall_wheel_in} {PAP_IO_PULLDW} {TRUE}
+
 #define_attribute {p:select_rearview} {PAP_IO_DIRECTION} {INPUT}
 #define_attribute {p:select_rearview} {PAP_IO_LOC} {C22}
 #define_attribute {p:select_rearview} {PAP_IO_VCCIO} {3.3}
