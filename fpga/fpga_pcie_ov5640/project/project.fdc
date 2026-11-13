@@ -978,6 +978,22 @@ define_attribute {p:hmi_status_txd} {PAP_IO_VCCIO} {3.3}
 define_attribute {p:hmi_status_txd} {PAP_IO_STANDARD} {LVCMOS33}
 define_attribute {p:hmi_status_txd} {PAP_IO_DRIVE} {4}
 define_attribute {p:hmi_status_txd} {PAP_IO_SLEW} {SLOW}
+
+# Turn indicators on MES-FMC-LPC-IO J3-17 (LA18_N_CC) and J3-25 (LA23_N).
+create_generated_clock -name {hmi_clk_50m} -source [get_ports {free_clk}] [get_nets {the_instance_name/clkout0}] -master_clock [get_clocks {ref_clk}] -multiply_by {2} -divide_by {1}
+define_attribute {p:turn_signal_left} {PAP_IO_DIRECTION} {OUTPUT}
+define_attribute {p:turn_signal_left} {PAP_IO_LOC} {D19}
+define_attribute {p:turn_signal_left} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:turn_signal_left} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:turn_signal_left} {PAP_IO_DRIVE} {4}
+define_attribute {p:turn_signal_left} {PAP_IO_SLEW} {SLOW}
+define_attribute {p:turn_signal_right} {PAP_IO_DIRECTION} {OUTPUT}
+define_attribute {p:turn_signal_right} {PAP_IO_LOC} {D22}
+define_attribute {p:turn_signal_right} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:turn_signal_right} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:turn_signal_right} {PAP_IO_DRIVE} {4}
+define_attribute {p:turn_signal_right} {PAP_IO_SLEW} {SLOW}
+
 #define_attribute {p:select_rearview} {PAP_IO_DIRECTION} {INPUT}
 #define_attribute {p:select_rearview} {PAP_IO_LOC} {C22}
 #define_attribute {p:select_rearview} {PAP_IO_VCCIO} {3.3}

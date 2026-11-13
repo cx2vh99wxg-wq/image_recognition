@@ -81,6 +81,23 @@ static int front_guard_initialized = 0;
 static unsigned front_required = 1;
 static FrontPersonData front_result;
 static int front_snapshot_ok = 0;
+static int fpga_camera_view_available;
+
+static int publish_camera_view(uint8_t view)
+{
+    DisplayMode mode;
+    if (!camera_mode_normalize(view, &mode))
+        return 0;
+    if (display_control_shm && display_control_shm->valid &&
+        __atomic_load_n(&display_control_shm->mode, __ATOMIC_ACQUIRE) != (uint32_t)mode)
+    {
+        __atomic_store_n(&display_control_shm->mode, (uint32_t)mode, __ATOMIC_RELEASE);
+        __atomic_add_fetch(&display_control_shm->button_count, 1, __ATOMIC_RELAXED);
+        __atomic_store_n(&display_control_shm->last_update, (uint32_t)time(NULL), __ATOMIC_RELEASE);
+    }
+    return 1;
+}
+
 static void monitor_front_person(uint64_t now, unsigned color)
 {
     front_guard_open(&front_guard_ipc, 1);
@@ -101,7 +118,10 @@ static void monitor_front_person(uint64_t now, unsigned color)
     memset(&front_result,0,sizeof(front_result));
     if (front_person_ipc_read(&front_input,&front_result)) memset(&front_result,0,sizeof(front_result));
     ControlSnapshot snapshot = {0};
-    front_snapshot_ok = fspi_read_control_snapshot(&snapshot) == 0;
+    uint8_t view = 0xff;
+    front_snapshot_ok = fspi_read_control_snapshot_with_view(&snapshot, &view) == 0;
+    if (front_snapshot_ok)
+        fpga_camera_view_available = publish_camera_view(view);
     front_required = front_person_guard_observe(&front_guard,&front_result,now,&snapshot,front_snapshot_ok,color);
 }
 
@@ -646,9 +666,12 @@ int main(int argc, char *argv[])
     printf("FSPI初始化完成！\n");
     if (brake_only)
     {
+        if (display_control_shm_init(&display_control_shm, 1) != 0)
+            fprintf(stderr, "无法初始化视角共享内存，继续运行制动监控\n");
         run_brake_only(0);
         fspi_write_data(4, 0); /* Existing fault request; hardware AUTO gate still applies. */
         if (emergency_brake_shm) emergency_brake_shm_cleanup(emergency_brake_shm, 0);
+        if (display_control_shm) display_control_shm_cleanup(display_control_shm, 1);
         fspi_cleanup();
         return 0;
     }
@@ -725,8 +748,6 @@ int main(int argc, char *argv[])
 
     // 保存此时模式识别所需状态。
     uint8_t last_read_value = 0xee;    // 上一轮保存的寄存器读值。
-    uint8_t current_valid_mode = 0x00; // 寄存器访问：此时有效的模式值（非0x00）
-    uint8_t mode_update_count = 0;
 
     printf("=== 开始监控FSPI寄存器0 ===\n");
     printf("按钮逻辑: 按下时产生指令值，松开时回到0x00\n");
@@ -964,51 +985,9 @@ int main(int argc, char *argv[])
             last_read_value = current_mode_value;
         }
 
-        // 核对是否是有效的呈现模式值（非0x00且非车辆控制指令）。
-        DisplayMode new_mode = DISPLAY_MODE_ALL_CAMERAS; // 寄存器访问：默认值
-        const char *mode_name = "未知模式";
-        int valid_mode = camera_mode_normalize(current_mode_value, &new_mode);
-        if (valid_mode)
-            mode_name = camera_mode_name(new_mode);
-
-        // 寄存器访问：只在有效模式且与此时有效模式不同时更新
-        if (valid_mode && current_mode_value != current_valid_mode)
-        {
-            time_t current_time = time(NULL);
-            mode_update_count++;
-            current_valid_mode = current_mode_value; // 按本轮结果推进此时有效模式值。
-
-            printf("\n=== 识别到按钮按下 ===\n");
-            printf("按下按钮值: 0x%02X\n", current_mode_value);
-            printf("进入模式: %s (0x%02X)\n", mode_name, new_mode);
-            printf("累计切换次数: %d\n", mode_update_count);
-
-            // 按本轮结果推进呈现控制共享内存。
-            if (display_control_shm && display_control_shm->valid)
-            {
-                __sync_lock_test_and_set(&display_control_shm->mode, new_mode);
-                __sync_lock_test_and_set(&display_control_shm->button_count, mode_update_count);
-                __sync_lock_test_and_set(&display_control_shm->last_update, (uint32_t)current_time);
-
-                printf("✓ 呈现模式已进入: %s\n", mode_name);
-                printf("✓ 共享内存已更新 (模式=0x%02X, 时间戳=%ld)\n", new_mode, current_time);
-                printf("✓ 此时有效模式值保存为: 0x%02X\n", current_valid_mode);
-            }
-            else
-            {
-                printf("✗ 注意: 呈现控制共享内存无效，无法更新模式\n");
-            }
-
-            printf("=== 继续监控按钮状态 ===\n\n");
-        }
-        else if (valid_mode && current_mode_value == current_valid_mode)
-        {
-            // 相同的有效值，无需更新，静默处理
-        }
-        else if (!valid_mode)
-        {
-            // 数据无效时直接跳过，不额外记录。
-        }
+        // Older FPGA images only provide the original HMI code.
+        if (!fpga_camera_view_available)
+            publish_camera_view(current_mode_value);
 
         // 寄存器访问：每100ms识别一次，响应更快
         if (closed_loop)

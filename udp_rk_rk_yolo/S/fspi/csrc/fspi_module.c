@@ -313,25 +313,26 @@ int fspi_read_speed_snapshot(SpeedSnapshot *data, uint8_t *raw_status)
     return 0;
 }
 
-int fspi_read_control_snapshot(ControlSnapshot *data)
+static int read_control_packet(ControlSnapshot *data, uint8_t *view)
 {
     if (g_spi_fd < 0 || !data)
     {
         errno = !data ? EINVAL : ENODEV;
         return -1;
     }
-    uint8_t bytes[8] = {0};
+    uint8_t bytes[9] = {0};
+    const uint32_t length = view ? sizeof(bytes) : sizeof(bytes) - 1;
     g_config.spi_mode = (g_config.spi_mode | SPI_RX_QUAD) & ~SPI_TX_QUAD;
     if (configure_spi_interface(g_spi_fd, &g_config))
         return -1;
     struct spi_ioc_transfer tr = {0};
     tr.rx_buf = (unsigned long)bytes;
-    tr.len = sizeof(bytes);
+    tr.len = length;
     tr.rx_nbits = 4;
     tr.bits_per_word = g_config.bits_per_word;
     tr.speed_hz = g_config.speed_hz;
     int n = ioctl(g_spi_fd, SPI_IOC_MESSAGE(1), &tr);
-    if (n != (int)sizeof(bytes))
+    if (n != (int)length)
     {
         if (n >= 0)
             errno = EIO;
@@ -342,7 +343,29 @@ int fspi_read_control_snapshot(ControlSnapshot *data)
         errno = EPROTO;
         return -1;
     }
+    if (view)
+        *view = bytes[8];
     return 0;
+}
+
+int fspi_read_control_snapshot(ControlSnapshot *data)
+{
+    return read_control_packet(data, NULL);
+}
+
+int fspi_read_control_snapshot_with_view(ControlSnapshot *data, uint8_t *view)
+{
+    if (!view)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+    if (read_control_packet(data, view) == 0)
+        return 0;
+
+    // A failed optional tail read must not take away the control status.
+    *view = 0xff;
+    return fspi_read_control_snapshot(data);
 }
 
 /* 读取独立开关不能采用旧的两次片选路径。两个 transfer

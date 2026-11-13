@@ -667,6 +667,14 @@
                     (_format verilog)
                     (_timespec "2026-11-02T20:40:25")
                 )
+                (_file "../source/uart_lcd/hmi_camera_view.v"
+                    (_format verilog)
+                    (_timespec "2026-11-13T00:27:29")
+                )
+                (_file "../source/uart_lcd/hmi_turn_signal.v"
+                    (_format verilog)
+                    (_timespec "2026-11-12T22:35:46")
+                )
                 (_file "../source/uart_lcd/uart_lcd.v"
                     (_format verilog)
                     (_timespec "2026-11-02T17:58:21")

@@ -3,14 +3,16 @@
 #undef ioctl
 #include <assert.h>
 #include <stdarg.h>
-static uint8_t fixture[8];static int result=8,io_error=0;
+static uint8_t fixture[9];static int result=8,io_error=0;
+static int extended_result=9, legacy_reads, extended_reads;
 int control_test_ioctl(int fd,unsigned long request,...){
  (void)fd;
  if(request==SPI_IOC_WR_MODE32||request==SPI_IOC_WR_BITS_PER_WORD||request==SPI_IOC_WR_MAX_SPEED_HZ)return 0;
  assert(request==SPI_IOC_MESSAGE(1));va_list a;va_start(a,request);struct spi_ioc_transfer* t=va_arg(a,void*);va_end(a);
- assert(!t->tx_buf&&t->rx_buf&&t->rx_nbits==4&&t->speed_hz==24000000&&t->len==8);
- memcpy((void*)(uintptr_t)t->rx_buf,fixture,8);
- if(io_error){errno=io_error;return -1;}return result;
+ assert(!t->tx_buf&&t->rx_buf&&t->rx_nbits==4&&t->speed_hz==24000000&&(t->len==8||t->len==9));
+ memcpy((void*)(uintptr_t)t->rx_buf,fixture,t->len);
+ if(t->len==9)++extended_reads;else ++legacy_reads;
+ if(io_error){errno=io_error;return -1;}return t->len==9?extended_result:result;
 }
 static void checksum(void){fixture[3]=speed_crc8(fixture[2]);fixture[7]=control_crc_byte(control_crc_byte(control_crc_byte(0,fixture[4]),fixture[5]),fixture[6]);}
 int main(void){
@@ -24,6 +26,18 @@ int main(void){
  }
  ControlSnapshot s={.hmi=0x55};fixture[7]^=1;
  assert(fspi_read_control_snapshot(&s)==-1&&errno==EPROTO&&s.hmi==0x55);
+ checksum();fixture[0]=0xcc;fixture[8]=0x22;
+ uint8_t view=0xff;int previous_legacy=legacy_reads;
+ assert(!fspi_read_control_snapshot_with_view(&s,&view)&&s.hmi==0xcc&&view==0x22);
+ assert(legacy_reads==previous_legacy&&extended_reads==1);
+ fixture[0]=0;fixture[8]=0x99;
+ assert(!fspi_read_control_snapshot_with_view(&s,&view)&&s.hmi==0&&view==0x99);
+ fixture[8]=0xff;
+ assert(!fspi_read_control_snapshot_with_view(&s,&view)&&view==0xff);
+ extended_result=8;fixture[8]=0x33;
+ assert(!fspi_read_control_snapshot_with_view(&s,&view)&&view==0xff);
+ assert(legacy_reads==previous_legacy+1&&extended_reads==4);
+ s.hmi=0x55;
  memset(fixture+4,0xff,4);assert(fspi_read_control_snapshot(&s)==-1&&errno==EPROTO&&s.hmi==0x55);
  result=7;assert(fspi_read_control_snapshot(&s)==-1&&errno==EIO);result=8;
  io_error=ETIMEDOUT;assert(fspi_read_control_snapshot(&s)==-1&&errno==ETIMEDOUT);io_error=0;

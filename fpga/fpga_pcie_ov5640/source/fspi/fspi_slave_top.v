@@ -8,6 +8,7 @@ module fspi_slave_top
      input wire spi_cs,
      inout wire [3 : 0] spi_data,
      input wire [3 : 0] select_rearview,
+     input wire [3 : 0] camera_view_async,
 
      input wire auto_brake_enable,
      input wire [5 : 0] speed_status_async,
@@ -22,13 +23,14 @@ module fspi_slave_top
 
     wire wr_clk;
     clk_fspi clk_gen_inst(.clkout0(wr_clk), .lock(), .clkin1(sys_clk));
-    fspi_register_endpoint #(.HAS_IMU(1'b0)) u_register_endpoint (
+    fspi_register_endpoint #(.HAS_IMU(1'b0), .HAS_CAMERA_VIEW(1'b1)) u_register_endpoint (
         .wr_clk(wr_clk),
         .rst_n(rst_n),
         .spi_clk(spi_clk),
         .spi_cs(spi_cs),
         .spi_data(spi_data),
         .select_rearview(select_rearview),
+        .camera_view_async(camera_view_async),
         .auto_brake_enable(auto_brake_enable),
         .speed_status_async(speed_status_async),
         .control_status_async(control_status_async),
@@ -43,7 +45,10 @@ module fspi_slave_top
     );
 endmodule
 
-module fspi_register_endpoint #(parameter HAS_IMU = 1'b0)
+module fspi_register_endpoint #(
+    parameter HAS_IMU = 1'b0,
+    parameter HAS_CAMERA_VIEW = 1'b0
+)
     (input wire wr_clk,
      input wire [511:0] imu_snapshot,
 
@@ -53,6 +58,7 @@ module fspi_register_endpoint #(parameter HAS_IMU = 1'b0)
      input wire spi_cs,
      inout wire [3 : 0] spi_data,
      input wire [3 : 0] select_rearview,
+     input wire [3 : 0] camera_view_async,
 
      input wire auto_brake_enable,
      input wire [5 : 0] speed_status_async,
@@ -78,9 +84,10 @@ module fspi_register_endpoint #(parameter HAS_IMU = 1'b0)
         .mem6_out(mem6_out)
     );
 
-    fspi_transport #(.HAS_IMU(HAS_IMU)) u_transport (
+    fspi_transport #(.HAS_IMU(HAS_IMU), .HAS_CAMERA_VIEW(HAS_CAMERA_VIEW)) u_transport (
         .spi_clk(spi_clk), .spi_cs(spi_cs), .spi_data(spi_data), .rst_n(rst_n),
         .select_rearview(select_rearview), .auto_brake_enable(auto_brake_enable),
+        .camera_view_async(camera_view_async),
         .speed_status_async(speed_status_async), .control_status_async(control_status_async),
         .cmd(cmd), .rx_data(rx_data), .rx_data_valid(rx_data_valid),
         .tx_data(tx_data), .tx_data_valid(tx_data_valid), .imu_snapshot(imu_snapshot)

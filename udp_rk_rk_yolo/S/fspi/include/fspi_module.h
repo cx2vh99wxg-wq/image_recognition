@@ -32,6 +32,8 @@ extern "C"
  * 无写入或延时，旧 FPGA 或签名非法返回 -1/EPROTO。 */
     int fspi_read_speed_snapshot(SpeedSnapshot *data, uint8_t *raw_status);
     int fspi_read_control_snapshot(ControlSnapshot *data);
+    /* 第九字节为独立视角。旧 FPGA 或延长读取失败时，仍提供原控制快照，视角为 FF。 */
+    int fspi_read_control_snapshot_with_view(ControlSnapshot *data, uint8_t *view);
 
     /* 寄存器访问：独立持久开关：同一次片选发送四线 81 00 05，再四线读取 A1(开)/A0(关)。
  * 只接受带签名的状态，旧 FPGA、无效响应或总线失败返回 -1，且不改输出值。 */

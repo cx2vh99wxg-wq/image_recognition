@@ -80,7 +80,9 @@ module image_pcie_capture #(
     inout  wire       speed_key_n,
 
     input RXD,
-    output wire hmi_status_txd
+    output wire hmi_status_txd,
+    output wire turn_signal_left,
+    output wire turn_signal_right
 
 );
 
@@ -371,6 +373,7 @@ module image_pcie_capture #(
   assign right = right_released ? 1'bz : 1'b0;
   assign stop  = ~stop_pressed;
 
+  wire [3:0] hmi_view_code;
   fspi_slave_top u_fspi_slave_top (
       .sys_clk        (free_clk),
       .rst_n          (board_rst_n),
@@ -378,6 +381,7 @@ module image_pcie_capture #(
       .spi_cs         (spi_cs),
       .spi_data       (spi_data),
       .select_rearview(select_rearview),
+      .camera_view_async(hmi_view_code),
       .auto_brake_enable(auto_brake_enabled),
       .speed_status_async({speed_ready,speed_pressed,speed_drive,speed_phase_gray}),
       .control_status_async({board_rst_n,speed_ready,fspi_direction_armed,traffic_go_denied,
@@ -426,6 +430,21 @@ module image_pcie_capture #(
       .speed_request_level(hmi_speed_level),
       .speed_target_gear(hmi_speed_target),
       .speed_target_toggle(hmi_speed_target_toggle)
+  );
+
+  hmi_turn_signal u_hmi_turn_signal (
+      .clk(true_50M),
+      .rst_n(board_rst_n),
+      .hmi_code(select_rearview),
+      .lamp_left(turn_signal_left),
+      .lamp_right(turn_signal_right)
+  );
+
+  hmi_camera_view u_hmi_camera_view (
+      .clk(true_50M),
+      .rst_n(board_rst_n),
+      .hmi_code(select_rearview),
+      .view_code(hmi_view_code)
   );
 
   wire [5:0] level;

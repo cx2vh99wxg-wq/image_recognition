@@ -2224,7 +2224,7 @@ struct MetadataReaders
 
 // 可选元数据可能晚于查看器运行；这些均为只读附加，
 // 不初始化段、不发释放请求，也不修改写端状态。
-static void maintain_metadata_readers(MetadataReaders *state, uint32_t *control_cursor)
+static void maintain_metadata_readers(MetadataReaders *state)
 {
     const uint64_t now = display_clock_ns() / 1000000ULL;
     if (state->checked_ms && now - state->checked_ms < 1000)
@@ -2240,10 +2240,7 @@ static void maintain_metadata_readers(MetadataReaders *state, uint32_t *control_
     if (!display_control_shm && id >= 0)
     {
         if (display_control_shm_init(&display_control_shm, 0) == 0)
-        {
             state->display_id = id;
-            *control_cursor = UINT32_MAX;
-        }
         else
             display_control_shm = NULL;
     }
@@ -2357,7 +2354,6 @@ int main(int argc, char **argv)
     uint32_t last_pcie_frame_id = 0;
     uint32_t last_udp_frame_id = 0;
     DisplayMode current_display_mode = DISPLAY_MODE_ALL_CAMERAS; // 默认进入全部视角的总览。
-    uint32_t last_control_update = 0;
     MetadataReaders metadata;
 
     // 注册进程退出信号回调。
@@ -2413,7 +2409,7 @@ int main(int argc, char **argv)
     }
 
     printf("\n=== 接入可选呈现元数据；未运行的数据源每秒重试 ===\n");
-    maintain_metadata_readers(&metadata, &last_control_update);
+    maintain_metadata_readers(&metadata);
 
     // 为渲染引擎建立初始状态。
     printf("\n=== 初始化渲染引擎 ===\n");
@@ -2454,7 +2450,7 @@ int main(int argc, char **argv)
         int pcie_updated = 0, udp_updated = 0;
         uint32_t pcie_width, pcie_height, pcie_frame_id;
         uint32_t udp_width, udp_height, udp_frame_id;
-        maintain_metadata_readers(&metadata, &last_control_update);
+        maintain_metadata_readers(&metadata);
 
         // 取得弯道识别信息的此时内容。
         uint32_t curve_frame_id = 0;
@@ -2485,32 +2481,25 @@ int main(int argc, char **argv)
         // 核对呈现控制更新。
         if (display_control_shm && display_control_shm->valid)
         {
-            uint32_t control_update = display_control_shm->last_update;
-            if (control_update != last_control_update)
+            const DisplayMode new_mode = camera_mode_or_overview(
+                __atomic_load_n(&display_control_shm->mode, __ATOMIC_ACQUIRE));
+            if (new_mode != current_display_mode)
             {
-                DisplayMode new_mode = camera_mode_or_overview(display_control_shm->mode);
-                if (new_mode != current_display_mode)
-                {
-                    const char *mode_name = get_camera_mode_name(new_mode);
-                    const char *old_mode_name = get_camera_mode_name(current_display_mode);
-                    printf("🎯 呈现模式切换: %s -> %s (FSPI信号: 0x%02X, 按键次数: %d)\n",
-                           old_mode_name, mode_name, new_mode, display_control_shm->button_count);
+                const char *mode_name = get_camera_mode_name(new_mode);
+                const char *old_mode_name = get_camera_mode_name(current_display_mode);
+                printf("🎯 呈现模式切换: %s -> %s (FSPI信号: 0x%02X, 按键次数: %u)\n",
+                       old_mode_name, mode_name, new_mode,
+                       __atomic_load_n(&display_control_shm->button_count, __ATOMIC_RELAXED));
 
-                    // 呈现合成：只有在进入单个摄像头视图时才运行切换动画
-                    // 0x99模式（全部呈现）直接切换，无需动画
-                    if (new_mode != DISPLAY_MODE_ALL_CAMERAS)
-                    {
-                        transition_animation_start(&render_engine.transition, current_display_mode,
-                                                   new_mode);
-                    }
-                    else
-                    {
-                        // 呈现合成：0x99模式直接切换，结束任何开始进行的动画
-                        render_engine.transition.is_active = 0;
-                    }
-                    current_display_mode = new_mode;
+                // 进入单视角时沿用原动画，六路总览直接切换。
+                if (new_mode != DISPLAY_MODE_ALL_CAMERAS)
+                {
+                    transition_animation_start(&render_engine.transition, current_display_mode,
+                                               new_mode);
                 }
-                last_control_update = control_update;
+                else
+                    render_engine.transition.is_active = 0;
+                current_display_mode = new_mode;
             }
         }
 

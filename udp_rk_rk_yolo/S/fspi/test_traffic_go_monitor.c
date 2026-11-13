@@ -10,6 +10,7 @@
 #include "csrc/main.c"
 #undef main
 #undef ioctl
+static uint8_t view_reply = 0xff;
 #undef perror
 #undef shmget
 #undef shmat
@@ -48,12 +49,13 @@ int test_spi_ioctl(int fd,unsigned long request,...) {
     assert(request==SPI_IOC_MESSAGE(1));
     va_list a;va_start(a,request);struct spi_ioc_transfer* t=va_arg(a,void*);va_end(a);
     if(t->rx_buf){
-        if(t->len==8){
-            uint8_t* b=(void*)(uintptr_t)t->rx_buf;memset(b,0,8);
+        if(t->len==8 || t->len==9){
+            uint8_t* b=(void*)(uintptr_t)t->rx_buf;memset(b,0,t->len);
+            if(t->len==9)b[8]=view_reply;
             if(control_reply_enabled){b[0]=0xcc;b[1]=0xa7;b[2]=0xc1;b[3]=speed_crc8(b[2]);
                 b[4]=0xd7;b[5]=contact_reply;b[6]=gates_reply;
                 b[7]=control_crc_byte(control_crc_byte(control_crc_byte(0,b[4]),b[5]),b[6]);}
-            return 8;
+            return t->len;
         }
         if(t->len==4){
             uint8_t* b=(void*)(uintptr_t)t->rx_buf;
@@ -195,6 +197,16 @@ int main(void) {
     assert(front_guard.auto_enabled && front_guard.held_go && front_guard.raw_request && (last_permission&4));
     lane_last_poll=0;last_stop=-1;run_brake_only(1);
     assert(last_stop==0&&front_guard.held_go&&front_guard.raw_request);
+    DisplayControlSharedMemory display={.mode=DISPLAY_MODE_ALL_CAMERAS,.valid=1};
+    display_control_shm=&display;
+    view_reply=0x22;poll();
+    assert(fpga_camera_view_available && display.mode==DISPLAY_MODE_REAR_LEFT);
+    view_reply=0x33;poll();
+    assert(display.mode==DISPLAY_MODE_REAR_RIGHT);
+    view_reply=0x99;poll();
+    assert(display.mode==DISPLAY_MODE_ALL_CAMERAS && display.button_count==3);
+    view_reply=0xff;poll();
+    assert(!fpga_camera_view_available && display.button_count==3);
     puts("production monitor: atomic lane+traffic permissions, red/unknown/yellow/green, SPI retry, UI telemetry, restart PASS");
     return 0;
 }
