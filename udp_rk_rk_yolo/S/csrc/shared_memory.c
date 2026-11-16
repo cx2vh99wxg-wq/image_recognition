@@ -3,7 +3,9 @@
 #include "shared_memory.h"
 #include "../../common/image/frame_checksum.h"
 #include "../../common/perception/include/curve_shm_attach.h"
+#include "../../common/perception/include/curve_heading.h"
 #include "brake_release_policy.h"
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -799,6 +801,28 @@ void emergency_brake_shm_cleanup(EmergencyBrakeSharedMemory *shm_ptr, int is_wri
 static int g_curve_shm_id = -1;
 static CurveDetectionSharedMemory *g_curve_shm_ptr = NULL;
 static int g_curve_is_writer = 0;
+enum { CURVE_DEADLINE_FORMAT = 0x43534431 };
+
+_Static_assert(sizeof(CurveDetectionSharedMemory) == 72, "Curve shared ABI must stay 72 bytes");
+_Static_assert(offsetof(CurveDetectionSharedMemory, deadline_format) == 28,
+               "Deadline metadata uses the original reserved bytes");
+
+static int curve_attach_reader(void)
+{
+    int id = shmget(SHM_CURVE_DETECTION_KEY, sizeof(CurveDetectionSharedMemory), 0);
+    if (id < 0)
+        return -1;
+    if (g_curve_shm_ptr && id == g_curve_shm_id)
+        return 0;
+    void *mapping = shmat(id, NULL, SHM_RDONLY);
+    if (mapping == (void *)-1)
+        return -1;
+    if (g_curve_shm_ptr)
+        shmdt(g_curve_shm_ptr);
+    g_curve_shm_ptr = (CurveDetectionSharedMemory *)mapping;
+    g_curve_shm_id = id;
+    return 0;
+}
 
 /* 共享数据：按固定键创建或连接弯道结果段；写端初始化为直道并标记活跃。 */
 int curve_detection_shm_init(int is_writer)
@@ -809,6 +833,8 @@ int curve_detection_shm_init(int is_writer)
     printf("正在初始化弯道检测共享内存 (key=0x%x, size=%zu bytes)\n", shm_key, shm_size);
 
     g_curve_is_writer = is_writer;
+    if (!is_writer)
+        return curve_attach_reader();
 
     g_curve_shm_id = curve_shm_open(shm_key, shm_size, is_writer);
     if (g_curve_shm_id == -1)
@@ -824,14 +850,11 @@ int curve_detection_shm_init(int is_writer)
 
     printf("弯道检测共享内存初始化成功 (id=%d, ptr=%p)\n", g_curve_shm_id, (void *)g_curve_shm_ptr);
 
-    if (is_writer)
-    {
-        memset(g_curve_shm_ptr, 0, sizeof(CurveDetectionSharedMemory));
-        g_curve_shm_ptr->writer_active = 1;
-        g_curve_shm_ptr->curve_type = CURVE_NONE;
-        printf("初始化弯道检测控制结构\n");
-    }
-
+    __atomic_store_n(&g_curve_shm_ptr->writer_active, 0, __ATOMIC_RELEASE);
+    __atomic_store_n(&g_curve_shm_ptr->deadline_format, CURVE_DEADLINE_FORMAT, __ATOMIC_RELAXED);
+    curve_detection_update_until(0, CURVE_NONE, 0, 0, 0);
+    __atomic_store_n(&g_curve_shm_ptr->writer_active, 1, __ATOMIC_RELEASE);
+    printf("初始化弯道检测控制结构\n");
     return 0;
 }
 
@@ -841,7 +864,7 @@ void curve_detection_shm_cleanup(void)
 
     if (g_curve_is_writer && g_curve_shm_ptr != NULL)
     {
-        g_curve_shm_ptr->writer_active = 0;
+        __atomic_store_n(&g_curve_shm_ptr->writer_active, 0, __ATOMIC_RELEASE);
     }
 
     if (g_curve_shm_ptr != NULL)
@@ -869,6 +892,12 @@ void curve_detection_shm_cleanup(void)
 int curve_detection_update(uint32_t frame_id, CurveType curve_type, uint32_t confidence,
                            uint32_t curve_angle)
 {
+    return curve_detection_update_until(frame_id, curve_type, confidence, curve_angle, 0);
+}
+
+int curve_detection_update_until(uint32_t frame_id, CurveType curve_type, uint32_t confidence,
+                                 uint32_t curve_angle, uint64_t deadline_ns)
+{
     if (g_curve_shm_ptr == NULL)
     {
         fprintf(stderr, "错误: 弯道检测共享内存未初始化\n");
@@ -881,11 +910,19 @@ int curve_detection_update(uint32_t frame_id, CurveType curve_type, uint32_t con
         return -1;
     }
 
-    g_curve_shm_ptr->frame_id = frame_id;
-    g_curve_shm_ptr->curve_type = curve_type;
-    g_curve_shm_ptr->confidence = confidence;
-    g_curve_shm_ptr->curve_angle = curve_angle;
-    g_curve_shm_ptr->timestamp = (uint64_t)time(NULL) * 1000000;
+    if (!deadline_ns)
+        confidence = 0;
+    CurveDetectionSharedMemory *segment = g_curve_shm_ptr;
+    uint32_t writing = (__atomic_load_n(&segment->sequence, __ATOMIC_RELAXED) + 1u) | 1u;
+    __atomic_store_n(&segment->sequence, writing, __ATOMIC_SEQ_CST);
+    __atomic_store_n(&segment->frame_id, frame_id, __ATOMIC_RELAXED);
+    __atomic_store_n(&segment->curve_type, (uint32_t)curve_type, __ATOMIC_RELAXED);
+    __atomic_store_n(&segment->confidence, confidence, __ATOMIC_RELAXED);
+    __atomic_store_n(&segment->curve_angle, curve_angle, __ATOMIC_RELAXED);
+    __atomic_store_n(&segment->deadline_lo, (uint32_t)deadline_ns, __ATOMIC_RELAXED);
+    __atomic_store_n(&segment->deadline_hi, (uint32_t)(deadline_ns >> 32), __ATOMIC_RELAXED);
+    segment->timestamp = (uint64_t)time(NULL) * 1000000;
+    __atomic_store_n(&segment->sequence, writing + 1u, __ATOMIC_RELEASE);
 
     if (frame_id % 100 == 0)
     {
@@ -916,22 +953,55 @@ int curve_detection_update(uint32_t frame_id, CurveType curve_type, uint32_t con
 int curve_detection_read(uint32_t *frame_id, CurveType *curve_type, uint32_t *confidence,
                          uint32_t *curve_angle)
 {
-    if (g_curve_shm_ptr == NULL)
-    {
-        fprintf(stderr, "错误: 弯道检测共享内存未初始化\n");
+    uint64_t deadline_ns;
+    return curve_detection_read_until(frame_id, curve_type, confidence, curve_angle, &deadline_ns);
+}
+
+int curve_detection_read_until(uint32_t *frame_id, CurveType *curve_type, uint32_t *confidence,
+                               uint32_t *curve_angle, uint64_t *deadline_ns)
+{
+    if (!frame_id || !curve_type || !confidence || !curve_angle || !deadline_ns)
         return -1;
-    }
-
-    if (!frame_id || !curve_type || !confidence || !curve_angle)
-    {
-        fprintf(stderr, "错误: 弯道检测读取参数为空\n");
+    if (!g_curve_is_writer && curve_attach_reader() != 0)
         return -1;
+
+    const CurveDetectionSharedMemory *segment = g_curve_shm_ptr;
+    if (!segment || !__atomic_load_n(&segment->writer_active, __ATOMIC_ACQUIRE) ||
+        __atomic_load_n(&segment->deadline_format, __ATOMIC_RELAXED) != CURVE_DEADLINE_FORMAT)
+        return -1;
+
+    for (unsigned attempt = 0; attempt < 4; ++attempt)
+    {
+        uint32_t before = __atomic_load_n(&segment->sequence, __ATOMIC_ACQUIRE);
+        if (before & 1u)
+            continue;
+        uint32_t id = __atomic_load_n(&segment->frame_id, __ATOMIC_RELAXED);
+        uint32_t type = __atomic_load_n(&segment->curve_type, __ATOMIC_RELAXED);
+        uint32_t quality = __atomic_load_n(&segment->confidence, __ATOMIC_RELAXED);
+        uint32_t angle = __atomic_load_n(&segment->curve_angle, __ATOMIC_RELAXED);
+        uint32_t lo = __atomic_load_n(&segment->deadline_lo, __ATOMIC_RELAXED);
+        uint32_t hi = __atomic_load_n(&segment->deadline_hi, __ATOMIC_RELAXED);
+        __atomic_thread_fence(__ATOMIC_ACQUIRE);
+        if (before != __atomic_load_n(&segment->sequence, __ATOMIC_RELAXED))
+            continue;
+        if (!__atomic_load_n(&segment->writer_active, __ATOMIC_ACQUIRE))
+            return -1;
+        uint64_t deadline = ((uint64_t)hi << 32) | lo;
+        if (quality)
+        {
+            struct timespec ts;
+            if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
+                return -1;
+            uint64_t now = (uint64_t)ts.tv_sec * 1000000000ULL + ts.tv_nsec;
+            if (deadline <= now || deadline - now > CURVE_RESULT_TTL_NS)
+                return -1;
+        }
+        *frame_id = id;
+        *curve_type = (CurveType)type;
+        *confidence = quality;
+        *curve_angle = angle;
+        *deadline_ns = deadline;
+        return 0;
     }
-
-    *frame_id = g_curve_shm_ptr->frame_id;
-    *curve_type = (CurveType)g_curve_shm_ptr->curve_type;
-    *confidence = g_curve_shm_ptr->confidence;
-    *curve_angle = g_curve_shm_ptr->curve_angle;
-
-    return 0;
+    return -1;
 }

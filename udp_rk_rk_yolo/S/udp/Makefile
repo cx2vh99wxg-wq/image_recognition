@@ -57,7 +57,7 @@ $(BUILD_DIR):
 $(BIN): $(OBJECTS) $(SHARED_LIB) | $(BUILD_DIR)
 	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
 
-$(SHARED_LIB): ../csrc/shared_memory.c $(wildcard ../include/*.h) ../../common/perception/include/curve_shm_attach.h | $(BUILD_DIR)
+$(SHARED_LIB): ../csrc/shared_memory.c $(wildcard ../include/*.h) ../../common/perception/include/curve_shm_attach.h ../../common/perception/include/curve_heading.h | $(BUILD_DIR)
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c ../csrc/shared_memory.c -o $(BUILD_DIR)/shared_memory.o
 	$(AR) rcs $@ $(BUILD_DIR)/shared_memory.o

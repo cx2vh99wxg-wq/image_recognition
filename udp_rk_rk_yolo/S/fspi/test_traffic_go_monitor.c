@@ -18,6 +18,7 @@ static uint16_t wheel_reply = WHEEL_PERIOD_UNKNOWN;
 #undef shmdt
 #include <assert.h>
 #include <stdarg.h>
+int steering_pulse_active(void) { return 0; }
 static LineStyleSegment line_segment,warning_segment;
 static TrafficLightSegment signal_segment;
 static TrafficGoSegment go_segment;

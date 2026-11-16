@@ -111,7 +111,7 @@ run-fspi: all
 		exit 1; \
 	fi
 	@echo "运行车辆控制程序..."
-	@echo "控制按键: w=前进, s=后退, a=左转, d=右转, x=结束, q=退出"
+	@echo "自动转向默认关闭，由串口屏 Autopilot 授权"
 	@echo "说明：注意: 需要管理员权限访问SPI设备"
 	@echo ""
 	@cd fspi && sudo python3 ../steering/tools/launch_vehicle_control.py
@@ -190,12 +190,7 @@ run: all tune-network prepare-display
 	@echo ""
 	@# 运行FSPI控制程序
 	@echo "3. 运行FSPI按钮控制程序..."
-	@if [ -f /etc/adas-vision-only ]; then \
-		echo "ADAS vision-only: brake/permission monitor active; automatic steering and IMU remain stopped"; \
-		cd fspi && sudo bash -c './build/vehicle_control --brake-only & echo $$! > fspi.pid'; \
-	else \
-		cd fspi && sudo bash -c 'python3 ../steering/tools/launch_vehicle_control.py & echo $$! > fspi.pid'; \
-	fi
+	@cd fspi && sudo bash -c 'python3 ../steering/tools/launch_vehicle_control.py --hmi-autopilot & echo $$! > fspi.pid'
 	@sleep 3
 	@{ \
 		fspi_pid=$$(cat fspi/fspi.pid 2>/dev/null); \
@@ -300,12 +295,19 @@ $(BRAKE_RELEASE_TEST): test_brake_release_policy.c $(SHARED_INC_DIR)/brake_relea
 test-brake-release: $(BRAKE_RELEASE_TEST)
 	./$(BRAKE_RELEASE_TEST)
 
+.PHONY: test-curve-deadline
+$(BUILD_DIR)/test_curve_deadline: test_curve_deadline.c csrc/shared_memory.c include/shared_memory.h ../common/perception/include/curve_heading.h | $(BUILD_DIR)
+	$(CC) -std=c11 -Wall -Wextra -Werror $(INCFLAGS) $< -pthread -lrt -o $@
+
+test-curve-deadline: $(BUILD_DIR)/test_curve_deadline
+	$(BUILD_DIR)/test_curve_deadline
+
 $(BUILD_DIR)/$(SHARED_LIB): $(SHARED_OBJECTS) | $(BUILD_DIR)
 	@echo "建立共享库: $@"
 	$(AR) $(ARFLAGS) $@ $^
 
 # 构建共享库对象文件
-$(BUILD_DIR)/shared_memory.o: $(SHARED_INC_DIR)/shared_memory.h $(SHARED_INC_DIR)/brake_release_policy.h ../common/perception/include/curve_shm_attach.h ../common/image/frame_checksum.h
+$(BUILD_DIR)/shared_memory.o: $(SHARED_INC_DIR)/shared_memory.h $(SHARED_INC_DIR)/brake_release_policy.h ../common/perception/include/curve_shm_attach.h ../common/perception/include/curve_heading.h ../common/image/frame_checksum.h
 
 .PHONY: test-checksum
 $(BUILD_DIR)/test_frame_checksum: ../common/image/tests/test_frame_checksum.cpp ../common/image/frame_checksum.h | $(BUILD_DIR)
@@ -488,7 +490,7 @@ status:
 	fi
 
 # 快速验证构建
-test: all test-brake-release
+test: all test-brake-release test-curve-deadline
 	@echo "=== 构建验证完成 ==="
 	@echo "所有程序构建通过！"
 	@echo ""

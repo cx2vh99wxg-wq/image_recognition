@@ -407,8 +407,8 @@ static void ingest_datagram(NetworkReceiver *r, const Datagram &packet)
 static void publish_curve(const video_v2::CurveEvent &event)
 {
     if (curve_detection_available)
-        curve_detection_update(event.frame_id, (CurveType)event.type, event.confidence,
-                               event.angle);
+        curve_detection_update_until(event.frame_id, (CurveType)event.type, event.confidence,
+                                     event.angle, event.deadline_ns);
 }
 
 int network_receive_with_sync(NetworkReceiver *r)

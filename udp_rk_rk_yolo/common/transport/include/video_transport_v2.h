@@ -1,6 +1,7 @@
 #ifndef FPGA_VIDEO_TRANSPORT_V2_H
 #define FPGA_VIDEO_TRANSPORT_V2_H
 
+#include "../../perception/include/curve_heading.h"
 #include <arpa/inet.h>
 #include <algorithm>
 #include <array>
@@ -13,7 +14,7 @@ namespace video_v2
 {
 constexpr uint32_t MAGIC = 0x46505632u; // 协议标记为 "FPV2"，各数据报独立传送。
 constexpr uint32_t VERSION = 3;
-constexpr uint64_t CURVE_TTL_NS = 500000000ULL;
+constexpr uint64_t CURVE_TTL_NS = CURVE_RESULT_TTL_NS;
 constexpr uint32_t AGE_OBSERVED = 0x80000000u, AGE_UNKNOWN = 0xffffffffu, AGE_MASK = 0x7fffffffu;
 constexpr unsigned WIDTH = 640, HEIGHT = 480, LINE_BYTES = WIDTH * 2;
 constexpr size_t FRAME_BYTES = LINE_BYTES * HEIGHT;
@@ -142,12 +143,13 @@ class CurveSenderState
 struct CurveEvent
 {
     uint32_t frame_id = 0, type = 0, confidence = 0, angle = 0;
+    uint64_t deadline_ns = 0;
 };
 class CurveReceiverState
 {
     bool have_ = false, expired_ = false;
     uint32_t session_ = 0;
-    uint64_t source_ = 0, deadline_ = 0;
+    uint64_t source_ = 0;
     CurveEvent current_;
 
   public:
@@ -185,7 +187,7 @@ class CurveReceiverState
                 age += now - meta.first_packet_ns;
             expired_ = !meta.curve_confidence || age >= CURVE_TTL_NS;
             current_.confidence = expired_ ? 0 : meta.curve_confidence;
-            deadline_ = expired_ ? now : now + CURVE_TTL_NS - age;
+            current_.deadline_ns = expired_ ? 0 : now + CURVE_TTL_NS - age;
             event = current_;
             return true;
         }
@@ -196,6 +198,7 @@ class CurveReceiverState
         {
             expired_ = true;
             current_.confidence = 0;
+            current_.deadline_ns = 0;
             event = current_;
             return true;
         }
@@ -203,10 +206,11 @@ class CurveReceiverState
     }
     bool expire(uint64_t now, CurveEvent &event)
     {
-        if (have_ && !expired_ && now >= deadline_)
+        if (have_ && !expired_ && now >= current_.deadline_ns)
         {
             expired_ = true;
             current_.confidence = 0;
+            current_.deadline_ns = 0;
             event = current_;
             return true;
         }

@@ -5,11 +5,13 @@
 module hmi_gear_feedback #(
     parameter integer CLK_FREQ=50000000,
     parameter integer UART_BPS=115200,
-    parameter integer REFRESH_CYCLES=12500000
+    parameter integer REFRESH_CYCLES=12500000,
+    parameter HAS_AUTOPILOT=1'b0
 ) (
     input wire clk,rst_n,
     input wire [3:0] gear_async,
     input wire slider_present,
+    input wire autopilot_active_async,
     output wire txd
 );
   (* ASYNC_REG="TRUE" *) reg [3:0] gear_meta,gear_sync;
@@ -20,6 +22,8 @@ module hmi_gear_feedback #(
   reg [7:0] gear_character,tx_data;
   reg tx_enable;
   reg slider_snapshot;
+  (* ASYNC_REG="TRUE" *) reg autopilot_meta, autopilot_sync;
+  reg autopilot_snapshot;
   wire tx_busy;
   function [7:0] gear_ascii(input [3:0] value);
     if(!value[3])gear_ascii="?";
@@ -32,18 +36,22 @@ module hmi_gear_feedback #(
   endfunction
   localparam [135:0] TEXT_PREFIX = {"page0.tGear.txt=", 8'h22};
   localparam [183:0] SLIDER_PREFIX = "page0.vaGearActual.val=";
+  localparam [47:0] AUTOPILOT_PREFIX = "apAck=";
 
-  function [7:0] frame_byte(input [5:0] n,input [7:0] gear);
+  function [7:0] frame_byte(input [5:0] n,input [7:0] gear,input active);
     begin
       if (n < 17)
         frame_byte = TEXT_PREFIX[135 - 8*n -: 8];
       else if (n >= 24 && n <= 46)
         frame_byte = SLIDER_PREFIX[183 - 8*(n-24) -: 8];
+      else if (n >= 51 && n <= 56)
+        frame_byte = AUTOPILOT_PREFIX[47 - 8*(n-51) -: 8];
       else case (n)
         17: frame_byte = gear;
         18, 19: frame_byte = 8'hb5;
         20: frame_byte = 8'h22;
         47: frame_byte = (gear == "?" ? "0" : gear);
+        57: frame_byte = active ? "1" : "0";
         default: frame_byte = 8'hff;
       endcase
     end
@@ -57,23 +65,83 @@ module hmi_gear_feedback #(
       gear_meta<=0;gear_sync<=0;refresh_count<=REFRESH_CYCLES-1;
       byte_gap<=0;state<=0;index<=0;gear_character<="?";tx_data<=0;tx_enable<=0;
       slider_snapshot<=0;
+      autopilot_meta<=0;autopilot_sync<=0;autopilot_snapshot<=0;
     end else begin
       gear_meta<=gear_async;gear_sync<=gear_meta;tx_enable<=0;
+      autopilot_meta<=autopilot_active_async;autopilot_sync<=autopilot_meta;
       case(state)
         0:if(refresh_count>=REFRESH_CYCLES-1)begin
           refresh_count<=0;index<=0;gear_character<=gear_ascii(gear_sync);state<=1;
           slider_snapshot<=slider_present;
+          autopilot_snapshot<=autopilot_sync;
         end else refresh_count<=refresh_count+1'b1;
-        1:if(!tx_busy)begin tx_data<=frame_byte(index,gear_character);tx_enable<=1;state<=2;end
+        1:if(!tx_busy)begin tx_data<=frame_byte(index,gear_character,autopilot_snapshot);tx_enable<=1;state<=2;end
         2:if(tx_busy)state<=3;
         3:if(!tx_busy)begin
           if(byte_gap>=CLK_FREQ/UART_BPS)begin
             byte_gap<=0;
-            if(index==50||(index==23&&!slider_snapshot))state<=0;
+            if(index==60)state<=0;
+            else if(index==50||(index==23&&!slider_snapshot))begin
+              if(HAS_AUTOPILOT)begin index<=51;state<=1;end
+              else state<=0;
+            end
             else begin index<=index+1'b1;state<=1;end
           end else byte_gap<=byte_gap+1'b1;
         end
       endcase
+    end
+  end
+endmodule
+
+// A new request sequence invalidates the previous approval. A stopped S
+// process cannot keep steering enabled: the counter byte must keep changing.
+module autopilot_lease #(
+    parameter integer TIMEOUT_CYCLES = 8750000
+) (
+    input wire clk, rst_n,
+    input wire [2:0] request_async,
+    input wire [7:0] heartbeat_async,
+    input wire steering_released,
+    input wire movement_blocked,
+    output wire active
+);
+  (* ASYNC_REG="TRUE" *) reg [2:0] request_meta, request_sync;
+  (* ASYNC_REG="TRUE" *) reg [7:0] heartbeat_meta, heartbeat_sync;
+  reg [7:0] previous;
+  reg [$clog2(TIMEOUT_CYCLES+1)-1:0] age;
+  reg accepted;
+  reg consumed;
+  reg [2:0] last_request;
+  wire approval_matches = !movement_blocked && request_sync[2] && previous[7:6] == 2'b10 &&
+                          previous[5:4] == request_sync[1:0] && age < TIMEOUT_CYCLES;
+  assign active = accepted && approval_matches;
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      request_meta <= 0; request_sync <= 0;
+      heartbeat_meta <= 0; heartbeat_sync <= 0;
+      previous <= 0; age <= TIMEOUT_CYCLES; accepted <= 0;
+      consumed <= 0; last_request <= 0;
+    end else begin
+      request_meta <= request_async; request_sync <= request_meta;
+      heartbeat_meta <= heartbeat_async; heartbeat_sync <= heartbeat_meta;
+      previous <= heartbeat_sync;
+      last_request <= request_sync;
+      if (request_sync != last_request) begin
+        accepted <= 0;
+        consumed <= 0;
+      end else if (movement_blocked) begin
+        accepted <= 0;
+        consumed <= request_sync[2];
+      end else if (!approval_matches) begin
+        accepted <= 0;
+      end else if (!consumed && steering_released) begin
+        accepted <= 1;
+        consumed <= 1;
+      end
+      if (heartbeat_sync != previous)
+        age <= 0;
+      else if (age < TIMEOUT_CYCLES)
+        age <= age + 1'b1;
     end
   end
 endmodule

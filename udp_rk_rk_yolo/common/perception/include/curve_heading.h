@@ -4,6 +4,7 @@
 /* The existing 0..360 transport field carries legacy angles directly.
  * Reserve 181..270 for a nonzero image heading measured from vertical. */
 enum { CURVE_IMAGE_HEADING_OFFSET = 180, CURVE_IMAGE_HEADING_MAX_DEG = 90 };
+#define CURVE_RESULT_TTL_NS 500000000ULL
 
 static inline unsigned curve_encode_image_heading(unsigned degrees)
 {

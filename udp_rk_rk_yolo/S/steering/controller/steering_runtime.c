@@ -15,7 +15,7 @@
 static steering_response_model_t model;
 static steering_keepalive_t keepalive;
 static ControlSnapshot snapshot;
-static uint64_t snapshot_ns, lane_ns, next_lane_poll_ns;
+static uint64_t snapshot_ns, lane_deadline_ns, next_lane_poll_ns;
 static uint32_t reference_session, last_frame, blocked_frame;
 static uint64_t reference_notice_ns;
 static uint32_t reference_notice_session;
@@ -23,18 +23,16 @@ static steer_result_t reference_notice_result;
 static float zero_raw, curve_gain = .25f, target_limit = 12, last_target, target_tolerance = 2,
                        center_tolerance = 3;
 static int initialized, confirmed, bench, have_lane, have_frame;
+static uint8_t approved_hmi_request;
+static int pulse_limit_latched;
 static int scheduling_changed, memory_locked, previous_policy;
 static struct sched_param previous_schedule;
+static const float wheel_limit_deg = 18.f;
 static const float max_closed_loop_target_deg = 16.f;
 static uint64_t now_ns(void *p)
 {
     (void)p;
     return steering_now_ns();
-}
-int steering_runtime_requested(void)
-{
-    const char *s = getenv("STEERING_CONTROL_MODE");
-    return s && !strcmp(s, "closed-loop");
 }
 static steer_result_t output(void *ctx, steer_direction_t d)
 {
@@ -54,6 +52,16 @@ static steer_result_t output(void *ctx, steer_direction_t d)
     }
     if (d != STEER_LEFT && d != STEER_RIGHT)
         return STEER_ERR_ARGUMENT;
+    if (!bench)
+    {
+        uint8_t status;
+        if (!approved_hmi_request)
+            return STEER_ERR_BUSY;
+        if (fspi_read_autopilot_status(&status))
+            return STEER_ERR_IO;
+        if ((status & 15u) != (8u | approved_hmi_request))
+            return STEER_ERR_BUSY;
+    }
     if (fspi_write_direction_once(d == STEER_LEFT ? 3 : 2, 1))
         return STEER_ERR_IO;
     return fspi_write_direction_once(d == STEER_LEFT ? 2 : 3, 0) ? STEER_ERR_IO : STEER_OK;
@@ -171,11 +179,12 @@ steer_result_t steering_runtime_init(int bench_mode)
         return rc;
     steering_controller_io_t io = {NULL,    {NULL, output, now_ns},  read_feedback, permission,
                                    &model,  (unsigned)pulse_count_f, 300,           3,
-                                   priority};
+                                   priority, !bench_mode && model.cells[0].partitioned &&
+                                             !model.burst_max_us, !bench_mode};
     rc = steering_bind(io);
     if (rc == STEER_OK)
     {
-        steering_config_t cfg = {-18, 18, target_tolerance, 100,
+        steering_config_t cfg = {-wheel_limit_deg, wheel_limit_deg, target_tolerance, 100,
                                  model.burst_max_us ? model.burst_max_us / 1000 : 60};
         rc = steering_init(&cfg);
     }
@@ -219,6 +228,8 @@ steer_result_t steering_runtime_init(int bench_mode)
     bench = bench_mode;
     initialized = 1;
     confirmed = have_lane = have_frame = 0;
+    approved_hmi_request = 0;
+    pulse_limit_latched = 0;
     snapshot_ns = 0;
     blocked_frame = 0;
     reference_notice_ns = 0;
@@ -238,9 +249,24 @@ void steering_runtime_cancel(void)
     have_lane = 0;
     blocked_frame = last_frame;
 }
+
+void steering_runtime_set_hmi_request(uint8_t request)
+{
+    const uint8_t next = (request & 4u) ? (request & 7u) : 0;
+    if (approved_hmi_request && approved_hmi_request != next)
+        steering_runtime_cancel();
+    if (approved_hmi_request != next)
+        pulse_limit_latched = 0;
+    approved_hmi_request = next;
+}
+static void steering_runtime_lane_until(int valid, uint32_t frame, unsigned type,
+                                       unsigned confidence, unsigned road_angle,
+                                       uint64_t deadline_ns);
+
 void steering_runtime_poll_lane(int allowed, steering_lane_reader_t reader, void *context)
 {
-    if (!initialized || bench || !reader || steering_pulse_active())
+    if (!initialized || bench || !approved_hmi_request || pulse_limit_latched || !reader ||
+        steering_pulse_active())
         return;
     uint64_t now = steering_now_ns();
     if (next_lane_poll_ns && now < next_lane_poll_ns)
@@ -248,8 +274,9 @@ void steering_runtime_poll_lane(int allowed, steering_lane_reader_t reader, void
     next_lane_poll_ns = now + 10000000ULL;
     uint32_t frame = 0;
     unsigned type = 0, confidence = 0, angle = 0;
-    int valid = reader(context, &frame, &type, &confidence, &angle) == 0;
-    steering_runtime_lane(allowed && valid, frame, type, confidence, angle);
+    uint64_t deadline_ns = 0;
+    int valid = reader(context, &frame, &type, &confidence, &angle, &deadline_ns) == 0;
+    steering_runtime_lane_until(allowed && valid, frame, type, confidence, angle, deadline_ns);
 }
 void steering_runtime_tick(void)
 {
@@ -274,12 +301,20 @@ void steering_runtime_tick(void)
         if (!reference_notice_ns || now - reference_notice_ns >= 5000000000ULL ||
             f.session_id != reference_notice_session || rc != reference_notice_result)
         {
-            const char *reason = rc != STEER_OK                      ? "feedback_not_ready"
-                                 : f.session_id != reference_session ? "imu_session_changed"
-                                                                     : "reference_not_ready";
+            const int outside_range = rc == STEER_ERR_DEVICE && f.session_id == reference_session;
+            const char *reason = "reference_not_ready";
+            if (f.session_id && f.session_id != reference_session)
+                reason = "imu_session_changed";
+            else if (outside_range)
+                reason = "reference_or_angle_out_of_range";
+            else if (rc != STEER_OK)
+                reason = "feedback_not_ready";
             printf(
                 "[STEER_WAIT_REFERENCE] reason=%s expected_session=%u received_session=%u feedback=%s automatic_steering=blocked physical_center_confirmation_required=1\n",
                 reason, reference_session, f.session_id, steer_result_name(rc));
+            if (outside_range)
+                printf("[STEER_ANGLE_RANGE] relative_deg=%.3f limit_deg=%.1f\n",
+                       f.angle_mdeg / 1000.f - zero_raw, wheel_limit_deg);
             reference_notice_ns = now;
             reference_notice_session = f.session_id;
             reference_notice_result = rc;
@@ -287,7 +322,7 @@ void steering_runtime_tick(void)
         return;
     }
     uint64_t now = steering_now_ns();
-    if (!bench && have_lane && now - lane_ns >= 500000000)
+    if (!bench && have_lane && now >= lane_deadline_ns)
     {
         steering_runtime_cancel();
         puts("[STEER_CANCEL] lane result expired");
@@ -295,6 +330,14 @@ void steering_runtime_tick(void)
     (void)steering_tick();
     steering_state_t st;
     steering_get_state(&st);
+    if (st.status == STEERING_PULSE_LIMIT && !pulse_limit_latched)
+    {
+        pulse_limit_latched = 1;
+        have_lane = 0;
+        puts("[STEER_PULSE_LIMIT] Direction released; cycle HMI Autopilot before resuming");
+    }
+    if (!st.feedback_valid)
+        confirmed = 0; /* A stale link requires a fresh match to the same reference. */
     if (st.status == STEERING_CANCELLED && st.last_error != STEER_OK)
     {
         have_lane = 0;
@@ -317,18 +360,25 @@ void steering_runtime_tick(void)
         printf("[STEER_STATE] state=%d name=%s angle=%.3f target=%.3f error=%.3f result=%s\n",
                st.status, steering_status_name(st.status), st.angle_deg, st.target_deg,
                st.error_deg, steer_result_name(st.last_error));
+        if (st.status == STEERING_FAULT && st.last_error == STEER_ERR_DEVICE &&
+            st.feedback_valid && fabsf(st.angle_deg) > wheel_limit_deg)
+            printf("[STEER_ANGLE_RANGE] relative_deg=%.3f limit_deg=%.1f\n",
+                   st.angle_deg, wheel_limit_deg);
         previous = st.status;
     }
     (void)steering_keepalive_tick(&keepalive, now, bench || steering_pulse_active(), heartbeat,
                                   NULL);
 }
-void steering_runtime_lane(int valid, uint32_t frame, unsigned type, unsigned confidence,
-                           unsigned road_angle)
+static void steering_runtime_lane_until(int valid, uint32_t frame, unsigned type,
+                                       unsigned confidence, unsigned road_angle,
+                                       uint64_t deadline_ns)
 {
-    if (!initialized || !confirmed)
+    if (!initialized || !confirmed || (!bench && (!approved_hmi_request || pulse_limit_latched)))
         return;
+    const uint64_t now = steering_now_ns();
     const int image_heading = curve_is_image_heading(road_angle);
-    if (!valid || confidence < 60 || type > 2 ||
+    if (!valid || deadline_ns <= now || deadline_ns - now > CURVE_RESULT_TTL_NS ||
+        confidence < 60 || type > 2 ||
         (!image_heading && road_angle > CURVE_IMAGE_HEADING_MAX_DEG) ||
         (image_heading && !type))
     {
@@ -345,7 +395,7 @@ void steering_runtime_lane(int valid, uint32_t frame, unsigned type, unsigned co
         return;
     have_frame = 1;
     last_frame = frame;
-    lane_ns = steering_now_ns();
+    lane_deadline_ns = deadline_ns;
     if (frame == blocked_frame)
         return;
     const unsigned angle_deg = curve_angle_degrees(road_angle);
@@ -381,6 +431,31 @@ void steering_runtime_lane(int valid, uint32_t frame, unsigned type, unsigned co
         last_target = target;
     }
 }
+void steering_runtime_lane(int valid, uint32_t frame, unsigned type, unsigned confidence,
+                           unsigned road_angle)
+{
+    steering_runtime_lane_until(valid, frame, type, confidence, road_angle,
+                                steering_now_ns() + CURVE_RESULT_TTL_NS);
+}
+
+int steering_runtime_available(void)
+{
+    if (!initialized || !confirmed)
+        return 0;
+    steering_feedback_t feedback;
+    steering_state_t state;
+    steering_get_state(&state);
+    return state.feedback_valid && steering_feedback_read(&feedback) == STEER_OK &&
+           feedback.session_id == reference_session && state.status != STEERING_FAULT &&
+           state.status != STEERING_RESOLUTION_LIMIT &&
+           !(state.status == STEERING_CANCELLED && state.last_error != STEER_OK);
+}
+
+int steering_runtime_can_engage(void)
+{
+    return steering_runtime_available() && permission(NULL, STEER_RELEASE) == STEER_OK;
+}
+
 void steering_runtime_wait(void)
 {
     uint64_t wake = steering_now_ns() + 500000, deadline = steering_pulse_deadline_ns();
@@ -394,6 +469,8 @@ void steering_runtime_close(void)
     steering_shutdown();
     steering_feedback_close();
     initialized = confirmed = have_lane = 0;
+    approved_hmi_request = 0;
+    pulse_limit_latched = 0;
     if (scheduling_changed)
         (void)sched_setscheduler(0, previous_policy, &previous_schedule);
     if (memory_locked)

@@ -26,6 +26,9 @@ static int checked_transactions;
 static int attach_calls;
 static int detach_calls;
 static int failed;
+static int pulse_active;
+
+int steering_pulse_active(void) { return pulse_active; }
 
 /* 重试失败是有意设置的样本，仍保留上层监视日志。 */
 void test_spi_perror(const char *description)
@@ -232,7 +235,7 @@ int main(void)
     direction_failure = 0;
     expect(monitor_once(0, 1, 1, 0) == 0 && cleared > 0 && !direction_release_failed,
            "direction-release retry recovers without relying on AUTO status");
-    turn_pulse_active = 1;
+    pulse_active = 1;
     expect(monitor_once(1, 0, 1, 0) == 0 && stopped > 0,
            "steering wait can publish raw requests while FPGA alone gates physical directions");
     expect(checked_transactions == diagnostic_transactions,

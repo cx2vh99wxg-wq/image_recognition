@@ -129,7 +129,8 @@ _Static_assert(sizeof(DisplayControlSharedMemory) == 64,
         volatile uint32_t curve_angle;
         volatile uint64_t timestamp;
         volatile uint32_t writer_active;
-        uint8_t reserved[40];
+        uint32_t deadline_format, sequence, deadline_lo, deadline_hi;
+        uint8_t reserved[24];
     } CurveDetectionSharedMemory;
 
     typedef enum
@@ -208,13 +209,18 @@ _Static_assert(sizeof(DisplayControlSharedMemory) == 64,
     /* 共享数据：分离弯道结果映射，只有写端清除活跃位并删除共享段。 */
     void curve_detection_shm_cleanup(void);
 
-    /* 共享数据：写端按帧号发布类别、置信度和角度；未初始化或非写端返回 -1。 */
+    /* 没有截止时间的旧调用只发布无效结果；未初始化或非写端返回 -1。 */
     int curve_detection_update(uint32_t frame_id, CurveType curve_type, uint32_t confidence,
                                uint32_t curve_angle);
+    /* deadline_ns 是 S 端 CLOCK_MONOTONIC 上的原始结果截止时刻。 */
+    int curve_detection_update_until(uint32_t frame_id, CurveType curve_type, uint32_t confidence,
+                                     uint32_t curve_angle, uint64_t deadline_ns);
 
-    /* 共享数据：读取最近一次弯道结果到四个非空输出指针；成功返回 0。 */
+    /* 共享数据：读取未过期的结果；发布者写入无效标记时置信度为 0。 */
     int curve_detection_read(uint32_t *frame_id, CurveType *curve_type, uint32_t *confidence,
                              uint32_t *curve_angle);
+    int curve_detection_read_until(uint32_t *frame_id, CurveType *curve_type, uint32_t *confidence,
+                                   uint32_t *curve_angle, uint64_t *deadline_ns);
 
 #ifdef __cplusplus
 }

@@ -124,7 +124,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCLUDES) | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # 构建C源文件 (用于共享内存模块)
-$(BUILD_DIR)/%.o: ../../csrc/%.c $(INCLUDES) ../../../common/perception/include/curve_shm_attach.h | $(BUILD_DIR)
+$(BUILD_DIR)/%.o: ../../csrc/%.c $(INCLUDES) ../../../common/perception/include/curve_shm_attach.h ../../../common/perception/include/curve_heading.h | $(BUILD_DIR)
 	@echo "构建共享内存C文件: $<"
 	$(CC) $(CFLAGS) -c $< -o $@
 

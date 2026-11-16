@@ -3,9 +3,8 @@
  * 作者：科研轮转
  *
  * 本进程读取共享内存中的车道、行人及交通灯状态，按现有策略更新 FSPI。
- * 请求闭环模式时，目标角、反馈新鲜度、参考会话和脉冲期限由 steering_runtime
- * 处理；初始化或反馈无效不会退回兼容模式的长时间转向脉冲。
- * 未请求闭环模式时，保留原有位置状态和定时转向分支。
+ * 自动转向须由串口屏请求并经 FPGA 确认。转角、反馈时效和脉冲期限由
+ * steering_runtime 处理。未获授权时，仍处理车道、制动和显示状态。
  *
  * 人员通道发布原始刹停请求；AUTO 使能、STOP 锁存和人工解除仍由 FPGA 仲裁。
  * 实线变道权限、红灯 GO 门控及档位告警继续走各自既有监视入口。
@@ -13,7 +12,6 @@
  *
  * 本版更新：2026年10月20日。
  * 此前调整过前后控制、转向与制动的职责划分。
- * 本次仅校正模块说明，不修改上述分支、控制参数或日志字串。
  */
 
 #define _POSIX_C_SOURCE 200809L
@@ -37,35 +35,16 @@
 #include <signal.h>
 #include <errno.h>
 #include <time.h>
-#include <sys/time.h>
-
-// 寄存器访问：方向盘转向时间参数(微秒)
-#define TIME_NEUTRAL_TO_LEFT 500000  // 寄存器访问：中间→左 (0.5秒，保持原参数)
-#define TIME_NEUTRAL_TO_RIGHT 600000 // 寄存器访问：中间→右 (0.6秒，保持原参数)
-#define TIME_LEFT_TO_NEUTRAL 400000  // 寄存器访问：左→中间 (0.4秒)
-#define TIME_RIGHT_TO_NEUTRAL 400000 // 寄存器访问：右→中间 (0.4秒)
-#define TIME_LEFT_TO_RIGHT 1500000   // 寄存器访问：左→右 (1.5秒)
-
-// 保存此时转向机构的位置分类。
-typedef enum
-{
-    WHEEL_LEFT,
-    WHEEL_NEUTRAL,
-    WHEEL_RIGHT
-} WheelPosition;
 
 // 本文件共用的运行状态。
 static volatile int g_running = 1;
 static DisplayControlSharedMemory *display_control_shm = NULL;
 static EmergencyBrakeSharedMemory *emergency_brake_shm = NULL;
-static WheelPosition wheel_position = WHEEL_NEUTRAL;
 
 // 寄存器访问：S只发布原始识别请求。AUTO开关、实际STOP输出和锁存均由FPGA决定。
 static int last_brake_value = -1;
 static uint32_t next_brake_release_refresh = 0;
 static int raw_request_active = 0;
-static int turn_pulse_active = 0;
-static int turn_pulse_interrupted = 0;
 static uint32_t next_brake_attach = 0;
 static int direction_release_failed = 0;
 static LineStyleIPC lane_input = {-1, NULL}, lane_warning = {-1, NULL};
@@ -342,11 +321,9 @@ static int monitor_emergency_brake(void)
      * 的每秒心跳不能顺便写方向0..3，其他情形下会中断转向或外部前进命令。 */
     int refresh_release =
         !required && (last_brake_value != 1 || direction_release_failed ||
-                      (!turn_pulse_active && (!clock_ok || now >= next_brake_release_refresh)));
+                      (!steering_pulse_active() && (!clock_ok || now >= next_brake_release_refresh)));
     if (direction_release_failed || (!required && last_brake_value != 1))
     {
-        if (turn_pulse_active)
-            turn_pulse_interrupted = 1;
         int directions_released = 1;
         for (int i = 0; i < 4; ++i)
         {
@@ -437,34 +414,6 @@ static int monitor_emergency_brake(void)
     return request_write_failed || direction_release_failed;
 }
 
-/* 寄存器访问：转向期间持续发布原始请求；实际写入故障结束软件脉冲，STOP由FPGA门控。 */
-static int wait_with_brake_checks(unsigned int duration_us)
-{
-    turn_pulse_active = 1;
-    turn_pulse_interrupted = 0;
-    while (duration_us > 0 && g_running)
-    {
-        unsigned int slice = duration_us < 20000 ? duration_us : 20000;
-        usleep(slice);
-        if (monitor_emergency_brake() || turn_pulse_interrupted)
-        {
-            turn_pulse_active = 0;
-            return -1;
-        }
-        duration_us -= slice;
-    }
-    turn_pulse_active = 0;
-    return g_running ? 0 : -1;
-}
-
-// 读取此时时间戳（秒，支持小数）
-double get_current_time()
-{
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return tv.tv_sec + tv.tv_usec / 1000000.0;
-}
-
 // 处理进程信号的回调入口。
 void signal_handler(int sig)
 {
@@ -480,73 +429,6 @@ void signal_handler(int sig)
     }
 }
 
-/* 保留既有机械标定时长。先释放左右触点，再给出新的低有效脉冲，让 FPGA
- * 在 STOP 或人工接管后重新收取 FSPI。未成功不得记录为已转到位；
- * wheel_position 是按脉冲推测的位置，并非方向盘实测反馈。 */
-static void apply_turn_pulse(int command, unsigned int duration_us, WheelPosition target)
-{
-    if (monitor_emergency_brake())
-        return;
-    int released = vehicle_control(2, 0) == 0;
-    if (vehicle_control(3, 0) != 0)
-        released = 0;
-    if (!released)
-    {
-        direction_release_failed = 1;
-        return;
-    }
-    if (vehicle_control(command, 1) != 0)
-    {
-        // 寄存器访问：无回读的写未成功不能证明引脚仍为高；立即尝试释放并安排后续重试。
-        vehicle_control(command, 0);
-        direction_release_failed = 1;
-        return;
-    }
-    int completed = wait_with_brake_checks(duration_us) == 0;
-    if (vehicle_control(command, 0) != 0)
-    {
-        direction_release_failed = 1;
-        completed = 0;
-    }
-    if (completed)
-    {
-        wheel_position = target;
-        printf("[转向链路] reg%d低脉冲%ums完成并释放；估计位置=%s（非硬件反馈）\n", command,
-               duration_us / 1000,
-               target == WHEEL_LEFT    ? "LEFT"
-               : target == WHEEL_RIGHT ? "RIGHT"
-                                       : "NEUTRAL");
-    }
-    else
-    {
-        printf("[转向链路] reg%d脉冲中断或写入失败，未更新估计位置，下轮重试\n", command);
-    }
-}
-
-void turn_to_left(void)
-{
-    if (wheel_position != WHEEL_LEFT)
-        apply_turn_pulse(2,
-                         wheel_position == WHEEL_RIGHT ? TIME_LEFT_TO_RIGHT : TIME_NEUTRAL_TO_LEFT,
-                         WHEEL_LEFT);
-}
-
-void turn_to_right(void)
-{
-    if (wheel_position != WHEEL_RIGHT)
-        apply_turn_pulse(3,
-                         wheel_position == WHEEL_LEFT ? TIME_LEFT_TO_RIGHT : TIME_NEUTRAL_TO_RIGHT,
-                         WHEEL_RIGHT);
-}
-
-void turn_to_neutral(void)
-{
-    if (wheel_position == WHEEL_LEFT)
-        apply_turn_pulse(3, TIME_LEFT_TO_NEUTRAL, WHEEL_NEUTRAL);
-    else if (wheel_position == WHEEL_RIGHT)
-        apply_turn_pulse(2, TIME_RIGHT_TO_NEUTRAL, WHEEL_NEUTRAL);
-}
-
 // 寄存器访问：结束所有车辆运动
 void stop_all_vehicle_movement()
 {
@@ -555,7 +437,6 @@ void stop_all_vehicle_movement()
     vehicle_control(1, 0);
     vehicle_control(2, 0);
     vehicle_control(3, 0);
-    wheel_position = WHEEL_NEUTRAL;
     printf("所有方向控制已释放\n");
 }
 
@@ -597,15 +478,15 @@ static void publish_motion_hint(uint8_t hmi_code)
 }
 
 /* 道路事件轮询独立于较慢的 SPI/策略/日志轮次。
- * 回调只读已有元数据，实际输出仍归转向运行时，
+ * 回调只读取已有元数据及截止时间，实际输出仍归转向运行时，
  * 并受 STOP、人工优先及零点确认约束。 */
 static int read_steering_lane(void *context, uint32_t *frame, unsigned *type, unsigned *confidence,
-                              unsigned *angle)
+                              unsigned *angle, uint64_t *deadline_ns)
 {
     (void)context;
     CurveType kind = CURVE_NONE;
     uint32_t quality = 0, road_angle = 0;
-    int rc = curve_detection_read(frame, &kind, &quality, &road_angle);
+    int rc = curve_detection_read_until(frame, &kind, &quality, &road_angle, deadline_ns);
     *type = (unsigned)kind;
     *confidence = quality;
     *angle = road_angle;
@@ -626,10 +507,83 @@ static void run_brake_only(unsigned max_iterations)
     }
 }
 
+typedef struct
+{
+    int seen_request;
+    int active;
+    uint8_t last_request;
+    uint8_t counter;
+    uint64_t next_poll_ns;
+} AutopilotSwitch;
+
+static void revoke_autopilot(AutopilotSwitch *state)
+{
+    if (state->active)
+        (void)fspi_write_data(7, 0);
+    steering_runtime_set_hmi_request(0);
+    state->active = 0;
+}
+
+static void poll_autopilot(AutopilotSwitch *state, int control_io_ok, int allow_output)
+{
+    const uint64_t now = line_clock_ns();
+    if (now < state->next_poll_ns || steering_pulse_active())
+        return;
+    state->next_poll_ns = now + 20000000ULL;
+
+    uint8_t status;
+    if (fspi_read_autopilot_status(&status))
+    {
+        state->seen_request = 0;
+        revoke_autopilot(state);
+        return;
+    }
+    const uint8_t request = status & 7;
+    const int fresh_request = state->seen_request && request != state->last_request;
+    state->seen_request = 1;
+    state->last_request = request;
+
+    int enable = control_io_ok && (request & 4) && steering_runtime_available();
+    if (enable && (fresh_request || !state->active))
+    {
+        enable = fresh_request && steering_runtime_can_engage();
+        if (enable)
+        {
+            steering_runtime_cancel(); /* Clear any old lane target before granting a new request. */
+            enable = steering_runtime_available();
+        }
+    }
+    else if (enable)
+        enable = (status & 8) != 0; /* Missing hardware approval requires another tap. */
+    if (enable)
+    {
+        state->counter = (state->counter + 1) & 15;
+        const uint8_t heartbeat = 0x80 | ((request & 3) << 4) | state->counter;
+        enable = fspi_write_data(7, heartbeat) == 0;
+    }
+    if (!enable)
+    {
+        if (fresh_request && !state->active)
+            (void)fspi_write_data(7, 0);
+        revoke_autopilot(state);
+        return;
+    }
+    state->active = 1;
+    /* 等下一次实际读回确认。开关测试也可点亮开关，但禁止方向输出。 */
+    steering_runtime_set_hmi_request(allow_output && !fresh_request ? request : 0);
+}
+
 int main(int argc, char *argv[])
 {
     const int brake_only = argc == 2 && !strcmp(argv[1], "--brake-only");
-    if (argc != 1 && !brake_only) { fprintf(stderr,"Usage: %s [--brake-only]\n",argv[0]); return 2; }
+    const int hmi_switch_test = argc == 2 && !strcmp(argv[1], "--hmi-switch-test");
+    const int hmi_autopilot =
+        hmi_switch_test || (argc == 2 && !strcmp(argv[1], "--hmi-autopilot"));
+    if (argc != 1 && !brake_only && !hmi_autopilot)
+    {
+        fprintf(stderr, "Usage: %s [--brake-only|--hmi-autopilot|--hmi-switch-test]\n", argv[0]);
+        return 2;
+    }
     /* 显式台架会话应能跨越人工观察停顿；
      * 在任何可能写触点的 SPI 初始化或移除前先检查会话。 */
     if (access("/tmp/steering-bench.active", F_OK) == 0)
@@ -648,7 +602,7 @@ int main(int argc, char *argv[])
     printf("工作模式说明:\n");
     printf("- 实时读取: 从FSPI寄存器0读取实际模式值\n");
     printf("- 呈现控制: 六个物理视角22/33/44/66/77/88，99六路全景；11/55兼容归并到中间视角\n");
-    printf("- 左右转向: 完全由弯道识别自动控制\n");
+    printf("- 自动转向: 串口屏 Autopilot 开启并经 FPGA 确认后才允许输出\n");
     printf("- 原始制动请求: 有人或识别不可用写4=0，连续两秒无人写1仅清除请求\n");
     printf("- STOP锁存: FPGA保持低电平直到人工REARM；允许有人时强制解除此时报警\n");
     printf("- 制动开关: HMI功能0F的FF开启/EE关闭，默认关闭和最终门控由FPGA负责；S不依赖开关读回\n");
@@ -685,7 +639,9 @@ int main(int argc, char *argv[])
         fspi_cleanup();
         return 0;
     }
-    int closed_loop = steering_runtime_requested();
+    uint8_t switch_status;
+    if (fspi_read_autopilot_status(&switch_status) == 0)
+        (void)fspi_write_data(7, 0);
 
     // 寄存器访问：先初始化原始请求与方向为释放；写1不解除已有的FPGA锁存。
     printf("初始化控制寄存器: 制动4写1，方向0-3写1\n");
@@ -747,12 +703,11 @@ int main(int argc, char *argv[])
     printf("\n");
 
     printf("=== 开始实际模式读取 ===\n");
-    if (closed_loop)
-    {
-        steer_result_t result = steering_runtime_init(0);
-        printf("[STEER_MODE] closed-loop requested result=%s; legacy turn pulses disabled\n",
-               steer_result_name(result));
-    }
+    steer_result_t result = steering_runtime_init(0);
+    printf("[STEER_MODE] HMI-gated closed-loop result=%s; Autopilot defaults to off\n",
+           steer_result_name(result));
+    if (hmi_switch_test)
+        puts("[HMI_SWITCH_TEST] Actual Autopilot handshake; steering targets disabled.");
     printf("将持续监控FSPI寄存器0的模式值变化...\n");
     printf("按 Ctrl+C 退出程序\n\n");
 
@@ -763,7 +718,7 @@ int main(int argc, char *argv[])
     printf("按钮逻辑: 按下时产生指令值，松开时回到0x00\n");
     printf("支持的指令值:\n");
     printf("  呈现控制: 22/33/44/66/77/88(六个物理视角), 99(六路全景)\n");
-    printf("  左右转向: 完全由弯道识别自动控制\n");
+    printf("  自动转向: 仅在 Autopilot 已授权时生效\n");
     printf("  制动功能控制: S持续发布原始请求；HMI AUTO开关和实际STOP锁存由FPGA决定\n");
     printf("  紧急制动: 有人或识别失效写0，连续两秒无人写1；STOP锁存仅由人工REARM解除\n");
     printf("  弯道识别: 自动读取UDP传来的弯道信息并控制车辆转向 [置信度≥60%%时执行]\n");
@@ -776,7 +731,7 @@ int main(int argc, char *argv[])
         printf("  识别通道: 等待PCIe程序；发布原始故障请求，最终由FPGA AUTO门控\n");
     }
     printf("  人员识别停车功能: 开关状态以HMI/FPGA为准，S不伪造开启或关闭状态\n");
-    printf("  弯道识别功能: 已启用，自动控制车辆转向\n");
+    printf("  弯道识别功能: 始终接收，转向输出由 Autopilot 授权\n");
     printf("\n");
 
     // 寄存器访问：弯道识别状态变量（在循环外定义，供循环内多个地方使用）
@@ -784,26 +739,22 @@ int main(int argc, char *argv[])
     CurveType current_curve_type = CURVE_NONE;
     uint32_t current_curve_confidence = 0;
     uint32_t current_curve_angle = 0;
-    int curve_data_valid = 0; // 寄存器访问：标记此时周期的弯道数据是否有效
 
     uint64_t next_policy_ns = 0;
     int control_io_failed = 1; /* 完成首次 IO 检查前，不触发自动动作。 */
+    AutopilotSwitch autopilot = {0};
     while (g_running)
     {
-        if (closed_loop)
+        steering_runtime_tick();
+        poll_autopilot(&autopilot, !control_io_failed, !hmi_switch_test);
+        steering_runtime_poll_lane(!control_io_failed, read_steering_lane, NULL);
+        uint64_t tick_now = line_clock_ns();
+        if (steering_pulse_active() || tick_now < next_policy_ns)
         {
-            steering_runtime_poll_lane(!control_io_failed, read_steering_lane, NULL);
-            steering_runtime_tick();
-            uint64_t tick_now = line_clock_ns();
-            if (steering_pulse_active() || tick_now < next_policy_ns)
-            {
-                steering_runtime_wait();
-                continue;
-            }
-            next_policy_ns = tick_now + 100000000ULL;
+            steering_runtime_wait();
+            continue;
         }
-        // 标记重置弯道数据是否有效。
-        curve_data_valid = 0;
+        next_policy_ns = tick_now + 100000000ULL;
 
         // 寄存器访问：1. 读取弯道识别信息（只读取，不控制）
         {
@@ -854,9 +805,6 @@ int main(int argc, char *argv[])
                     read_fail_count = 0;
                 }
 
-                // 发布此时数据的有效标志。
-                curve_data_valid = 1;
-
                 // 寄存器访问：每次读取已完成都打印读到的路况信息
                 const char *curve_name = "";
                 switch (current_curve_type)
@@ -874,106 +822,21 @@ int main(int argc, char *argv[])
                     curve_name = "S-CURVE";
                     break;
                 }
-                if (closed_loop)
-                {
-                    steering_state_t measured;
-                    steering_get_state(&measured);
-                    printf(
-                        "[SHM Read] Frame%u: %s | Conf:%u%% | RoadAngle:%u | WheelDeg:%.3f | Feedback:%d\n",
-                        current_curve_frame_id, curve_name, current_curve_confidence,
-                        curve_angle_degrees(current_curve_angle), measured.angle_deg,
-                        measured.feedback_valid);
-                }
-                else
-                {
-                    const char *pos_name = wheel_position == WHEEL_LEFT    ? "LEFT"
-                                           : wheel_position == WHEEL_RIGHT ? "RIGHT"
-                                                                           : "NEUTRAL";
-                    printf("[SHM Read] Frame%u: %s | Conf:%u%% | Angle:%u | Wheel:%s\n",
-                           current_curve_frame_id, curve_name, current_curve_confidence,
-                           curve_angle_degrees(current_curve_angle), pos_name);
-                }
+                steering_state_t measured;
+                steering_get_state(&measured);
+                printf(
+                    "[SHM Read] Frame%u: %s | Conf:%u%% | RoadAngle:%u | WheelDeg:%.3f | Feedback:%d\n",
+                    current_curve_frame_id, curve_name, current_curve_confidence,
+                    curve_angle_degrees(current_curve_angle), measured.angle_deg,
+                    measured.feedback_valid);
             }
         }
 
         // 寄存器访问：2. 发布原始制动请求。FPGA决定实际STOP；仅实际写故障暂停软件转向。
         control_io_failed = monitor_emergency_brake();
 
-        // 3. 根据弯道识别结果执行自动转向控制（在读取FSPI指令以前）
-        if (closed_loop)
-        {
-            if (control_io_failed)
-                steering_runtime_cancel();
-        }
-        else if (!control_io_failed && curve_data_valid &&
-                 !curve_is_image_heading(current_curve_angle))
-        {
-            // 静态变量跟踪上次的弯道类型，用来避免重复执行
-            static CurveType last_applied_curve_type = CURVE_NONE;
-            static uint32_t last_applied_confidence = 0;
-
-            // 识别弯道类型变化用来日志输出
-            int should_log =
-                (current_curve_type != last_applied_curve_type) ||
-                (abs((int)current_curve_confidence - (int)last_applied_confidence) > 20);
-
-            // 寄存器访问：根据此时弯道类型执行转向控制（每次都检查）
-            if (current_curve_confidence >= 60)
-            { // 寄存器访问：只有置信度足够高时才执行
-                switch (current_curve_type)
-                {
-                case CURVE_NONE:
-                    if (should_log)
-                    {
-                        printf("\n========================================\n");
-                        printf("Road: STRAIGHT (Frame %u, Conf:%u%%)\n", current_curve_frame_id,
-                               current_curve_confidence);
-                        printf("========================================\n\n");
-                    }
-                    turn_to_neutral();
-                    break;
-
-                case CURVE_LEFT:
-                    if (should_log)
-                    {
-                        printf("\n========================================\n");
-                        printf("Road: LEFT (Frame %u, Conf:%u%%, Angle:%u)\n",
-                               current_curve_frame_id, current_curve_confidence,
-                               current_curve_angle);
-                        printf("========================================\n\n");
-                    }
-                    turn_to_left();
-                    break;
-
-                case CURVE_RIGHT:
-                    if (should_log)
-                    {
-                        printf("\n========================================\n");
-                        printf("Road: RIGHT (Frame %u, Conf:%u%%, Angle:%u)\n",
-                               current_curve_frame_id, current_curve_confidence,
-                               current_curve_angle);
-                        printf("========================================\n\n");
-                    }
-                    turn_to_right();
-                    break;
-
-                case CURVE_BOTH:
-                    if (should_log)
-                    {
-                        printf("\n========================================\n");
-                        printf("Road: S-CURVE (Frame %u, Conf:%u%%)\n", current_curve_frame_id,
-                               current_curve_confidence);
-                        printf("   Action: Maintain current turn state\n");
-                        printf("========================================\n\n");
-                    }
-                    break;
-                }
-            }
-
-            // 按本轮结果推进记录值用于下次日志判断。
-            last_applied_curve_type = current_curve_type;
-            last_applied_confidence = current_curve_confidence;
-        }
+        if (control_io_failed)
+            revoke_autopilot(&autopilot);
 
         // 寄存器访问：4. 实际从FSPI寄存器0读取模式值
         uint8_t current_mode_value = 0;
@@ -1000,15 +863,12 @@ int main(int argc, char *argv[])
             publish_camera_view(current_mode_value);
 
         // 寄存器访问：每100ms识别一次，响应更快
-        if (closed_loop)
-            steering_runtime_wait();
-        else
-            usleep(100000);
+        steering_runtime_wait();
     }
 
     publish_motion_hint(0);
-    if (closed_loop)
-        steering_runtime_close();
+    revoke_autopilot(&autopilot);
+    steering_runtime_close();
     // 寄存器访问：程序退出前的移除工作
     printf("\n=== 程序退出移除 ===\n");
 

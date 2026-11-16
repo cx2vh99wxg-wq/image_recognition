@@ -84,9 +84,10 @@ int main(){
  {CurveReceiverState receiver;CurveEvent event;auto m=meta(100);m.session_id=1;m.source=20;m.curve_frame_id=7;
   m.curve_age_ms=200;m.first_packet_ns=1000000000ULL;
   assert(receiver.observe(m,1100000000ULL,event)&&event.confidence==87); // 300ms input age
+  assert(event.deadline_ns==1300000000ULL);
   m.frame_id++;m.first_packet_ns=1200000000ULL;m.curve_age_ms=400;
   assert(!receiver.observe(m,1250000000ULL,event));
-  assert(receiver.expire(1300000000ULL,event)&&!event.confidence); // first deadline was not renewed
+  assert(receiver.expire(1300000000ULL,event)&&!event.confidence&&!event.deadline_ns);
   assert(!receiver.expire(1400000000ULL,event));
   m.curve_age_ms=1;m.first_packet_ns=1400000000ULL;
   assert(!receiver.observe(m,1400000000ULL,event)); // same NN cannot revive
@@ -96,7 +97,7 @@ int main(){
   m.curve_confidence=0;assert(receiver.observe(m,1410000000ULL,event)&&!event.confidence);
   assert(!receiver.observe(m,1420000000ULL,event));
   m.session_id=3;m.curve_confidence=80;m.curve_age_ms=490;m.first_packet_ns=1400000000ULL;
-  assert(receiver.observe(m,1420000000ULL,event)&&!event.confidence); // reassembly/queue age included
+  assert(receiver.observe(m,1420000000ULL,event)&&!event.confidence&&!event.deadline_ns); // reassembly/queue age included
   m.version=2;assert(!receiver.observe(m,1430000000ULL,event));
  }
  std::cout<<"PASS V3/V2: row integrity/reorder/drop/latest, source restart/retired session, NN identity/TTL/expiry/age\n";

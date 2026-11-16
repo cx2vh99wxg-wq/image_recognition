@@ -19,8 +19,12 @@ static uint32_t seq,frame,feedback_session=7;
 static int slow_release_window,late_status_reads;
 static uint32_t lane_frame;
 static unsigned lane_confidence,lane_reads;
-static int read_lane(void *context,uint32_t *id,unsigned *kind,unsigned *quality,unsigned *road_angle){
+static uint64_t lane_deadline;
+static uint8_t fpga_autopilot_status;
+static int read_lane(void *context,uint32_t *id,unsigned *kind,unsigned *quality,
+                     unsigned *road_angle,uint64_t *deadline_ns){
     (void)context;assert(!active);++lane_reads;
+    *deadline_ns=lane_deadline ? lane_deadline : steering_now_ns()+CURVE_RESULT_TTL_NS;
     *id=lane_frame;*kind=1;*quality=lane_confidence;*road_angle=20;return 0;
 }
 int printf(const char *format,...){
@@ -35,6 +39,11 @@ int fspi_write_data(uint16_t reg,uint8_t value){
     return 0;
 }
 int fspi_write_direction_once(uint16_t r,uint8_t v){return fspi_write_data(r,v);}
+int fspi_read_autopilot_status(uint8_t *status)
+{
+    *status=fpga_autopilot_status;
+    return 0;
+}
 int fspi_read_control_snapshot(ControlSnapshot *out){
     if(slow_release_window&&active&&steering_now_ns()-enabled>=4000000){
         ++late_status_reads;steering_sleep_ms(7);
@@ -46,12 +55,114 @@ static void feed(void){
     assert(steering_feedback_encode(wire,48,&s)==STEER_OK);
     assert(steering_feedback_ingest(wire,48,steering_now_ns())==STEER_OK);
 }
+static void start_authorized(void)
+{
+    assert(steering_runtime_init(0)==STEER_OK);
+    fpga_autopilot_status=0x0d;
+    steering_runtime_set_hmi_request(5);
+}
+
+static void feed_until(uint64_t duration)
+{
+    const uint64_t end=steering_now_ns()+duration;
+    do {
+        feed();steering_runtime_tick();steering_sleep_ms(1);
+    } while (steering_now_ns()<end);
+}
+
+static void test_output_gate(void)
+{
+    assert(steering_runtime_init(0)==STEER_OK);
+    fpga_autopilot_status=0x0d;
+    feed_until(350000000ULL);
+    steering_runtime_lane(1,++frame,1,90,20);
+    feed_until(40000000ULL);
+    assert(!starts && !active); /* No software approval at startup. */
+
+    steering_runtime_set_hmi_request(5);
+    steering_runtime_lane(1,++frame,1,90,20);
+    fpga_autopilot_status=1; /* OFF after the last approved poll, before the FSPI write. */
+    feed_until(40000000ULL);
+    assert(!starts && !active);
+    steering_runtime_set_hmi_request(0);
+
+    fpga_autopilot_status=0x0e;
+    steering_runtime_set_hmi_request(6);
+    steering_runtime_lane(1,++frame,1,90,20);
+    for (unsigned i=0; i<50 && !active; ++i) {
+        feed();steering_runtime_tick();steering_sleep_ms(1);
+    }
+    assert(starts==1 && active==2);
+    steering_runtime_set_hmi_request(0);
+    assert(!active && (pins.contacts&CONTACT_LEFT_N) && (pins.contacts&CONTACT_RIGHT_N));
+    steering_runtime_lane(1,++frame,2,90,20);
+    feed_until(50000000ULL);
+    assert(starts==1 && !active);
+    steering_runtime_close();
+    starts=0;angle=0;
+    puts("PASS output gate: OFF ignores lane, rechecks FPGA before a write, ON drives and OFF releases");
+}
+
+static void test_wait_keeps_approval(void)
+{
+    steering_state_t state;
+    angle=2.8f;
+    start_authorized();
+    feed_until(350000000ULL);
+    steering_runtime_lane(1,++frame,1,90,20); /* +5 deg; no safe candidate from +2.8. */
+    feed_until(40000000ULL);
+    steering_get_state(&state);
+    assert(state.status==STEERING_WAIT_TARGET && steering_runtime_available() && !starts);
+    steering_runtime_lane(1,++frame,1,90,curve_encode_image_heading(8));
+    for (unsigned i=0; i<50 && !active; ++i) {
+        feed();steering_runtime_tick();steering_sleep_ms(1);
+    }
+    assert(active==2 && starts==1);
+    steering_runtime_set_hmi_request(0);
+    assert(!active);
+    steering_runtime_close();
+    starts=0;angle=0;
+    puts("PASS wait target: no safe candidate keeps approval; a new feasible target drives");
+}
+
+static void test_pulse_limit_keeps_approval(void)
+{
+    assert(!setenv("STEERING_MAX_CORRECTION_PULSES","1",1));
+    start_authorized();
+    feed_until(350000000ULL);
+    steering_runtime_lane(1,++frame,1,90,curve_encode_image_heading(10));
+    feed_until(380000000ULL);
+    steering_state_t state;
+    steering_get_state(&state);
+    assert(state.status==STEERING_PULSE_LIMIT && steering_runtime_available() && starts==1 && !active);
+    steering_runtime_cancel(); /* A dropout must not reset the pulse latch. */
+    steering_runtime_lane(1,++frame,2,90,curve_encode_image_heading(8));
+    feed_until(30000000ULL);
+    assert(steering_runtime_available() && starts==1 && !active);
+    steering_runtime_set_hmi_request(0);
+    fpga_autopilot_status=0x0e;
+    steering_runtime_set_hmi_request(6);
+    steering_runtime_lane(1,++frame,2,90,curve_encode_image_heading(8));
+    for (unsigned i=0; i<50 && !active; ++i) {
+        feed();steering_runtime_tick();steering_sleep_ms(1);
+    }
+    assert(starts==2 && active==3);
+    steering_runtime_set_hmi_request(0);
+    steering_runtime_close();
+    assert(!unsetenv("STEERING_MAX_CORRECTION_PULSES"));
+    starts=0;angle=0;
+    puts("PASS pulse limit: approval stays active; no retry until a fresh HMI authorization");
+}
+
 int main(int argc,char **argv){
     assert(argc==4);setenv("STEERING_RESPONSE_TABLE",argv[1],1);setenv("STEERING_REFERENCE_FILE",argv[2],1);setenv("STEERING_FEEDBACK_PORT",argv[3],1);
     setenv("STEERING_PRIORITY","0",1);setenv("STEERING_CURVE_GAIN","0.25",1);setenv("STEERING_LANE_TARGET_LIMIT_DEG","12",1);
     pins.contacts=CONTACT_GO_N|CONTACT_BACK_N|CONTACT_LEFT_N|CONTACT_RIGHT_N|CONTACT_STOP_N;
     pins.gates=GATE_RESET_RELEASED|GATE_FS_ARMED;
-    assert(steering_runtime_init(0)==STEER_OK);feed();steering_runtime_tick();
+    test_output_gate();
+    test_wait_keeps_approval();
+    test_pulse_limit_keeps_approval();
+    start_authorized();feed();steering_runtime_tick();
     uint64_t start=steering_now_ns(),next_feed=0,next_lane=0;
     while(steering_now_ns()-start<1200000000){
         uint64_t n=steering_now_ns();if(n>=next_feed){feed();next_feed=n+10000000;}
@@ -75,7 +186,7 @@ int main(int argc,char **argv){
     starts=0;angle=0;active=0;pins.hmi=0;
     pins.contacts=CONTACT_GO_N|CONTACT_BACK_N|CONTACT_LEFT_N|CONTACT_RIGHT_N|CONTACT_STOP_N;
     pins.gates=GATE_RESET_RELEASED|GATE_FS_ARMED;
-    assert(steering_runtime_init(0)==STEER_OK);feed();steering_runtime_tick();
+    start_authorized();feed();steering_runtime_tick();
     start=steering_now_ns();next_feed=0;
     while(steering_now_ns()-start<450000000){
         uint64_t n=steering_now_ns();if(n>=next_feed){feed();next_feed=n+10000000;}
@@ -103,7 +214,7 @@ int main(int argc,char **argv){
     starts=0;angle=0;active=0;pins.hmi=0;late_status_reads=0;
     pins.contacts=CONTACT_GO_N|CONTACT_BACK_N|CONTACT_LEFT_N|CONTACT_RIGHT_N|CONTACT_STOP_N;
     pins.gates=GATE_RESET_RELEASED|GATE_FS_ARMED;
-    assert(steering_runtime_init(0)==STEER_OK);feed();steering_runtime_tick();
+    start_authorized();feed();steering_runtime_tick();
     start=steering_now_ns();next_feed=0;slow_release_window=1;
     while(steering_now_ns()-start<1200000000){
         uint64_t n=steering_now_ns();if(n>=next_feed){feed();next_feed=n+10000000;}
@@ -120,7 +231,7 @@ int main(int argc,char **argv){
      * Exercise the production 10ms poll API against the same input/plant. */
     for(int fast=0;fast<2;++fast){
         starts=0;active=0;angle=0;lane_reads=0;
-        assert(steering_runtime_init(0)==STEER_OK);feed();steering_runtime_tick();
+        start_authorized();feed();steering_runtime_tick();
         start=steering_now_ns();
         while(steering_now_ns()-start<450000000){feed();steering_runtime_tick();steering_sleep_ms(1);}
         start=steering_now_ns();next_lane=0;
@@ -132,7 +243,8 @@ int main(int argc,char **argv){
             if(fast)steering_runtime_poll_lane(1,read_lane,NULL);
             else if(elapsed>=next_lane){
                 uint32_t id;unsigned kind,quality,road;
-                read_lane(NULL,&id,&kind,&quality,&road);
+                uint64_t unused_deadline;
+                read_lane(NULL,&id,&kind,&quality,&road,&unused_deadline);
                 steering_runtime_lane(1,id,kind,quality,road);
                 next_lane=(elapsed/100000000+1)*100000000;
             }
@@ -145,19 +257,32 @@ int main(int argc,char **argv){
     }
     /* Policy denial and explicit bench mode cannot be bypassed by polling. */
     starts=0;active=0;angle=0;lane_reads=0;lane_frame=4000;lane_confidence=90;
-    assert(steering_runtime_init(0)==STEER_OK);feed();steering_runtime_tick();
+    start_authorized();feed();steering_runtime_tick();
     start=steering_now_ns();
     while(steering_now_ns()-start<450000000){feed();steering_runtime_poll_lane(0,read_lane,NULL);steering_runtime_tick();steering_sleep_ms(1);}
     assert(!active&&starts==0);steering_runtime_close();
     lane_reads=0;assert(steering_runtime_init(1)==STEER_OK);feed();steering_runtime_tick();
     steering_runtime_poll_lane(1,read_lane,NULL);assert(!lane_reads&&!starts);steering_runtime_close();
     puts("PASS short-valid-lane regression: 100ms polling misses 60ms windows, 10ms poll acts, expiry releases, denial and bench isolation retained; FAKE IO only");
-    assert(steering_runtime_init(0)==STEER_OK);feed();steering_runtime_tick();
+    start_authorized();feed();steering_runtime_tick();
+    lane_frame=4950;lane_confidence=90;lane_deadline=steering_now_ns()-1;
+    steering_runtime_poll_lane(1,read_lane,NULL);
+    steering_get_state(&state);assert(!isfinite(state.target_deg)&&!starts&&!active);
+    steering_sleep_ms(11);feed();
+    ++lane_frame;lane_deadline=steering_now_ns()+25000000;
+    steering_runtime_poll_lane(1,read_lane,NULL);
+    steering_get_state(&state);assert(fabsf(state.target_deg-5.f)<.01f);
+    steering_sleep_ms(30);feed();steering_runtime_tick();
+    steering_get_state(&state);
+    assert(state.status==STEERING_CANCELLED&&!isfinite(state.error_deg)&&!starts&&!active);
+    lane_deadline=0;steering_runtime_close();
+    puts("PASS expired road input: original receiver deadline reaches controller, no stale pulse; FAKE IO only");
+    start_authorized();feed();steering_runtime_tick();
     steering_runtime_lane(1,4999,1,90,curve_encode_image_heading(45));
     steering_get_state(&state);assert(fabsf(state.target_deg-12.f)<.01f);
     steering_runtime_close();
     setenv("STEERING_LANE_TARGET_LIMIT_DEG","16",1);
-    assert(steering_runtime_init(0)==STEER_OK);feed();steering_runtime_tick();
+    start_authorized();feed();steering_runtime_tick();
     const struct {unsigned type, heading; float target;} headings[]={
         {2,10,-10.f},{1,15,15.f},{2,18,-15.2f},{1,30,16.f},{2,90,-16.f},
     };
@@ -175,7 +300,7 @@ int main(int argc,char **argv){
     /* A new M boot must remain visibly blocked by the old physical reference.
      * Sending plausible curve/angle data must not silently rebind that zero. */
     starts=0;active=0;angle=0;feedback_session=8;
-    assert(steering_runtime_init(0)==STEER_OK);
+    start_authorized();
     for(unsigned i=0;i<10;++i){
         feed();steering_runtime_tick();
         steering_runtime_lane(1,++frame,1,90,25);

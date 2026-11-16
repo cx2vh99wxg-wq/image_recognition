@@ -2510,6 +2510,10 @@ int main(int argc, char **argv)
                        current_curve_confidence, curve_angle_degrees(curve_angle));
             }
         }
+        else
+        {
+            current_curve_confidence = 0;
+        }
 
         // 核对呈现控制更新。
         if (display_control_shm && display_control_shm->valid)

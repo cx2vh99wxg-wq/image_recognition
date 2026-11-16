@@ -353,11 +353,19 @@ module image_pcie_capture #(
   wire back_released;
   wire left_released;
   wire right_released;
+  wire [2:0] autopilot_request;
+  wire [7:0] autopilot_heartbeat;
+  wire autopilot_active;
+  autopilot_lease u_autopilot_lease (
+      .clk(free_clk), .rst_n(board_rst_n), .request_async(autopilot_request),
+      .heartbeat_async(autopilot_heartbeat), .steering_released(&fspi_button_sync[3:2]),
+      .movement_blocked(movement_blocked), .active(autopilot_active)
+  );
   remote_direction_arbiter u_remote_direction_arbiter (
       .clk                 (free_clk),
       .rst_n               (board_rst_n),
       .hmi_code            (hmi_select_sync),
-      .fspi_released       (fspi_button_sync[3:0]),
+      .fspi_released       ({fspi_button_sync[3:2] | {2{!autopilot_active}}, fspi_button_sync[1:0]}),
       .fspi_direction_armed(fspi_direction_armed),
       .movement_blocked    (movement_blocked),
       .hmi_left_denied     (hmi_left_denied),
@@ -386,6 +394,8 @@ module image_pcie_capture #(
       .camera_view_async(hmi_view_code),
       .wheel_report_async(wheel_report),
       .auto_brake_enable(auto_brake_enabled),
+      .autopilot_status_async({autopilot_active, autopilot_request}),
+      .autopilot_heartbeat(autopilot_heartbeat),
       .speed_status_async({speed_ready,speed_pressed,speed_drive,speed_phase_gray}),
       .control_status_async({board_rst_n,speed_ready,fspi_direction_armed,traffic_go_denied,
           hmi_right_denied,hmi_left_denied,movement_blocked,auto_brake_enabled,
@@ -407,10 +417,11 @@ module image_pcie_capture #(
       .clkin1 (free_clk)
   );
 
-  hmi_gear_feedback u_hmi_gear_feedback (
+  hmi_gear_feedback #(.HAS_AUTOPILOT(1'b1)) u_hmi_gear_feedback (
       .clk(true_50M), .rst_n(board_rst_n),
       .gear_async({speed_ready,speed_phase_gray}),
-      .slider_present(hmi_speed_slider_present), .txd(hmi_status_txd)
+      .slider_present(hmi_speed_slider_present), .autopilot_active_async(autopilot_active),
+      .txd(hmi_status_txd)
   );
   uart_loopback u_uart_loopback (
       .sys_clk     (true_50M),
@@ -429,6 +440,8 @@ module image_pcie_capture #(
       .mode         (mode),
       .cnn_level    (select_rearview),
       .auto_brake_enable(hmi_auto_brake_enable),
+      .autopilot_requested(autopilot_request[2]),
+      .autopilot_sequence(autopilot_request[1:0]),
       .speed_slider_present(hmi_speed_slider_present),
       .speed_request_level(hmi_speed_level),
       .speed_target_gear(hmi_speed_target),

@@ -61,3 +61,4 @@ pnr -force_to_run -gplace_seed 4 -groute_seed 4 -optimize_multi_corner_timing -f
 report_timing -force_to_run 
 gen_bit_stream -force_to_run -compress_bitstream true -master_configuration_clock_frequency {40M} 
 gen_bit_stream -force_to_run -compress_bitstream true -master_configuration_clock_frequency {40M} 
+gen_bit_stream -force_to_run -compress_bitstream true -master_configuration_clock_frequency {40M} 
