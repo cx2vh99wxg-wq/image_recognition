@@ -1,0 +1,1 @@
+cfg_gen_sfc -sbit "D:/Study_Object/image_recognition/image_recognition/output/front_person_sr_20261116/final/pineapple_s_front_person_sr_20261116.sbit" -sfc "D:/Study_Object/image_recognition/image_recognition/output/front_person_sr_20261116/final/pineapple_s_front_person_sr_20261116.sfc" -opcode 59

@@ -57,8 +57,10 @@ static int traffic_policy_initialized = 0;
 static FrontPersonIPC front_input = {-1, NULL};
 static FrontGuardIPC front_guard_ipc = {-1, NULL};
 static FrontPersonGuard front_guard = {0};
-static int front_guard_initialized = 0;
-static unsigned front_required = 1;
+static unsigned front_command = FRONT_STOP_REQUEST;
+static unsigned front_enabled;
+static unsigned front_stop_active;
+static uint8_t front_contacts;
 static FrontPersonData front_result;
 static int front_snapshot_ok = 0;
 static int fpga_camera_view_available;
@@ -78,22 +80,9 @@ static int publish_camera_view(uint8_t view)
     return 1;
 }
 
-static void monitor_front_person(uint64_t now, unsigned color)
+static void monitor_front_person(uint64_t now)
 {
     front_guard_open(&front_guard_ipc, 1);
-    if (!front_guard_initialized)
-    {
-        FrontGuardData old = {0};
-        if (!front_guard_read(&front_guard_ipc, &old))
-        {
-            front_guard.held_go = !!old.blocked;
-            front_guard.raw_request = !!old.raw_request;
-            front_guard.recovery_pending = !!old.raw_request || !!old.blocked;
-            front_guard.auto_enabled = !!old.auto_enabled;
-        }
-        front_guard_initialized = 1;
-    }
-    if (traffic_policy.blocked) front_guard.recovery_pending=1;
     front_person_ipc_open(&front_input, 0);
     memset(&front_result,0,sizeof(front_result));
     if (front_person_ipc_read(&front_input,&front_result)) memset(&front_result,0,sizeof(front_result));
@@ -103,6 +92,9 @@ static void monitor_front_person(uint64_t now, unsigned color)
     front_snapshot_ok = fspi_read_control_snapshot_with_wheel(&snapshot, &view, &wheel_period) == 0;
     if (front_snapshot_ok)
     {
+        front_enabled = (snapshot.gates & GATE_AUTO) != 0;
+        front_stop_active = (snapshot.gates & GATE_STOP) != 0;
+        front_contacts = snapshot.contacts;
         fpga_camera_view_available = publish_camera_view(view);
         if (display_control_shm && display_control_shm->valid && wheel_period != WHEEL_PERIOD_UNKNOWN)
         {
@@ -111,7 +103,7 @@ static void monitor_front_person(uint64_t now, unsigned color)
                              (stamp << 32) | wheel_period, __ATOMIC_RELEASE);
         }
     }
-    front_required = front_person_guard_observe(&front_guard,&front_result,now,&snapshot,front_snapshot_ok,color);
+    front_command = front_person_guard_observe(&front_guard, &front_result, now, front_snapshot_ok);
 }
 
 static SpeedWarningIPC speed_warning = {-1, NULL};
@@ -175,41 +167,34 @@ static void monitor_lane_rule(void)
     int signal_valid = !traffic_ipc_read(&traffic_input, &signal) && traffic_fresh(&signal, now);
     unsigned color = signal_valid ? traffic_go_color(&signal, now) : TRAFFIC_UNKNOWN;
     unsigned traffic_command = traffic_go_prepare(&traffic_policy, color);
-    // Sample contacts BEFORE inhibiting GO; left/right do not hide forward motion.
-    monitor_front_person(now,color);
-    // Front-person recovery participates only while HMI Auto Brake is ON.
-    // OFF must not let a detected person prevent a confirmed GREEN from
-    // clearing an independent red-light hold. Raw STOP stays FPGA-gated.
-    if (traffic_command==TRAFFIC_GO_CLEAR && front_guard.auto_enabled &&
-        front_required && traffic_policy.blocked)
-        traffic_command=TRAFFIC_GO_SET;
-    unsigned permission = front_person_guard_permission(&front_guard,front_required,
-                                                        traffic_command,traffic_policy.blocked);
+    monitor_front_person(now);
     // 写未成功后继续重试同一个待发出心跳值；若未成功时仍推进，
     // 下一次已完成写入的值可能被 FPGA 当作旧心跳。
     uint8_t next_heartbeat = lane_heartbeat ^ 0x80;
     int written =
-        fspi_write_data(5, (uint8_t)(0x40 | next_heartbeat | denied | permission)) == 0;
+        fspi_write_data(5, (uint8_t)(0x40 | next_heartbeat | denied | traffic_command | front_command)) == 0;
     if (written)
         lane_heartbeat = next_heartbeat;
     traffic_go_commit(&traffic_policy, traffic_command, written);
-    if (written) front_guard.held_go = front_guard.auto_enabled && front_required;
     FrontGuardData front_status = {0};
-    front_status.blocked = front_guard.held_go;
-    front_status.raw_request = front_guard.raw_request;
-    front_status.auto_enabled = front_guard.auto_enabled; front_status.link_ok = front_snapshot_ok;
+    front_status.raw_request = front_command == FRONT_STOP_REQUEST;
+    front_status.auto_enabled = front_enabled;
+    front_status.blocked = front_enabled && (front_status.raw_request || front_stop_active);
+    front_status.link_ok = front_snapshot_ok;
     front_status.person = front_person_fresh(&front_result,now) && front_person_hazard(&front_result);
     front_status.valid = front_person_fresh(&front_result,now) && ((front_result.flags & 3)==3);
     front_guard_set_deadline(&front_status,now+400000000ULL);
     front_guard_write(&front_guard_ipc,&front_status);
     static int previous_front = -1;
-    int front_state = (front_status.person?1:0) | (front_guard.raw_request?2:0) |
-                      (front_guard.held_go?4:0) | (front_status.valid?8:0);
+    int front_state = (front_status.person ? 1 : 0) | (front_status.blocked ? 2 : 0) |
+        (front_status.valid ? 4 : 0) | (front_enabled ? 8 : 0) | (int)front_command |
+        (front_snapshot_ok ? 0x40 | ((front_contacts & (CONTACT_GO_N | CONTACT_STOP_N)) << 8) : 0);
     if (front_state != previous_front)
     {
-        printf("[FRONT_PERSON] detected=%u valid=%u auto=%u forward_hold=%u raw_stop=%u read_ok=%d reg5_write=%d clear_count=%u\n",
-               !!front_status.person,front_status.valid,front_guard.auto_enabled,
-               front_guard.held_go,front_guard.raw_request,front_snapshot_ok,written,front_guard.clear_count);
+        printf("[FRONT_PERSON] detected=%u valid=%u auto=%u forward_hold=%u raw_stop=%u resume_ready=%u read_ok=%d go_n=%u sr_n=%u reg5_write=%d\n",
+               !!front_status.person, front_status.valid, front_enabled, front_status.blocked,
+               front_status.raw_request, front_command == FRONT_RESUME_ALLOWED, front_snapshot_ok,
+               !!(front_contacts & CONTACT_GO_N), !!(front_contacts & CONTACT_STOP_N), written);
         previous_front=front_state;
     }
     TrafficGoData go_status = {0};
@@ -295,14 +280,12 @@ static int monitor_emergency_brake(void)
 
     int required = brake_required(1, status_valid && clock_ok, person_detected, brake_enable,
                                   last_update, now);
-    required = required || front_guard.raw_request;
 
     enum
     {
         DETECTOR_UNAVAILABLE,
         DETECTOR_STALE,
         PERSON_REQUEST,
-        FRONT_PERSON_REQUEST,
         HOLD_OR_INFERENCE_FAULT,
         CLEAR_REQUEST,
         DIRECTION_WRITE_FAULT
@@ -312,7 +295,6 @@ static int monitor_emergency_brake(void)
                     now - last_update >= BRAKE_STATUS_TIMEOUT_SECONDS)
                      ? DETECTOR_STALE
                  : person_detected   ? PERSON_REQUEST
-                 : front_guard.raw_request ? FRONT_PERSON_REQUEST
                  : brake_enable == 0 ? HOLD_OR_INFERENCE_FAULT
                                      : CLEAR_REQUEST;
     static int previous_reason = -1;
@@ -352,7 +334,7 @@ static int monitor_emergency_brake(void)
     if (reason != previous_reason)
     {
         const char *names[] = {"检测段/首帧/时钟不可用", "检测数据超时",
-                               "有效person请求", "前方行人/通路故障，前进刹停请求", "无人确认期或推理故障（详见PCIe日志）",
+                               "有效person请求", "无人确认期或推理故障（详见PCIe日志）",
                                "有效无人、请求清除",     "方向寄存器写入故障"};
         printf(
             "[自动刹停链路] %s: valid=%d person=%d brake_enable=%d raw_request=%d -> reg4=%d；AUTO及实际STOP锁存由FPGA决定\n",

@@ -1,0 +1,3 @@
+cfg_help cfg_reset_fpga
+cfg_help cfg_assign_file
+cfg_help cfg_program

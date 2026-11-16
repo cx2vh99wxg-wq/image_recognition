@@ -290,7 +290,8 @@ module lane_permission_guard #(
     input wire clk, rst_n,
     input wire [7:0] async_permission,
     output wire left_denied, right_denied,
-    output wire traffic_go_denied
+    output wire traffic_go_denied,
+    output wire front_stop_request, front_resume_allowed
 );
   (* ASYNC_REG="TRUE" *) reg [7:0] meta, synced;
   reg [7:0] candidate;
@@ -298,14 +299,17 @@ module lane_permission_guard #(
   reg [24:0] age;
   reg heartbeat, alive;
   reg [1:0] deny;
+  reg [1:0] front_command;
   reg red_hold;
   assign left_denied=alive & deny[0];
   assign right_denied=alive & deny[1];
   assign traffic_go_denied=red_hold;
+  assign front_stop_request = !alive || front_command[0];
+  assign front_resume_allowed = alive && front_command == 2'b10;
   always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
       meta<=0; synced<=0; candidate<=0; stable<=0;
-      age<=0; heartbeat<=0; alive<=0; deny<=0; red_hold<=0;
+      age<=0; heartbeat<=0; alive<=0; deny<=0; red_hold<=0; front_command<=0;
     end else begin
       meta<=async_permission; synced<=meta;
       if(synced!=candidate) begin candidate<=synced; stable<=0; end
@@ -314,10 +318,79 @@ module lane_permission_guard #(
       else begin alive<=0; deny<=0; end
       if(stable==8 && candidate[6] && (!alive || candidate[7]!=heartbeat)) begin
         heartbeat<=candidate[7]; deny<=candidate[1:0]; age<=0; alive<=1;
+        front_command<=candidate[5:4];
         if(candidate[2]) red_hold<=1;
         else if(candidate[3]) red_hold<=0;
       end
       if(stable==8 && !candidate[6]) begin alive<=0; deny<=0; end
+    end
+  end
+endmodule
+
+// J3-28 is the remote's active-low S/R key. Keep GO released between both presses.
+module remote_front_stop #(
+    parameter PULSE_CYCLES = 6250000,  // 250 ms at 25 MHz
+    parameter SETTLE_CYCLES = 2500000  // 100 ms after the second press
+) (
+    input wire clk, rst_n,
+    input wire enabled, stop_request, resume_allowed,
+    input wire forward_requested, traffic_go_denied, other_stop,
+    output wire stop_pressed, hold_go, cancel_traction, cycle_active
+);
+  localparam [2:0] IDLE = 0, PRESS_STOP = 1, WAIT_CLEAR = 2,
+                   PRESS_RESUME = 3, WAIT_RELEASE = 4, CANCEL = 5;
+  localparam TIMER_BITS = $clog2(1 + ((PULSE_CYCLES > SETTLE_CYCLES) ?
+                                      PULSE_CYCLES : SETTLE_CYCLES));
+  localparam [TIMER_BITS-1:0] PULSE_TICKS = PULSE_CYCLES;
+  localparam [TIMER_BITS-1:0] SETTLE_TICKS = SETTLE_CYCLES;
+  reg [2:0] state;
+  reg [TIMER_BITS-1:0] remaining;
+  reg was_forward;
+  wire safe_to_resume = resume_allowed && !stop_request && !traffic_go_denied;
+
+  assign cycle_active = state != IDLE;
+  assign hold_go = cycle_active || (enabled && stop_request);
+  assign cancel_traction = state == CANCEL;
+  assign stop_pressed = enabled && !other_stop &&
+      (state == PRESS_STOP || state == PRESS_RESUME);
+
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      state <= IDLE;
+      remaining <= 0;
+      was_forward <= 1'b0;
+    end else begin
+      was_forward <= forward_requested && !hold_go && !traffic_go_denied && !other_stop;
+      if (remaining != 0)
+        remaining <= remaining - 1'b1;
+
+      if (state == CANCEL) begin
+        state <= IDLE;
+      end else if (cycle_active && !enabled) begin
+        state <= CANCEL;
+      end else if (cycle_active && (other_stop || !forward_requested)) begin
+        state <= IDLE;
+      end else begin
+        case (state)
+          IDLE: if (enabled && stop_request && was_forward && forward_requested && !other_stop) begin
+            state <= PRESS_STOP;
+            remaining <= PULSE_TICKS;
+          end
+          PRESS_STOP: if (remaining == 1)
+            state <= WAIT_CLEAR;
+          WAIT_CLEAR: if (safe_to_resume) begin
+            state <= PRESS_RESUME;
+            remaining <= PULSE_TICKS;
+          end
+          PRESS_RESUME: if (remaining == 1) begin
+            state <= WAIT_RELEASE;
+            remaining <= SETTLE_TICKS;
+          end
+          WAIT_RELEASE: if (remaining == 0 && safe_to_resume)
+            state <= IDLE;
+          default: state <= IDLE;
+        endcase
+      end
     end
   end
 endmodule

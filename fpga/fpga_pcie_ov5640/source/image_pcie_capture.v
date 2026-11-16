@@ -299,10 +299,12 @@ module image_pcie_capture #(
 
   assign speed_key_n = speed_drive ? 1'b0 : 1'bz;
   wire hmi_left_denied, hmi_right_denied, traffic_go_denied;
+  wire front_stop_request, front_resume_allowed;
   lane_permission_guard u_lane_permission_guard (
       .clk(free_clk), .rst_n(board_rst_n), .async_permission(mem5_out),
       .left_denied(hmi_left_denied), .right_denied(hmi_right_denied),
-      .traffic_go_denied(traffic_go_denied)
+      .traffic_go_denied(traffic_go_denied),
+      .front_stop_request(front_stop_request), .front_resume_allowed(front_resume_allowed)
   );
 
   reg [4:0] fspi_button_meta;
@@ -353,13 +355,22 @@ module image_pcie_capture #(
   wire back_released;
   wire left_released;
   wire right_released;
+  wire front_stop_pressed, front_go_hold, front_cancel_traction, front_cycle_active;
+  remote_front_stop u_remote_front_stop (
+      .clk(free_clk), .rst_n(board_rst_n), .enabled(auto_brake_enabled),
+      .stop_request(front_stop_request), .resume_allowed(front_resume_allowed),
+      .forward_requested(!go_released && back_released),
+      .traffic_go_denied(traffic_go_denied), .other_stop(movement_blocked),
+      .stop_pressed(front_stop_pressed), .hold_go(front_go_hold),
+      .cancel_traction(front_cancel_traction), .cycle_active(front_cycle_active)
+  );
   remote_direction_arbiter u_remote_direction_arbiter (
       .clk                 (free_clk),
       .rst_n               (board_rst_n),
       .hmi_code            (hmi_select_sync),
       .fspi_released       (fspi_button_sync[3:0]),
       .fspi_direction_armed(fspi_direction_armed),
-      .movement_blocked    (movement_blocked),
+      .movement_blocked    (movement_blocked | front_cancel_traction),
       .hmi_left_denied     (hmi_left_denied),
       .hmi_right_denied    (hmi_right_denied),
       .go_released         (go_released),
@@ -368,11 +379,13 @@ module image_pcie_capture #(
       .right_released      (right_released)
   );
 
-  assign go    = go_released | traffic_go_denied;
-  assign back  = back_released;
-  assign left  = left_released  ? 1'bz : 1'b0;
-  assign right = right_released ? 1'bz : 1'b0;
-  assign stop  = ~stop_pressed;
+  wire left_inactive = left_released | front_stop_pressed;
+  wire right_inactive = right_released | front_stop_pressed;
+  assign go    = go_released | traffic_go_denied | front_go_hold;
+  assign back  = back_released | front_stop_pressed;
+  assign left  = left_inactive  ? 1'bz : 1'b0;
+  assign right = right_inactive ? 1'bz : 1'b0;
+  assign stop  = ~(stop_pressed | front_stop_pressed);
 
   wire [3:0] hmi_view_code;
   wire [31:0] wheel_report;
@@ -388,9 +401,9 @@ module image_pcie_capture #(
       .auto_brake_enable(auto_brake_enabled),
       .speed_status_async({speed_ready,speed_pressed,speed_drive,speed_phase_gray}),
       .control_status_async({board_rst_n,speed_ready,fspi_direction_armed,traffic_go_denied,
-          hmi_right_denied,hmi_left_denied,movement_blocked,auto_brake_enabled,
-          hmi_speed_manual,speed_key_n,speed_drive,~stop_pressed,
-          right_released,left_released,back_released,(go_released|traffic_go_denied)}),
+          hmi_right_denied,hmi_left_denied,(movement_blocked|front_cycle_active),auto_brake_enabled,
+          hmi_speed_manual,speed_key_n,speed_drive,stop,
+          right_inactive,left_inactive,back,go}),
       .mem0_out       (mem0_out),
       .mem1_out       (mem1_out),
       .mem2_out       (mem2_out),

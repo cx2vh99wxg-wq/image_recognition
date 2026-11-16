@@ -99,7 +99,7 @@ int test_spi_ioctl(int fd, unsigned long request, ...)
         uint16_t address = ((uint16_t)command[0] << 8) | command[1];
         expect(address <= 5, "request monitor uses only motion/STOP and independent lane permission");
         if(address==5) {
-            expect((command[2] & 0x70) == 0x40,
+            expect((command[2] & 0x40) && (command[2] & 0x30) != 0x30,
                    "permission byte keeps its signature with lane and traffic flags set");
             return tr->len;
         }

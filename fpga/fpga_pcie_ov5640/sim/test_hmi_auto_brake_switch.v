@@ -15,10 +15,19 @@ module test_hmi_auto_brake_switch;
   wire auto_enable, auto_enable_sync, gated_request;
   reg raw_brake_request = 1'b1; // Old software can initialize register 4 low.
   reg use_spi_brake_request = 1'b0;
-  wire stop_pad = ~stop_pressed;
+  reg front_test = 1'b0;
+  wire front_stop_pressed, front_go_hold, front_cancel_traction;
+  wire front_stop_request, front_resume_allowed, red_hold;
+  wire stop_pad = ~(stop_pressed | front_stop_pressed);
   wire rearm_command, stop_pressed, movement_blocked, fspi_direction_armed;
   wire go_released, back_released, left_released, right_released;
   wire [3:0] released = {right_released, left_released, back_released, go_released};
+  wire go_pad = go_released | front_go_hold | (front_test && red_hold);
+  integer front_pulses = 0;
+  always @(posedge front_stop_pressed) front_pulses = front_pulses + 1;
+  always @(negedge pad_clk)
+    if (front_stop_pressed && !go_pad)
+      $fatal(1, "GO must be released throughout both S/R presses");
 
   uart_lcd #(.FRAME_GAP_CYCLES(32)) u_hmi (
       .clk(uart_clk), .rst_n(rst_n), .uart_rx(uart_data),
@@ -44,7 +53,8 @@ module test_hmi_auto_brake_switch;
   remote_direction_arbiter u_directions (
       .clk(pad_clk), .rst_n(rst_n), .hmi_code(hmi_code_sync),
       .fspi_released(4'hf), .fspi_direction_armed(fspi_direction_armed),
-      .hmi_left_denied(1'b0), .hmi_right_denied(1'b0), .movement_blocked(movement_blocked), .go_released(go_released),
+      .hmi_left_denied(1'b0), .hmi_right_denied(1'b0),
+      .movement_blocked(movement_blocked | front_cancel_traction), .go_released(go_released),
       .back_released(back_released), .left_released(left_released),
       .right_released(right_released)
   );
@@ -59,7 +69,19 @@ module test_hmi_auto_brake_switch;
   wire legacy_rx_valid;
   wire [7:0] legacy_rx_data, register_read_data;
   wire legacy_tx_done;
-  wire [7:0] mem0_out, mem1_out, mem2_out, mem3_out, mem4_out;
+  wire [7:0] mem0_out, mem1_out, mem2_out, mem3_out, mem4_out, mem5_out;
+  lane_permission_guard #(.TIMEOUT_CYCLES(800)) permission (
+      .clk(pad_clk), .rst_n(rst_n), .async_permission(mem5_out),
+      .left_denied(), .right_denied(), .traffic_go_denied(red_hold),
+      .front_stop_request(front_stop_request), .front_resume_allowed(front_resume_allowed)
+  );
+  remote_front_stop #(.PULSE_CYCLES(72), .SETTLE_CYCLES(24)) front_stop (
+      .clk(pad_clk), .rst_n(rst_n), .enabled(front_test && auto_enable_sync),
+      .stop_request(front_stop_request), .resume_allowed(front_resume_allowed),
+      .forward_requested(!go_released && back_released), .traffic_go_denied(red_hold),
+      .other_stop(movement_blocked), .stop_pressed(front_stop_pressed),
+      .hold_go(front_go_hold), .cancel_traction(front_cancel_traction), .cycle_active()
+  );
   reg register_clk = 1'b0;
   always #1.25 register_clk = ~register_clk;
   reg [4:0] fspi_button_meta;
@@ -86,7 +108,7 @@ module test_hmi_auto_brake_switch;
       .cmd(legacy_cmd), .tx_done(legacy_tx_done), .wr_data(legacy_rx_data),
       .rx_valid(legacy_rx_valid), .select_rearview(hmi_code),
       .rd_data(register_read_data), .mem0_out(mem0_out), .mem1_out(mem1_out),
-      .mem2_out(mem2_out), .mem3_out(mem3_out), .mem4_out(mem4_out)
+      .mem2_out(mem2_out), .mem3_out(mem3_out), .mem4_out(mem4_out), .mem5_out(mem5_out)
   );
 
   task settle;
@@ -186,6 +208,13 @@ module test_hmi_auto_brake_switch;
   endtask
 
   reg [7:0] legacy_read;
+  reg permission_heartbeat = 1'b0;
+  task write_permission(input [5:0] command);
+    begin
+      permission_heartbeat = ~permission_heartbeat;
+      write_spi_register(16'h0005, {permission_heartbeat, 1'b1, command});
+    end
+  endtask
   initial begin
     #25 rst_n = 1'b1;
     settle();
@@ -321,11 +350,48 @@ module test_hmi_auto_brake_switch;
     check(mem4_out == 8'h01 && stop_pad == 1'b1 &&
           mem0_out == 8'h01 && mem1_out == 8'h01 && mem2_out == 8'h01 && mem3_out == 8'h01,
           "joint read/write operations preserve all four direction registers");
+
+    front_test = 1'b1;
+    uart_command(8'h04, 8'h0a);
+    uart_command(8'h04, 8'h00);
+    write_permission(6'h10);
+    check(!go_pad && stop_pad && front_pulses == 0, "AutoBreak OFF leaves GO and S/R unchanged");
+    write_permission(6'h00);
+    uart_command(8'h0f, 8'hff);
+    check(!go_pad, "GO is physically active before pedestrian arrives");
+    write_permission(6'h10);
+    check(go_pad && !stop_pad && front_pulses == 1, "front alarm releases GO and presses S/R");
+    repeat (80) @(negedge pad_clk);
+    check(go_pad && stop_pad && front_pulses == 1, "stop press released with GO still held");
+    write_permission(6'h00);
+    check(go_pad && stop_pad && front_pulses == 1, "short clear cannot resume");
+    write_permission(6'h24);
+    check(go_pad && stop_pad && front_pulses == 1, "red holds despite three-second permission");
+    write_permission(6'h28);
+    check(go_pad && !stop_pad && front_pulses == 2, "fresh clear and green release start second S/R press");
+    write_permission(6'h10);
+    repeat (100) @(negedge pad_clk);
+    check(go_pad && stop_pad && front_pulses == 2, "person returning during second pulse keeps GO held");
+    write_permission(6'h20);
+    check(!go_pad && stop_pad && front_pulses == 2, "fresh clearance resumes original GO without a third press");
+
+    write_permission(6'h10);
+    repeat (80) @(negedge pad_clk);
+    check(go_pad && stop_pad && front_pulses == 3, "new forward incident makes exactly one new stop press");
+    uart_command(8'h04, 8'h0e);
+    uart_command(8'h04, 8'h00);
+    write_permission(6'h20);
+    check(go_pad && stop_pad && front_pulses == 3, "manual S/R cancels automatic restart");
+    write_permission(6'h10);
+    uart_command(8'h04, 8'h0a);
+    uart_command(8'h04, 8'h00);
+    check(go_pad && stop_pad && front_pulses == 3, "hazard blocks new GO without pressing S/R on a stopped car");
+
     @(negedge uart_clk); rst_n = 1'b0;
     #1;
     check(!auto_enable && !auto_enable_sync && !stop_pressed,
           "FPGA reset restores the automatic switch to OFF");
-    $display("PASS: UART FF/EE + SPI81 read + SPI00 register4 write + CDC + latched STOP pad + REARM, with legacy controls");
+    $display("PASS: UART AutoBreak, legacy latched STOP, front two S/R presses, held GO, red, manual cancellation");
     $finish;
   end
   initial begin
