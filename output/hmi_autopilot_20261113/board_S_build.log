@@ -1,7 +1,0 @@
-[?2004l
-CONTROL diagnostic: native RX-only, contact/gate masks, two CRCs, old FPGA rejection, short/error transfers and no writes PASS
-SPEED transport: native RX-only, all gear/flags, CRC, old FPGA, short/I/O errors, no writes, IPC expiry PASS
-hmi_build/vehicle_control: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=11827240f363c16ce8f067b723e1317b5336942d, for GNU/Linux 3.7.0, not stripped
-00091c0c25f76469a25a7401a551e763496257ebe05c506cf05cb7d2c6c061ae  hmi_build/vehicle_control
-./build/vehicle_control --brake-only
-STEER_CMD_a040393fd9f5449799a2e3428bae7d6f:0

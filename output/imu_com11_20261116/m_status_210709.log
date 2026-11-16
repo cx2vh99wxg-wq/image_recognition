@@ -1,0 +1,35 @@
+MainPID=0
+Result=exit-code
+ActiveState=failed
+SubState=failed
+2026-11-16T12:39:52+0000 linaro-alip systemd[1]: m-steering-imu.service: Failed with result 'exit-code'.
+2026-11-16T12:39:54+0000 linaro-alip systemd[1]: m-steering-imu.service: Start request repeated too quickly.
+2026-11-16T12:39:54+0000 linaro-alip systemd[1]: m-steering-imu.service: Failed with result 'exit-code'.
+2026-11-16T12:39:54+0000 linaro-alip systemd[1]: Failed to start m-steering-imu.service - M FPGA MPU-9250 steering telemetry (no actuator control).
+2026-11-16T13:06:13+0000 linaro-alip python3[43666]: IMU_STARTUP_CALIBRATING stationary_required=1 seconds=12 udp_valid=0 mechanical_zero=0
+2026-11-16T13:06:17+0000 linaro-alip python3[43666]: IMU_STARTUP_REJECTED startup raw capture failed; telemetry withheld; no uncalibrated valid UDP angle published
+2026-11-16T13:06:17+0000 linaro-alip systemd[1]: m-steering-imu.service: Failed with result 'exit-code'.
+2026-11-16T13:06:20+0000 linaro-alip python3[43676]: IMU_STARTUP_CALIBRATING stationary_required=1 seconds=12 udp_valid=0 mechanical_zero=0
+2026-11-16T13:06:27+0000 linaro-alip python3[43676]: IMU_STARTUP_REJECTED startup raw capture failed; telemetry withheld; no uncalibrated valid UDP angle published
+2026-11-16T13:06:27+0000 linaro-alip systemd[1]: m-steering-imu.service: Failed with result 'exit-code'.
+2026-11-16T13:06:30+0000 linaro-alip python3[43684]: IMU_STARTUP_CALIBRATING stationary_required=1 seconds=12 udp_valid=0 mechanical_zero=0
+2026-11-16T13:06:30+0000 linaro-alip python3[43684]: IMU_STARTUP_REJECTED startup raw capture failed; telemetry withheld; no uncalibrated valid UDP angle published
+2026-11-16T13:06:31+0000 linaro-alip systemd[1]: m-steering-imu.service: Failed with result 'exit-code'.
+2026-11-16T13:06:33+0000 linaro-alip systemd[1]: m-steering-imu.service: Start request repeated too quickly.
+2026-11-16T13:06:33+0000 linaro-alip systemd[1]: m-steering-imu.service: Failed with result 'exit-code'.
+2026-11-16T13:06:33+0000 linaro-alip systemd[1]: Failed to start m-steering-imu.service - M FPGA MPU-9250 steering telemetry (no actuator control).
+1794834390171604287_43684
+[REAL FPGA] axis=[0.00000 0.00000 1.00000] bias=[0.00000 0.00000 0.00000] ZERO_VALID=0; relative motion only, chassis uncompensated
+REAL seq=1 t_ns=78302696571329 dt_ms=0.000 gap=0 age_ms=3 accel=[6.7941 0.1538 7.1413] gyro=[-0.5649 -1.8015 0.1145] temp_c=26.969 relative_deg=nan rate_dps=nan ZERO_VALID=0 static_hold=0 hold_changes=0 residual_bias=[0.00000 0.00000 0.00000]
+IMU fault/stale: NOT_IMPLEMENTED_OR_NOT_READY; ZERO_VALID revoked, no valid UDP; re-zero required.
+LINK accepted=44 duplicate_reads=143 transfers=668 io_errors=0 crc_errors=0 stale_captures=0 i2c_errors=558
+1794834380429938895_43676
+REAL seq=501 t_ns=78297923040046 dt_ms=10.104 gap=0 age_ms=4 accel=[6.8043 0.1496 7.1293] gyro=[-0.6947 -2.1221 0.0687] temp_c=28.395 relative_deg=nan rate_dps=nan ZERO_VALID=0 static_hold=0 hold_changes=0 residual_bias=[0.00000 0.00000 0.00000]
+REAL seq=601 t_ns=78298922373046 dt_ms=8.804 gap=0 age_ms=3 accel=[6.8235 0.1538 7.1132] gyro=[-0.7786 -2.1374 0.0611] temp_c=28.374 relative_deg=nan rate_dps=nan ZERO_VALID=0 static_hold=0 hold_changes=0 residual_bias=[0.00000 0.00000 0.00000]
+IMU fault/stale: NOT_IMPLEMENTED_OR_NOT_READY; ZERO_VALID revoked, no valid UDP; re-zero required.
+LINK accepted=684 duplicate_reads=2335 transfers=6580 io_errors=0 crc_errors=0 stale_captures=0 i2c_errors=550
+1794834373174412303_43666
+REAL seq=301 t_ns=78288676489362 dt_ms=8.804 gap=0 age_ms=4 accel=[6.8145 0.1173 7.1228] gyro=[-0.8244 -2.0916 -0.0153] temp_c=28.377 relative_deg=nan rate_dps=nan ZERO_VALID=0 static_hold=0 hold_changes=0 residual_bias=[0.00000 0.00000 0.00000]
+REAL seq=402 t_ns=78289677675362 dt_ms=10.565 gap=0 age_ms=2 accel=[6.8331 0.1526 7.1317] gyro=[-0.7786 -2.2214 0.0458] temp_c=28.392 relative_deg=nan rate_dps=nan ZERO_VALID=0 static_hold=0 hold_changes=0 residual_bias=[0.00000 0.00000 0.00000]
+IMU fault/stale: NOT_IMPLEMENTED_OR_NOT_READY; ZERO_VALID revoked, no valid UDP; re-zero required.
+LINK accepted=436 duplicate_reads=1477 transfers=4242 io_errors=0 crc_errors=0 stale_captures=0 i2c_errors=477

@@ -1,0 +1,14 @@
+IMU1 flags=1 who=0xFF address=0x68 i2c_error=0 errors=558 seq=0 fpga_us=78387733242 sample_us=78304246716 generation=63
+IMU1 flags=3 who=0x71 address=0x68 i2c_error=0 errors=558 seq=0 fpga_us=78387836485 sample_us=78304246716 generation=63
+IMU1 flags=3 who=0x71 address=0x68 i2c_error=0 errors=558 seq=0 fpga_us=78387938115 sample_us=78304246716 generation=63
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=558 seq=8 fpga_us=78388039710 sample_us=78388028556 generation=63
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=559 seq=19 fpga_us=78388141136 sample_us=78388138922 generation=63
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=559 seq=29 fpga_us=78388242471 sample_us=78388239288 generation=63
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=559 seq=39 fpga_us=78388343830 sample_us=78388337892 generation=63
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=559 seq=49 fpga_us=78388445202 sample_us=78388438258 generation=63
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=560 seq=59 fpga_us=78388546551 sample_us=78388538163 generation=63
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=560 seq=69 fpga_us=78388647893 sample_us=78388638528 generation=63
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=561 seq=79 fpga_us=78388749220 sample_us=78388738239 generation=63
+IMU1 flags=7 who=0x71 address=0x68 i2c_error=0 errors=561 seq=89 fpga_us=78388850532 sample_us=78388838605 generation=63
+REAL SENSOR DATA PRESENT; physical axis/center validation is still required
+PROBE_STATUS=0

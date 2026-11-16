@@ -86,8 +86,6 @@ def main():
     parser.add_argument('--fixed-chassis',action='store_true')
     parser.add_argument('--mechanical-center',action='store_true')
     parser.add_argument('--same-mount',action='store_true')
-    parser.add_argument('--hmi-autopilot',action='store_true',
-                        help='Require a fresh HMI request before enabling automatic steering')
     args=parser.parse_args()
     if not all([args.fixed_chassis,args.mechanical_center,args.same_mount]):
         parser.error('Physically center and fix the mechanism; all three declarations are required')
@@ -143,11 +141,8 @@ def main():
         if marker_created and marker.read_text()==token:marker.unlink()
     if resume:
         log_path=folder/'production.log'
-        command=['stdbuf','-oL','python3',str(ROOT/'tools/launch_vehicle_control.py')]
-        if args.hmi_autopilot:
-            command.append('--hmi-autopilot')
         with log_path.open('x') as log:
-            process=subprocess.Popen(command,
+            process=subprocess.Popen(['stdbuf','-oL','python3',str(ROOT/'tools/launch_vehicle_control.py')],
                 cwd=ROOT.parent/'fspi',env=environment,stdin=subprocess.DEVNULL,
                 stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
         (ROOT.parent/'fspi/fspi.pid').write_text(str(process.pid)+'\n')

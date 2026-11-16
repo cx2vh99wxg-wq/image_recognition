@@ -21,10 +21,10 @@ module test_hmi_camera_view;
   reg [3:0] host_data = 0;
   tri [3:0] bus;
   assign bus = host_drives ? host_data : 4'bzzzz;
-  fspi_transport #(.HAS_CAMERA_VIEW(1'b1), .HAS_WHEEL_REPORT(1'b1), .HAS_AUTOPILOT(1'b1)) transport (
+  fspi_transport #(.HAS_CAMERA_VIEW(1'b1), .HAS_WHEEL_REPORT(1'b1)) transport (
       .spi_clk(spi_clk), .spi_cs(spi_cs), .spi_data(bus), .rst_n(rst_n),
       .select_rearview(hmi_code), .camera_view_async(view_code), .wheel_report_async(32'hb609c478),
-      .auto_brake_enable(1'b0), .speed_status_async(6'd0), .autopilot_status_async(4'hd),
+      .auto_brake_enable(1'b0), .speed_status_async(6'd0),
       .control_status_async(16'h1234), .tx_data(8'd0), .imu_snapshot(512'd0)
   );
 
@@ -103,8 +103,8 @@ module test_hmi_camera_view;
                packet[0], packet[8], expected_hmi, expected_view);
       if ({packet[9], packet[10], packet[11], packet[12]} !== 32'hb609c478)
         $fatal(1, "FAIL wheel tail %h %h %h %h", packet[9], packet[10], packet[11], packet[12]);
-      if ({packet[13], packet[14]} !== 16'hbd3a)
-        $fatal(1, "FAIL Autopilot status/CRC %h %h", packet[13], packet[14]);
+      if ({packet[13], packet[14]} !== 16'hffff)
+        $fatal(1, "FAIL unused status tail %h %h", packet[13], packet[14]);
     end
   endtask
 
@@ -139,7 +139,7 @@ module test_hmi_camera_view;
     expect_spi(8'haa, 8'h33);
     repeat (PREVIEW_CYCLES) tick();
     expect_spi(8'haa, 8'h99);
-    $display("PASS HMI timed camera view, unchanged raw keys, and S-only FSPI view byte");
+    $display("PASS HMI timed camera view, raw keys, wheel report and unused status tail");
     $finish;
   end
 endmodule

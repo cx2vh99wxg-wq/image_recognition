@@ -1,0 +1,1 @@
+cfg_gen_sfc -sbit "D:/Study_Object/image_recognition/image_recognition/output/steering_prelim_20261116/final/pineapple_s_prelim_20261116.sbit" -sfc "D:/Study_Object/image_recognition/image_recognition/output/steering_prelim_20261116/final/pineapple_s_prelim_20261116.sfc" -opcode 59

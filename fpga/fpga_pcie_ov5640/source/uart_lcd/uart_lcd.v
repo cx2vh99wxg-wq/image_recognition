@@ -24,8 +24,6 @@ module uart_lcd #(
     output     [7:0]  cr_min,
     output     [7:0]  cr_max,
     output            auto_brake_enable,
-    output reg        autopilot_requested,
-    output reg [1:0]  autopilot_sequence,
     output reg        speed_slider_present,
     output reg        speed_request_level,
     output reg [1:0]  speed_target_gear,
@@ -159,21 +157,6 @@ module uart_lcd #(
                 end
                 default: ;
             endcase
-        end
-    end
-
-    // FF is a new operator request. EE clears it independently of the S process.
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            autopilot_requested <= 1'b0;
-            autopilot_sequence <= 2'b00;
-        end else if (frame_complete && previous_1 == 8'h12) begin
-            if (uart_rx == 8'hee)
-                autopilot_requested <= 1'b0;
-            else if (uart_rx == 8'hff) begin
-                autopilot_requested <= 1'b1;
-                autopilot_sequence <= {autopilot_sequence[0], ~autopilot_sequence[1]};
-            end
         end
     end
 

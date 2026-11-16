@@ -1,5 +1,5 @@
 // 2026-11-03 注释校订。在寄存器时钟下降沿解析读写。完整地址锁存后，已排队的写入仍在下一拍提交。
-module spi_ram_crtl #(parameter HAS_AUTOPILOT = 1'b0)
+module spi_ram_crtl
 (
 	input	wire				wr_clk		,
 	input	wire				rst_n		,
@@ -17,8 +17,7 @@ module spi_ram_crtl #(parameter HAS_AUTOPILOT = 1'b0)
 	output	wire	[7:0]		mem3_out	,
 	output	wire	[7:0]		mem4_out,
     output  wire    [7:0]        mem5_out,
-    output  wire    [7:0]        mem6_out,
-    output  reg     [7:0]        autopilot_heartbeat
+    output  wire    [7:0]        mem6_out
 );
 
 localparam IDLE         = 3'd0;
@@ -179,12 +178,6 @@ reg [7:0] gear_reference;
 always @(negedge wr_clk or negedge rst_n) begin
     if (!rst_n) gear_reference <= 8'd0;
     else if (ram_wr_en && address_is_gear) gear_reference <= wr_data_reg;
-end
-
-always @(negedge wr_clk or negedge rst_n) begin
-    if (!rst_n) autopilot_heartbeat <= 8'd0;
-    else if (HAS_AUTOPILOT && ram_wr_en && ram_addr == 16'd7)
-        autopilot_heartbeat <= wr_data_reg;
 end
 
 always@(negedge wr_clk or negedge rst_n) begin

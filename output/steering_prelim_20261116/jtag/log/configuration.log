@@ -1,0 +1,296 @@
+[Info] [2026-11-16 21:50:56] /***************************Start Configuration***************************/
+[Info] [2026-11-16 21:50:56] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-11-16 21:50:56] Version: 146967
+[Info] [2026-11-16 21:50:57] Current Path: D:/Study_Object/image_recognition/image_recognition/output/steering_prelim_20261116/jtag
+[Info] [2026-11-16 21:50:57] PDS Dir Path: 
+[Debug] [2026-11-16 21:50:57] begin to check the cfg_connect exec condition.
+[Debug] [2026-11-16 21:50:57] end to check the cfg_connect exec condition.
+[Debug] [2026-11-16 21:50:57] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-11-16 21:50:57] Client Local Address:10.17.104.77
+[Debug] [2026-11-16 21:50:57] Client Local Address:172.24.144.1
+[Debug] [2026-11-16 21:50:57] Server Address:127.0.0.1, Port:65420
+[Info] [2026-11-16 21:50:57] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-11-16 21:50:57] Finish.
+[Info] [2026-11-16 21:50:57] Connect server succeeded
+[Debug] [2026-11-16 21:50:57] Send RPC:1
+[Debug] [2026-11-16 21:50:57] Send cmd [check version information:40004] OK
+[Debug] [2026-11-16 21:50:57] Send RPC:2
+[Debug] [2026-11-16 21:50:57] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-11-16 21:50:57] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-11-16 21:50:58] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-11-16 21:50:58] cfg_connect succeed.
+[Debug] [2026-11-16 21:50:59] Send RPC:3
+[Debug] [2026-11-16 21:50:59] Send cmd [Open config cable:20001] OK
+[Debug] [2026-11-16 21:50:59] begin the exec of open cable cmd...
+[Debug] [2026-11-16 21:50:59] Begin to deal with chain from server...
+[Debug] [2026-11-16 21:50:59] Begin to set user chain...
+[Debug] [2026-11-16 21:50:59] End to set user chain.
+[Debug] [2026-11-16 21:50:59] end the exec of open cable cmd.
+[Debug] [2026-11-16 21:50:59] COMMAND[Open config cable] execute successfully, takes 0.5 secs.
+[Debug] [2026-11-16 21:51:00] cfg_scan_chain succeed.
+[Debug] [2026-11-16 21:51:00] begin to check the cfg_jtag_flash_scan_device exec condition.
+[Debug] [2026-11-16 21:51:00] end to check the cfg_jtag_flash_scan_device exec condition.
+[Debug] [2026-11-16 21:51:00] Send RPC:4
+[Debug] [2026-11-16 21:51:00] Send cmd [Scan Outer SPI Flash:20300] OK
+[Debug] [2026-11-16 21:51:00] begin to exec scan jtag flash cmd...
+[Debug] [2026-11-16 21:51:00] Begin to initialize JtagFlash for selected FPGA Device...
+[Debug] [2026-11-16 21:51:00] end to exec scan jtag flash cmd...
+[Debug] [2026-11-16 21:51:00] COMMAND[Scan Outer SPI Flash] execute successfully, takes 0.4 secs.
+[Debug] [2026-11-16 21:51:01] cfg_jtag_flash_scan_device succeed.
+[Info] [2026-11-16 21:51:02] /***************************End Configration***************************/
+[Info] [2026-11-16 21:53:21] /***************************Start Configuration***************************/
+[Info] [2026-11-16 21:53:21] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-11-16 21:53:21] Version: 146967
+[Info] [2026-11-16 21:53:22] Current Path: D:/Study_Object/image_recognition/image_recognition/output/steering_prelim_20261116/jtag
+[Info] [2026-11-16 21:53:22] PDS Dir Path: 
+[Debug] [2026-11-16 21:53:22] begin to check the cfg_connect exec condition.
+[Debug] [2026-11-16 21:53:22] end to check the cfg_connect exec condition.
+[Debug] [2026-11-16 21:53:22] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-11-16 21:53:22] Client Local Address:10.17.104.77
+[Debug] [2026-11-16 21:53:22] Client Local Address:172.24.144.1
+[Debug] [2026-11-16 21:53:22] Server Address:127.0.0.1, Port:65420
+[Info] [2026-11-16 21:53:23] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-11-16 21:53:23] Finish.
+[Info] [2026-11-16 21:53:23] Connect server succeeded
+[Debug] [2026-11-16 21:53:23] Send RPC:1
+[Debug] [2026-11-16 21:53:23] Send cmd [check version information:40004] OK
+[Debug] [2026-11-16 21:53:23] Send RPC:2
+[Debug] [2026-11-16 21:53:23] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-11-16 21:53:23] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-11-16 21:53:23] COMMAND[get_cable_paras] execute successfully, takes 0.7 secs.
+[Debug] [2026-11-16 21:53:24] cfg_connect succeed.
+[Debug] [2026-11-16 21:53:25] Send RPC:3
+[Debug] [2026-11-16 21:53:25] Send cmd [Open config cable:20001] OK
+[Debug] [2026-11-16 21:53:25] begin the exec of open cable cmd...
+[Debug] [2026-11-16 21:53:25] Begin to deal with chain from server...
+[Debug] [2026-11-16 21:53:25] Begin to set user chain...
+[Debug] [2026-11-16 21:53:25] End to set user chain.
+[Debug] [2026-11-16 21:53:25] end the exec of open cable cmd.
+[Debug] [2026-11-16 21:53:25] COMMAND[Open config cable] execute successfully, takes 0.4 secs.
+[Debug] [2026-11-16 21:53:26] cfg_scan_chain succeed.
+[Debug] [2026-11-16 21:53:26] begin to check the cfg_jtag_flash_scan_device exec condition.
+[Debug] [2026-11-16 21:53:26] end to check the cfg_jtag_flash_scan_device exec condition.
+[Debug] [2026-11-16 21:53:26] Send RPC:4
+[Debug] [2026-11-16 21:53:26] Send cmd [Scan Outer SPI Flash:20300] OK
+[Debug] [2026-11-16 21:53:27] begin to exec scan jtag flash cmd...
+[Debug] [2026-11-16 21:53:27] Begin to initialize JtagFlash for selected FPGA Device...
+[Debug] [2026-11-16 21:53:27] end to exec scan jtag flash cmd...
+[Debug] [2026-11-16 21:53:27] COMMAND[Scan Outer SPI Flash] execute successfully, takes 0.4 secs.
+[Debug] [2026-11-16 21:53:27] cfg_jtag_flash_scan_device succeed.
+[Debug] [2026-11-16 21:53:28] begin to check the cfg_jtag_flash_readback exec condition.
+[Error] [2026-11-16 21:53:28] cfg_jtag_flash_readback command can't be exec
+[Info] [2026-11-16 21:53:28] /***************************End Configration***************************/
+[Info] [2026-11-16 21:54:53] /***************************Start Configuration***************************/
+[Info] [2026-11-16 21:54:53] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-11-16 21:54:53] Version: 146967
+[Info] [2026-11-16 21:54:54] Current Path: D:/Study_Object/image_recognition/image_recognition/output/steering_prelim_20261116/jtag
+[Info] [2026-11-16 21:54:54] PDS Dir Path: 
+[Debug] [2026-11-16 21:54:54] begin to check the cfg_connect exec condition.
+[Debug] [2026-11-16 21:54:54] end to check the cfg_connect exec condition.
+[Debug] [2026-11-16 21:54:54] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-11-16 21:54:54] Client Local Address:10.17.104.77
+[Debug] [2026-11-16 21:54:54] Client Local Address:172.24.144.1
+[Debug] [2026-11-16 21:54:54] Server Address:127.0.0.1, Port:65420
+[Info] [2026-11-16 21:54:54] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-11-16 21:54:54] Finish.
+[Info] [2026-11-16 21:54:54] Connect server succeeded
+[Debug] [2026-11-16 21:54:54] Send RPC:1
+[Debug] [2026-11-16 21:54:54] Send cmd [check version information:40004] OK
+[Debug] [2026-11-16 21:54:54] Send RPC:2
+[Debug] [2026-11-16 21:54:54] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-11-16 21:54:54] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-11-16 21:54:55] COMMAND[get_cable_paras] execute successfully, takes 0.7 secs.
+[Debug] [2026-11-16 21:54:56] cfg_connect succeed.
+[Debug] [2026-11-16 21:54:56] Send RPC:3
+[Debug] [2026-11-16 21:54:56] Send cmd [Open config cable:20001] OK
+[Debug] [2026-11-16 21:54:57] begin the exec of open cable cmd...
+[Debug] [2026-11-16 21:54:57] Begin to deal with chain from server...
+[Debug] [2026-11-16 21:54:57] Begin to set user chain...
+[Debug] [2026-11-16 21:54:57] End to set user chain.
+[Debug] [2026-11-16 21:54:57] end the exec of open cable cmd.
+[Debug] [2026-11-16 21:54:57] COMMAND[Open config cable] execute successfully, takes 0.4 secs.
+[Debug] [2026-11-16 21:54:57] cfg_scan_chain succeed.
+[Debug] [2026-11-16 21:54:58] begin to check the cfg_jtag_flash_scan_device exec condition.
+[Debug] [2026-11-16 21:54:58] end to check the cfg_jtag_flash_scan_device exec condition.
+[Debug] [2026-11-16 21:54:58] Send RPC:4
+[Debug] [2026-11-16 21:54:58] Send cmd [Scan Outer SPI Flash:20300] OK
+[Debug] [2026-11-16 21:54:58] begin to exec scan jtag flash cmd...
+[Debug] [2026-11-16 21:54:58] Begin to initialize JtagFlash for selected FPGA Device...
+[Debug] [2026-11-16 21:54:58] end to exec scan jtag flash cmd...
+[Debug] [2026-11-16 21:54:58] COMMAND[Scan Outer SPI Flash] execute successfully, takes 0.4 secs.
+[Debug] [2026-11-16 21:54:59] cfg_jtag_flash_scan_device succeed.
+[Debug] [2026-11-16 21:54:59] begin to check the cfg_jtag_flash_assign_file exec condition.
+[Debug] [2026-11-16 21:54:59] end to check the cfg_jtag_flash_assign_file exec condition.
+[Debug] [2026-11-16 21:54:59] begin to check SFC File and Flash Device Read Mode.
+[Debug] [2026-11-16 21:54:59] end to check SFC File and Flash Device Read Mode.
+[Debug] [2026-11-16 21:54:59] cfg_jtag_flash_assign_file succeed.
+[Debug] [2026-11-16 21:55:00] begin to check the cfg_jtag_flash_readback exec condition.
+[Debug] [2026-11-16 21:55:00] end to check the cfg_jtag_flash_readback exec condition.
+[Debug] [2026-11-16 21:55:00] Send RPC:5
+[Debug] [2026-11-16 21:55:00] Begin to send embed flash read back data.
+[Debug] [2026-11-16 21:55:00] Begin to send flash read back data.
+[Debug] [2026-11-16 21:55:00] End to send flash read back data.
+[Debug] [2026-11-16 21:55:00] End to send embed flash read back data.
+[Debug] [2026-11-16 21:55:00] Send cmd [Read back Outer Flash:20304] OK
+[Debug] [2026-11-16 21:55:00] The value of Progress is 1
+[Debug] [2026-11-16 21:55:00] The value of Progress is 6
+[Debug] [2026-11-16 21:55:00] The value of Progress is 10
+[Debug] [2026-11-16 21:55:01] The value of Progress is 15
+[Debug] [2026-11-16 21:55:01] The value of Progress is 20
+[Debug] [2026-11-16 21:55:01] The value of Progress is 25
+[Debug] [2026-11-16 21:55:01] The value of Progress is 30
+[Debug] [2026-11-16 21:55:01] The value of Progress is 35
+[Debug] [2026-11-16 21:55:01] The value of Progress is 40
+[Debug] [2026-11-16 21:55:02] The value of Progress is 45
+[Debug] [2026-11-16 21:55:02] The value of Progress is 50
+[Debug] [2026-11-16 21:55:02] The value of Progress is 55
+[Debug] [2026-11-16 21:55:02] The value of Progress is 60
+[Debug] [2026-11-16 21:55:02] The value of Progress is 65
+[Debug] [2026-11-16 21:55:03] The value of Progress is 70
+[Debug] [2026-11-16 21:55:03] The value of Progress is 75
+[Debug] [2026-11-16 21:55:03] The value of Progress is 80
+[Debug] [2026-11-16 21:55:03] The value of Progress is 85
+[Debug] [2026-11-16 21:55:03] The value of Progress is 90
+[Debug] [2026-11-16 21:55:03] The value of Progress is 95
+[Debug] [2026-11-16 21:55:04] The value of Progress is 100
+[Debug] [2026-11-16 21:55:04] COMMAND[Read back Outer Flash] execute successfully, takes 3.9 secs.
+[Debug] [2026-11-16 21:55:04] cfg_jtag_flash_readback succeed.
+[Info] [2026-11-16 21:55:04] /***************************End Configration***************************/
+[Info] [2026-11-16 21:58:52] /***************************Start Configuration***************************/
+[Info] [2026-11-16 21:58:52] Path: D:/PDS/Installation/PDS_2022.2-SP6.4/bin
+[Info] [2026-11-16 21:58:52] Version: 146967
+[Info] [2026-11-16 21:58:53] Current Path: D:/Study_Object/image_recognition/image_recognition/output/steering_prelim_20261116/jtag
+[Info] [2026-11-16 21:58:53] PDS Dir Path: 
+[Debug] [2026-11-16 21:58:53] begin to check the cfg_connect exec condition.
+[Debug] [2026-11-16 21:58:53] end to check the cfg_connect exec condition.
+[Debug] [2026-11-16 21:58:53] Client Local host name:WIN-90VT6TOO1GQ
+[Debug] [2026-11-16 21:58:53] Client Local Address:10.17.104.77
+[Debug] [2026-11-16 21:58:53] Client Local Address:172.24.144.1
+[Debug] [2026-11-16 21:58:53] Server Address:127.0.0.1, Port:65420
+[Info] [2026-11-16 21:58:53] Connect OK, Server: 127.0.0.1  Port: 65420
+[Debug] [2026-11-16 21:58:53] Finish.
+[Info] [2026-11-16 21:58:53] Connect server succeeded
+[Debug] [2026-11-16 21:58:53] Send RPC:1
+[Debug] [2026-11-16 21:58:53] Send cmd [check version information:40004] OK
+[Debug] [2026-11-16 21:58:53] Send RPC:2
+[Debug] [2026-11-16 21:58:53] Send cmd [get_cable_paras:40010] OK
+[Debug] [2026-11-16 21:58:53] COMMAND[check version information] execute successfully, takes 0.0 secs.
+[Debug] [2026-11-16 21:58:54] COMMAND[get_cable_paras] execute successfully, takes 0.8 secs.
+[Debug] [2026-11-16 21:58:55] cfg_connect succeed.
+[Debug] [2026-11-16 21:58:55] Send RPC:3
+[Debug] [2026-11-16 21:58:55] Send cmd [Open config cable:20001] OK
+[Debug] [2026-11-16 21:58:56] begin the exec of open cable cmd...
+[Debug] [2026-11-16 21:58:56] Begin to deal with chain from server...
+[Debug] [2026-11-16 21:58:56] Begin to set user chain...
+[Debug] [2026-11-16 21:58:56] End to set user chain.
+[Debug] [2026-11-16 21:58:56] end the exec of open cable cmd.
+[Debug] [2026-11-16 21:58:56] COMMAND[Open config cable] execute successfully, takes 0.5 secs.
+[Debug] [2026-11-16 21:58:56] cfg_scan_chain succeed.
+[Debug] [2026-11-16 21:58:57] begin to check the cfg_jtag_flash_scan_device exec condition.
+[Debug] [2026-11-16 21:58:57] end to check the cfg_jtag_flash_scan_device exec condition.
+[Debug] [2026-11-16 21:58:57] Send RPC:4
+[Debug] [2026-11-16 21:58:57] Send cmd [Scan Outer SPI Flash:20300] OK
+[Debug] [2026-11-16 21:58:57] begin to exec scan jtag flash cmd...
+[Debug] [2026-11-16 21:58:57] Begin to initialize JtagFlash for selected FPGA Device...
+[Debug] [2026-11-16 21:58:57] end to exec scan jtag flash cmd...
+[Debug] [2026-11-16 21:58:57] COMMAND[Scan Outer SPI Flash] execute successfully, takes 0.4 secs.
+[Debug] [2026-11-16 21:58:58] cfg_jtag_flash_scan_device succeed.
+[Debug] [2026-11-16 21:58:58] begin to check the cfg_jtag_flash_assign_file exec condition.
+[Debug] [2026-11-16 21:58:58] end to check the cfg_jtag_flash_assign_file exec condition.
+[Debug] [2026-11-16 21:58:58] begin to check SFC File and Flash Device Read Mode.
+[Debug] [2026-11-16 21:58:58] end to check SFC File and Flash Device Read Mode.
+[Debug] [2026-11-16 21:58:58] cfg_jtag_flash_assign_file succeed.
+[Debug] [2026-11-16 21:58:59] begin to check the cfg_jtag_flash_erase exec condition.
+[Debug] [2026-11-16 21:58:59] end to check the cfg_jtag_flash_erase exec condition.
+[Debug] [2026-11-16 21:58:59] Send RPC:5
+[Debug] [2026-11-16 21:58:59] Begin to send embed flash erase data.
+[Debug] [2026-11-16 21:58:59] Begin to send flash erase data.
+[Debug] [2026-11-16 21:58:59] End to send flash erase data.
+[Debug] [2026-11-16 21:58:59] End to send embed flash erase data.
+[Debug] [2026-11-16 21:58:59] Send cmd [Erase Outer Flash:20302] OK
+[Debug] [2026-11-16 21:58:59] The value of Progress is 1
+[Debug] [2026-11-16 21:59:01] The value of Progress is 7
+[Debug] [2026-11-16 21:59:01] The value of Progress is 11
+[Debug] [2026-11-16 21:59:02] The value of Progress is 16
+[Debug] [2026-11-16 21:59:03] The value of Progress is 20
+[Debug] [2026-11-16 21:59:04] The value of Progress is 25
+[Debug] [2026-11-16 21:59:05] The value of Progress is 31
+[Debug] [2026-11-16 21:59:06] The value of Progress is 35
+[Debug] [2026-11-16 21:59:07] The value of Progress is 40
+[Debug] [2026-11-16 21:59:08] The value of Progress is 46
+[Debug] [2026-11-16 21:59:08] The value of Progress is 50
+[Debug] [2026-11-16 21:59:09] The value of Progress is 55
+[Debug] [2026-11-16 21:59:10] The value of Progress is 61
+[Debug] [2026-11-16 21:59:11] The value of Progress is 66
+[Debug] [2026-11-16 21:59:12] The value of Progress is 70
+[Debug] [2026-11-16 21:59:13] The value of Progress is 75
+[Debug] [2026-11-16 21:59:14] The value of Progress is 81
+[Debug] [2026-11-16 21:59:14] The value of Progress is 85
+[Debug] [2026-11-16 21:59:15] The value of Progress is 90
+[Debug] [2026-11-16 21:59:16] The value of Progress is 96
+[Debug] [2026-11-16 21:59:17] The value of Progress is 100
+[Debug] [2026-11-16 21:59:17] COMMAND[Erase Outer Flash] execute finish, takes 17.8 secs.
+[Debug] [2026-11-16 21:59:17] cfg_jtag_flash_erase succeed.
+[Debug] [2026-11-16 21:59:18] begin to check the cfg_jtag_flash_program exec condition.
+[Debug] [2026-11-16 21:59:18] end to check the cfg_jtag_flash_program exec condition.
+[Debug] [2026-11-16 21:59:18] Send RPC:6
+[Debug] [2026-11-16 21:59:18] Begin to send jtag flash program data.
+[Debug] [2026-11-16 21:59:18] Begin to send flash program data.
+[Debug] [2026-11-16 21:59:18] End to send flash program data.
+[Debug] [2026-11-16 21:59:18] End to send embed flash program data.
+[Debug] [2026-11-16 21:59:18] Send cmd [Program Outer Flash:20301] OK
+[Debug] [2026-11-16 21:59:18] The value of Progress is 1
+[Debug] [2026-11-16 21:59:21] The value of Progress is 6
+[Debug] [2026-11-16 21:59:23] The value of Progress is 10
+[Debug] [2026-11-16 21:59:26] The value of Progress is 15
+[Debug] [2026-11-16 21:59:29] The value of Progress is 20
+[Debug] [2026-11-16 21:59:31] The value of Progress is 25
+[Debug] [2026-11-16 21:59:34] The value of Progress is 30
+[Debug] [2026-11-16 21:59:37] The value of Progress is 35
+[Debug] [2026-11-16 21:59:40] The value of Progress is 40
+[Debug] [2026-11-16 21:59:42] The value of Progress is 45
+[Debug] [2026-11-16 21:59:45] The value of Progress is 50
+[Debug] [2026-11-16 21:59:48] The value of Progress is 55
+[Debug] [2026-11-16 21:59:51] The value of Progress is 60
+[Debug] [2026-11-16 21:59:53] The value of Progress is 65
+[Debug] [2026-11-16 21:59:56] The value of Progress is 70
+[Debug] [2026-11-16 21:59:59] The value of Progress is 75
+[Debug] [2026-11-16 22:00:02] The value of Progress is 80
+[Debug] [2026-11-16 22:00:04] The value of Progress is 85
+[Debug] [2026-11-16 22:00:07] The value of Progress is 90
+[Debug] [2026-11-16 22:00:10] The value of Progress is 95
+[Debug] [2026-11-16 22:00:13] The value of Progress is 100
+[Debug] [2026-11-16 22:00:13] COMMAND[Program Outer Flash] execute finish, takes 55.4 secs.
+[Debug] [2026-11-16 22:00:13] cfg_jtag_flash_program succeed.
+[Debug] [2026-11-16 22:00:14] begin to check the cfg_jtag_flash_verify exec condition.
+[Debug] [2026-11-16 22:00:14] end to check the cfg_jtag_flash_verify exec condition.
+[Debug] [2026-11-16 22:00:14] Send RPC:7
+[Debug] [2026-11-16 22:00:14] Begin to send embed flash verify data.
+[Debug] [2026-11-16 22:00:14] Begin to send flash verify data.
+[Debug] [2026-11-16 22:00:14] End to send flash verify data.
+[Debug] [2026-11-16 22:00:14] End to send embed flash verify data.
+[Debug] [2026-11-16 22:00:14] Send cmd [Verify Outer Flash:20303] OK
+[Debug] [2026-11-16 22:00:14] The value of Progress is 1
+[Debug] [2026-11-16 22:00:14] The value of Progress is 6
+[Debug] [2026-11-16 22:00:14] The value of Progress is 10
+[Debug] [2026-11-16 22:00:14] The value of Progress is 15
+[Debug] [2026-11-16 22:00:15] The value of Progress is 20
+[Debug] [2026-11-16 22:00:15] The value of Progress is 25
+[Debug] [2026-11-16 22:00:15] The value of Progress is 30
+[Debug] [2026-11-16 22:00:15] The value of Progress is 35
+[Debug] [2026-11-16 22:00:15] The value of Progress is 40
+[Debug] [2026-11-16 22:00:15] The value of Progress is 45
+[Debug] [2026-11-16 22:00:16] The value of Progress is 50
+[Debug] [2026-11-16 22:00:16] The value of Progress is 55
+[Debug] [2026-11-16 22:00:16] The value of Progress is 60
+[Debug] [2026-11-16 22:00:16] The value of Progress is 65
+[Debug] [2026-11-16 22:00:16] The value of Progress is 70
+[Debug] [2026-11-16 22:00:16] The value of Progress is 75
+[Debug] [2026-11-16 22:00:17] The value of Progress is 80
+[Debug] [2026-11-16 22:00:17] The value of Progress is 85
+[Debug] [2026-11-16 22:00:17] The value of Progress is 90
+[Debug] [2026-11-16 22:00:17] The value of Progress is 95
+[Debug] [2026-11-16 22:00:17] The value of Progress is 100
+[Debug] [2026-11-16 22:00:17] COMMAND[Verify Outer Flash] execute successfully, takes 3.9 secs.
+[Debug] [2026-11-16 22:00:18] cfg_jtag_flash_verify succeed.
+[Info] [2026-11-16 22:00:18] /***************************End Configration***************************/

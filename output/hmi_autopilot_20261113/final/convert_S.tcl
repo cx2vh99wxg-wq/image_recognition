@@ -1,1 +1,0 @@
-cfg_gen_sfc -sbit "D:/Study_Object/image_recognition/image_recognition/output/hmi_autopilot_20261113/final/pineapple_s_autopilot_20261114.sbit" -sfc "D:/Study_Object/image_recognition/image_recognition/output/hmi_autopilot_20261113/final/pineapple_s_autopilot_20261114.sfc" -opcode 59

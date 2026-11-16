@@ -111,7 +111,7 @@ run-fspi: all
 		exit 1; \
 	fi
 	@echo "运行车辆控制程序..."
-	@echo "自动转向默认关闭，由串口屏 Autopilot 授权"
+	@echo "IMU 反馈和机械零位有效后，闭环转向按车道结果运行"
 	@echo "说明：注意: 需要管理员权限访问SPI设备"
 	@echo ""
 	@cd fspi && sudo python3 ../steering/tools/launch_vehicle_control.py
@@ -190,7 +190,7 @@ run: all tune-network prepare-display
 	@echo ""
 	@# 运行FSPI控制程序
 	@echo "3. 运行FSPI按钮控制程序..."
-	@cd fspi && sudo bash -c 'python3 ../steering/tools/launch_vehicle_control.py --hmi-autopilot & echo $$! > fspi.pid'
+	@cd fspi && sudo bash -c 'python3 ../steering/tools/launch_vehicle_control.py & echo $$! > fspi.pid'
 	@sleep 3
 	@{ \
 		fspi_pid=$$(cat fspi/fspi.pid 2>/dev/null); \

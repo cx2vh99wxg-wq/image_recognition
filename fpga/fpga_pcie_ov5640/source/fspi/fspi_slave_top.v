@@ -12,8 +12,6 @@ module fspi_slave_top
      input wire [31 : 0] wheel_report_async,
 
      input wire auto_brake_enable,
-     input wire [3:0] autopilot_status_async,
-     output wire [7:0] autopilot_heartbeat,
      input wire [5 : 0] speed_status_async,
      input wire [15 : 0] control_status_async,
      output wire [7 : 0] mem0_out,
@@ -27,7 +25,7 @@ module fspi_slave_top
     wire wr_clk;
     clk_fspi clk_gen_inst(.clkout0(wr_clk), .lock(), .clkin1(sys_clk));
     fspi_register_endpoint #(.HAS_IMU(1'b0), .HAS_CAMERA_VIEW(1'b1),
-                             .HAS_WHEEL_REPORT(1'b1), .HAS_AUTOPILOT(1'b1)) u_register_endpoint (
+                             .HAS_WHEEL_REPORT(1'b1)) u_register_endpoint (
         .wr_clk(wr_clk),
         .rst_n(rst_n),
         .spi_clk(spi_clk),
@@ -37,8 +35,6 @@ module fspi_slave_top
         .camera_view_async(camera_view_async),
         .wheel_report_async(wheel_report_async),
         .auto_brake_enable(auto_brake_enable),
-        .autopilot_status_async(autopilot_status_async),
-        .autopilot_heartbeat(autopilot_heartbeat),
         .speed_status_async(speed_status_async),
         .control_status_async(control_status_async),
         .mem0_out(mem0_out),
@@ -55,8 +51,7 @@ endmodule
 module fspi_register_endpoint #(
     parameter HAS_IMU = 1'b0,
     parameter HAS_CAMERA_VIEW = 1'b0,
-    parameter HAS_WHEEL_REPORT = 1'b0,
-    parameter HAS_AUTOPILOT = 1'b0
+    parameter HAS_WHEEL_REPORT = 1'b0
 )
     (input wire wr_clk,
      input wire [511:0] imu_snapshot,
@@ -71,8 +66,6 @@ module fspi_register_endpoint #(
      input wire [31 : 0] wheel_report_async,
 
      input wire auto_brake_enable,
-     input wire [3:0] autopilot_status_async,
-     output wire [7:0] autopilot_heartbeat,
      input wire [5 : 0] speed_status_async,
      input wire [15 : 0] control_status_async,
      output wire [7 : 0] mem0_out,
@@ -87,20 +80,19 @@ module fspi_register_endpoint #(
     wire tx_data_valid, rx_data_valid;
     wire [7:0] tx_data, rx_data;
 
-    spi_ram_crtl #(.HAS_AUTOPILOT(HAS_AUTOPILOT)) u_spi_ram_crtl (
+    spi_ram_crtl u_spi_ram_crtl (
         .wr_clk(wr_clk), .rst_n(rst_n), .spi_cs(spi_cs), .cmd(cmd),
         .tx_done(tx_data_valid), .wr_data(rx_data), .rx_valid(rx_data_valid),
         .select_rearview(select_rearview), .rd_data(tx_data),
         .mem0_out(mem0_out), .mem1_out(mem1_out), .mem2_out(mem2_out),
         .mem3_out(mem3_out), .mem4_out(mem4_out), .mem5_out(mem5_out),
-        .mem6_out(mem6_out), .autopilot_heartbeat(autopilot_heartbeat)
+        .mem6_out(mem6_out)
     );
 
     fspi_transport #(.HAS_IMU(HAS_IMU), .HAS_CAMERA_VIEW(HAS_CAMERA_VIEW),
-                     .HAS_WHEEL_REPORT(HAS_WHEEL_REPORT), .HAS_AUTOPILOT(HAS_AUTOPILOT)) u_transport (
+                     .HAS_WHEEL_REPORT(HAS_WHEEL_REPORT)) u_transport (
         .spi_clk(spi_clk), .spi_cs(spi_cs), .spi_data(spi_data), .rst_n(rst_n),
         .select_rearview(select_rearview), .auto_brake_enable(auto_brake_enable),
-        .autopilot_status_async(autopilot_status_async),
         .camera_view_async(camera_view_async),
         .wheel_report_async(wheel_report_async),
         .speed_status_async(speed_status_async), .control_status_async(control_status_async),

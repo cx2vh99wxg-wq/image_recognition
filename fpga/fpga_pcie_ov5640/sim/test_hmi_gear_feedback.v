@@ -2,11 +2,8 @@
 module test_hmi_gear_feedback;
   reg clk=0,rst_n=0;always #1 clk=~clk;
   reg[3:0] status=0;reg slider_present=1;wire txd,valid;wire[7:0] data;
-  reg autopilot_active=0;
-  hmi_gear_feedback #(.CLK_FREQ(64000000),.UART_BPS(1000000),.REFRESH_CYCLES(20000),
-      .HAS_AUTOPILOT(1'b1)) dut(
-      .clk(clk),.rst_n(rst_n),.gear_async(status),.slider_present(slider_present),
-      .autopilot_active_async(autopilot_active),.txd(txd));
+  hmi_gear_feedback #(.CLK_FREQ(64000000),.UART_BPS(1000000),.REFRESH_CYCLES(20000)) dut(
+      .clk(clk),.rst_n(rst_n),.gear_async(status),.slider_present(slider_present),.txd(txd));
   uart_rx #(.CLK_FREQ(64000000),.UART_BPS(1000000)) receiver(
       .clk(clk),.rst_n(rst_n),.uart_rxd(txd),.uart_rx_done(valid),.uart_rx_data(data));
   reg[7:0] captured[0:1023];integer count=0;
@@ -24,15 +21,6 @@ module test_hmi_gear_feedback;
           $fatal(1,"HMI status frame byte %d: %h",k,captured[first+k]);
     end
   endtask
-  task autopilot_frame(input integer first,input [7:0] flag);
-    reg [79:0] expected; integer k;
-    begin
-      expected={"apAck=",flag,24'hffffff};
-      for(k=0;k<10;k=k+1)
-        if(captured[first+k]!==expected[79-k*8-:8])
-          $fatal(1,"Autopilot acknowledgment byte %d: %h",k,captured[first+k]);
-    end
-  endtask
   task text_only(input integer first,input[7:0] gear);
     reg[191:0] expected;integer k;
     begin
@@ -42,19 +30,16 @@ module test_hmi_gear_feedback;
     end
   endtask
   initial begin
-    #10;rst_n=1;wait(count==24);status=4'b1001;wait(count==61);frame(0,"?");
-    autopilot_frame(51,"0");
-    status=4'b1000;autopilot_active=1;wait(count==122);frame(61,"1");autopilot_frame(112,"1");
-    status=4'b1001;wait(count==183);frame(122,"2");
-    status=4'b1011;wait(count==244);frame(183,"3");
-    status=4'b1010;wait(count==305);frame(244,"1");
-    status=4'b1110;wait(count==366);frame(305,"2");
-    status=4'b1100;wait(count==427);frame(366,"3");
-    slider_present=0;autopilot_active=0;
-    wait(count==495);text_only(427,"3");autopilot_frame(451,"0");
-    text_only(461,"3");autopilot_frame(485,"0");
+    #10;rst_n=1;wait(count==24);status=4'b1001;wait(count==51);frame(0,"?");
+    status=4'b1000;wait(count==102);frame(51,"1");
+    status=4'b1001;wait(count==153);frame(102,"2");
+    status=4'b1011;wait(count==204);frame(153,"3");
+    status=4'b1010;wait(count==255);frame(204,"1");
+    status=4'b1110;wait(count==306);frame(255,"2");
+    status=4'b1100;wait(count==357);frame(306,"3");
+    slider_present=0;wait(count==405);text_only(357,"3");text_only(381,"3");
     #100;rst_n=0;#5;if(txd!==1'b1)$fatal(1,"reset must release UART TX high");
-    $display("HMI feedback: GB2312 gear, optional slider, Autopilot acknowledgment and reset PASS");$finish;
+    $display("HMI gear feedback: UART decoding, GB2312 1/2/3 gear, unknown, Gray rollover, reset PASS");$finish;
   end
   initial begin #2000000;$fatal(1,"HMI UART feedback timeout count=%d",count);end
 endmodule

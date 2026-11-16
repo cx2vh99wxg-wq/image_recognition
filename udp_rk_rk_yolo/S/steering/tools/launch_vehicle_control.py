@@ -1,7 +1,8 @@
-"""Launch the S-side controller with steering gated by the HMI.
+"""Optional accepted steering profile for the existing FSPI launch commands.
 
-execve keeps the PID used by S/Makefile. The C runtime keeps automatic steering
-off until it has a valid mechanical reference and a fresh HMI approval.
+Without runtime.json the original environment/behavior is retained. execve
+keeps the PID used by S/Makefile. Reference/session validity remains enforced
+by the C runtime; an expired reference never falls back to long turn pulses.
 """
 from pathlib import Path
 import argparse,json,os,sys
@@ -25,25 +26,13 @@ def environment(config,original):
     result.update(values);return result
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--check',action='store_true')
-    modes=p.add_mutually_exclusive_group()
-    modes.add_argument('--hmi-autopilot',dest='hmi_mode',action='store_const',const='--hmi-autopilot')
-    modes.add_argument('--hmi-switch-test',dest='hmi_mode',action='store_const',
-                       const='--hmi-switch-test',help='Test the HMI handshake without steering targets')
-    p.set_defaults(hmi_mode='--hmi-autopilot')
-    a=p.parse_args()
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--check',action='store_true');a=p.parse_args()
     root=Path(__file__).resolve().parents[2];config=root/'steering/runtime.json'
     try:env=environment(config,os.environ)
-    except (OSError,ValueError,KeyError) as e:
-        print('STEER_LAUNCH_REJECTED',str(e),file=sys.stderr)
-        if a.check:return 2
-        # Keep the brake and display monitors running without an approved reference.
-        env={key:value for key,value in os.environ.items() if key not in ALLOWED}
+    except (OSError,ValueError,KeyError) as e:print('STEER_LAUNCH_REJECTED',str(e),file=sys.stderr);return 2
     if a.check:
-        print(json.dumps(dict(configuration_present=config.exists(),mode=env.get('STEERING_CONTROL_MODE','hmi-gated-monitor'),no_actuation=True)));return 0
+        print(json.dumps(dict(configuration_present=config.exists(),mode=env.get('STEERING_CONTROL_MODE','legacy'),no_actuation=True)));return 0
     binary=root/'fspi/build/vehicle_control'
-    args=[str(binary),a.hmi_mode]
-    os.chdir(binary.parent.parent);os.execve(str(binary),args,env)
+    os.chdir(binary.parent.parent);os.execve(str(binary),[str(binary)],env)
 
 if __name__=='__main__':raise SystemExit(main())

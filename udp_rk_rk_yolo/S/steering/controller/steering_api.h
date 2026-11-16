@@ -12,9 +12,7 @@ typedef enum
     STEERING_CANCELLED,
     STEERING_FAULT,
     STEERING_SETTLING,
-    STEERING_RESOLUTION_LIMIT,
-    STEERING_WAIT_TARGET,
-    STEERING_PULSE_LIMIT
+    STEERING_RESOLUTION_LIMIT
 } steering_status_t;
 typedef struct
 {
@@ -38,8 +36,6 @@ typedef struct
     steer_result_t (*permission)(void *context, steer_direction_t direction);
     const steering_response_model_t *model;
     unsigned max_pulses, settle_ms, minimum_samples, priority;
-    int guard_road_right;
-    int hold_road_limits;
 } steering_controller_io_t;
 steer_result_t steering_bind(steering_controller_io_t io);
 /* 仅显式确认过的操作者零点可进入此接口；会话变化即撤销，
