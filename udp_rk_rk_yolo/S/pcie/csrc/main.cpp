@@ -911,7 +911,7 @@ int main()
         }
 
         // 制动使用所有候选框的独立统计，不受 64 个呈现框或绘图去重限制。
-        // 必须是精确的 person 类别，且未四舍五入的模型置信度不低于 15%。
+        // 后处理按 person 类别和未取整的置信度筛选后向刹停候选。
         int person_count = detection_valid ? detection_results.person_brake_count : 0;
         int person_detected = person_count > 0;
         int person_box_left = 0, person_box_top = 0, person_box_right = 0, person_box_bottom = 0;

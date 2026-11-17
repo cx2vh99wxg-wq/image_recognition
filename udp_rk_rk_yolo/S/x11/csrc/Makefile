@@ -64,6 +64,10 @@ endif
 # 直接调用 make 时采用的入口
 all: test-camera-guard $(BIN)
 
+# Track the headers each production object actually includes. Editing the
+# detector's threshold should not rebuild the X11 renderer on startup.
+-include $(OBJECTS:.o=.d)
+
 $(BUILD_DIR)/test_pedestrian_motion: tests/test_pedestrian_motion.cpp include/pedestrian_motion.h include/pedestrian_gait.h include/pedestrian_scene.h | $(BUILD_DIR)
 	$(CXX) -std=c++14 -O2 -Wall -Wextra -Werror $(INCFLAGS) $< -o $@
 test-pedestrian-motion: $(BUILD_DIR)/test_pedestrian_motion
@@ -119,19 +123,19 @@ $(BIN): $(OBJECTS) | $(BUILD_DIR)
 	@echo "构建结束: $(TARGET) - Perception Engine 全景界面"
 
 # 构建C++源文件
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCLUDES) | $(BUILD_DIR)
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp Makefile | $(BUILD_DIR)
 	@echo "构建C++: $<"
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
 
 # 构建C源文件 (用于共享内存模块)
-$(BUILD_DIR)/%.o: ../../csrc/%.c $(INCLUDES) ../../../common/perception/include/curve_shm_attach.h ../../../common/perception/include/curve_heading.h | $(BUILD_DIR)
+$(BUILD_DIR)/%.o: ../../csrc/%.c Makefile | $(BUILD_DIR)
 	@echo "构建共享内存C文件: $<"
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
 # 构建C源文件 (本地文件)
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(INCLUDES) | $(BUILD_DIR)
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c Makefile | $(BUILD_DIR)
 	@echo "构建C: $<"
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
 # 建立产物目录
 $(BUILD_DIR):

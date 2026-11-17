@@ -4,8 +4,39 @@
 #include <cassert>
 #include <cstdio>
 
+static void check_local_front_preview_edge()
+{
+    constexpr int width = 640, height = 480, edge = 329;
+    std::vector<uint8_t> original(width * height * 3);
+    for (int y = 0; y < height; ++y)
+        for (int x = 0; x < width; ++x)
+        {
+            auto *pixel = original.data() + (y * width + x) * 3;
+            if (y >= 240 && x >= 320 && x < edge)
+                continue;
+            pixel[0] = uint8_t(y + 1);
+            pixel[1] = uint8_t(x + 20);
+            pixel[2] = uint8_t(x + y);
+        }
+    auto rendered = original;
+    m_lane::extend_local_front_preview_edge(rendered.data(), width, height);
+    for (int y = 0; y < height; ++y)
+        for (int x = 0; x < width; ++x)
+        {
+            const int source_x = y >= 240 && x >= 320 && x < edge ? edge : x;
+            assert(std::memcmp(rendered.data() + (y * width + x) * 3,
+                               original.data() + (y * width + source_x) * 3, 3) == 0);
+        }
+}
+
 int main(int argc, char **argv)
 {
+    check_local_front_preview_edge();
+    if (argc == 2 && std::strcmp(argv[1], "--local-edge-only") == 0)
+    {
+        std::puts("PASS M local preview: nine blank columns restored; every other pixel unchanged");
+        return 0;
+    }
     constexpr int width = 320, height = 240;
     const auto camera = m_lane::FrontRadial::from_text("-0.188218");
     assert(camera.valid() && camera.enabled());

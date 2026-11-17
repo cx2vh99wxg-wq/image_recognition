@@ -790,6 +790,7 @@ class RenderWorker
             }
             // Xorg waits happen after releasing the handoff lock.
             const uint64_t start = monotonic_ns();
+            m_lane::extend_local_front_preview_edge(working_.data(), DISPLAY_WIDTH, DISPLAY_HEIGHT);
             if (render_engine_render_frame_with_detections(&engine, working_.data()) == 0)
             {
                 const uint64_t elapsed = monotonic_ns() - start;

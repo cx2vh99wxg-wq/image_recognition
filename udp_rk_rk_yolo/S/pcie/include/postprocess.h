@@ -53,8 +53,8 @@ extern "C"
     int initPostProcess(const char *label_file_path);
 
     /* C 接口按旧扫描顺序解码三层量化输出，最多保留 64 个显示框，
- * 同时遍历全部候选汇总置信度至少 15% 的 person。
- * 仅制动候选门限独立降低，显示仍由 conf_threshold 筛选；
+ * 同时遍历全部候选，按独立的后向行人置信度门限汇总制动结果。
+ * 通用检测框仍由 conf_threshold 筛选；
  * nms_threshold 只保留在签名中，本实现不运行 NMS。 */
     int post_process_simple(int8_t *input0, int8_t *input1, int8_t *input2, int model_in_h,
                             int model_in_w, float conf_threshold, float nms_threshold,

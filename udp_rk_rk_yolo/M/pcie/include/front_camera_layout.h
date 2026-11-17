@@ -3,9 +3,27 @@
 
 #include "../../../common/image/frame_pixels.h"
 #include <cstdlib>
+#include <cstring>
 
 namespace m_lane
 {
+// The raw front-center comparison tile has a ninth blank column on M.
+// Extend the local preview while preserving calibrated and published coordinates.
+inline void extend_local_front_preview_edge(uint8_t *rgb, int width, int height)
+{
+    constexpr int first_valid_column = 9;
+    const int tile_width = width / 2;
+    if (!rgb || tile_width <= first_valid_column || height < 2)
+        return;
+    for (int y = height / 2; y < height; ++y)
+    {
+        uint8_t *line = rgb + ((size_t)y * width + tile_width) * 3;
+        const uint8_t *edge = line + first_valid_column * 3;
+        for (int x = 0; x < first_valid_column; ++x)
+            std::memcpy(line + x * 3, edge, 3);
+    }
+}
+
 // The FPGA writes the same front-center camera to two opposite tiles. A
 // half-frame DMA offset changes which diagonal contains that duplicate.
 class FrontCameraLayout
