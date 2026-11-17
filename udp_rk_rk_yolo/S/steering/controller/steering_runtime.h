@@ -15,6 +15,10 @@ void steering_runtime_lane(int valid, uint32_t frame, unsigned type, unsigned co
 typedef int (*steering_lane_reader_t)(void *context, uint32_t *frame, unsigned *type,
                                       unsigned *confidence, unsigned *road_angle);
 void steering_runtime_poll_lane(int allowed, steering_lane_reader_t reader, void *context);
+/* Boot recovery uses explicit HMI confirmation and the existing real feedback. */
+unsigned steering_runtime_center_input(uint8_t key, int parked, int switch_off);
+int steering_runtime_center_waiting_for_touch(void);
+int steering_runtime_center_sampling(void);
 void steering_runtime_cancel(void);
 void steering_runtime_close(void);
 #endif

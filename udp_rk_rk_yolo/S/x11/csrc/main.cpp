@@ -1444,6 +1444,11 @@ int present_dashboard(RenderEngine *engine)
         const uint32_t monotonic_ms = (uint32_t)(display_clock_ns() / 1000000ULL);
         if (display_control_shm && display_control_shm->valid)
         {
+            const uint64_t center =
+                __atomic_load_n(&display_control_shm->steering_center_snapshot, __ATOMIC_ACQUIRE);
+            const uint32_t center_ms = (uint32_t)(center >> 32);
+            if (center_ms && monotonic_ms - center_ms <= 500)
+                status.steering_center_status = (uint32_t)center;
             // 110 mm nominal rear-wheel radius and four equally spaced magnets.
             static const unsigned circumference =
                 wheel_setting("VISION_WHEEL_CIRCUMFERENCE_MM", 691, 0, 10000);

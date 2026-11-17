@@ -1,17 +1,24 @@
 #define _POSIX_C_SOURCE 200809L
 #include "steering_runtime.h"
 #include "steering_feedback.h"
+#include "steering_center.h"
 #include "steering_keepalive.h"
 #include "steering_platform.h"
 #include "fspi_module.h"
 #include <math.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sched.h>
 #include <sys/mman.h>
 #include <sys/resource.h>
+#include <sys/stat.h>
+#include <unistd.h>
 static steering_response_model_t model;
+static SteeringCenter center;
+static const char *reference_file;
+static uint64_t center_ready_until;
 static steering_keepalive_t keepalive;
 static ControlSnapshot snapshot;
 static uint64_t snapshot_ns, lane_ns, next_lane_poll_ns;
@@ -216,6 +223,9 @@ steer_result_t steering_runtime_init(int bench_mode)
     steering_keepalive_init(&keepalive, 1000);
     bench = bench_mode;
     initialized = 1;
+    center = (SteeringCenter){0};
+    center_ready_until = 0;
+    reference_file = ref;
     confirmed = have_lane = have_frame = 0;
     snapshot_ns = 0;
     blocked_frame = 0;
@@ -249,10 +259,136 @@ void steering_runtime_poll_lane(int allowed, steering_lane_reader_t reader, void
     int valid = reader(context, &frame, &type, &confidence, &angle) == 0;
     steering_runtime_lane(allowed && valid, frame, type, confidence, angle);
 }
+
+int steering_runtime_center_sampling(void)
+{
+    return center.status == STEERING_CENTER_SAMPLING;
+}
+
+int steering_runtime_center_waiting_for_touch(void)
+{
+    return initialized && (center.status == STEERING_CENTER_RELEASE_STOP ||
+                           center.status == STEERING_CENTER_TAP_OVERVIEW);
+}
+
+unsigned steering_runtime_center_input(uint8_t key, int parked, int switch_off)
+{
+    if (!initialized || bench || model.burst_max_us)
+        return STEERING_CENTER_HIDDEN;
+    const uint64_t now = steering_now_ns();
+    steering_feedback_t feedback;
+    if (steering_feedback_read(&feedback) != STEER_OK)
+    {
+        steering_center_set(&center, center.session ? STEERING_CENTER_RETRY : STEERING_CENTER_HIDDEN);
+        return center.status;
+    }
+    if (feedback.session_id == reference_session)
+    {
+        steering_center_set(&center, now < center_ready_until ? STEERING_CENTER_READY
+                                                             : STEERING_CENTER_HIDDEN);
+        center.session = 0;
+        return center.status;
+    }
+    if (center.session != feedback.session_id)
+    {
+        steering_center_set(&center, STEERING_CENTER_HOLD_STOP);
+        center.session = feedback.session_id;
+        center.control_ns = 0;
+    }
+    if (!switch_off || !parked)
+    {
+        steering_center_set(&center, switch_off ? STEERING_CENTER_HOLD_STOP
+                                               : STEERING_CENTER_SWITCH_OFF);
+        return center.status;
+    }
+    if (center.control_ns && now - center.control_ns >= CENTER_CONTROL_TTL_NS)
+        steering_center_set(&center, steering_runtime_center_sampling() ? STEERING_CENTER_RETRY
+                                                                        : STEERING_CENTER_HOLD_STOP);
+    center.control_ns = now;
+    steering_center_key(&center, key, now);
+    return center.status;
+}
+
+static int save_center_reference(uint32_t session, float raw)
+{
+    struct stat original;
+    if (lstat(reference_file, &original) || !S_ISREG(original.st_mode))
+        return -1;
+    char pending[PATH_MAX];
+    int length = snprintf(pending, sizeof(pending), "%s.tmp.XXXXXX", reference_file);
+    if (length < 0 || (size_t)length >= sizeof(pending))
+        return -1;
+    int fd = mkstemp(pending);
+    if (fd < 0)
+        return -1;
+    FILE *file = fdopen(fd, "w");
+    if (!file)
+    {
+        close(fd);
+        unlink(pending);
+        return -1;
+    }
+    int failed = fchmod(fd, original.st_mode & 0777) ||
+        fprintf(file, "STEER_PHYSICAL_REFERENCE_V1 %u %.6f 1\n", session, raw) < 0 ||
+        fflush(file) || fsync(fd);
+    if (fclose(file))
+        failed = 1;
+    if (!failed && rename(pending, reference_file) == 0)
+        return 0;
+    unlink(pending);
+    return -1;
+}
+
+static int angle_order(const void *lhs, const void *rhs)
+{
+    const int32_t a = *(const int32_t *)lhs, b = *(const int32_t *)rhs;
+    return (a > b) - (a < b);
+}
+
+static void observe_center(void)
+{
+    const uint64_t now = steering_now_ns();
+    steering_feedback_t feedback;
+    if (now - center.control_ns >= CENTER_CONTROL_TTL_NS ||
+        steering_feedback_read(&feedback) != STEER_OK)
+    {
+        steering_center_set(&center, STEERING_CENTER_RETRY);
+        return;
+    }
+    const int complete = steering_center_sample(&center, &feedback, now);
+    if (complete < 0)
+        steering_center_set(&center, STEERING_CENTER_RETRY);
+    if (complete <= 0)
+        return;
+
+    qsort(center.angles, CENTER_SAMPLES, sizeof(center.angles[0]), angle_order);
+    const float raw = (center.angles[CENTER_SAMPLES / 2 - 1] +
+                       center.angles[CENTER_SAMPLES / 2]) / 2000.f;
+    steering_runtime_cancel();
+    confirmed = 0;
+    const steer_result_t result = steering_confirm_reference(center.session, raw);
+    if (result != STEER_OK || save_center_reference(center.session, raw) != 0)
+    {
+        fprintf(stderr, "[STEER_CENTER] HMI confirmation failed: %s\n",
+                result != STEER_OK ? steer_result_name(result) : "could not save reference");
+        steering_center_set(&center, STEERING_CENTER_RETRY);
+        return;
+    }
+    printf("[STEER_CENTER] HMI confirmed session %u at %.3f deg (previous %u at %.3f deg)\n",
+           center.session, raw, reference_session, zero_raw);
+    reference_session = center.session;
+    zero_raw = raw;
+    confirmed = 1;
+    center_ready_until = now + 5000000000ULL;
+    steering_center_set(&center, STEERING_CENTER_READY);
+}
+
 void steering_runtime_tick(void)
 {
     if (!initialized)
         return;
+    if (steering_runtime_center_sampling())
+        observe_center();
     if (!confirmed)
     {
         steering_feedback_t f = {0};

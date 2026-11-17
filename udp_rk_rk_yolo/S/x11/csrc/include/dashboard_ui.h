@@ -13,6 +13,7 @@
 #include <tuple>
 #include "speed_warning_glyphs.h"
 #include "six_camera_render.h"
+#include "../../../include/steering_center_status.h"
 #if defined(__aarch64__)
 #include <arm_neon.h>
 #endif
@@ -54,6 +55,7 @@ struct ViewStatus
     unsigned line_left_raw = 0, line_right_raw = 0;
     bool lane_angle_valid = false;
     int lane_angle_deg = 0; // Recognized road heading: right positive, left negative.
+    unsigned steering_center_status = STEERING_CENTER_HIDDEN;
     unsigned traffic = 0, traffic_raw = 0, traffic_quality = 0, traffic_detector_quality = 0,
              traffic_flags = 0;
     bool traffic_live = false;
@@ -185,8 +187,27 @@ class Dashboard
         else
             std::snprintf(angle_text, sizeof(angle_text), "ANGLE: WAIT");
         fill(frame_, 1238, 234, 296, 34, 0xFF080B20);
-        centeredText(frame_, angle_text, {1238, 234, 296, 34}, 2,
-                      status.lane_angle_valid ? 0xFF65F5AA : 0xFF93B1CB);
+        if (status.steering_center_status == STEERING_CENTER_HIDDEN)
+            centeredText(frame_, angle_text, {1238, 234, 296, 34}, 2,
+                         status.lane_angle_valid ? 0xFF65F5AA : 0xFF93B1CB);
+        else
+        {
+            const char *hint;
+            switch (status.steering_center_status)
+            {
+            case STEERING_CENTER_SWITCH_OFF: hint = "SWITCH AUTOPILOT OFF"; break;
+            case STEERING_CENTER_RELEASE_STOP: hint = "RELEASE S/R"; break;
+            case STEERING_CENTER_TAP_OVERVIEW: hint = "TAP SIX-VIEW TO CONFIRM"; break;
+            case STEERING_CENTER_SAMPLING: hint = "KEEP VEHICLE STILL"; break;
+            case STEERING_CENTER_READY: hint = "ZERO SAVED / ENABLE AUTOPILOT"; break;
+            case STEERING_CENTER_RETRY: hint = "KEEP STILL AND START AGAIN"; break;
+            default: hint = "PARK, ALIGN WHEELS, HOLD S/R 3S"; break;
+            }
+            centeredText(frame_, "STEERING ZERO", {1238, 234, 296, 16}, 1, 0xFF93B1CB);
+            centeredText(frame_, hint, {1238, 250, 296, 18}, 1,
+                         status.steering_center_status == STEERING_CENTER_READY
+                             ? 0xFF65F5AA : 0xFFFFCE63);
+        }
         if (status.motion != MotionDirection::Idle)
             drawMotionCue(status.motion);
         if (status.go_blocked)
@@ -296,7 +317,7 @@ class Dashboard
             s.front_person,s.front_person_outside,s.front_road_unknown,s.pcie_fps,s.udp_fps,s.recorded,
             s.motion,s.lane_blocked,s.line_left,s.line_right,s.line_left_quality,s.line_right_quality,
             s.line_left_reason,s.line_right_reason,s.line_left_raw,s.line_right_raw,s.lane_angle_valid,
-            s.lane_angle_deg,s.traffic,s.traffic_raw,s.traffic_quality,s.traffic_detector_quality,
+            s.lane_angle_deg,s.steering_center_status,s.traffic,s.traffic_raw,s.traffic_quality,s.traffic_detector_quality,
             s.traffic_flags,s.traffic_live,s.go_blocked,s.go_control_live,s.go_write_ok,s.gear,
             s.gear_known,s.gear_live,s.gear_shifting,s.wheel_known,s.wheel_metric,s.wheel_value);};
         return key(a)==key(b);

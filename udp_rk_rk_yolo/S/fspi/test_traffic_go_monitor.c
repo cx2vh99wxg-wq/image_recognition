@@ -179,6 +179,18 @@ int main(void) {
     assert(display.mode==DISPLAY_MODE_ALL_CAMERAS && display.button_count==3);
     view_reply=0xff;poll();
     assert(!fpga_camera_view_available && display.button_count==3);
+    gates_reply |= GATE_RESET_RELEASED;
+    contact_reply = CONTACT_GO_N | CONTACT_BACK_N | CONTACT_LEFT_N | CONTACT_RIGHT_N | CONTACT_STOP_N;
+    wheel_reply = WHEEL_PERIOD_UNKNOWN;poll();
+    assert(center_parked && (uint32_t)display.wheel_snapshot==2500);
+    wheel_reply = WHEEL_PERIOD_INVALID;poll();
+    assert(!center_parked && (uint32_t)display.wheel_snapshot==2500);
+    wheel_reply = 2500;poll();
+    assert(!center_parked);
+    wheel_reply = 0;poll();
+    assert(center_parked);
+    contact_reply &= ~CONTACT_GO_N;poll();
+    assert(!center_parked);
     puts("production monitor: atomic lane+traffic permissions, red/unknown/yellow/green, SPI retry, UI telemetry, restart PASS");
     return 0;
 }

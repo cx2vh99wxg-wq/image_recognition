@@ -61,9 +61,20 @@ static unsigned front_command = FRONT_STOP_REQUEST;
 static unsigned front_enabled;
 static unsigned front_stop_active;
 static uint8_t front_contacts;
+static uint8_t center_hmi;
+static int center_parked;
 static FrontPersonData front_result;
 static int front_snapshot_ok = 0;
 static int fpga_camera_view_available;
+
+static int park_contacts_released(const ControlSnapshot *status, uint16_t wheel_period)
+{
+    const unsigned idle_contacts = CONTACT_GO_N | CONTACT_BACK_N | CONTACT_LEFT_N | CONTACT_RIGHT_N;
+    /* A valid but unmeasured Hall sensor after power-up leaves parking to
+     * the operator's explicit confirmation. Measured motion vetoes it. */
+    return (wheel_period == 0 || wheel_period == WHEEL_PERIOD_UNKNOWN) &&
+           (status->gates & GATE_RESET_RELEASED) && (status->contacts & idle_contacts) == idle_contacts;
+}
 
 static int publish_camera_view(uint8_t view)
 {
@@ -88,15 +99,18 @@ static void monitor_front_person(uint64_t now)
     if (front_person_ipc_read(&front_input,&front_result)) memset(&front_result,0,sizeof(front_result));
     ControlSnapshot snapshot = {0};
     uint8_t view = 0xff;
-    uint16_t wheel_period = WHEEL_PERIOD_UNKNOWN;
+    uint16_t wheel_period = WHEEL_PERIOD_INVALID;
     front_snapshot_ok = fspi_read_control_snapshot_with_wheel(&snapshot, &view, &wheel_period) == 0;
+    center_parked = 0;
     if (front_snapshot_ok)
     {
         front_enabled = (snapshot.gates & GATE_AUTO) != 0;
         front_stop_active = (snapshot.gates & GATE_STOP) != 0;
         front_contacts = snapshot.contacts;
+        center_hmi = snapshot.hmi;
+        center_parked = park_contacts_released(&snapshot, wheel_period);
         fpga_camera_view_available = publish_camera_view(view);
-        if (display_control_shm && display_control_shm->valid && wheel_period != WHEEL_PERIOD_UNKNOWN)
+        if (display_control_shm && display_control_shm->valid && wheel_period <= WHEEL_PERIOD_MAX)
         {
             const uint64_t stamp = (uint32_t)(now / 1000000ULL);
             __atomic_store_n(&display_control_shm->wheel_snapshot,
@@ -473,6 +487,75 @@ static int read_steering_lane(void *context, uint32_t *frame, unsigned *type, un
     return rc;
 }
 
+enum
+{
+    AUTOPILOT_HEARTBEAT_REG = 7,
+    AUTOPILOT_REQUEST_ON = 0x04,
+    AUTOPILOT_ACTIVE = 0x08,
+    AUTOPILOT_SEQUENCE_MASK = 0x03
+};
+
+typedef struct
+{
+    uint64_t next_poll_ns;
+    uint8_t counter;
+    int active;
+    int switch_off;
+    int inhibit_until_off;
+} AutopilotGate;
+
+/* A failed poll pauses the software target. Leave the FPGA lease alone so
+ * a brief SPI error can recover before the hardware timeout. */
+static int poll_autopilot_gate(AutopilotGate *gate, uint64_t now, int control_ok)
+{
+    if (!control_ok || !now)
+    {
+        gate->next_poll_ns = 0;
+        gate->active = 0;
+        gate->switch_off = 0;
+        return 0;
+    }
+    if (now < gate->next_poll_ns)
+        return gate->active;
+
+    gate->next_poll_ns = now + 40000000ULL;
+    gate->active = 0;
+    gate->switch_off = 0;
+    uint8_t status;
+    if (fspi_read_autopilot_status(&status))
+        return 0;
+    gate->switch_off = !(status & (AUTOPILOT_REQUEST_ON | AUTOPILOT_ACTIVE));
+    if (gate->inhibit_until_off)
+    {
+        if (gate->switch_off && !steering_runtime_center_sampling())
+            gate->inhibit_until_off = 0;
+        return 0;
+    }
+    if (!(status & AUTOPILOT_REQUEST_ON))
+        return 0;
+
+    uint8_t counter = (gate->counter + 1) & 0x0f;
+    uint8_t heartbeat = 0x80 | ((status & AUTOPILOT_SEQUENCE_MASK) << 4) | counter;
+    if (fspi_write_data(AUTOPILOT_HEARTBEAT_REG, heartbeat))
+        return 0;
+    gate->counter = counter;
+    gate->active = (status & AUTOPILOT_ACTIVE) != 0;
+    return gate->active;
+}
+
+static void publish_center_input(AutopilotGate *gate, uint8_t key, int parked)
+{
+    unsigned status = steering_runtime_center_input(key, parked, gate->switch_off);
+    if (steering_runtime_center_sampling())
+        gate->inhibit_until_off = 1;
+    if (display_control_shm && display_control_shm->valid)
+    {
+        uint64_t stamp = (uint32_t)(line_clock_ns() / 1000000ULL);
+        __atomic_store_n(&display_control_shm->steering_center_snapshot,
+                         (stamp << 32) | status, __ATOMIC_RELEASE);
+    }
+}
+
 /* Algorithm-test profile: SAME production brake/permission policies, without
  * starting IMU, auto-centering or steering pulses. Never asserts reg0..3. */
 static void run_brake_only(unsigned max_iterations)
@@ -513,7 +596,7 @@ int main(int argc, char *argv[])
     printf("工作模式说明:\n");
     printf("- 实时读取: 从FSPI寄存器0读取实际模式值\n");
     printf("- 呈现控制: 六个物理视角22/33/44/66/77/88，99六路全景；11/55兼容归并到中间视角\n");
-    printf("- 自动转向: 使用 IMU 反馈和当前机械零位跟随车道\n");
+    printf("- 自动转向: 串口屏 Autopilot 授权后，由原有 IMU 闭环跟随车道\n");
     printf("- 原始制动请求: 有人或识别不可用写4=0，连续两秒无人写1仅清除请求\n");
     printf("- STOP锁存: FPGA保持低电平直到人工REARM；允许有人时强制解除此时报警\n");
     printf("- 制动开关: HMI功能0F的FF开启/EE关闭，默认关闭和最终门控由FPGA负责；S不依赖开关读回\n");
@@ -539,6 +622,7 @@ int main(int argc, char *argv[])
         return -1;
     }
     printf("FSPI初始化完成！\n");
+    (void)fspi_write_data(AUTOPILOT_HEARTBEAT_REG, 0);
     if (brake_only)
     {
         if (display_control_shm_init(&display_control_shm, 1) != 0)
@@ -623,7 +707,7 @@ int main(int argc, char *argv[])
     printf("按钮逻辑: 按下时产生指令值，松开时回到0x00\n");
     printf("支持的指令值:\n");
     printf("  呈现控制: 22/33/44/66/77/88(六个物理视角), 99(六路全景)\n");
-    printf("  自动转向: 有效车道结果、IMU 反馈和机械零位共同决定输出\n");
+    printf("  自动转向: Autopilot 开启后才允许有效车道、IMU 反馈和机械零位触发输出\n");
     printf("  制动功能控制: S持续发布原始请求；HMI AUTO开关和实际STOP锁存由FPGA决定\n");
     printf("  紧急制动: 有人或识别失效写0，连续两秒无人写1；STOP锁存仅由人工REARM解除\n");
     printf("  弯道识别: 自动读取UDP传来的弯道信息并控制车辆转向 [置信度≥60%%时执行]\n");
@@ -644,11 +728,35 @@ int main(int argc, char *argv[])
     uint32_t current_curve_confidence = 0;
     uint32_t current_curve_angle = 0;
 
-    uint64_t next_policy_ns = 0;
+    uint64_t next_policy_ns = 0, next_center_touch_ns = 0;
     int control_io_failed = 1; /* 完成首次 IO 检查前，不触发自动动作。 */
+    AutopilotGate autopilot = {0};
+    int autopilot_enabled = 0;
     while (g_running)
     {
-        steering_runtime_poll_lane(!control_io_failed, read_steering_lane, NULL);
+        /* Avoid an extra SPI exchange while an actuator release deadline is active. */
+        if (!steering_pulse_active())
+        {
+            uint64_t now = line_clock_ns();
+            int active = poll_autopilot_gate(&autopilot, now, !control_io_failed);
+            if (active != autopilot_enabled)
+            {
+                if (!active)
+                    steering_runtime_cancel();
+                printf("[AUTOPILOT] steering_output=%s\n", active ? "ON" : "OFF");
+                autopilot_enabled = active;
+            }
+            if (!control_io_failed && now >= next_center_touch_ns && steering_runtime_center_waiting_for_touch())
+            {
+                ControlSnapshot current = {0};
+                uint8_t view;
+                uint16_t period;
+                next_center_touch_ns = now + 10000000ULL;
+                int valid = fspi_read_control_snapshot_with_wheel(&current, &view, &period) == 0;
+                publish_center_input(&autopilot, current.hmi, valid && park_contacts_released(&current, period));
+            }
+        }
+        steering_runtime_poll_lane(!control_io_failed && autopilot_enabled, read_steering_lane, NULL);
         steering_runtime_tick();
         uint64_t tick_now = line_clock_ns();
         if (steering_pulse_active() || tick_now < next_policy_ns)
@@ -739,6 +847,7 @@ int main(int argc, char *argv[])
 
         if (control_io_failed)
             steering_runtime_cancel();
+        publish_center_input(&autopilot, center_hmi, center_parked && !control_io_failed);
 
         // 寄存器访问：4. 实际从FSPI寄存器0读取模式值
         uint8_t current_mode_value = 0;
@@ -769,6 +878,7 @@ int main(int argc, char *argv[])
     }
 
     publish_motion_hint(0);
+    (void)fspi_write_data(AUTOPILOT_HEARTBEAT_REG, 0);
     steering_runtime_close();
     // 寄存器访问：程序退出前的移除工作
     printf("\n=== 程序退出移除 ===\n");

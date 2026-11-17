@@ -91,5 +91,16 @@ int main(){
     light.traffic_live=false;
     auto *cleared=cached.compose(video.data(),1280,vehicle.data(),320,true,-1,"ALL",light,false);
     assert(cleared[292*WIDTH+1412]!=0xFF39EC91);
+    const auto *without_prompt = reference.compose(video.data(),1280,vehicle.data(),320,true,-1,"ALL",light,true);
+    for (unsigned phase = STEERING_CENTER_SWITCH_OFF; phase <= STEERING_CENTER_RETRY; ++phase) {
+        light.steering_center_status = phase;
+        const auto *with_prompt = cached.compose(video.data(),1280,vehicle.data(),320,true,-1,"ALL",light,false);
+        assert(cached.uiRedrawn());
+        assert(!std::equal(without_prompt,without_prompt+WIDTH*HEIGHT,with_prompt));
+    }
+    light.steering_center_status = STEERING_CENTER_HIDDEN;
+    const auto *after_prompt = cached.compose(video.data(),1280,vehicle.data(),320,true,-1,"ALL",light,false);
+    assert(cached.uiRedrawn());
+    assert(std::equal(without_prompt,without_prompt+WIDTH*HEIGHT,after_prompt));
     std::printf("DASHBOARD CACHE PASS: %u reused UI frames; every output pixel equals full redraw; front traffic R/Y/G and expiry below ANGLE\n",reused);
 }

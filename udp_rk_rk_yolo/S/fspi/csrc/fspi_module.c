@@ -314,15 +314,16 @@ int fspi_read_speed_snapshot(SpeedSnapshot *data, uint8_t *raw_status)
     return 0;
 }
 
-static int read_control_packet(ControlSnapshot *data, uint8_t *view, uint16_t *period)
+static int read_control_packet(ControlSnapshot *data, uint8_t *view, uint16_t *period,
+                               uint8_t *autopilot)
 {
     if (g_spi_fd < 0 || !data)
     {
         errno = !data ? EINVAL : ENODEV;
         return -1;
     }
-    uint8_t bytes[13] = {0};
-    const uint32_t length = period ? 13u : view ? 9u : 8u;
+    uint8_t bytes[15] = {0};
+    const uint32_t length = autopilot ? 15u : period ? 13u : view ? 9u : 8u;
     g_config.spi_mode = (g_config.spi_mode | SPI_RX_QUAD) & ~SPI_TX_QUAD;
     if (configure_spi_interface(g_spi_fd, &g_config))
         return -1;
@@ -348,12 +349,21 @@ static int read_control_packet(ControlSnapshot *data, uint8_t *view, uint16_t *p
         *view = bytes[8];
     if (period)
         *period = wheel_decode_period(bytes + 9);
+    if (autopilot)
+    {
+        if ((bytes[13] & 0xf0) != 0xb0 || bytes[14] != control_crc_byte(0, bytes[13]))
+        {
+            errno = EPROTO;
+            return -1;
+        }
+        *autopilot = bytes[13] & 15;
+    }
     return 0;
 }
 
 int fspi_read_control_snapshot(ControlSnapshot *data)
 {
-    return read_control_packet(data, NULL, NULL);
+    return read_control_packet(data, NULL, NULL, NULL);
 }
 
 int fspi_read_control_snapshot_with_view(ControlSnapshot *data, uint8_t *view)
@@ -363,7 +373,7 @@ int fspi_read_control_snapshot_with_view(ControlSnapshot *data, uint8_t *view)
         errno = EINVAL;
         return -1;
     }
-    if (read_control_packet(data, view, NULL) == 0)
+    if (read_control_packet(data, view, NULL, NULL) == 0)
         return 0;
 
     // A failed optional tail read must not take away the control status.
@@ -378,10 +388,21 @@ int fspi_read_control_snapshot_with_wheel(ControlSnapshot *data, uint8_t *view, 
         errno = EINVAL;
         return -1;
     }
-    *period = WHEEL_PERIOD_UNKNOWN;
-    if (read_control_packet(data, view, period) == 0)
+    *period = WHEEL_PERIOD_INVALID;
+    if (read_control_packet(data, view, period, NULL) == 0)
         return 0;
     return fspi_read_control_snapshot_with_view(data, view);
+}
+
+int fspi_read_autopilot_status(uint8_t *status)
+{
+    if (!status)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+    ControlSnapshot control;
+    return read_control_packet(&control, NULL, NULL, status);
 }
 
 /* 读取独立开关不能采用旧的两次片选路径。两个 transfer

@@ -69,10 +69,8 @@ class AutoTests(unittest.TestCase):
                 start_min_deg=-18,start_max_deg=18,responses_deg=[4,5,6]) for d in ['left','right']]
             table.write_text(export(dict(schema=SCHEMA,cells=cells)))
             with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as s:s.bind(('127.0.0.1',0));port=s.getsockname()[1]
-            # Added short-valid-frame scenarios contain >7s of intentional
-            # waits. The old 5s wrapper killed a passing fixture before its
-            # final assertions; this is only a test-process deadline.
-            result=subprocess.run([str(ROOT/'build/tests/test_runtime_integration'),str(table),str(ref),str(port)],capture_output=True,text=True,timeout=15)
+            # The fixture also holds S/R for 3 s and observes the new zero for 1.8 s.
+            result=subprocess.run([str(ROOT/'build/tests/test_runtime_integration'),str(table),str(ref),str(port)],capture_output=True,text=True,timeout=24)
             self.assertEqual(result.returncode,0,result.stdout+result.stderr)
     def test_simulated_batch_stays_bounded_and_cannot_export(self):
         with tempfile.TemporaryDirectory(dir=ROOT/'build') as folder:

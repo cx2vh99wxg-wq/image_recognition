@@ -9,6 +9,14 @@ MPU 在 M 端；采样、测角和传感器工具全部位于 `M/imu/`。
 M端测角 → UDP → S/steering/feedback → controller → actuator → left/right
 ```
 
+## M 端重启后的零位恢复
+
+M 端重启会开始新的相对测角会话。停车并实际摆正前轮，关闭串口屏 Autopilot。看到 S 端仪表提示 `STEERING ZERO` 时，长按串口屏 `S/R` 至少 3 秒。提示 `RELEASE S/R` 后松开，在 30 秒内点车图中央的六路总览触区 `m6`，保持车轮静止直到出现 `ZERO SAVED`。此时可按平常的方式开启 Autopilot。
+
+确认时要求牵引和方向控制触点释放、IMU 反馈连续且稳定。已测到车轮转动或霍尔报文出错时拒绝确认。霍尔在首次测到车轮转动前会报告未测量，此时由操作者确认车辆确实停稳。单独重启 S 端会读回同一 M 会话已保存的零位。反馈中断或 M 会话变更时，旧零位不能用于自动转向。
+
+S 板的 XFCE 登录项 `~/.config/autostart/adas-s-runtime.desktop` 打开原来的启动终端。原有 `.bashrc` 继续在 `~/S` 执行 `make run`。
+
 ## S 端目录
 
 - `actuator/`：已实现的脉冲状态机和 dry-run/FSPI 后端。

@@ -81,7 +81,9 @@ extern "C"
         volatile uint64_t motion_snapshot;
         /* High word is monotonic ms. Low word is the validated Hall period. */
         volatile uint64_t wheel_snapshot;
-        uint8_t reserved[32];
+        /* High word is monotonic ms. Low word is the mechanical center prompt. */
+        volatile uint64_t steering_center_snapshot;
+        uint8_t reserved[24];
     } DisplayControlSharedMemory;
 
 #ifdef __cplusplus

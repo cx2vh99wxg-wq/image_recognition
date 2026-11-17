@@ -40,6 +40,7 @@ extern "C"
     /* 寄存器访问：独立持久开关：同一次片选发送四线 81 00 05，再四线读取 A1(开)/A0(关)。
  * 只接受带签名的状态，旧 FPGA、无效响应或总线失败返回 -1，且不改输出值。 */
     int fspi_read_auto_brake_switch(int *enabled);
+    int fspi_read_autopilot_status(uint8_t *status);
 
     /* 读取最近一次独立开关读取的诊断，不进行SPI访问；可空参。 errno=0表示成功，
  * transfer_result为消息返回长度，raw_status为原始响应。。 */
