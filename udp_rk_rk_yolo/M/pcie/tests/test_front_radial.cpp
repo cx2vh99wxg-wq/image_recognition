@@ -4,37 +4,50 @@
 #include <cassert>
 #include <cstdio>
 
-static void check_local_front_preview_edge()
+static void check_local_front_preview_crop()
 {
-    constexpr int width = 640, height = 480, edge = 329;
-    std::vector<uint8_t> original(width * height * 3);
-    for (int y = 0; y < height; ++y)
-        for (int x = 0; x < width; ++x)
+    constexpr int width = 640, height = 480, tile_width = width / 2, tile_height = height / 2;
+    const auto offset = [=](int x, int y) { return (y * width + x) * 3; };
+    std::vector<uint8_t> original(width * height * 3, 0x5a);
+    for (int y = 0; y < tile_height; ++y)
+        for (int x = 9; x < tile_width; ++x)
         {
-            auto *pixel = original.data() + (y * width + x) * 3;
-            if (y >= 240 && x >= 320 && x < edge)
-                continue;
-            pixel[0] = uint8_t(y + 1);
-            pixel[1] = uint8_t(x + 20);
-            pixel[2] = uint8_t(x + y);
+            auto *pixel = original.data() + offset(tile_width + x, tile_height + y);
+            pixel[0] = uint8_t(x / 2);
+            pixel[1] = uint8_t(y);
+            pixel[2] = 0x39;
         }
     auto rendered = original;
-    m_lane::extend_local_front_preview_edge(rendered.data(), width, height);
+    m_lane::LocalFrontPreviewCrop crop(width, height);
+    crop.apply(rendered.data());
+    constexpr double scale = 310.0 / 319.0;
     for (int y = 0; y < height; ++y)
         for (int x = 0; x < width; ++x)
         {
-            const int source_x = y >= 240 && x >= 320 && x < edge ? edge : x;
-            assert(std::memcmp(rendered.data() + (y * width + x) * 3,
-                               original.data() + (y * width + source_x) * 3, 3) == 0);
+            const auto *pixel = rendered.data() + offset(x, y);
+            if (x < tile_width || y < tile_height)
+            {
+                assert(std::memcmp(pixel, original.data() + offset(x, y), 3) == 0);
+                continue;
+            }
+            const double source_x = 9 + (x - tile_width) * scale;
+            const double source_y = (tile_height - 1) / 2.0 +
+                (y - tile_height - (tile_height - 1) / 2.0) * scale;
+            assert(std::abs(pixel[0] - source_x / 2) <= 1.0);
+            assert(std::abs(pixel[1] - source_y) <= 1.0);
+            assert(pixel[2] == 0x39);
         }
+    const int center_row = tile_height + tile_height / 2;
+    assert(rendered[offset(tile_width + 8, center_row)] >
+           rendered[offset(tile_width, center_row)]);
 }
 
 int main(int argc, char **argv)
 {
-    check_local_front_preview_edge();
+    check_local_front_preview_crop();
     if (argc == 2 && std::strcmp(argv[1], "--local-edge-only") == 0)
     {
-        std::puts("PASS M local preview: nine blank columns restored; every other pixel unchanged");
+        std::puts("PASS M local preview: cropped edge retains horizontal detail; other tiles unchanged");
         return 0;
     }
     constexpr int width = 320, height = 240;

@@ -35,6 +35,10 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/extensions/XShm.h>
+#ifdef M_PREVIEW_HAVE_XRENDER
+#include <X11/extensions/Xrender.h>
+#endif
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
@@ -138,9 +142,14 @@ typedef struct
     Atom wm_delete;
     GC gc;
     XImage *ximage;
+    XImage *scaled_image;
     char *display_buffer;
     Pixmap pixmap;           /* 图像处理：双缓冲pixmap */
-    int use_fast_mode;       /* 图像处理：是否使用快速模式 */
+#ifdef M_PREVIEW_HAVE_XRENDER
+    Picture source_picture, window_picture;
+#endif
+    int window_width, window_height;
+    bool fullscreen;
     int use_shm;             /* 图像处理：是否使用共享内存 */
     XShmSegmentInfo shminfo; /* 图像处理：共享内存信息 */
     XFontStruct *font;       /* 本对象描述字形及度量数据。 */
@@ -482,6 +491,35 @@ static int try_shared_ximage(RenderEngine *engine, int screen)
     return 1;
 }
 
+static void set_preview_fullscreen(RenderEngine *engine, bool enabled)
+{
+    Display *display = engine->display;
+    const Window root = DefaultRootWindow(display);
+    const long masks = SubstructureRedirectMask | SubstructureNotifyMask;
+    if (enabled)
+    {
+        // Use the primary HDMI head when DSI overlaps its origin.
+        XEvent monitors = {};
+        monitors.xclient.type = ClientMessage;
+        monitors.xclient.window = engine->window;
+        monitors.xclient.message_type = XInternAtom(display, "_NET_WM_FULLSCREEN_MONITORS", False);
+        monitors.xclient.format = 32;
+        monitors.xclient.data.l[4] = 1;
+        XSendEvent(display, root, False, masks, &monitors);
+    }
+    XEvent state = {};
+    state.xclient.type = ClientMessage;
+    state.xclient.window = engine->window;
+    state.xclient.message_type = XInternAtom(display, "_NET_WM_STATE", False);
+    state.xclient.format = 32;
+    state.xclient.data.l[0] = enabled ? 1 : 0;
+    state.xclient.data.l[1] = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
+    state.xclient.data.l[3] = 1;
+    XSendEvent(display, root, False, masks, &state);
+    engine->fullscreen = enabled;
+    XFlush(display);
+}
+
 int render_engine_init(RenderEngine *engine)
 {
     if (!engine)
@@ -548,22 +586,39 @@ int render_engine_init(RenderEngine *engine)
     // 设置新建窗口的属性。
     printf("设置窗口属性...\n");
     XSelectInput(engine->display, engine->window,
-                 ExposureMask | KeyPressMask | ButtonPressMask | StructureNotifyMask);
+                 ExposureMask | KeyPressMask | StructureNotifyMask);
     XSelectInput(engine->display,DefaultRootWindow(engine->display),StructureNotifyMask);
     engine->wm_delete = XInternAtom(engine->display, "WM_DELETE_WINDOW", False);
     XSetWMProtocols(engine->display, engine->window, &engine->wm_delete, 1);
-
-    printf("映射窗口到屏幕...\n");
-    XMapWindow(engine->display, engine->window);
+    engine->window_width = DISPLAY_WIDTH;
+    engine->window_height = DISPLAY_HEIGHT;
     XStoreName(engine->display, engine->window, "PCIE+YOLO 目标检测系统");
-    XFlush(engine->display);
 
     // 取得窗口绘制所需的 GC。
     engine->gc = XCreateGC(engine->display, engine->window, 0, NULL);
+    XSetForeground(engine->display, engine->gc, BlackPixel(engine->display, screen));
 
     // 为双缓冲呈现申请 Pixmap。
     engine->pixmap = XCreatePixmap(engine->display, engine->window, DISPLAY_WIDTH, DISPLAY_HEIGHT,
                                    DefaultDepth(engine->display, screen));
+
+#ifdef M_PREVIEW_HAVE_XRENDER
+    int major = 0, minor = 0;
+    if (XRenderQueryVersion(engine->display, &major, &minor))
+    {
+        auto *format = XRenderFindVisualFormat(engine->display, DefaultVisual(engine->display, screen));
+        if (format)
+        {
+            XRenderPictureAttributes attributes = {};
+            attributes.repeat = major > 0 || minor >= 10 ? RepeatPad : RepeatNone;
+            engine->source_picture = XRenderCreatePicture(engine->display, engine->pixmap, format,
+                                                          CPRepeat, &attributes);
+            engine->window_picture = XRenderCreatePicture(engine->display, engine->window, format,
+                                                          0, nullptr);
+            XRenderSetPictureFilter(engine->display, engine->source_picture, FilterBilinear, nullptr, 0);
+        }
+    }
+#endif
 
     if (try_shared_ximage(engine, screen))
     {
@@ -596,9 +651,85 @@ int render_engine_init(RenderEngine *engine)
         XSetFont(engine->display, engine->gc, engine->font->fid);
     }
 
+    XMapWindow(engine->display, engine->window);
+    XEvent event;
+    do
+    {
+        XWindowEvent(engine->display, engine->window, StructureNotifyMask, &event);
+    } while (event.type != MapNotify);
+    set_preview_fullscreen(engine, true);
     engine->is_init = 1;
-    printf("渲染引擎初始化完成\n");
+    printf("M 端预览已启动，F11/F 切换全屏，Esc 返回窗口或退出，Q 退出\n");
     return 0;
+}
+
+struct PreviewViewport
+{
+    int x, y, width, height;
+};
+
+static PreviewViewport preview_viewport(int window_width, int window_height)
+{
+    const int width = std::max(1, std::min(window_width, window_height * DISPLAY_WIDTH / DISPLAY_HEIGHT));
+    const int height = std::max(1, std::min(window_height, window_width * DISPLAY_HEIGHT / DISPLAY_WIDTH));
+    return {(window_width - width) / 2, (window_height - height) / 2, width, height};
+}
+
+static void paint_preview_margins(const RenderEngine *engine, const PreviewViewport &view)
+{
+    Display *d = engine->display;
+    const Window window = engine->window;
+    const GC gc = engine->gc;
+    const int right = view.x + view.width;
+    const int bottom = view.y + view.height;
+    if (view.x > 0)
+        XFillRectangle(d, window, gc, 0, view.y, view.x, view.height);
+    if (right < engine->window_width)
+        XFillRectangle(d, window, gc, right, view.y, engine->window_width - right, view.height);
+    if (view.y > 0)
+        XFillRectangle(d, window, gc, 0, 0, engine->window_width, view.y);
+    if (bottom < engine->window_height)
+        XFillRectangle(d, window, gc, 0, bottom, engine->window_width, engine->window_height - bottom);
+}
+
+// A separate image handles resizing on X servers without XRender. Keep the
+// capture-sized MIT-SHM image and its stride independent of window geometry.
+static bool present_scaled_preview_cpu(RenderEngine *engine, const PreviewViewport &view)
+{
+    XImage *&image = engine->scaled_image;
+    if (!image || image->width != view.width || image->height != view.height)
+    {
+        if (image)
+            XDestroyImage(image);
+        const int screen = DefaultScreen(engine->display);
+        image = XCreateImage(engine->display, DefaultVisual(engine->display, screen),
+                             DefaultDepth(engine->display, screen), ZPixmap, 0, nullptr,
+                             view.width, view.height, 32, 0);
+        if (!image)
+            return false;
+        if (image->bits_per_pixel == 32)
+            image->data = static_cast<char *>(malloc((size_t)image->bytes_per_line * image->height));
+        if (!image->data)
+        {
+            XDestroyImage(image);
+            image = nullptr;
+            return false;
+        }
+    }
+    const unsigned step_x = (DISPLAY_WIDTH << 16) / view.width;
+    for (int y = 0; y < view.height; ++y)
+    {
+        const auto *src = reinterpret_cast<const uint32_t *>(engine->display_buffer +
+            (size_t)(y * DISPLAY_HEIGHT / view.height) * engine->ximage->bytes_per_line);
+        auto *dst = reinterpret_cast<uint32_t *>(image->data + (size_t)y * image->bytes_per_line);
+        unsigned at = 0;
+        for (int x = 0; x < view.width; ++x, at += step_x)
+            dst[x] = src[at >> 16];
+    }
+    XPutImage(engine->display, engine->window, engine->gc, image, 0, 0, view.x, view.y,
+              view.width, view.height);
+    XFlush(engine->display);
+    return true;
 }
 
 int render_engine_render_frame_with_detections(RenderEngine *engine, const uint8_t *rgb888_data)
@@ -618,14 +749,37 @@ int render_engine_render_frame_with_detections(RenderEngine *engine, const uint8
             dst[x * 4 + 3] = 255;
         }
     }
+    const PreviewViewport view = preview_viewport(engine->window_width, engine->window_height);
+    const bool scaled = view.width != DISPLAY_WIDTH || view.height != DISPLAY_HEIGHT;
+#ifdef M_PREVIEW_HAVE_XRENDER
+    const bool use_xrender = scaled && engine->source_picture && engine->window_picture;
+#else
+    const bool use_xrender = false;
+#endif
+    paint_preview_margins(engine, view);
+    if (scaled && !use_xrender && present_scaled_preview_cpu(engine, view))
+        return 0;
     if (engine->use_shm)
         XShmPutImage(engine->display, engine->pixmap, engine->gc, engine->ximage, 0, 0, 0, 0,
                      DISPLAY_WIDTH, DISPLAY_HEIGHT, False);
     else
         XPutImage(engine->display, engine->pixmap, engine->gc, engine->ximage, 0, 0, 0, 0,
                   DISPLAY_WIDTH, DISPLAY_HEIGHT);
-    XCopyArea(engine->display, engine->pixmap, engine->window, engine->gc, 0, 0, DISPLAY_WIDTH,
-              DISPLAY_HEIGHT, 0, 0);
+#ifdef M_PREVIEW_HAVE_XRENDER
+    if (use_xrender)
+    {
+        XTransform transform = {};
+        transform.matrix[0][0] = XDoubleToFixed((double)DISPLAY_WIDTH / view.width);
+        transform.matrix[1][1] = XDoubleToFixed((double)DISPLAY_HEIGHT / view.height);
+        transform.matrix[2][2] = XDoubleToFixed(1.0);
+        XRenderSetPictureTransform(engine->display, engine->source_picture, &transform);
+        XRenderComposite(engine->display, PictOpSrc, engine->source_picture, None,
+                         engine->window_picture, 0, 0, 0, 0, view.x, view.y, view.width, view.height);
+    }
+    else
+#endif
+        XCopyArea(engine->display, engine->pixmap, engine->window, engine->gc, 0, 0,
+                  std::min(view.width, DISPLAY_WIDTH), std::min(view.height, DISPLAY_HEIGHT), view.x, view.y);
     if (engine->use_shm)
     {
         // 在 Xorg 完成读取前，不得覆盖该共享图像的像素。
@@ -650,13 +804,29 @@ int render_engine_check_exit_event(RenderEngine *engine)
         switch (event.type)
         {
         case ConfigureNotify:
-            if(event.xconfigure.window==DefaultRootWindow(engine->display))
+            if (event.xconfigure.window == DefaultRootWindow(engine->display))
                 vision_display::mode_guard().changed();
+            else if (event.xconfigure.window == engine->window)
+            {
+                engine->window_width = event.xconfigure.width;
+                engine->window_height = event.xconfigure.height;
+            }
             break;
         case KeyPress:
-            return 1; // 收取到任意按键后退出。
-        case ButtonPress:
-            return 1; // 任意鼠标按键退出
+        {
+            const KeySym key = XLookupKeysym(&event.xkey, 0);
+            if (key == XK_q || key == XK_Q)
+                return 1;
+            if (key == XK_F11 || key == XK_f || key == XK_F)
+                set_preview_fullscreen(engine, !engine->fullscreen);
+            else if (key == XK_Escape)
+            {
+                if (!engine->fullscreen)
+                    return 1;
+                set_preview_fullscreen(engine, false);
+            }
+            break;
+        }
         case ClientMessage:
             if (event.xclient.format == 32 && (Atom)event.xclient.data.l[0] == engine->wm_delete)
                 return 1;
@@ -674,6 +844,18 @@ void render_engine_cleanup(RenderEngine *engine)
 {
     if (!engine)
         return;
+    if (engine->scaled_image)
+    {
+        XDestroyImage(engine->scaled_image);
+        engine->scaled_image = nullptr;
+    }
+#ifdef M_PREVIEW_HAVE_XRENDER
+    if (engine->source_picture)
+        XRenderFreePicture(engine->display, engine->source_picture);
+    if (engine->window_picture)
+        XRenderFreePicture(engine->display, engine->window_picture);
+    engine->source_picture = engine->window_picture = None;
+#endif
     if (engine->use_shm && engine->display)
     {
         XShmDetach(engine->display, &engine->shminfo);
@@ -769,6 +951,7 @@ class RenderWorker
             return;
         }
         printf("[DISPLAY M] async latest-frame renderer ready\n");
+        m_lane::LocalFrontPreviewCrop front_crop(DISPLAY_WIDTH, DISPLAY_HEIGHT);
         accepting_.store(true, std::memory_order_relaxed);
         for (;;)
         {
@@ -790,7 +973,7 @@ class RenderWorker
             }
             // Xorg waits happen after releasing the handoff lock.
             const uint64_t start = monotonic_ns();
-            m_lane::extend_local_front_preview_edge(working_.data(), DISPLAY_WIDTH, DISPLAY_HEIGHT);
+            front_crop.apply(working_.data());
             if (render_engine_render_frame_with_detections(&engine, working_.data()) == 0)
             {
                 const uint64_t elapsed = monotonic_ns() - start;

@@ -2,27 +2,77 @@
 #define M_FRONT_CAMERA_LAYOUT_H
 
 #include "../../../common/image/frame_pixels.h"
+#include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <vector>
 
 namespace m_lane
 {
-// The raw front-center comparison tile has a ninth blank column on M.
-// Extend the local preview while preserving calibrated and published coordinates.
-inline void extend_local_front_preview_edge(uint8_t *rgb, int width, int height)
+// Crop the nine blank columns from the local bottom-right comparison tile.
+// Use the same scale on each axis and leave the three other tiles as received.
+class LocalFrontPreviewCrop
 {
-    constexpr int first_valid_column = 9;
-    const int tile_width = width / 2;
-    if (!rgb || tile_width <= first_valid_column || height < 2)
-        return;
-    for (int y = height / 2; y < height; ++y)
+    struct Sample
     {
-        uint8_t *line = rgb + ((size_t)y * width + tile_width) * 3;
-        const uint8_t *edge = line + first_valid_column * 3;
-        for (int x = 0; x < first_valid_column; ++x)
-            std::memcpy(line + x * 3, edge, 3);
+        int offset;
+        unsigned fraction;
+    };
+    int width_, height_, stride_;
+    std::vector<Sample> columns_, rows_;
+    std::vector<uint8_t> tile_;
+
+    static Sample sample(double position, int length, int step)
+    {
+        const int base = std::min(static_cast<int>(position), length - 2);
+        return {base * step, static_cast<unsigned>(std::lround((position - base) * 256))};
     }
-}
+
+  public:
+    LocalFrontPreviewCrop(int mosaic_width, int mosaic_height)
+        : width_(mosaic_width / 2), height_(mosaic_height / 2), stride_(mosaic_width * 3)
+    {
+        constexpr int left_crop = 9;
+        if (width_ <= left_crop + 1 || height_ < 2)
+            return;
+        const double scale = 1.0 - static_cast<double>(left_crop) / (width_ - 1);
+        const double top = (height_ - 1) * (1 - scale) * 0.5;
+        columns_.reserve(width_);
+        rows_.reserve(height_);
+        for (int x = 0; x < width_; ++x)
+            columns_.push_back(sample(left_crop + x * scale, width_, 3));
+        for (int y = 0; y < height_; ++y)
+            rows_.push_back(sample(top + y * scale, height_, stride_));
+        tile_.resize(static_cast<size_t>(width_) * height_ * 3);
+    }
+
+    void apply(uint8_t *rgb)
+    {
+        if (!rgb || tile_.empty())
+            return;
+        uint8_t *start = rgb + static_cast<size_t>(height_) * stride_ + width_ * 3;
+        uint8_t *out = tile_.data();
+        for (const auto &row : rows_)
+        {
+            const uint8_t *top = start + row.offset;
+            const uint8_t *bottom = top + stride_;
+            for (const auto &col : columns_)
+            {
+                for (int channel = 0; channel < 3; ++channel)
+                {
+                    const int at = col.offset + channel;
+                    const unsigned a = top[at] * (256 - col.fraction) + top[at + 3] * col.fraction;
+                    const unsigned b = bottom[at] * (256 - col.fraction) + bottom[at + 3] * col.fraction;
+                    *out++ = static_cast<uint8_t>((a * (256 - row.fraction) + b * row.fraction + 32768) >> 16);
+                }
+            }
+        }
+        const size_t row_bytes = static_cast<size_t>(width_) * 3;
+        for (int y = 0; y < height_; ++y)
+            std::memcpy(start + static_cast<size_t>(y) * stride_, tile_.data() + y * row_bytes, row_bytes);
+    }
+};
 
 // The FPGA writes the same front-center camera to two opposite tiles. A
 // half-frame DMA offset changes which diagonal contains that duplicate.

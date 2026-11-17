@@ -59,6 +59,11 @@ LIBS += -lrknnrt
 # 说明：X11库（仅在启用渲染时）
 ifeq ($(ENABLE_RENDERING), 1)
     LDFLAGS += -lX11 -lXext
+    XRENDER_LIBS := $(shell pkg-config --libs xrender 2>/dev/null)
+    ifneq ($(strip $(XRENDER_LIBS)),)
+        CXXFLAGS += -DM_PREVIEW_HAVE_XRENDER=1 $(shell pkg-config --cflags xrender 2>/dev/null)
+        LDFLAGS += $(XRENDER_LIBS)
+    endif
 endif
 
 #############################################################################
