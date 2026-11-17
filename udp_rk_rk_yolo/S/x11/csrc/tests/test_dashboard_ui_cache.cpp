@@ -92,7 +92,7 @@ int main(){
     auto *cleared=cached.compose(video.data(),1280,vehicle.data(),320,true,-1,"ALL",light,false);
     assert(cleared[292*WIDTH+1412]!=0xFF39EC91);
     const auto *without_prompt = reference.compose(video.data(),1280,vehicle.data(),320,true,-1,"ALL",light,true);
-    for (unsigned phase = STEERING_CENTER_SWITCH_OFF; phase <= STEERING_CENTER_RETRY; ++phase) {
+    for (unsigned phase = STEERING_CENTER_SWITCH_OFF; phase <= STEERING_CENTER_LIMIT_HOLD_STOP; ++phase) {
         light.steering_center_status = phase;
         const auto *with_prompt = cached.compose(video.data(),1280,vehicle.data(),320,true,-1,"ALL",light,false);
         assert(cached.uiRedrawn());

@@ -30,7 +30,7 @@ static inline void steering_center_set(SteeringCenter *center, unsigned status)
     center->count = center->slot = 0;
 }
 
-/* This gesture is only offered for a new live session, while parked with AP off. */
+/* A new session or a range fault requires explicit confirmation while parked with Autopilot off. */
 static inline void steering_center_key(SteeringCenter *center, uint8_t key, uint64_t now)
 {
     if (center->status == STEERING_CENTER_SAMPLING)

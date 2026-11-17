@@ -192,9 +192,22 @@ class Dashboard
                          status.lane_angle_valid ? 0xFF65F5AA : 0xFF93B1CB);
         else
         {
+            const char *title = "STEERING ZERO";
             const char *hint;
             switch (status.steering_center_status)
             {
+            case STEERING_CENTER_LIMIT_WAIT_IMU:
+                title = "STEERING LIMIT (+/-18 DEG)";
+                hint = "WAIT FOR IMU / KEEP AUTOPILOT OFF";
+                break;
+            case STEERING_CENTER_LIMIT_SWITCH_OFF:
+                title = "STEERING LIMIT (+/-18 DEG)";
+                hint = "PARK AND SWITCH AUTOPILOT OFF";
+                break;
+            case STEERING_CENTER_LIMIT_HOLD_STOP:
+                title = "STEERING LIMIT (+/-18 DEG)";
+                hint = "PARK, ALIGN WHEELS, HOLD S/R 3S";
+                break;
             case STEERING_CENTER_SWITCH_OFF: hint = "SWITCH AUTOPILOT OFF"; break;
             case STEERING_CENTER_RELEASE_STOP: hint = "RELEASE S/R"; break;
             case STEERING_CENTER_TAP_OVERVIEW: hint = "TAP SIX-VIEW TO CONFIRM"; break;
@@ -203,7 +216,7 @@ class Dashboard
             case STEERING_CENTER_RETRY: hint = "KEEP STILL AND START AGAIN"; break;
             default: hint = "PARK, ALIGN WHEELS, HOLD S/R 3S"; break;
             }
-            centeredText(frame_, "STEERING ZERO", {1238, 234, 296, 16}, 1, 0xFF93B1CB);
+            centeredText(frame_, title, {1238, 234, 296, 16}, 1, 0xFF93B1CB);
             centeredText(frame_, hint, {1238, 250, 296, 18}, 1,
                          status.steering_center_status == STEERING_CENTER_READY
                              ? 0xFF65F5AA : 0xFFFFCE63);

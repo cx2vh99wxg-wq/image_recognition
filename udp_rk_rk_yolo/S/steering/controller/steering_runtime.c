@@ -15,6 +15,7 @@
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <unistd.h>
+enum { STEERING_ANGLE_LIMIT_DEG = 18 };
 static steering_response_model_t model;
 static SteeringCenter center;
 static const char *reference_file;
@@ -29,6 +30,7 @@ static steer_result_t reference_notice_result;
 static float zero_raw, curve_gain = .25f, target_limit = 12, last_target, target_tolerance = 2,
                        center_tolerance = 3;
 static int initialized, confirmed, bench, have_lane, have_frame;
+static int range_recovery, skip_first_recovery_frame;
 static int scheduling_changed, memory_locked, previous_policy;
 static struct sched_param previous_schedule;
 static uint64_t now_ns(void *p)
@@ -180,7 +182,8 @@ steer_result_t steering_runtime_init(int bench_mode)
     rc = steering_bind(io);
     if (rc == STEER_OK)
     {
-        steering_config_t cfg = {-18, 18, target_tolerance, 100,
+        steering_config_t cfg = {-STEERING_ANGLE_LIMIT_DEG, STEERING_ANGLE_LIMIT_DEG,
+                                 target_tolerance, 100,
                                  model.burst_max_us ? model.burst_max_us / 1000 : 60};
         rc = steering_init(&cfg);
     }
@@ -227,6 +230,7 @@ steer_result_t steering_runtime_init(int bench_mode)
     center_ready_until = 0;
     reference_file = ref;
     confirmed = have_lane = have_frame = 0;
+    range_recovery = skip_first_recovery_frame = 0;
     snapshot_ns = 0;
     blocked_frame = 0;
     reference_notice_ns = 0;
@@ -246,6 +250,24 @@ void steering_runtime_cancel(void)
     have_lane = 0;
     blocked_frame = last_frame;
 }
+
+static void check_range_fault(steer_result_t result)
+{
+    if (result != STEER_ERR_DEVICE || range_recovery || bench || model.burst_max_us)
+        return;
+    steering_state_t state;
+    steering_get_state(&state);
+    if (!state.feedback_valid || !(fabsf(state.angle_deg) > STEERING_ANGLE_LIMIT_DEG))
+        return;
+
+    range_recovery = 1;
+    center_ready_until = 0;
+    center = (SteeringCenter){0};
+    steering_runtime_cancel();
+    printf("[STEER_CENTER] angle %.3f deg outside +/- %d deg; manual zero required\n",
+           state.angle_deg, STEERING_ANGLE_LIMIT_DEG);
+}
+
 void steering_runtime_poll_lane(int allowed, steering_lane_reader_t reader, void *context)
 {
     if (!initialized || bench || !reader || steering_pulse_active())
@@ -271,6 +293,15 @@ int steering_runtime_center_waiting_for_touch(void)
                            center.status == STEERING_CENTER_TAP_OVERVIEW);
 }
 
+static unsigned center_prompt(void)
+{
+    if (range_recovery && center.status == STEERING_CENTER_SWITCH_OFF)
+        return STEERING_CENTER_LIMIT_SWITCH_OFF;
+    if (range_recovery && center.status == STEERING_CENTER_HOLD_STOP)
+        return STEERING_CENTER_LIMIT_HOLD_STOP;
+    return center.status;
+}
+
 unsigned steering_runtime_center_input(uint8_t key, int parked, int switch_off)
 {
     if (!initialized || bench || model.burst_max_us)
@@ -280,9 +311,9 @@ unsigned steering_runtime_center_input(uint8_t key, int parked, int switch_off)
     if (steering_feedback_read(&feedback) != STEER_OK)
     {
         steering_center_set(&center, center.session ? STEERING_CENTER_RETRY : STEERING_CENTER_HIDDEN);
-        return center.status;
+        return range_recovery ? STEERING_CENTER_LIMIT_WAIT_IMU : center.status;
     }
-    if (feedback.session_id == reference_session)
+    if (feedback.session_id == reference_session && !range_recovery)
     {
         steering_center_set(&center, now < center_ready_until ? STEERING_CENTER_READY
                                                              : STEERING_CENTER_HIDDEN);
@@ -299,14 +330,14 @@ unsigned steering_runtime_center_input(uint8_t key, int parked, int switch_off)
     {
         steering_center_set(&center, switch_off ? STEERING_CENTER_HOLD_STOP
                                                : STEERING_CENTER_SWITCH_OFF);
-        return center.status;
+        return center_prompt();
     }
     if (center.control_ns && now - center.control_ns >= CENTER_CONTROL_TTL_NS)
         steering_center_set(&center, steering_runtime_center_sampling() ? STEERING_CENTER_RETRY
                                                                         : STEERING_CENTER_HOLD_STOP);
     center.control_ns = now;
     steering_center_key(&center, key, now);
-    return center.status;
+    return center_prompt();
 }
 
 static int save_center_reference(uint32_t session, float raw)
@@ -379,6 +410,8 @@ static void observe_center(void)
     reference_session = center.session;
     zero_raw = raw;
     confirmed = 1;
+    skip_first_recovery_frame = range_recovery;
+    range_recovery = 0;
     center_ready_until = now + 5000000000ULL;
     steering_center_set(&center, STEERING_CENTER_READY);
 }
@@ -391,11 +424,14 @@ void steering_runtime_tick(void)
         observe_center();
     if (!confirmed)
     {
+        if (range_recovery)
+            return;
         steering_feedback_t f = {0};
         steer_result_t rc = steering_feedback_read(&f);
         if (rc == STEER_OK && f.session_id == reference_session)
         {
             rc = steering_confirm_reference(reference_session, zero_raw);
+            check_range_fault(rc);
             if (rc == STEER_OK)
             {
                 confirmed = 1;
@@ -426,7 +462,7 @@ void steering_runtime_tick(void)
         steering_runtime_cancel();
         puts("[STEER_CANCEL] lane result expired");
     }
-    (void)steering_tick();
+    check_range_fault(steering_tick());
     steering_state_t st;
     steering_get_state(&st);
     if (st.status == STEERING_CANCELLED && st.last_error != STEER_OK)
@@ -459,7 +495,7 @@ void steering_runtime_tick(void)
 void steering_runtime_lane(int valid, uint32_t frame, unsigned type, unsigned confidence,
                            unsigned road_angle)
 {
-    if (!initialized || !confirmed)
+    if (!initialized || !confirmed || range_recovery)
         return;
     if (!valid || confidence < 60 || type > 2 || road_angle > 90)
     {
@@ -470,6 +506,13 @@ void steering_runtime_lane(int valid, uint32_t frame, unsigned type, unsigned co
                 "[STEER_CANCEL] reason=lane_invalid_or_expired frame=%u valid=%d type=%u confidence=%u road_angle=%u\n",
                 frame, valid, type, confidence, road_angle);
         }
+        return;
+    }
+    if (skip_first_recovery_frame)
+    {
+        skip_first_recovery_frame = 0;
+        have_frame = 1;
+        last_frame = frame;
         return;
     }
     if (have_frame && frame == last_frame)

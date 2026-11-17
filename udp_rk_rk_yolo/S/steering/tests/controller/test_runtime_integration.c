@@ -47,6 +47,19 @@ static void feed(void){
     assert(steering_feedback_ingest(wire,48,steering_now_ns())==STEER_OK);
 }
 
+static void hold_sr(void)
+{
+    const uint64_t start = steering_now_ns();
+    do
+    {
+        feed();
+        steering_runtime_center_input(0xee, 1, 1);
+        steering_runtime_tick();
+        steering_sleep_ms(8);
+    } while (steering_now_ns() - start < CENTER_STOP_HOLD_NS + 25000000ULL);
+    assert(steering_runtime_center_input(0xee, 1, 1) == STEERING_CENTER_RELEASE_STOP);
+}
+
 static void check_center_rejections(void)
 {
     const uint64_t now = 1000000000ULL;
@@ -195,14 +208,7 @@ int main(int argc,char **argv){
     feed();
     assert(steering_runtime_center_input(0x99,1,1)==STEERING_CENTER_HOLD_STOP);
     assert(steering_runtime_center_input(0xee,1,0)==STEERING_CENTER_SWITCH_OFF);
-    start=steering_now_ns();
-    do {
-        feed();
-        steering_runtime_center_input(0xee,1,1);
-        steering_runtime_tick();
-        steering_sleep_ms(8);
-    } while(steering_now_ns()-start<CENTER_STOP_HOLD_NS+25000000ULL);
-    assert(steering_runtime_center_input(0xee,1,1)==STEERING_CENTER_RELEASE_STOP);
+    hold_sr();
     assert(steering_runtime_center_input(0,1,1)==STEERING_CENTER_TAP_OVERVIEW);
     assert(steering_runtime_center_input(0x99,1,1)==STEERING_CENTER_SAMPLING);
     start=steering_now_ns();
@@ -233,5 +239,86 @@ int main(int argc,char **argv){
     assert(!active&&starts==1&&state.status==STEERING_SETTLED&&fabsf(state.angle_deg-5)<1);
     steering_runtime_close();
     puts("PASS new IMU session: no automatic pulses before explicit HMI confirmation; saved zero reloads on S restart");
+
+    /* Same-session range fault must keep the lane inhibited across OFF/ON,
+     * feedback recovery and a return into range until the operator saves a zero. */
+    starts = 0;
+    angle = 3.4f;
+    assert(steering_runtime_init(0) == STEER_OK);
+    feed();
+    steering_runtime_tick();
+    angle = -14.8f;
+    feed();
+    steering_runtime_tick();
+    assert(steering_runtime_center_input(0, 1, 0) == STEERING_CENTER_LIMIT_SWITCH_OFF);
+    steering_sleep_ms(110);
+    assert(steering_runtime_center_input(0, 1, 1) == STEERING_CENTER_LIMIT_WAIT_IMU);
+
+    angle = 4.25f;
+    feed();
+    steering_runtime_tick();
+    assert(steering_runtime_center_input(0xee, 0, 1) == STEERING_CENTER_LIMIT_HOLD_STOP);
+    assert(steering_runtime_center_input(0, 1, 0) == STEERING_CENTER_LIMIT_SWITCH_OFF);
+    steering_runtime_lane(1, 5000, 1, 90, 20);
+    assert(!active && !starts);
+
+    assert(steering_runtime_center_input(0xee, 1, 1) == STEERING_CENTER_LIMIT_HOLD_STOP);
+    assert(steering_runtime_center_input(0, 1, 0) == STEERING_CENTER_LIMIT_SWITCH_OFF);
+    assert(!steering_runtime_center_sampling() && !starts);
+
+    hold_sr();
+    assert(steering_runtime_center_input(0, 1, 1) == STEERING_CENTER_TAP_OVERVIEW);
+    assert(steering_runtime_center_input(0x99, 1, 1) == STEERING_CENTER_SAMPLING);
+    start = steering_now_ns();
+    while (steering_runtime_center_sampling() && steering_now_ns() - start < 2500000000ULL)
+    {
+        feed();
+        steering_runtime_center_input(0x99, 1, 1);
+        steering_runtime_lane(1, 5000, 1, 90, 20);
+        steering_runtime_tick();
+        steering_sleep_ms(8);
+    }
+    assert(steering_runtime_center_input(0, 1, 1) == STEERING_CENTER_READY);
+    steering_get_state(&state);
+    assert(!active && !starts && state.feedback_valid && fabsf(state.angle_deg) < .01f);
+    saved = fopen(argv[2], "r");
+    assert(saved && fscanf(saved, "STEER_PHYSICAL_REFERENCE_V1 %u %f 1", &saved_session, &saved_angle) == 2);
+    fclose(saved);
+    assert(saved_session == 8 && fabsf(saved_angle - 4.25f) < .001f);
+
+    start = steering_now_ns();
+    while (steering_now_ns() - start < 400000000ULL)
+    {
+        feed();
+        steering_runtime_lane(1, 5000, 1, 90, 20);
+        steering_runtime_tick();
+        steering_sleep_ms(1);
+    }
+    assert(!active && !starts);
+    start = steering_now_ns();
+    while (steering_now_ns() - start < 1200000000ULL)
+    {
+        feed();
+        const uint32_t id = 5001 + (uint32_t)((steering_now_ns() - start) / 100000000ULL);
+        steering_runtime_lane(1, id, 1, 90, 20);
+        steering_runtime_tick();
+        steering_sleep_ms(1);
+    }
+    steering_get_state(&state);
+    assert(!active && starts == 1 && state.status == STEERING_SETTLED && fabsf(state.angle_deg - 5) < 1);
+    steering_runtime_close();
+
+    angle = 22.5f;
+    assert(steering_runtime_init(0) == STEER_OK);
+    feed();
+    steering_runtime_tick();
+    assert(steering_runtime_center_input(0, 1, 1) == STEERING_CENTER_LIMIT_HOLD_STOP);
+    angle = 4.25f;
+    feed();
+    steering_runtime_tick();
+    assert(steering_runtime_center_input(0, 1, 1) == STEERING_CENTER_LIMIT_HOLD_STOP);
+    assert(!active && starts == 1);
+    steering_runtime_close();
+    puts("PASS steering limit recovery: same-session manual zero, switch interlock, and fresh lane required; FAKE IO only");
     puts("PASS runtime integration: lane angle mapping, duplicate frame/goal suppression, stale feedback, S/R rearm, STOP release; FAKE IO only");return 0;
 }
