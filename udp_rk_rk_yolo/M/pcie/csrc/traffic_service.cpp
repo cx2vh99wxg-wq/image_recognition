@@ -59,6 +59,7 @@ struct Service::Impl
     bool ready = false, enabled = true;
     const InputView view;
     const m_lane::FrontRadialPreview *correction;
+    const bool hdmi;
     std::atomic<unsigned> deferred{0};
     std::atomic<bool> model_failed{false};
     std::mutex mutex;
@@ -72,7 +73,7 @@ struct Service::Impl
     FrontPersonIPC person_ipc = {-1, nullptr};
     display_people::IPC display_ipc;
     display_vehicles::IPC vehicle_ipc;
-    const m_lane::GroundProjection display_ground=m_lane::GroundProjection::for_camera(nullptr,"front_ipm_test.conf");
+    const m_lane::GroundProjection display_ground;
     uint32_t session = 0;
     uint64_t report_ns = 0, calls = 0, passes = 0, skipped_curve = 0, skipped_budget = 0,
              total_ns = 0, max_ns = 0;
@@ -83,12 +84,16 @@ struct Service::Impl
     unsigned scout_cursor=0;
     unsigned scout_seen=0;
     std::array<float,SIGNAL_WINDOWS> scout_merits={};
-    explicit Impl(const char *path, InputView input, const m_lane::FrontRadialPreview *front)
-        : view(input), correction(front)
+    explicit Impl(const char *path, InputView input, const m_lane::FrontRadialPreview *front,
+                  const m_lane::GroundProjection *hdmi_ground, unsigned source_session)
+        : view(input), correction(front), hdmi(hdmi_ground != nullptr),
+          display_ground(hdmi_ground ? *hdmi_ground :
+                         m_lane::GroundProjection::for_camera(nullptr, "front_ipm_test.conf"))
     {
         const char *option = std::getenv("VISION_TRAFFIC");
         enabled = !option || std::atoi(option) != 0;
-        session = (uint32_t)(traffic_clock_ns() ^ ((uint64_t)getpid() << 19)) | 1u;
+        session = source_session ? source_session :
+                  ((uint32_t)(traffic_clock_ns() ^ ((uint64_t)getpid() << 19)) | 1u);
         traffic_ipc_open(&ipc, 1);
         TrafficLightData initial = {};
         traffic_ipc_write(&ipc, &initial);
@@ -262,6 +267,8 @@ struct Service::Impl
             person.flags |= FRONT_PERSON_VALID;
         road_association.annotate(people,matched ? lane.front : FrontRoadFrame{},
                                   frame.id,frame.captured,person);
+        if (hdmi)
+            person.flags |= FRONT_PERSON_HDMI_DISPLAY_ONLY;
         front_person_set_deadline(&person, frame.captured + FRONT_PERSON_TTL_NS);
         front_person_ipc_open(&person_ipc, 1); front_person_ipc_write(&person_ipc, &person);
         // Independent, bounded visual metadata. Brake/control records above
@@ -399,6 +406,8 @@ struct Service::Impl
                 data.reason = enabled ? TRAFFIC_NO_BOX : TRAFFIC_DEFERRED;
                 data.flags = (ready ? TRAFFIC_MODEL_READY : 0) | deferred.load() |
                              (!enabled ? TRAFFIC_DISABLED : 0);
+                if (hdmi)
+                    data.flags |= TRAFFIC_HDMI_DISPLAY_ONLY;
                 traffic_set_deadline(&data, frame.captured + TRAFFIC_TTL_NS);
                 auto box = std::atomic_load(&observation);
                 if (!ready || model_failed.load())
@@ -484,8 +493,9 @@ struct Service::Impl
         }
     }
 };
-Service::Service(const char *path, InputView view, const m_lane::FrontRadialPreview *correction)
-    : impl_(new Impl(path, view, correction))
+Service::Service(const char *path, InputView view, const m_lane::FrontRadialPreview *correction,
+                 const m_lane::GroundProjection *hdmi_ground, unsigned source_session)
+    : impl_(new Impl(path, view, correction, hdmi_ground, source_session))
 {
 }
 Service::~Service() = default;

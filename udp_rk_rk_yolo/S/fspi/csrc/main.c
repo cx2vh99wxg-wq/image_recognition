@@ -165,7 +165,8 @@ static void monitor_lane_rule(void)
     line_ipc_open(&lane_input, LINE_STYLE_KEY, 0);
     line_ipc_open(&lane_warning, LINE_WARNING_KEY, 1);
     LineStyleData data = {0};
-    if (line_ipc_read(&lane_input, &data) || !line_fresh(&data, now))
+    if (line_ipc_read(&lane_input, &data) || !line_fresh(&data, now) ||
+        (data.diagnostic & LINE_HDMI_DISPLAY_ONLY))
         data = (LineStyleData){0};
     unsigned denied = lane_denied_sides(&data, now);
     traffic_go_open(&traffic_warning, 1);
@@ -481,6 +482,8 @@ static int read_steering_lane(void *context, uint32_t *frame, unsigned *type, un
     CurveType kind = CURVE_NONE;
     uint32_t quality = 0, road_angle = 0;
     int rc = curve_detection_read(frame, &kind, &quality, &road_angle);
+    if (quality & CURVE_HDMI_DISPLAY_ONLY)
+        return -1;
     *type = (unsigned)kind;
     *confidence = quality;
     *angle = curve_angle_degrees(road_angle);

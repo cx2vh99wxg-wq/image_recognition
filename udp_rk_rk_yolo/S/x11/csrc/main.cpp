@@ -2498,6 +2498,7 @@ int main(int argc, char **argv)
             curve_detection_read(&curve_frame_id, &current_curve_type, &current_curve_confidence,
                                  &curve_angle) == 0)
         {
+            current_curve_confidence &= ~CURVE_HDMI_DISPLAY_ONLY;
             if (curve_frame_id && (!current_curve_seen_ms || curve_frame_id != last_curve_source_id))
             {
                 last_curve_source_id = curve_frame_id;

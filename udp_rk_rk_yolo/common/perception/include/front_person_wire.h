@@ -39,9 +39,9 @@ inline bool valid(const FrontPersonData &d)
             !!(d.flags & FRONT_PERSON_PATH_UNKNOWN)!=!!d.unknown_count ||
             (road && (d.road_pixels<64 || d.road_source_id!=d.source_id)) ||
             (!road && (d.risk_count || d.outside_count))) return false;
-    } else if ((d.flags & ~7u) || d.risk_count || d.outside_count || d.unknown_count ||
+    } else if ((d.flags & ~(7u | FRONT_PERSON_HDMI_DISPLAY_ONLY)) || d.risk_count || d.outside_count || d.unknown_count ||
                d.road_pixels || d.road_source_id) return false;
-    return d.session && (d.flags & ~127u)==0 && d.quality<=100 && d.count<=100000 &&
+    return d.session && (d.flags & ~255u)==0 && d.quality<=100 && d.count<=100000 &&
            d.x<=320 && d.y<=240 && d.width<=320-d.x && d.height<=240-d.y &&
            (!(d.flags & FRONT_PERSON_FOUND) ||
             ((d.flags & (FRONT_PERSON_VALID|FRONT_PERSON_READY))==3 && d.count && d.width && d.height)) &&

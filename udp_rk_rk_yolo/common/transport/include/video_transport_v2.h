@@ -324,7 +324,7 @@ class Assembler
         uint32_t row_sum = ntohl(wire.line_checksum);
         if (ntohl(wire.width) != WIDTH || ntohl(wire.height) != HEIGHT || row >= HEIGHT ||
             ntohl(wire.line_bytes) != LINE_BYTES || meta.curve_type > 3 ||
-            meta.curve_confidence > 100 || meta.curve_angle > 360 ||
+            (meta.curve_confidence & ~CURVE_HDMI_DISPLAY_ONLY) > 100 || meta.curve_angle > 360 ||
             checksum(packet + header_size, LINE_BYTES) != row_sum)
         {
             ++stats_.corrupt;

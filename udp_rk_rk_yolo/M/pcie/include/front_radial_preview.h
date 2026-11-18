@@ -25,7 +25,7 @@ class FrontRadialPreview
         uint16_t fx, fy;
     };
     int width_, height_, stride_;
-    bool ground_view_;
+    bool ground_view_, copy_front_;
     double scale_ = 1.;
     std::vector<Sample> samples_;
     std::vector<uint32_t> corrected_at_raw_;
@@ -35,7 +35,7 @@ class FrontRadialPreview
     FrontRadialPreview(int mosaic_width, int mosaic_height, const FrontRadial &camera,
                        const GroundProjection *ground = nullptr, bool inference_input = false)
         : width_(mosaic_width / 2), height_(mosaic_height / 2), stride_(mosaic_width * 3),
-          ground_view_(ground != nullptr)
+          ground_view_(ground != nullptr), copy_front_(inference_input && !ground && !camera.enabled())
     {
         if (!camera.valid() || width_ < 2 || height_ < 2 ||
             (ground ? !ground->valid() || !ground->enabled() : !camera.enabled() && !inference_input))
@@ -46,8 +46,9 @@ class FrontRadialPreview
         // For pincushion distortion the corner limits both axes.
         ImagePoint x_limit{2 * cx, barrel ? cy : 2 * cy};
         ImagePoint y_limit{barrel ? cx : 2 * cx, 2 * cy};
-        if (!camera.undistort(x_limit, width_, height_) ||
-            !camera.undistort(y_limit, width_, height_))
+        const bool lens = camera.enabled();
+        if (lens && (!camera.undistort(x_limit, width_, height_) ||
+                     !camera.undistort(y_limit, width_, height_)))
             return;
         // One scale keeps the largest centered 4:3 crop in the source and
         // preserves its aspect ratio when filling the 320x240 tile.
@@ -68,7 +69,7 @@ class FrontRadialPreview
                              -.8 + 2. * y / (height_ - 1)};
                     projected = ground->image_at(input, width_, height_);
                 }
-                if (!projected || !camera.distort(input, width_, height_) || input.x < -edge_epsilon ||
+                if (!projected || (lens && !camera.distort(input, width_, height_)) || input.x < -edge_epsilon ||
                     input.x > width_ - 1 + edge_epsilon || input.y < -edge_epsilon ||
                     input.y > height_ - 1 + edge_epsilon)
                 {
@@ -98,7 +99,7 @@ class FrontRadialPreview
                 for (int x = 0; x < width_; ++x)
                 {
                     ImagePoint point{(double)x, (double)y};
-                    if (!camera.undistort(point, width_, height_))
+                    if (lens && !camera.undistort(point, width_, height_))
                     {
                         corrected_at_raw_.push_back(uint32_t{outside});
                         continue;
@@ -172,6 +173,12 @@ class FrontRadialPreview
 
     void render(const uint8_t *mosaic, uint8_t *dst) const
     {
+        if (copy_front_ && enabled())
+        {
+            for (int y = 0; y < height_; ++y)
+                std::memcpy(dst + y * width_ * 3, mosaic + y * stride_, width_ * 3);
+            return;
+        }
         for (const auto &s : samples_)
         {
             if (s.offset == outside)

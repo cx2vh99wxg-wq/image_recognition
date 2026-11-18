@@ -4,8 +4,67 @@
 #include <cassert>
 #include <cstdio>
 
+static void test_hdmi_ipm(int pad_y)
+{
+    constexpr int w = 320, h = 240, mw = 640, mh = 480;
+    const int visible_h = h - 2 * pad_y;
+    const m_lane::GroundProjection missing;
+    const auto nominal = m_lane::GroundProjection::for_video(missing, 0, pad_y, w, visible_h);
+    m_lane::ImagePoint corner = {0., 0.};
+    assert(nominal.image_at(corner, w, h));
+    assert(std::abs(corner.x - .36 * (w - 1)) < 1e-6);
+    assert(std::abs(corner.y - (pad_y + .68 * (visible_h - 1))) < 1e-6);
+    assert(nominal.display_ground_at(corner, w, h));
+    assert(std::abs(corner.x) < 1e-6 && std::abs(corner.y) < 1e-6);
+    if (pad_y)
+    {
+        m_lane::ImagePoint outside = {w * .5, double(pad_y - 1)};
+        assert(!nominal.display_ground_at(outside, w, h));
+    }
+    const m_lane::GroundProjection custom(".3,.5,.7,.5,.9,.85,.1,.85,2");
+    const auto calibrated = m_lane::GroundProjection::for_video(custom, 0, pad_y, w, visible_h);
+    corner = {0., 0.};
+    assert(calibrated.image_at(corner, w, h));
+    assert(std::abs(corner.x - .3 * (w - 1)) < 1e-6 && std::abs(corner.y - .5 * (h - 1)) < 1e-6);
+
+    // A coordinate ramp distinguishes identity, perspective-only and camera-lens sampling.
+    std::vector<uint8_t> mosaic(mw * mh * 3, 17), view(w * h * 3), coverage(w * h);
+    for (int y = 0; y < h; ++y)
+        for (int x = 0; x < w; ++x)
+            mosaic[(y * mw + x) * 3] = uint8_t(y);
+    const m_lane::FrontRadial no_lens;
+    m_lane::FrontRadialPreview front(mw, mh, no_lens, nullptr, true);
+    front.render(mosaic.data(), view.data());
+    for (int y = 0; y < h; ++y)
+        assert(!std::memcmp(&view[y*w*3], &mosaic[y*mw*3], w*3));
+
+    m_lane::FrontRadialPreview bird(mw, mh, no_lens, &nominal);
+    bird.render(mosaic.data(), view.data());
+    bird.coverage_mask(coverage.data());
+    const int x = 160, y = 120, at = y*w+x;
+    m_lane::ImagePoint source = {.5 + (x - (w-1)*.5)*2.*nominal.aspect()/(h-1), -.8 + 2.*y/(h-1)};
+    assert(nominal.image_at(source, w, h));
+    assert(coverage[at] && std::abs(view[at*3] - source.y) <= .51 && view[at*3] != y);
+    for (int i = 0; i < w*h; ++i)
+        if (coverage[i])
+            assert(view[i*3] >= pad_y && view[i*3] < h-pad_y);
+
+    std::vector<uint16_t> wire(mw*mh, 123);
+    bird.apply(mosaic.data(), wire.data());
+    for (int row = 0; row < h; ++row)
+        for (int col = 0; col < w; ++col)
+        {
+            const size_t i = row*mw+col;
+            uint16_t expected = 0;
+            frame_pack_rgb565(&mosaic[i*3], &expected, 1);
+            assert(wire[i + h*mw + w] == expected && wire[i+w] == 123 && wire[i+h*mw] == 123);
+        }
+}
+
 int main(int argc, char **argv)
 {
+    for (int pad : {0, 20, 30})
+        test_hdmi_ipm(pad);
     constexpr int w = 320, h = 240, mw = 2 * w, mh = 2 * h;
     const size_t pixels = (size_t)mw * mh;
     const m_lane::FrontRadial lens(-.188218);

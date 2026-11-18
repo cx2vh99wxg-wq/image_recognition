@@ -12,6 +12,16 @@ class GroundProjection
 {
     double to_ground_[8] = {}, to_image_[8] = {}, aspect_ = 1.;
     bool enabled_ = false, valid_ = true;
+    int content_x_ = 0, content_y_ = 0, content_w_ = 0, content_h_ = 0;
+    bool relative_to_content_ = false;
+
+    bool inside_content(const ImagePoint &p) const
+    {
+        constexpr double epsilon = 1e-7;
+        return !content_w_ || (p.x >= content_x_ - epsilon && p.y >= content_y_ - epsilon &&
+               p.x <= content_x_ + content_w_ - 1 + epsilon &&
+               p.y <= content_y_ + content_h_ - 1 + epsilon);
+    }
 
     static bool solve(const ImagePoint (&source)[4], const ImagePoint (&target)[4],
                       double (&out)[8])
@@ -66,9 +76,12 @@ class GroundProjection
     }
     bool normalized_ground_at(ImagePoint &p, int width, int height) const
     {
-        if (!enabled_ || !valid_ || width < 2 || height < 2)
+        if (!enabled_ || !valid_ || width < 2 || height < 2 || !inside_content(p))
             return false;
-        p = {p.x / (width - 1), p.y / (height - 1)};
+        if (relative_to_content_)
+            p = {(p.x - content_x_) / (content_w_ - 1), (p.y - content_y_) / (content_h_ - 1)};
+        else
+            p = {p.x / (width - 1), p.y / (height - 1)};
         return project(p, to_ground_);
     }
 
@@ -131,6 +144,22 @@ class GroundProjection
     bool valid() const { return valid_; }
     double aspect() const { return aspect_; }
 
+    // An explicit recording calibration uses its original full-tile coordinates.
+    // The uncalibrated preview uses a nominal trapezoid inside the fitted video.
+    static GroundProjection for_video(const GroundProjection &calibration, int x, int y, int w, int h)
+    {
+        const bool calibrated = calibration.enabled() && calibration.valid();
+        auto ground = calibrated ? calibration :
+            GroundProjection(".36,.68,.64,.68,.80,.96,.20,.96,1.36");
+        ground.relative_to_content_ = !calibrated;
+        ground.content_x_ = x;
+        ground.content_y_ = y;
+        ground.content_w_ = w;
+        ground.content_h_ = h;
+        ground.valid_ = ground.valid_ && w >= 2 && h >= 2;
+        return ground;
+    }
+
     bool ground_at(ImagePoint &p, int width, int height) const
     {
         if (!normalized_ground_at(p, width, height) ||
@@ -151,8 +180,11 @@ class GroundProjection
     {
         if (!enabled_ || !valid_ || width < 2 || height < 2 || !project(p, to_image_))
             return false;
-        p = {p.x * (width - 1), p.y * (height - 1)};
-        return true;
+        if (relative_to_content_)
+            p = {content_x_ + p.x * (content_w_ - 1), content_y_ + p.y * (content_h_ - 1)};
+        else
+            p = {p.x * (width - 1), p.y * (height - 1)};
+        return inside_content(p);
     }
 };
 }

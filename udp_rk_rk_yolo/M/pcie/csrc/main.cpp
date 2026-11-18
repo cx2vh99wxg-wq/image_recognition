@@ -9,6 +9,7 @@
 #include "yolo_integration.h"
 #include "latest_lane_worker.h"
 #include "front_camera_layout.h"
+#include "hdmi_front_capture.h"
 #include "front_radial_preview.h"
 #include "line_style_ipc.h"
 #include "traffic_service.h"
@@ -918,7 +919,7 @@ class RenderWorker
         thread_.join();
     }
 
-    void submit(const uint8_t *pixels)
+    void submit(const uint8_t *pixels, const uint8_t *hdmi_tile)
     {
         if (!accepting_.load(std::memory_order_relaxed))
             return;
@@ -927,6 +928,12 @@ class RenderWorker
             if (has_pending_)
                 ++totals_.replaced;
             memcpy(pending_.data(), pixels, pending_.size());
+            pending_uses_hdmi_ = hdmi_tile != nullptr;
+            if (hdmi_tile)
+            {
+                const size_t lower_right = (DISPLAY_HEIGHT / 2 * DISPLAY_WIDTH + DISPLAY_WIDTH / 2) * 3;
+                hdmi_front::apply_bgr(hdmi_tile, pending_.data() + lower_right, DISPLAY_WIDTH);
+            }
             has_pending_ = true;
         }
         ready_.notify_one();
@@ -960,6 +967,7 @@ class RenderWorker
                 exit_requested_.store(true, std::memory_order_relaxed);
                 break;
             }
+            bool uses_hdmi;
             {
                 std::unique_lock<std::mutex> lock(mutex_);
                 ready_.wait_for(lock, std::chrono::milliseconds(50),
@@ -969,11 +977,13 @@ class RenderWorker
                 if (!has_pending_)
                     continue;
                 working_.swap(pending_);
+                uses_hdmi = pending_uses_hdmi_;
                 has_pending_ = false;
             }
             // Xorg waits happen after releasing the handoff lock.
             const uint64_t start = monotonic_ns();
-            front_crop.apply(working_.data());
+            if (!uses_hdmi)
+                front_crop.apply(working_.data());
             if (render_engine_render_frame_with_detections(&engine, working_.data()) == 0)
             {
                 const uint64_t elapsed = monotonic_ns() - start;
@@ -990,6 +1000,7 @@ class RenderWorker
     std::mutex mutex_;
     std::condition_variable ready_;
     RenderTotals totals_ = {};
+    bool pending_uses_hdmi_ = false;
     bool has_pending_ = false, stopping_ = false;
     std::atomic<bool> accepting_{false}, exit_requested_{false};
     std::thread thread_;
@@ -1247,6 +1258,7 @@ int main()
     std::unique_ptr<m_lane::FrontRadialPreview> ipm_preview;
     std::unique_ptr<m_lane::FrontRadialPreview> lane_input;
     std::unique_ptr<m_lane::FrontRadialPreview> traffic_input;
+    std::unique_ptr<m_lane::FrontRadialPreview> hdmi_lane_input, hdmi_ipm;
     std::unique_ptr<traffic::Service> traffic_service;
     std::unique_ptr<m_lane::LatestWorker> lane_worker;
     int frame_count = 0;
@@ -1459,37 +1471,76 @@ int main()
         else
             fprintf(stderr, "[IPM_TEST] invalid preview calibration\n");
     }
-    if (asynchronous)
-    {
+    const char *hdmi_device = getenv("VISION_HDMI_DEVICE");
+    hdmi_front::Capture hdmi_capture(asynchronous ? hdmi_device : nullptr);
+    if (!asynchronous && hdmi_device && *hdmi_device)
+        fprintf(stderr, "[HDMI] VISION_HDMI_DEVICE requires VISION_ASYNC=1\n");
+    const auto hdmi_calibration = hdmi_capture.enabled()
+        ? m_lane::GroundProjection::for_camera(nullptr, "front_hdmi_ipm.conf")
+        : m_lane::GroundProjection();
+    if (!hdmi_calibration.valid())
+        fprintf(stderr, "[HDMI] Invalid front_hdmi_ipm.conf; using nominal IPM for preview\n");
+    if (hdmi_capture.enabled() && lane_input)
+        hdmi_lane_input.reset(new m_lane::FrontRadialPreview(
+            IMAGE_WIDTH, IMAGE_HEIGHT, m_lane::FrontRadial(), nullptr, true));
+    const uint32_t line_session = (uint32_t)(monotonic_ns() ^ ((uint64_t)getpid() << 16)) | 1u;
+    const auto start_workers = [&](bool hdmi) {
         try
         {
             const char *traffic_model = getenv("VISION_TRAFFIC_MODEL");
-            const m_lane::FrontRadialPreview *traffic_correction = lane_input.get();
-            if (!traffic_correction)
+            m_lane::GroundProjection hdmi_ground;
+            if (hdmi)
+            {
+                const auto rect = hdmi_capture.content_rect();
+                const auto build_hdmi_map = [&](const m_lane::GroundProjection &calibration) {
+                    hdmi_ground = m_lane::GroundProjection::for_video(
+                        calibration, rect.x, rect.y, rect.width, rect.height);
+                    hdmi_ipm.reset(new m_lane::FrontRadialPreview(
+                        IMAGE_WIDTH, IMAGE_HEIGHT, m_lane::FrontRadial(), &hdmi_ground));
+                };
+                build_hdmi_map(hdmi_calibration);
+                bool calibrated = hdmi_calibration.enabled() && hdmi_calibration.valid();
+                if (calibrated && !hdmi_ipm->enabled())
+                {
+                    fprintf(stderr, "[HDMI] Calibration misses the video; using nominal IPM\n");
+                    build_hdmi_map(m_lane::GroundProjection());
+                    calibrated = false;
+                }
+                fprintf(stderr, "[HDMI] IPM=%s lens=off content=%dx%d+%d+%d\n",
+                        calibrated ? "calibrated" : "nominal", rect.width, rect.height, rect.x, rect.y);
+            }
+            if (!hdmi && !lane_input && !traffic_input)
             {
                 const auto camera = m_lane::FrontRadial::for_camera(getenv("LANE_RADIAL_LAMBDA"),
                                                                    "front_radial.conf");
                 traffic_input.reset(
                     new m_lane::FrontRadialPreview(IMAGE_WIDTH, IMAGE_HEIGHT, camera, nullptr, true));
-                traffic_correction = traffic_input.get();
             }
-            // Read the normalized raw front tile before any lane overlay or IPM.
+            const auto *camera_correction = lane_input ? lane_input.get() : traffic_input.get();
             traffic_service.reset(new traffic::Service(
                 traffic_model && *traffic_model ? traffic_model
                                                 : "model/traffic_yolov5n_rk3568.rknn",
-                traffic::InputView(0, 0, traffic::PixelOrder::BGR), traffic_correction));
+                traffic::InputView(0, 0, traffic::PixelOrder::BGR), hdmi ? nullptr : camera_correction,
+                hdmi ? &hdmi_ground : nullptr, line_session));
             lane_worker.reset(new m_lane::LatestWorker(&yolo_engine, IMAGE_WIDTH, IMAGE_HEIGHT,
-                                                       traffic_service.get(), ipm_preview.get(),
-                                                       lane_input.get()));
+                traffic_service.get(), hdmi ? hdmi_ipm.get() : ipm_preview.get(),
+                hdmi ? hdmi_lane_input.get() : lane_input.get(), hdmi));
+            return true;
         }
         catch (const std::exception &error)
         {
+            traffic_service.reset();
             fprintf(stderr, "Cannot start M inference worker: %s\n", error.what());
-            cleanup_all_resources(&pcie_manager, &pcie_shm_manager, &yolo_engine);
-            return -1;
+            return false;
         }
-        curve_detection_update_source(0, CURVE_NONE, 0, 0, 0);
+    };
+    if (asynchronous && !start_workers(false))
+    {
+        cleanup_all_resources(&pcie_manager, &pcie_shm_manager, &yolo_engine);
+        return -1;
     }
+    if (asynchronous)
+        curve_detection_update_source(0, CURVE_NONE, 0, 0, 0);
     printf("M inference=%s, capture target=%u fps (0=unlimited), NN result max age=500ms\n",
            asynchronous ? "latest-frame worker" : "synchronous", capture_fps);
     LineStyleIPC line_ipc = {-1, nullptr};
@@ -1519,7 +1570,8 @@ int main()
             }
         }
     }
-    const uint32_t line_session = (uint32_t)(monotonic_ns() ^ ((uint64_t)getpid() << 16)) | 1u;
+    bool using_hdmi = false;
+    uint64_t last_hdmi_submission = 0;
     while (g_running)
     {
 #if ENABLE_RENDERING
@@ -1564,27 +1616,57 @@ int main()
         if (front_layout.observe(raw_mosaic, IMAGE_WIDTH, IMAGE_HEIGHT))
             printf("[FRONT_LAYOUT] DMA tile rows %s\n", front_layout.rows_swapped() ? "swapped" : "normal");
         front_layout.unpack(raw_mosaic, image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT);
+        uint64_t hdmi_captured_ns = 0;
+        const uint8_t *hdmi_tile = hdmi_capture.latest(captured_ns, hdmi_captured_ns);
+        if ((hdmi_tile != nullptr) != using_hdmi)
+        {
+            using_hdmi = hdmi_tile != nullptr;
+            curve_detection_update_source((uint32_t)last_curve_source, CURVE_NONE, 0, 0,
+                                          last_curve_capture_ns);
+            curve_fresh = false;
+            const YOLOLineStyleResult empty = {};
+            LineStyleData cleared = line_result_data(&empty, line_session, (uint32_t)frame_count,
+                                                     captured_ns);
+            if (using_hdmi)
+                cleared.diagnostic |= LINE_HDMI_DISPLAY_ONLY;
+            line_ipc_write(&line_ipc, &cleared);
+            lane_worker.reset();
+            traffic_service.reset();
+            if (!start_workers(using_hdmi))
+            {
+                cleanup_all_resources(&pcie_manager, &pcie_shm_manager, &yolo_engine);
+                return -1;
+            }
+            fprintf(stderr, "[FRONT_SOURCE] %s\n", using_hdmi ? "HDMI (display only)" : "camera");
+        }
+        if (using_hdmi)
+        {
+            hdmi_front::apply_bgr(hdmi_tile, image_buf_888, IMAGE_WIDTH);
+            captured_ns = hdmi_captured_ns;
+        }
         // 停用示例，仅供对照：printf("[DEBUG] RGB565转RGB888完成\n");
 
         perf.colors += monotonic_ns() - mark;
 
+        auto *active_ipm = using_hdmi ? hdmi_ipm.get() : ipm_preview.get();
         std::shared_ptr<const m_lane::Snapshot> ipm_result;
         if (lane_worker)
         {
             uint64_t source_id = (uint64_t)frame_count + 1;
-            if (traffic_service)
-                traffic_service->submit_raw(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, source_id,
-                                            captured_ns);
-            // 提交未经标注的原图，不把上一次叠加掩码的图当作新输入。
-            // A single overwriteable mailbox: always offer the newest frame.
-            // Throttling submissions to every third frame only makes the next
-            // inference older; it does not reduce NPU work in this async path.
-            lane_worker->submit(image_buf_888, source_id, captured_ns);
+            if (!using_hdmi || captured_ns != last_hdmi_submission)
+            {
+                if (traffic_service)
+                    traffic_service->submit_raw(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, source_id,
+                                                captured_ns);
+                lane_worker->submit(image_buf_888, source_id, captured_ns);
+                if (using_hdmi)
+                    last_hdmi_submission = captured_ns;
+            }
             std::shared_ptr<const m_lane::Snapshot> result = lane_worker->latest();
             bool fresh = result && result->fresh(monotonic_ns()) && !lane_worker->failed();
             if (fresh)
             {
-                if (ipm_preview)
+                if (active_ipm)
                     ipm_result = result;
                 mark = monotonic_ns();
                 yolopv2_result_t masks = result->masks();
@@ -1597,14 +1679,18 @@ int main()
                 // 把缓存掩码贴到另一视频帧上，并不产生新的 NN 观测。
                 if (!curve_fresh || result->source_id != last_curve_source)
                 {
+                    const uint32_t confidence = result->curve.confidence;
                     curve_detection_update_source(
                         (uint32_t)result->source_id, (CurveType)result->curve.curve_type,
-                        result->curve.confidence, result->curve.angle, result->captured_ns);
+                        confidence | (using_hdmi && confidence ? CURVE_HDMI_DISPLAY_ONLY : 0),
+                        result->curve.angle, result->captured_ns);
                     last_curve_source = result->source_id;
                     last_curve_capture_ns = result->captured_ns;
                     LineStyleData line =
                         line_result_data(&result->line_style, line_session,
                                          (uint32_t)result->source_id, result->captured_ns);
+                    if (using_hdmi)
+                        line.diagnostic |= LINE_HDMI_DISPLAY_ONLY;
                     line_ipc_write(&line_ipc, &line);
                 }
                 curve_fresh = true;
@@ -1680,13 +1766,12 @@ int main()
         // 转换RGB888回RGB565格式到专用的输出缓冲区（避免与原始数据缓冲区冲突）
         // 停用示例，仅供对照：printf("[DEBUG] RGB888转RGB565开始\n");
         mark = monotonic_ns();
-        // Keep the local lower-right raw tile available for comparison. S reads
-        // the front center from the independently packed UDP lower-right slot.
+        // S reads the processed front view from the lower-right UDP slot.
         rgb888_to_rgb565(image_buf_888, (uint16_t *)image_buf_565_out, IMAGE_WIDTH * IMAGE_HEIGHT);
-        if (ipm_preview)
-            ipm_preview->apply(image_buf_888, (uint16_t *)image_buf_565_out,
-                               ipm_result ? &ipm_result->ipm_pair : nullptr,
-                               ipm_result ? &ipm_result->ipm_points : nullptr);
+        if (active_ipm)
+            active_ipm->apply(image_buf_888, (uint16_t *)image_buf_565_out,
+                              ipm_result ? &ipm_result->ipm_pair : nullptr,
+                              ipm_result ? &ipm_result->ipm_points : nullptr);
         else if (front_preview)
             front_preview->apply(image_buf_888, (uint16_t *)image_buf_565_out);
         perf.colors += monotonic_ns() - mark;
@@ -1717,7 +1802,7 @@ int main()
         if (renderer)
         {
             mark = monotonic_ns();
-            renderer->submit(image_buf_888);
+            renderer->submit(image_buf_888, hdmi_tile);
             perf.display_submit += monotonic_ns() - mark;
         }
 #endif

@@ -5,7 +5,8 @@
  * no traffic-light color, lane decision or actuator state shares this record. */
 enum { FRONT_PERSON_VALID=1, FRONT_PERSON_READY=2, FRONT_PERSON_FOUND=4,
        FRONT_PERSON_ROAD_VALID=8, FRONT_PERSON_IN_PATH=16,
-       FRONT_PERSON_PATH_UNKNOWN=32, FRONT_PERSON_ROI_MODE=64 };
+       FRONT_PERSON_PATH_UNKNOWN=32, FRONT_PERSON_ROI_MODE=64,
+       FRONT_PERSON_HDMI_DISPLAY_ONLY=128 };
 #define FRONT_PERSON_CONFIDENCE_THRESHOLD .15f
 typedef struct {
     uint32_t session, source_id, count, flags;

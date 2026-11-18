@@ -32,7 +32,7 @@ inline bool valid(const TrafficLightData &d)
 {
     return d.session && d.state <= 3 && d.raw_state <= 3 && d.color_quality <= 100 &&
            d.detector_quality <= 100 && d.x <= 320 && d.y <= 240 && d.width <= 320 - d.x &&
-           d.height <= 240 - d.y && (d.flags & ~127u) == 0 && d.reason <= TRAFFIC_DEFERRED &&
+           d.height <= 240 - d.y && (d.flags & ~255u) == 0 && d.reason <= TRAFFIC_DEFERRED &&
            d.detection_age_ms <= 60000;
 }
 inline bool encode(uint8_t *p, const TrafficLightData &d, uint64_t now)

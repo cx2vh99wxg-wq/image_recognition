@@ -18,7 +18,7 @@ static inline unsigned traffic_go_color(const TrafficLightData *d, uint64_t now)
 {
     const unsigned required = TRAFFIC_BOX | TRAFFIC_CONFIRMED | TRAFFIC_MODEL_READY;
     if (!traffic_fresh(d, now) || (d->flags & required) != required ||
-        (d->flags & TRAFFIC_DISABLED) || d->state != d->raw_state)
+        (d->flags & (TRAFFIC_DISABLED | TRAFFIC_HDMI_DISPLAY_ONLY)) || d->state != d->raw_state)
         return TRAFFIC_UNKNOWN;
     return d->state <= TRAFFIC_GREEN ? d->state : (unsigned)TRAFFIC_UNKNOWN;
 }

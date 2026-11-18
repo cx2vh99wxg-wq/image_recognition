@@ -34,7 +34,7 @@ inline bool encode(uint8_t *p, const LineStyleData &d, uint64_t now)
     if (!line_fresh(&d, now) || d.left > 2 || d.right > 2)
         return false;
     put(p, 0x4c535431u);
-    put(p + 4, 0x0001003cu);
+    put(p + 4, (d.diagnostic & LINE_HDMI_DISPLAY_ONLY) ? 0x0002003cu : 0x0001003cu);
     put(p + 8, d.session);
     put(p + 12, d.source_id);
     uint64_t remaining = line_deadline(&d) - now;
@@ -58,7 +58,8 @@ class Receiver
   public:
     bool ingest(const uint8_t *p, size_t n, uint64_t received, uint64_t now, LineStyleData &d)
     {
-        if (n != SIZE || get(p) != 0x4c535431u || get(p + 4) != 0x0001003cu ||
+        if (n != SIZE || get(p) != 0x4c535431u ||
+            get(p + 4) != ((get(p + 52) & LINE_HDMI_DISPLAY_ONLY) ? 0x0002003cu : 0x0001003cu) ||
             get(p + 56) != checksum(p, 56))
             return false;
         uint32_t session = get(p + 8), id = get(p + 12), age = get(p + 16);

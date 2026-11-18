@@ -15,7 +15,7 @@ static inline unsigned front_person_guard_observe(FrontPersonGuard *p, const Fro
                                                    uint64_t now, int link_ok)
 {
     const unsigned valid = d && d->session && front_person_fresh(d, now) &&
-        (d->flags & (FRONT_PERSON_VALID | FRONT_PERSON_READY)) ==
+        (d->flags & (FRONT_PERSON_VALID | FRONT_PERSON_READY | FRONT_PERSON_HDMI_DISPLAY_ONLY)) ==
             (FRONT_PERSON_VALID | FRONT_PERSON_READY);
     if (!valid || !link_ok)
     {

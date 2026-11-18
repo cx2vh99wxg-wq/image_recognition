@@ -5,6 +5,7 @@
 namespace m_lane
 {
 class FrontRadialPreview;
+class GroundProjection;
 }
 namespace traffic
 {
@@ -18,7 +19,8 @@ class Service : public NpuTask
   public:
     // The caller keeps correction alive until this service has stopped.
     explicit Service(const char *model_path, InputView view = InputView(),
-                     const m_lane::FrontRadialPreview *correction = nullptr);
+                     const m_lane::FrontRadialPreview *correction = nullptr,
+                     const m_lane::GroundProjection *hdmi_ground = nullptr, unsigned source_session = 0);
     ~Service();
     Service(const Service &) = delete;
     Service &operator=(const Service &) = delete;

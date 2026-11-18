@@ -12,6 +12,7 @@
 /* M 端一次推理约需 265ms；从采集时刻计算的 1
  * 秒有效期覆盖两个推理间隔，避免实线禁转权限反复失效。 */
 #define LINE_STYLE_TTL_NS 1000000000ULL
+#define LINE_HDMI_DISPLAY_ONLY (1u << 31)
 typedef struct
 {
     uint32_t session, source_id, left, right, left_quality, right_quality;

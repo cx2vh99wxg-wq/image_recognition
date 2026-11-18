@@ -92,8 +92,13 @@ class LatestWorker
     LatestWorker(YOLOEngine *engine, int width, int height,
                  traffic::NpuTask *optional_task = nullptr,
                  const FrontRadialPreview *ipm_test = nullptr,
-                 const FrontRadialPreview *front_input = nullptr)
-        : engine_(engine), optional_task_(optional_task), width_(width), height_(height),
+                 const FrontRadialPreview *front_input = nullptr, bool hdmi = false)
+        : engine_(engine), optional_task_(optional_task),
+          radial_(hdmi ? FrontRadial() : FrontRadial::for_camera(std::getenv("LANE_RADIAL_LAMBDA"),
+                                                                  "front_radial.conf")),
+          ground_(hdmi ? GroundProjection() : GroundProjection::for_camera(std::getenv("LANE_GROUND_RECT"),
+                                                                              "front_ground.conf")),
+          width_(width), height_(height),
           pending_pixels_((size_t)width * height * 3), working_pixels_((size_t)width * height * 3),
           ipm_test_(ipm_test), front_input_(front_input)
     {
@@ -587,10 +592,8 @@ class LatestWorker
     }
     bool use_ipm_heading() const { return ipm_test_ && use_point_lanes(); }
     EgoCurveConfirm curve_confirm_;
-    const FrontRadial radial_ = FrontRadial::for_camera(std::getenv("LANE_RADIAL_LAMBDA"),
-                                                       "front_radial.conf");
-    const GroundProjection ground_ = GroundProjection::for_camera(std::getenv("LANE_GROUND_RECT"),
-                                                                   "front_ground.conf");
+    const FrontRadial radial_;
+    const GroundProjection ground_;
     bool ego_curve_ = false;
     SnapshotRequest snapshot_request_;
     uint64_t line_log_ns_ = 0, dump_ns_ = 0, curve_log_ns_ = 0;

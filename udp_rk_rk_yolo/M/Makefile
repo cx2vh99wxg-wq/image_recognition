@@ -29,6 +29,8 @@ UDP_DIR = udp
 
 # 说明：渲染功能控制
 ENABLE_RENDERING ?= 1
+VISION_HDMI_DEVICE ?= /dev/v4l/by-id/usb-MACROSILICON_USB_Video-video-index0
+export VISION_HDMI_DEVICE
 
 # 说明：共享内存模块
 SHARED_MEMORY_SRC = $(SRCDIR)/shared_memory.c
@@ -172,7 +174,7 @@ run: all tune-network
 	@# 运行PCIe模块 (后台运行，输出到终端)
 	@echo "运行PCIe图像采集模块..."
 	@echo "说明：运行PCIe程序需要sudo权限..."
-	@cd $(PCIE_DIR) && sudo env LANE_CURVE_MODE=$(LANE_CURVE_MODE) ./build/pcie_capture &
+	@cd $(PCIE_DIR) && sudo env LANE_CURVE_MODE=$(LANE_CURVE_MODE) VISION_HDMI_DEVICE="$$VISION_HDMI_DEVICE" ./build/pcie_capture &
 	@echo "PCIe模块已运行，等待共享内存建立..."
 	@# 等待共享内存建立（最多等待30秒）
 	@WAIT_COUNT=0; \
@@ -226,7 +228,7 @@ run-background: all tune-network
 	@# 运行PCIe后台程序
 	@echo "运行PCIe图像采集后台程序..."
 	@echo "说明：运行PCIe程序需要sudo权限..."
-	@cd $(PCIE_DIR) && sudo env LANE_CURVE_MODE=$(LANE_CURVE_MODE) nohup ./build/pcie_capture > pcie.log 2>&1 &
+	@cd $(PCIE_DIR) && sudo env LANE_CURVE_MODE=$(LANE_CURVE_MODE) VISION_HDMI_DEVICE="$$VISION_HDMI_DEVICE" nohup ./build/pcie_capture > pcie.log 2>&1 &
 	@echo "PCIe程序已运行，等待共享内存建立..."
 	@# 等待共享内存建立（最多等待30秒）
 	@WAIT_COUNT=0; \
