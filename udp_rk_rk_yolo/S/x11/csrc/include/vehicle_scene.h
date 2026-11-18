@@ -290,10 +290,12 @@ inline const Sprite &sprite(uint32_t kind)
     return car;
 }
 
-inline double lateral_spacing(double y, int height)
+inline double vehicle_x(const display_people::Person &p, const pedestrian_scene::Placement &placed,
+                        int width, int height, int angle)
 {
-    const double vertical = std::max(0., std::min(1., y / (height - 1)));
-    return 1.80 - .70 * vertical;
+    if (!(p.flags & display_vehicles::LaneRelative)) return placed.x;
+    const auto section=lane_cue::road_section(lane_cue::picture_rect(width,height),width,angle,placed.y);
+    return section.center + section.half*(2.*p.gx/1000.-1.);
 }
 
 inline void draw(uint32_t *pixels, int stride, int width, int height, const Geometry &scene, int angle)
@@ -319,8 +321,7 @@ inline void draw(uint32_t *pixels, int stride, int width, int height, const Geom
                             vehicle.kind == display_vehicles::Car ? .98 : .80;
         const int h = std::max(14, int(std::lround(p.height * size * 1.44)));
         const int w = std::max(1, h * (s.right - s.left) / (s.bottom - s.top));
-        const double center = width * .5;
-        const double x = wider_spacing ? center + lateral_spacing(p.y, height) * (p.x - center) : p.x;
+        const double x = vehicle_x(vehicle.footprint,p,width,height,angle);
         int left = int(std::lround(x)) - w / 2;
         if (wider_spacing && w <= width)
             left = std::max(0, std::min(width - w, left));

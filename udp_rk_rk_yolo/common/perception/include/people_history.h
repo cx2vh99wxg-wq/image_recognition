@@ -10,7 +10,8 @@ class History {
   Person p=b;p.x=(a.x+b.x+1)/2;p.y=(a.y+b.y+1)/2;p.w=(a.w+b.w+1)/2;p.h=(a.h+b.h+1)/2;
   p.w=std::min(p.w,320-p.x);p.h=std::min(p.h,240-p.y);
   if((a.flags&Ground)&&(b.flags&Ground))p.gy=(a.gy+b.gy)/2;
-  if(((a.flags&Ground)&&(b.flags&Ground))||((a.flags&RoadAligned)&&(b.flags&RoadAligned)))p.gx=(a.gx+b.gx)/2;
+  const unsigned basis=Ground|RoadAligned;
+  if((a.flags&basis)==(b.flags&basis) && (b.flags&basis))p.gx=(a.gx+b.gx)/2;
   return p;
  }
 public:

@@ -5,6 +5,36 @@
 #include <limits>
 using namespace traffic;
 int main() {
+    m_lane::PointLanePair traces;
+    for (int y:{148,152}) {
+        traces.left.push_back({double(y-60),0.,y,3,true});
+        traces.right.push_back({double(y+40),0.,y,3,true});
+    }
+    auto car=display_people::box(display_people::Front,132,110,16,40,.8f);
+    assert(set_lane_position(car,traces) && car.gx==500);
+    car.x+=100;assert(set_lane_position(car,traces) && car.gx==1500);
+    car.x-=200;assert(set_lane_position(car,traces) && car.gx==-500);
+    car.y+=30;assert(!set_lane_position(car,traces));
+    // Two interrupted markings with a vanishing point around (160,120).
+    std::vector<float> dashed(320*240);
+    for (int y=136; y<=210; ++y) {
+        if ((y-136)%25 >= 12) continue;
+        dashed[y*320+160-(y-120)]=1;
+        dashed[y*320+160+(y-120)]=1;
+    }
+    auto fits=m_lane::fit_vehicle_markings(dashed.data());
+    double left, right;
+    assert(m_lane::fit_at_foot(fits,180,left,right));
+    assert(std::abs(left-100)<4 && std::abs(right-220)<4);
+    assert(!m_lane::fit_at_foot(fits,230,left,right));
+    for (int y=0; y<240; ++y)
+        std::fill(dashed.begin()+y*320+160,dashed.begin()+(y+1)*320,0);
+    fits=m_lane::fit_vehicle_markings(dashed.data());
+    assert(!m_lane::fit_at_foot(fits,180,left,right));
+    const std::vector<VehicleDetection> bikes={{1,Box(110,110,44,35,.72f)}};
+    assert(is_visible_rider(Box(117,82,25,53,.85f),bikes));
+    assert(!is_visible_rider(Box(89,82,24,52,.85f),bikes));
+    assert(!is_visible_rider(Box(118,153,25,53,.85f),bikes));
     std::vector<uint8_t> rgb(320*240*3);
     std::vector<float> mask(320*240*2,0);
     FrontRoadFrame f; f.pixels=rgb.data(); f.road=mask.data();

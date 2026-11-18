@@ -17,24 +17,26 @@ class Detector {
  std::vector<int> integral_,paint_integral_,queue_;
  std::vector<uint8_t> mask_,seen_,luma_,filtered_;
  public:
- crosswalk_display::Geometry detect(const uint8_t*bgr,const uint8_t*coverage,int w=320,int h=240){
+ crosswalk_display::Geometry detect(const uint8_t*bgr,const uint8_t*coverage,int w=320,int h=240,
+                                   bool include_far_crossings=false){
   crosswalk_display::Geometry empty;if(!bgr||!coverage||w!=320||h!=240)return empty;
   integral_.assign((w+1)*(h+1),0);luma_.resize(w*h);
   for(int y=0;y<h;++y){int row=0;for(int x=0;x<w;++x){const auto*p=bgr+(y*w+x)*3;luma_[y*w+x]=(29*p[0]+150*p[1]+77*p[2]+128)>>8;row+=luma_[y*w+x];integral_[(y+1)*(w+1)+x+1]=integral_[y*(w+1)+x+1]+row;}}
   auto result=detect_band(bgr,coverage,w,h,h*55/100);
   if(!result.count)result=detect_band(bgr,coverage,w,h,h*65/100);
-  if(!result.count)result=detect_rows(bgr,coverage,w,h);
+  if(!result.count)result=detect_rows(bgr,coverage,w,h,include_far_crossings);
   return result;
  }
  private:
  // A bright run on one row is only a seed. The stripe must remain visible
  // above and below that row along a single axis.
  struct RowSupport {bool stripe=false,through=false,shared_band=false;};
- RowSupport row_support(double x,int y,const uint8_t*coverage,int w,int h) const {
+ RowSupport row_support(double x,int y,const uint8_t*coverage,int w,int h,double scale) const {
   RowSupport support;
   int best_support=0;
   for(double slope:{0.,-.25,.25,-.5,.5,-.75,.75}){
    const auto sample=[&](int dy){
+    dy=int(std::lround(dy*scale));
     const int row=y+dy,col=int(std::lround(x+slope*dy));
     if(row<0||row>=h||col<1||col>=w-1||!coverage[row*w+col])return -1;
     const int at=row*w+col;
@@ -62,7 +64,7 @@ class Detector {
   return support;
  }
 
- crosswalk_display::Geometry detect_rows(const uint8_t*bgr,const uint8_t*coverage,int w,int h){
+ crosswalk_display::Geometry detect_rows(const uint8_t*bgr,const uint8_t*coverage,int w,int h,bool include_far){
   crosswalk_display::Geometry out;mask_.assign(w*h,0);paint_integral_.assign((w+1)*(h+1),0);
   for(int y=0;y<h;++y){int row=0;for(int x=0;x<w;++x){const auto*p=bgr+(y*w+x)*3;int hi=std::max(p[0],std::max(p[1],p[2])),lo=std::min(p[0],std::min(p[1],p[2]));
    int x0=std::max(0,x-9),x1=std::min(w,x+10),y0=std::max(0,y-9),y1=std::min(h,y+10);
@@ -76,7 +78,7 @@ class Detector {
   }
   struct Run {int l,r;double center()const{return (l+r)*.5;}int width()const{return r-l;}};
   Run best[32];unsigned best_count=0;int best_y=0;
-  for(int y=h*54/100;y<h*88/100;y+=2){Run runs[32];unsigned run_count=0;bool overflow=false;
+  for(int y=h*(include_far?28:54)/100;y<h*88/100;y+=2){Run runs[32];unsigned run_count=0;bool overflow=false;
    for(int x=0;x<w;){if(!filtered_[y*w+x]){++x;continue;}int l=x;while(x<w&&filtered_[y*w+x])++x;if(x-l>=2&&x-l<=24){if(run_count==32){overflow=true;break;}runs[run_count++]={l,x};}}
    if(overflow)continue;
    auto mean=[&](int l,int r){return double(integral_[(y+1)*(w+1)+r]-integral_[y*(w+1)+r]-integral_[(y+1)*(w+1)+l]+integral_[y*(w+1)+l])/std::max(1,r-l);};
@@ -101,7 +103,8 @@ class Detector {
     if(paint_width<.22*(span+maxw))continue;
     unsigned supported=0,through=0,shared_band=0;
     for(unsigned i=0;i<chain_count;++i){
-     const auto support=row_support((chain[i].l+chain[i].r-1)*.5,y,coverage,w,h);
+     const double scale=y<h*54/100?std::max(.45,std::min(1.,step/30.)):1.;
+     const auto support=row_support((chain[i].l+chain[i].r-1)*.5,y,coverage,w,h,scale);
      supported+=support.stripe&&!support.through;
      through+=support.through;
      shared_band+=support.shared_band;

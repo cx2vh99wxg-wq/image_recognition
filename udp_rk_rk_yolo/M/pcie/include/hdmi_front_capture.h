@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include "hdmi_signal_detail.h"
 
 namespace hdmi_front
 {
@@ -32,6 +33,7 @@ class Capture
     bool enabled() const { return !device_.empty(); }
     ContentRect content_rect() const { return fitted_content(width_, height_); }
     const uint8_t *latest(uint64_t now, uint64_t &captured);
+    SignalDetail &signal_detail() { return detail_; }
 
   private:
     struct Buffer
@@ -53,6 +55,7 @@ class Capture
     uint64_t retry_ns_ = 0, signal_check_ns_ = 0, last_frame_ns_ = 0, opened_ns_ = 0;
     std::vector<Buffer> buffers_;
     std::vector<uint8_t> tile_;
+    SignalDetail detail_;
 };
 }
 #endif

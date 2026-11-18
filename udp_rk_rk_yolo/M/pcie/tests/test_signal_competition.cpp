@@ -30,6 +30,14 @@ int rknn_outputs_get(rknn_context,uint32_t n,rknn_output *out,rknn_output_extend
     for(int k=0;k<3;++k){const int d=40>>k,area=d*d;floats[k].assign(255*area,0.f);
         const auto set=[&](int channel,int pos,float value){floats[k][nhwc?pos*255+channel:channel*area+pos]=value;};
         if(k==0){const int pos=28*d+30;for(int ch=0;ch<4;++ch)set(ch,pos,.5f);set(4,pos,.8f);set(5,pos,.8f);set(14,pos,.7f);}
+        if(k==0 && mode>=4) {
+            const int pos=29*d+(mode==5?22:30), base=85;
+            for(int ch=0;ch<3;++ch)set(base+ch,pos,.5f);
+            set(base+3,pos,std::sqrt(14.f/(4*30)));
+            set(base+4,pos,.5f);
+            set(base+5+3,pos,.4f);
+            if(mode==6)set(base+5+2,pos,.8f);
+        }
         if(k==1){const int pos=6*d+5,base=85;
             // The 320x240 image has 40 padded rows above it in the NN input.
             set(base,pos,.5f);set(base+1,pos,.75f);set(base+2,pos,std::sqrt(20.f/(4*62)));set(base+3,pos,std::sqrt(60.f/(4*45)));
@@ -65,7 +73,17 @@ int main(){
         const auto restored=d.schedule();
         assert(saved.passes==restored.passes&&saved.view_cursor==restored.view_cursor&&
                saved.locked_view==restored.locked_view&&saved.hits==restored.hits&&saved.timing.run==restored.timing.run);
+        for (int scenario : {4,5,6}) {
+            mode=scenario;
+            PersonResult people;
+            std::vector<VehicleDetection> vehicles;
+            assert(d.detect(rgb.data(),320,240,960,extra,&error,60,&people,false,nullptr,&vehicles));
+            assert(people.count==1);
+            assert(vehicles.size()==(scenario==4?1u:0u));
+            if(!vehicles.empty())assert(vehicles[0].coco_class==3);
+            ++tests;
+        }
     }
-    std::remove(model);std::printf("SIGNAL SCORE PASS: %u cases; stronger other class allowed, low signal rejected, INT8/float, NHWC/NCHW, person preservation and one NPU call\n",tests);
+    std::remove(model);std::printf("SIGNAL AND RIDER SCORE PASS: %u cases; signal and cycle class competition, seated/adjacent person, INT8/float and NHWC/NCHW\n",tests);
     return 0;
 }

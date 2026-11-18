@@ -5,13 +5,6 @@
 
 namespace hdmi_front
 {
-namespace
-{
-uint8_t channel(int value)
-{
-    return static_cast<uint8_t>(std::max(0, std::min(255, value)));
-}
-}
 
 ContentRect fitted_content(unsigned width, unsigned height)
 {
@@ -34,10 +27,7 @@ bool convert_yuyv(const uint8_t *input, size_t bytes, unsigned width, unsigned h
     if (fit_w < 2 || fit_h < 2)
         return false;
     std::memset(bgr, 0, WIDTH * HEIGHT * 3);
-    const int red = bt709 ? (full_range ? 403 : 459) : (full_range ? 359 : 409);
-    const int green_u = bt709 ? (full_range ? 48 : 55) : (full_range ? 88 : 100);
-    const int green_v = bt709 ? (full_range ? 120 : 136) : (full_range ? 183 : 208);
-    const int blue = bt709 ? (full_range ? 475 : 541) : (full_range ? 454 : 516);
+    const YuvMatrix matrix(full_range,bt709);
     for (unsigned y = 0; y < fit_h; ++y)
     {
         const uint8_t *row = input + size_t((2 * y + 1) * height / (2 * fit_h)) * stride;
@@ -46,12 +36,8 @@ bool convert_yuyv(const uint8_t *input, size_t bytes, unsigned width, unsigned h
         {
             const unsigned sx = (2 * x + 1) * width / (2 * fit_w);
             const uint8_t *pair = row + (sx & ~1u) * 2;
-            const int luma = full_range ? pair[2 * (sx & 1)] * 256 :
-                                         (int(pair[2 * (sx & 1)]) - 16) * 298;
-            const int u = int(pair[1]) - 128, v = int(pair[3]) - 128;
-            *out++ = channel((luma + blue * u + 128) / 256);
-            *out++ = channel((luma - green_u * u - green_v * v + 128) / 256);
-            *out++ = channel((luma + red * v + 128) / 256);
+            matrix.decode(pair,sx&1,out[2],out[1],out[0]);
+            out+=3;
         }
     }
     return true;
@@ -285,6 +271,8 @@ const uint8_t *Capture::latest(uint64_t now, uint64_t &captured)
                 good_frames_ = 0;
             good_frames_ = std::min(2u, good_frames_ + 1);
             last_frame_ns_ = timestamp;
+            detail_.capture(static_cast<const uint8_t *>(buffer.address),width_,height_,stride_,
+                            full_range_,bt709_);
         }
         if (query(fd_, VIDIOC_QBUF, &latest) < 0)
         {

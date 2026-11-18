@@ -221,10 +221,11 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                         }
                         float score = obj * cls;
                         const float person_score = obj * person_cls;
-                        constexpr float vehicle_threshold = .50f;
+                        // Small two-wheelers still have to win the full COCO class competition.
+                        constexpr float cycle_threshold = .16f, vehicle_threshold = .50f;
                         int vehicle_class = -1;
                         float vehicle_class_score = 0;
-                        if (vehicles && obj >= vehicle_threshold) {
+                        if (vehicles && obj >= cycle_threshold) {
                             for (int id : {display_vehicles::Bicycle, display_vehicles::Car,
                                            display_vehicles::Motorcycle, display_vehicles::Bus}) {
                                 const float value = at(base + 5 + id, pos);
@@ -233,7 +234,9 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                                     vehicle_class_score = value;
                                 }
                             }
-                            if (obj * vehicle_class_score < vehicle_threshold)
+                            const bool cycle = vehicle_class == display_vehicles::Bicycle ||
+                                               vehicle_class == display_vehicles::Motorcycle;
+                            if (obj * vehicle_class_score < (cycle ? cycle_threshold : vehicle_threshold))
                                 vehicle_class = -1;
                         }
                         if (score < (signal_hints?.04f:locator_score_gate) &&
@@ -299,6 +302,15 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                                  return a.box.score > b.box.score;
                              });
             for (const auto &candidate : vehicle_candidates) {
+                // Below the standalone two-wheeler threshold, require a
+                // separate rider above the vehicle in this same inference.
+                if (candidate.box.score < .28f && (!persons ||
+                    std::none_of(persons->candidates.begin(), persons->candidates.end(),
+                        [&](const Box &p) {
+                            return p.score >= .35f && candidate.box.y > p.y + .12f * p.h &&
+                                   seated_on_cycle(p, candidate.box);
+                        })))
+                    continue;
                 const bool duplicate = std::any_of(vehicles->begin(), vehicles->end(),
                     [&](const VehicleDetection &accepted) {
                         return accepted.coco_class == candidate.coco_class &&

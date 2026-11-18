@@ -1657,7 +1657,7 @@ int main()
             {
                 if (traffic_service)
                     traffic_service->submit_raw(image_buf_888, IMAGE_WIDTH, IMAGE_HEIGHT, source_id,
-                                                captured_ns);
+                                                captured_ns,using_hdmi ? &hdmi_capture.signal_detail() : nullptr);
                 lane_worker->submit(image_buf_888, source_id, captured_ns);
                 if (using_hdmi)
                     last_hdmi_submission = captured_ns;

@@ -2,11 +2,53 @@
 #define M_FRONT_ACTOR_PROJECTION_H
 
 #include "ground_projection.h"
+#include "vehicle_lane_position.h"
+#include "traffic_detector.h"
 #include "person_road_association.h"
 #include "../../../common/perception/include/display_people.h"
+#include "../../../common/perception/include/display_vehicles.h"
 
 namespace traffic
 {
+inline bool boundary_at_foot(const std::vector<m_lane::LaneRowPoint> &points, int y, double &x)
+{
+    if (points.size() < 2) return false;
+    auto hi = std::lower_bound(points.begin(), points.end(), y,
+        [](const m_lane::LaneRowPoint &a, int row) { return a.y < row; });
+    if (hi != points.end() && hi->y == y) { x = hi->x; return true; }
+    // Interpolate only across a short break in the marking. Farther extrapolation
+    // could put a car into an adjoining lane on a curve or behind an occlusion.
+    if (hi == points.begin() || hi == points.end() || hi->y - (hi-1)->y > 16) return false;
+    const auto &lo = *(hi-1);
+    x = lo.x + (hi->x-lo.x)*(y-lo.y)/(hi->y-lo.y);
+    return true;
+}
+
+inline bool set_lane_position(display_people::Person &actor, const m_lane::PointLanePair &lanes,
+                              const std::array<m_lane::MarkingFit,2> *fit=nullptr)
+{
+    const int y = std::min(239u, actor.y + actor.h);
+    double left, right;
+    const bool measured=boundary_at_foot(lanes.left,y,left) && boundary_at_foot(lanes.right,y,right) &&
+                        right-left>=18;
+    if (!measured && (!fit || !m_lane::fit_at_foot(*fit,y,left,right))) return false;
+    const double u = (actor.x + actor.w*.5 - left)/(right-left);
+    if (u < -2.5 || u > 3.5) return false;
+    actor.gx = int32_t(std::lround(u*1000));
+    actor.flags |= display_vehicles::LaneRelative;
+    return true;
+}
+
+inline bool is_visible_rider(const Box &p, const std::vector<VehicleDetection> &vehicles)
+{
+    for (const auto &v : vehicles) {
+        if (v.coco_class != 1 && v.coco_class != 3) continue;
+        if (seated_on_cycle(p, v.box))
+            return true;
+    }
+    return false;
+}
+
 inline display_people::Person front_actor(const Box &box, FootRelation relation,
                                          const m_lane::GroundProjection &ground, double scale)
 {

@@ -413,6 +413,7 @@ struct FrontRoadFrame
     const float *road = nullptr; // planar background, drivable logits
     int width = 0, height = 0;
     uint64_t source = 0, captured = 0;
+    const float *lane_mask = nullptr; // Same front tile/coordinates as pixels, before IPM.
     bool matches(uint64_t id, uint64_t stamp) const
     {
         return pixels && road && width == 320 && height == 240 && captured &&

@@ -93,9 +93,17 @@ int main(){
  };
  verify_top_vehicles();
  constexpr int panel_width=300, panel_height=480;
- assert(std::abs(vehicle_scene::lateral_spacing(0., panel_height) - 1.80) < 1.e-9);
- assert(std::abs(vehicle_scene::lateral_spacing(239.5, panel_height) - 1.45) < 1.e-9);
- assert(std::abs(vehicle_scene::lateral_spacing(479., panel_height) - 1.10) < 1.e-9);
+ for(int heading:{-24,0,24}) {
+     auto p=display_people::box(display_people::Front,120,90,22,43,.8f);
+     p.flags=display_vehicles::LaneRelative;
+     const auto place=pedestrian_scene::locate(p,heading,panel_width,panel_height);
+     const auto lane=lane_cue::road_section(lane_cue::picture_rect(panel_width,panel_height),panel_width,heading,place.y);
+     for(int u:{-500,0,500,1000,1500}) {
+         p.gx=u;
+         assert(std::abs(vehicle_scene::vehicle_x(p,place,panel_width,panel_height,heading)-
+                         (lane.center+(u/500.-1.)*lane.half))<1.e-8);
+     }
+ }
  auto actor=display_people::box(display_people::Front,140,80,20,100,.9f);
  actor.flags=display_people::Ground;actor.gy=800;actor.gx=500;
  const auto at_left=[](display_people::Person foot) {
@@ -132,13 +140,13 @@ int main(){
      const auto left=visible_bounds(kind,left_actor),right=visible_bounds(kind,right_actor);
      const bool wider=kind==display_vehicles::Car || kind==display_vehicles::Bus;
      const auto position=pedestrian_scene::locate(left_actor,0,panel_width,panel_height);
-     const int offset=wider ? std::lround((150.-position.x)*(1.80-.70*position.y/479.)) : 50;
+     const int offset=std::lround(150.-position.x);
      assert(left[0]==center[0]-offset && right[0]==center[0]+offset);
      assert(left[3]==center[3] && right[3]==center[3]);
      const auto far_position=pedestrian_scene::locate(far_left_actor,0,panel_width,panel_height);
-     const int far_offset=wider ? std::lround((150.-far_position.x)*(1.80-.70*far_position.y/479.)) : 50;
+     const int far_offset=std::lround(150.-far_position.x);
      assert(visible_bounds(kind,far_left_actor)[0]==visible_bounds(kind,far_actor)[0]-far_offset);
-     assert(wider?far_offset>offset:far_offset==offset);
+     assert(far_offset==offset);
      const double old_scale=kind==display_vehicles::Bus?1.18:kind==display_vehicles::Car?.98:.80;
      const auto placement=pedestrian_scene::locate(actor,0,panel_width,panel_height);
      assert(center[3]-center[1]+1>std::lround(placement.height*old_scale*1.20));

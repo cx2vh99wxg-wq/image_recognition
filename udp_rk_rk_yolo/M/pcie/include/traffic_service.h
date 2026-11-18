@@ -1,6 +1,7 @@
 #ifndef TRAFFIC_SERVICE_H
 #define TRAFFIC_SERVICE_H
 #include "traffic_vision.h"
+#include "hdmi_signal_detail.h"
 #include <memory>
 namespace m_lane
 {
@@ -24,7 +25,8 @@ class Service : public NpuTask
     ~Service();
     Service(const Service &) = delete;
     Service &operator=(const Service &) = delete;
-    void submit_raw(const uint8_t *rgb, int width, int height, uint64_t source, uint64_t captured);
+    void submit_raw(const uint8_t *rgb, int width, int height, uint64_t source, uint64_t captured,
+                    hdmi_front::SignalDetail *detail=nullptr);
     void after_lane(const LaneBudget &lane) override;
     bool overlap_capable() const override { return true; }
     void prepare_lane(const LaneBudget &lane) override;

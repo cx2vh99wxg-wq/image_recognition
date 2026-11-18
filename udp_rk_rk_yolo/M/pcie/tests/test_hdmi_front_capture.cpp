@@ -195,6 +195,23 @@ static void test_metadata()
 int main()
 {
     const uint8_t red[] = {81, 90, 81, 240, 81, 90, 81, 240};
+    {
+        using hdmi_front::SignalDetail;
+        const unsigned stride = SignalDetail::WIDTH * 2 + 8;
+        std::vector<uint8_t> padded(stride * SignalDetail::ROWS, 0);
+        for (int row = 0; row < SignalDetail::ROWS; ++row)
+            std::copy(red, red + sizeof(red), padded.data() + row * stride);
+        SignalDetail detail, consumer;
+        detail.capture(padded.data(), 640, 480, stride, false, false);
+        detail.swap(consumer);
+        std::vector<uint8_t> rgb;
+        assert(!detail.rgb(rgb) && consumer.rgb(rgb));
+        assert(rgb.size() == SignalDetail::WIDTH * SignalDetail::ROWS * 3);
+        const auto last_row = rgb.data() + (SignalDetail::ROWS - 1) * SignalDetail::WIDTH * 3;
+        assert(last_row[0] > 250 && last_row[1] < 4 && last_row[2] < 4);
+        consumer.capture(padded.data(), 640, 360, stride, false, false);
+        assert(!consumer.rgb(rgb));
+    }
     std::vector<uint8_t> tile(hdmi_front::WIDTH * hdmi_front::HEIGHT * 3);
     assert(!hdmi_front::convert_yuyv(red, sizeof(red) - 1, 4, 1, 8, false, false, tile.data()));
     assert(hdmi_front::convert_yuyv(red, sizeof(red), 4, 1, 8, false, false, tile.data()));

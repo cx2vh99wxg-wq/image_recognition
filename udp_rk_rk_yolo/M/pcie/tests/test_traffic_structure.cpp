@@ -1,4 +1,5 @@
 #include "traffic_structure.h"
+#include "paired_road_lights.h"
 #include <cassert>
 #include <cstdio>
 #include <fstream>
@@ -15,6 +16,32 @@ static Image signal(unsigned state,bool vertical=false){
  }return im;
 }
 int main(int argc,char**argv){
+ {
+  Image road(W*H*3,180);
+  auto red_head=[&](int x){rect(road,x-2,77,14,7,24,24,24);rect(road,x-1,79,3,3,210,32,58);};
+  red_head(90);
+  rect(road,102,80,18,1,110,110,110);
+  PairedRoadLightTracker tracker;
+  assert(!tracker.observe(road.data(),1000000000).state);
+  red_head(122);
+  Image disconnected=road;
+  rect(disconnected,102,80,18,1,180,180,180);
+  assert(!paired_road_light(disconnected.data(),W,H,W*3).state);
+  assert(!tracker.observe(road.data(),1100000000).state);
+  assert(tracker.observe(road.data(),1200000000).state==TRAFFIC_RED);
+  rect(road,88,77,14,7,24,24,24);
+  assert(tracker.observe(road.data(),1400000000).state==TRAFFIC_RED);
+  assert(!tracker.observe(road.data(),2100000000).state);
+  std::fill(road.begin(),road.end(),180);
+  assert(!tracker.observe(road.data(),2200000000).state);
+  // Both heads lie on a bar sloping down to the right in the image.
+  red_head(90);
+  rect(road,120,81,14,7,24,24,24);
+  rect(road,121,83,3,3,210,32,58);
+  for (int x=102; x<120; ++x)
+      rect(road,x,80+int(std::lround((x-90)*4./32)),1,1,110,110,110);
+  assert(paired_road_light(road.data(),W,H,W*3).state==TRAFFIC_RED);
+ }
  for(unsigned color=1;color<=3;++color)for(bool vertical:{false,true}){
   auto im=signal(color,vertical);auto boxes=locate_three_lamp_housings(im.data(),W,H,W*3);
   assert(!boxes.empty());bool found=false;for(const auto&b:boxes)found|=classify_color(im.data(),W,H,W*3,b).state==color;assert(found);

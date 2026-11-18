@@ -74,6 +74,17 @@ inline unsigned warning_sides(unsigned blocked, unsigned left, unsigned right)
     (void)left; (void)right;
     return blocked & 3u;
 }
+struct RoadSection { double center, half; };
+inline RoadSection road_section(const PictureRect &rect, int width, int angle, double y)
+{
+    const double top = rect.y + rect.height * TOP, seam = rect.y + rect.height * SEAM;
+    const double depth = (y-top)/(rect.height*(BOTTOM-TOP));
+    const double theta = std::max(-85,std::min(85,angle>=-90 && angle<=90 ? angle : 0)) * .017453292519943295;
+    const double limit = rect.width*.28;
+    const double bend = std::max(-limit,std::min(limit,(seam-top)*.5*std::tan(theta)));
+    const double t = y < seam ? (seam-y)/(seam-top) : 0.;
+    return {width*.5+bend*t*t, rect.width*(.12+.25*depth)};
+}
 // Perspective schematic: lower edges stay fixed beside the car; only the
 // upper centerline bends. Unknown direction uses the supplied remembered
 // heading in gray; a missing side style has a gray placeholder rather than disappearing.
@@ -87,18 +98,14 @@ inline void draw(uint32_t *pixels, int stride, int width, int height, int angle,
     const double top = rect.y + rect.height * TOP;
     const double seam = rect.y + rect.height * SEAM;
     const double bottom = rect.y + rect.height * BOTTOM;
-    const double theta = std::max(-85, std::min(85, angle >= -90 && angle <= 90 ? angle : 0)) * .017453292519943295;
-    const double limit = rect.width * .28;
-    const double bend = std::max(-limit, std::min(limit, (seam - top) * .5 * std::tan(theta)));
     const unsigned warning = warning_sides(blocked, left_style, right_style);
     double dash_phase = 0.;
     for (int y = (int)std::floor(bottom); y >= (int)std::ceil(top); --y)
     {
         const double depth = (y - top) / (bottom - top);
         dash_phase += 1. / (12. + 38. * depth);
-        const double t = y < seam ? (seam - y) / (seam - top) : 0.;
-        const double center = width * .5 + bend * t * t;
-        const double half_width = rect.width * (.12 + .25 * depth);
+        const auto section = road_section(rect,width,angle,y);
+        const double center = section.center, half_width = section.half;
         // Green corridor only above the reference seam and only for a valid
         // current heading. Integer alpha blending keeps the underlying artwork.
         if ((angle_known || front_stop) && y < seam)

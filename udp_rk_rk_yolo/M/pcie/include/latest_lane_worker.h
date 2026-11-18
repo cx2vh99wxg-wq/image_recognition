@@ -98,7 +98,7 @@ class LatestWorker
                                                                   "front_radial.conf")),
           ground_(hdmi ? GroundProjection() : GroundProjection::for_camera(std::getenv("LANE_GROUND_RECT"),
                                                                               "front_ground.conf")),
-          width_(width), height_(height),
+          width_(width), height_(height), hdmi_(hdmi),
           pending_pixels_((size_t)width * height * 3), working_pixels_((size_t)width * height * 3),
           ipm_test_(ipm_test), front_input_(front_input)
     {
@@ -208,7 +208,7 @@ class LatestWorker
     void publish_crosswalk(const uint8_t *rgb, uint64_t source, uint64_t captured, bool log)
     {
         const uint64_t started = clock_ns();
-        const auto candidate = crosswalk_detector_.detect(rgb, ipm_coverage_.data());
+        const auto candidate = crosswalk_detector_.detect(rgb, ipm_coverage_.data(),320,240,hdmi_);
         const auto zebra = crosswalk_confirm_.update(candidate, source, captured);
         crosswalk_display::Snapshot snapshot = {};
         snapshot.session = crosswalk_session_;
@@ -243,6 +243,7 @@ class LatestWorker
             if(status==0&&!front_rgb.empty()&&!owned_road.empty()){
                 f.pixels=front_rgb.data();f.road=owned_road.data();f.width=model_width;f.height=model_height;
                 f.source=source;f.captured=captured;
+                f.lane_mask=(masks_in_snapshot?result->lane:lane).data();
             }
             return f;
         }
@@ -599,6 +600,7 @@ class LatestWorker
     uint64_t line_log_ns_ = 0, dump_ns_ = 0, curve_log_ns_ = 0;
     unsigned dump_count_ = 0;
     int width_, height_;
+    bool hdmi_;
     mutable std::mutex mutex_;
     std::condition_variable ready_;
     std::thread thread_;

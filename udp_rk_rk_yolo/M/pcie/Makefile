@@ -108,7 +108,7 @@ test-camera-guard: $(BUILD_DIR)/test_camera_guard_rows
 test-hdmi-front: $(BUILD_DIR)/test_hdmi_front_capture
 	./$(BUILD_DIR)/test_hdmi_front_capture
 
-$(BUILD_DIR)/test_hdmi_front_capture: tests/test_hdmi_front_capture.cpp csrc/hdmi_front_capture.cpp include/hdmi_front_capture.h
+$(BUILD_DIR)/test_hdmi_front_capture: tests/test_hdmi_front_capture.cpp csrc/hdmi_front_capture.cpp include/hdmi_front_capture.h include/hdmi_signal_detail.h
 	@mkdir -p $(BUILD_DIR)
 	$(CXX) -std=c++11 -O2 -Wall -Wextra -Werror -I$(INC_DIR) $(filter %.cpp,$^) -o $@ \
 		-Wl,--wrap=open,--wrap=close,--wrap=ioctl,--wrap=mmap,--wrap=munmap
@@ -198,7 +198,7 @@ $(BUILD_DIR)/test_lane_overlap: tests/test_lane_overlap.cpp include/latest_lane_
 test-lane-overlap: $(BUILD_DIR)/test_lane_overlap
 	./$(BUILD_DIR)/test_lane_overlap
 
-$(BUILD_DIR)/test_service_overlap: tests/test_service_overlap.cpp tests/test_signal_competition.cpp csrc/traffic_detector.cpp csrc/traffic_service.cpp include/traffic_service.h include/traffic_detector.h include/traffic_vision.h
+$(BUILD_DIR)/test_service_overlap: tests/test_service_overlap.cpp tests/test_signal_competition.cpp csrc/traffic_detector.cpp csrc/traffic_service.cpp include/traffic_service.h include/traffic_detector.h include/traffic_vision.h include/paired_road_lights.h include/hdmi_signal_detail.h include/front_actor_projection.h include/vehicle_lane_position.h
 	@mkdir -p $(BUILD_DIR)
 	$(CXX) -std=c++11 -Wall -Wextra -Werror -O2 -pthread $(INCLUDES) $< csrc/traffic_detector.cpp csrc/traffic_service.cpp -o $@
 test-service-overlap: $(BUILD_DIR)/test_service_overlap
@@ -370,7 +370,7 @@ test-front-person: build/test_front_person_detector
 	./build/test_front_person_detector
 
 .PHONY: test-person-road
-build/test_person_road: tests/test_person_road.cpp include/person_road_association.h include/front_actor_projection.h include/ground_projection.h include/traffic_vision.h ../include/front_person.h
+build/test_person_road: tests/test_person_road.cpp include/person_road_association.h include/front_actor_projection.h include/vehicle_lane_position.h include/ground_projection.h include/traffic_vision.h ../include/front_person.h
 	@mkdir -p build
 	$(CXX) -std=c++11 -O3 -Wall -Wextra -Werror $(INCLUDES) $< -o $@
 test-person-road: build/test_person_road
@@ -418,7 +418,7 @@ test-signal-competition: build/test_signal_competition
 build/test_line_style build/test_ego_lane build/test_marking_profile build/test_npu_scheduling build/test_front_ipm build/test_lane_curve_geometry build/test_direct_mask_ipm build/test_front_radial: include/lane_paint_evidence.h
 
 .PHONY: test-traffic-structure
-build/test_traffic_structure: tests/test_traffic_structure.cpp include/traffic_structure.h include/traffic_vision.h
+build/test_traffic_structure: tests/test_traffic_structure.cpp include/traffic_structure.h include/paired_road_lights.h include/traffic_vision.h
 	@mkdir -p build
 	$(CXX) -std=c++11 -O3 -Wall -Wextra -Werror $(INCLUDES) $< -o $@
 test-traffic-structure: build/test_traffic_structure

@@ -6,6 +6,9 @@
 namespace display_vehicles {
 
 enum Kind : uint32_t { Bicycle = 1, Car = 2, Motorcycle = 3, Bus = 5 };
+// Preserve the existing wire bit for road-relative lateral positions. For a
+// front vehicle gx=0/1000 are the measured left/right ego-lane markings.
+constexpr uint32_t LaneRelative = display_people::RoadAligned;
 constexpr unsigned CAPACITY = display_people::CAPACITY;
 constexpr uint32_t MAGIC = 0x56454831u;
 constexpr int KEY = 0x12345678 + 19;
@@ -51,6 +54,7 @@ inline bool valid(const Snapshot &s)
         const auto &p = v.footprint;
         if (p.view != display_people::Front || p.x >= 320 || p.y >= 240 || !p.w || !p.h ||
             p.w > 320 - p.x || p.h > 240 - p.y || p.quality > 100 || (p.flags & ~15u) ||
+            ((p.flags & LaneRelative) && (p.gx < -2500 || p.gx > 3500)) ||
             (p.flags & 6u) == 6u || std::abs(int64_t(p.gx)) > 100000 || std::abs(int64_t(p.gy)) > 100000)
             return false;
     }

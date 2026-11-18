@@ -6,6 +6,7 @@
 #include "front_person_ipc.h"
 #include "front_actor_projection.h"
 #include "traffic_structure.h"
+#include "paired_road_lights.h"
 #include "../../../common/perception/include/display_people.h"
 #include "../../../common/perception/include/display_vehicles.h"
 #include <atomic>
@@ -65,6 +66,7 @@ struct Service::Impl
     std::mutex mutex;
     std::condition_variable wake;
     Frame latest;
+    hdmi_front::SignalDetail latest_detail;
     uint64_t pending_id = 0;
     bool stopping = false;
     std::shared_ptr<const Observation> observation;
@@ -133,7 +135,8 @@ struct Service::Impl
         FrontPersonData empty_person = {}; front_person_ipc_write(&person_ipc, &empty_person);
         front_person_ipc_close(&person_ipc);
     }
-    void submit(const uint8_t *rgb, int w, int h, uint64_t id, uint64_t captured)
+    void submit(const uint8_t *rgb, int w, int h, uint64_t id, uint64_t captured,
+                hdmi_front::SignalDetail *detail)
     {
         if (!rgb || w < 320 || h < 240 || !captured)
             return;
@@ -148,6 +151,8 @@ struct Service::Impl
                 return;
             latest.id = id;
             latest.captured = captured;
+            if(detail) latest_detail.swap(*detail);
+            else latest_detail.yuyv.clear();
             pending_id = id;
         }
         wake.notify_one();
@@ -284,6 +289,7 @@ struct Service::Impl
         std::sort(display_candidates.begin(),display_candidates.end(),[](const Box&a,const Box&b){return a.score>b.score;});
         if(scene.ready)for(const auto&b:display_candidates){
             if(!std::isfinite(b.x)||!std::isfinite(b.y)||!std::isfinite(b.w)||!std::isfinite(b.h)||b.w<=0||b.h<=0)continue;
+            if(is_visible_rider(b,detection->vehicles))continue;
             add_front_person(scene,project(b));
         }
         if(display_ipc.open(display_people::FRONT_KEY,true))display_ipc.write(scene);
@@ -291,9 +297,18 @@ struct Service::Impl
         vehicles.session = session;
         vehicles.source = (uint32_t)frame.id;
         display_vehicles::expires(vehicles, frame.captured + display_vehicles::TTL);
-        if (scene.ready) {
+        if (scene.ready && !detection->vehicles.empty()) {
+            const auto lanes = m_lane::select_point_lanes(matched ? lane.front.lane_mask : nullptr,
+                                                         lane.front.width, lane.front.height);
+            std::array<m_lane::MarkingFit,2> fits;
+            bool tried_fit=false;
             for (const auto &vehicle : detection->vehicles) {
-                vehicles.vehicles[vehicles.count++] = {vehicle.coco_class, project(vehicle.box)};
+                auto footprint = project(vehicle.box);
+                if(!set_lane_position(footprint,lanes) && matched && lane.front.lane_mask) {
+                    if(!tried_fit){fits=m_lane::fit_vehicle_markings(lane.front.lane_mask);tried_fit=true;}
+                    set_lane_position(footprint,lanes,&fits);
+                }
+                vehicles.vehicles[vehicles.count++] = {vehicle.coco_class, footprint};
             }
         }
         if (vehicle_ipc.open(display_vehicles::KEY, true))
@@ -379,6 +394,9 @@ struct Service::Impl
     {
         HousingTracker tracker;
         ColorConfirmation confirmation;
+        PairedRoadLightTracker paired_lights, native_lights;
+        hdmi_front::SignalDetail detail;
+        std::vector<uint8_t> detail_rgb;
         Box tracked;
         uint64_t detector_id = 0, last_id = 0, last_captured = 0, last_log = 0;
         bool have_track = false;
@@ -393,6 +411,7 @@ struct Service::Impl
                     if (stopping)
                         return;
                     frame = latest;
+                    latest_detail.swap(detail);
                     last_id = frame.id;
                 }
                 uint64_t now = traffic_clock_ns();
@@ -469,6 +488,27 @@ struct Service::Impl
                         confirmation.reset();
                     }
                 }
+                if(hdmi && ready && !model_failed.load()) {
+                    // Downsampling can turn isolated cyan window pixels into
+                    // apparent lamp cores. Decide at native capture resolution
+                    // whenever that frame's detail is available.
+                    auto head = paired_lights.observe(frame.pixels.data(), frame.captured);
+                    if (detail.rgb(detail_rgb)) {
+                        const auto native = native_lights.observe(detail_rgb.data(), frame.captured, detail.WIDTH);
+                        // A dim red arrow may be more coherent after scaling.
+                        // A green fallback needs native-resolution support.
+                        if (native.state && head.state && native.state != head.state) head = {};
+                        else if (native.state || head.state != TRAFFIC_RED) head = native;
+                    }
+                    if(head.state && !data.state && data.reason!=TRAFFIC_AMBIGUOUS) {
+                        data.state=data.raw_state=head.state;
+                        data.flags|=TRAFFIC_BOX|TRAFFIC_CONFIRMED;
+                        data.reason=TRAFFIC_OK;data.color_quality=75;
+                        data.detector_id=data.source_id;data.detection_age_ms=0;
+                        data.detector_quality=0; // Geometric confirmation, no neural-network score.
+                        data.x=head.box.x;data.y=head.box.y;data.width=head.box.w;data.height=head.box.h;
+                    }
+                }
                 traffic_ipc_open(&ipc, 1);
                 traffic_ipc_write(&ipc, &data);
                 if (!last_log || now - last_log >= 2000000000ULL)
@@ -499,9 +539,10 @@ Service::Service(const char *path, InputView view, const m_lane::FrontRadialPrev
 {
 }
 Service::~Service() = default;
-void Service::submit_raw(const uint8_t *p, int w, int h, uint64_t id, uint64_t captured)
+void Service::submit_raw(const uint8_t *p, int w, int h, uint64_t id, uint64_t captured,
+                         hdmi_front::SignalDetail *detail)
 {
-    impl_->submit(p, w, h, id, captured);
+    impl_->submit(p, w, h, id, captured,detail);
 }
 void Service::prepare_lane(const LaneBudget &b)
 {
