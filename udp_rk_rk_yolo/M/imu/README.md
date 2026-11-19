@@ -68,9 +68,9 @@ python3 tools/calibrate.py --input stationary.csv --output mounting.cal --statio
 ### 重启后的零偏准备
 
 `feedback/m-steering-imu.service`现在通过`tools/start_angle_monitor.py`启动。
-**启动前约12秒必须保持车身与传感器静止。** 原始采集1200点，前200点等待稳定，
+**在 S 板完成 S/R 确认后须保持车身、前轮与传感器静止约 12 秒。** 原始采集1200点，前200点等待稳定，
 400点估计三轴角速度零偏，后600点独立检查静止方差、时间/会话连续性及C算法回放。
-检查失败时不发布有效角度，不自动套用旧偏置继续漂移。服务最多尝试3次，失败原因写入journal。
+检查失败时等待下一次 S/R 确认。失败原因写入 journal。
 车辆正在运动时不应重启该台架测角服务；单IMU无法可靠分辨启动阶段极慢恒转与恒定零偏。
 
 通过后原子保存`calibration/startup_bias.current.cal`及验证报告，保留原安装轴和基准文件；
@@ -131,7 +131,7 @@ sudo journalctl -u m-steering-imu.service -n 5 -f
 `feedback/m-steering-imu.service` 默认发送 192.168.100.20:54321，使用已有48字节 STF1 v1。
 service 默认没有机械归零，ZERO_VALID=0，不向 S 发出任何执行器命令。A 的接收器必须遵守共同协议，只允许新鲜、真实且已归零的反馈进入控制。
 服务与 NPU/视频任务独立，SPI 每笔24MHz（板载驱动最低支持档），传感器100Hz；不修改 M 原有视觉进程。
-S 不在线时仍可本地采集，UDP 发送失败不会阻塞采样。
+通过本次校准后，UDP 发送失败不会阻塞采样。
 发送使用不绑定源地址的`sendto`，由每个数据包的当前路由选择源IP。
 这是为了兼容开机地址随后被`setup_network.sh`切换为192.168.100.10的情况；
 长期`connect`的UDP会话可能保留切换前的地址，导致Network is unreachable。

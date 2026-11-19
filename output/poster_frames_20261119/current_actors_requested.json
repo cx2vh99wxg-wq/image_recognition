@@ -1,0 +1,6 @@
+[
+  {"shot":"current_people_25","view":"raw","file":"07_行人_路口步行","title":"行人 · 路口步行"},
+  {"shot":"current_people_29","view":"raw","file":"08_行人_路侧通行","title":"行人 · 路侧通行"},
+  {"shot":"current_cars_40","view":"raw","file":"09_车辆_前车及右侧车","title":"车辆 · 前车与右侧车"},
+  {"shot":"current_taxi_62","view":"raw","file":"10_车辆_前方出租车","title":"车辆 · 前方出租车"}
+]

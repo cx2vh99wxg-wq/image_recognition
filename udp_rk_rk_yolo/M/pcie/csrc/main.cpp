@@ -919,7 +919,8 @@ class RenderWorker
         thread_.join();
     }
 
-    void submit(const uint8_t *pixels, const uint8_t *hdmi_tile)
+    void submit(const uint8_t *pixels, const uint8_t *hdmi_tile,
+                const traffic::Service *service, uint64_t captured)
     {
         if (!accepting_.load(std::memory_order_relaxed))
             return;
@@ -933,6 +934,8 @@ class RenderWorker
             {
                 const size_t lower_right = (DISPLAY_HEIGHT / 2 * DISPLAY_WIDTH + DISPLAY_WIDTH / 2) * 3;
                 hdmi_front::apply_bgr(hdmi_tile, pending_.data() + lower_right, DISPLAY_WIDTH);
+                if (service)
+                    service->mark_hdmi_preview(pending_.data() + lower_right, DISPLAY_WIDTH * 3, captured);
             }
             has_pending_ = true;
         }
@@ -1521,7 +1524,7 @@ int main()
                 traffic_model && *traffic_model ? traffic_model
                                                 : "model/traffic_yolov5n_rk3568.rknn",
                 traffic::InputView(0, 0, traffic::PixelOrder::BGR), hdmi ? nullptr : camera_correction,
-                hdmi ? &hdmi_ground : nullptr, line_session));
+                hdmi ? &hdmi_ground : nullptr));
             lane_worker.reset(new m_lane::LatestWorker(&yolo_engine, IMAGE_WIDTH, IMAGE_HEIGHT,
                 traffic_service.get(), hdmi ? hdmi_ipm.get() : ipm_preview.get(),
                 hdmi ? hdmi_lane_input.get() : lane_input.get(), hdmi));
@@ -1627,8 +1630,6 @@ int main()
             const YOLOLineStyleResult empty = {};
             LineStyleData cleared = line_result_data(&empty, line_session, (uint32_t)frame_count,
                                                      captured_ns);
-            if (using_hdmi)
-                cleared.diagnostic |= LINE_HDMI_DISPLAY_ONLY;
             line_ipc_write(&line_ipc, &cleared);
             lane_worker.reset();
             traffic_service.reset();
@@ -1637,7 +1638,7 @@ int main()
                 cleanup_all_resources(&pcie_manager, &pcie_shm_manager, &yolo_engine);
                 return -1;
             }
-            fprintf(stderr, "[FRONT_SOURCE] %s\n", using_hdmi ? "HDMI (display only)" : "camera");
+            fprintf(stderr, "[FRONT_SOURCE] %s\n", using_hdmi ? "HDMI" : "camera");
         }
         if (using_hdmi)
         {
@@ -1679,18 +1680,15 @@ int main()
                 // 把缓存掩码贴到另一视频帧上，并不产生新的 NN 观测。
                 if (!curve_fresh || result->source_id != last_curve_source)
                 {
-                    const uint32_t confidence = result->curve.confidence;
                     curve_detection_update_source(
                         (uint32_t)result->source_id, (CurveType)result->curve.curve_type,
-                        confidence | (using_hdmi && confidence ? CURVE_HDMI_DISPLAY_ONLY : 0),
+                        result->curve.confidence,
                         result->curve.angle, result->captured_ns);
                     last_curve_source = result->source_id;
                     last_curve_capture_ns = result->captured_ns;
                     LineStyleData line =
                         line_result_data(&result->line_style, line_session,
                                          (uint32_t)result->source_id, result->captured_ns);
-                    if (using_hdmi)
-                        line.diagnostic |= LINE_HDMI_DISPLAY_ONLY;
                     line_ipc_write(&line_ipc, &line);
                 }
                 curve_fresh = true;
@@ -1802,7 +1800,7 @@ int main()
         if (renderer)
         {
             mark = monotonic_ns();
-            renderer->submit(image_buf_888, hdmi_tile);
+            renderer->submit(image_buf_888, hdmi_tile, traffic_service.get(), captured_ns);
             perf.display_submit += monotonic_ns() - mark;
         }
 #endif

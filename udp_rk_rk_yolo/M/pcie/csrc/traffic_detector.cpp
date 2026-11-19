@@ -15,6 +15,42 @@ namespace
 uint64_t detector_clock_ns() { return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count(); }
 const int anchors[3][6] = {
     {10, 13, 16, 30, 33, 23}, {30, 61, 62, 45, 59, 119}, {116, 90, 156, 198, 373, 326}};
+bool has_rear_window(const uint8_t *rgb,int stride,const Box &box)
+{
+    // Resolve a split car/truck vote only when the upper rear glass forms a
+    // wide dark band above a lighter tailgate. The box was clipped by decode.
+    if(box.w<1.15f*box.h || box.h<32) return false;
+    unsigned glass_columns=0;
+    for(float x:{.22f,.34f,.46f,.58f,.70f,.78f}){
+        const int column=int(box.x+x*box.w)*3;
+        auto luma=[&](float y){return luminance(rgb+int(box.y+y*box.h)*stride+column);};
+        if((luma(.52f)+luma(.66f))-(luma(.21f)+luma(.34f))>=66) ++glass_columns;
+    }
+    return glass_columns>=4;
+}
+bool has_cargo_doors(const uint8_t *rgb,int stride,const Box &box)
+{
+    if(box.w<12 || box.h<21 || box.w>1.08f*box.h || box.w<.38f*box.h)return false;
+    const auto pixel=[&](float x,float y){return rgb+int(box.y+y*box.h)*stride+3*int(box.x+x*box.w);};
+    unsigned pale=0,axle=0;
+    for(float x:{.15f,.29f,.40f,.60f,.71f,.85f}){
+        for(float y:{.15f,.28f,.4f,.53f,.64f}){
+            const auto *p=pixel(x,y);
+            pale+=std::min(p[0],std::min(p[1],p[2]))>=138 &&
+                  std::max(p[0],std::max(p[1],p[2]))-std::min(p[0],std::min(p[1],p[2]))<55;
+        }
+        axle+=std::min(luminance(pixel(x,.83f)),luminance(pixel(x,.91f)))<103;
+    }
+    if(pale<20 || axle<4)return false;
+    for(float seam:{.35f,.40f,.45f,.50f,.55f,.60f,.65f}){
+        unsigned aligned=0;
+        for(float y:{.18f,.25f,.32f,.39f,.46f,.53f,.60f})
+            aligned+=luminance(pixel(seam,y))+22<std::min(luminance(pixel(seam-.13f,y)),
+                                                          luminance(pixel(seam+.13f,y)));
+        if(aligned>=4)return true;
+    }
+    return false;
+}
 bool fail(std::string *error, const std::string &text)
 {
     if (error)
@@ -128,7 +164,7 @@ bool Detector::init(const char *path, std::string *error)
 bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<Box> &boxes,
                       std::string *error, unsigned budget_ms, PersonResult *persons,
                       bool full_view, std::vector<Box> *signal_hints,
-                      std::vector<VehicleDetection> *vehicles)
+                      std::vector<VehicleDetection> *vehicles, bool native_crop)
 {
     boxes.clear();
     if(signal_hints)signal_hints->clear();
@@ -222,12 +258,16 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                         float score = obj * cls;
                         const float person_score = obj * person_cls;
                         // Small two-wheelers still have to win the full COCO class competition.
-                        constexpr float cycle_threshold = .16f, vehicle_threshold = .50f;
+                        constexpr float cycle_threshold = .10f, vehicle_threshold = .50f;
+                        constexpr float near_car_threshold = .15f;
+                        const float truck_threshold = native_crop ? .11f : .24f;
                         int vehicle_class = -1;
                         float vehicle_class_score = 0;
-                        if (vehicles && obj >= cycle_threshold) {
+                        const float truck_score=vehicles ? obj*at(base+5+display_vehicles::Truck,pos) : 0.f;
+                        const bool cargo_proposal=vehicles && truck_score>=.043f;
+                        if (vehicles && (obj >= cycle_threshold || cargo_proposal)) {
                             for (int id : {display_vehicles::Bicycle, display_vehicles::Car,
-                                           display_vehicles::Motorcycle, display_vehicles::Bus}) {
+                                           display_vehicles::Motorcycle, display_vehicles::Bus, display_vehicles::Truck}) {
                                 const float value = at(base + 5 + id, pos);
                                 if (value > vehicle_class_score) {
                                     vehicle_class = id;
@@ -236,11 +276,13 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                             }
                             const bool cycle = vehicle_class == display_vehicles::Bicycle ||
                                                vehicle_class == display_vehicles::Motorcycle;
-                            if (obj * vehicle_class_score < (cycle ? cycle_threshold : vehicle_threshold))
+                            const float gate = cycle ? cycle_threshold : vehicle_class == display_vehicles::Car
+                                ? near_car_threshold : vehicle_class == display_vehicles::Truck ? truck_threshold : vehicle_threshold;
+                            if (obj * vehicle_class_score < gate)
                                 vehicle_class = -1;
                         }
                         if (score < (signal_hints?.04f:locator_score_gate) &&
-                            (!persons || person_score < FRONT_PERSON_CONFIDENCE_THRESHOLD) && vehicle_class < 0)
+                            (!persons || person_score < FRONT_PERSON_CONFIDENCE_THRESHOLD) && vehicle_class < 0 && !cargo_proposal)
                             continue;
                         float dx = at(base, pos), dy = at(base + 1, pos), dw = at(base + 2, pos),
                               dh = at(base + 3, pos);
@@ -256,6 +298,28 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                                         ((2 * dy - .5f + y) * stride_model - bh / 2 - py) / scale,
                                         bw / scale, bh / scale, score),
                                     w, h);
+                        // A rear view can split the model's vote between car and truck.
+                        // Require a large, road-level box and a second agreeing anchor
+                        // below the normal stand-alone score.
+                        const bool cargo=cargo_proposal && b.y+b.h>=.54f*h && has_cargo_doors(rgb,stride,b);
+                        if(cargo && (vehicle_class<0 || vehicle_class==display_vehicles::Truck)) {
+                            vehicle_class=display_vehicles::Truck;
+                            vehicle_class_score=at(base+5+display_vehicles::Truck,pos);
+                        }
+                        const bool near_car = !cargo && (vehicle_class == display_vehicles::Car || vehicle_class == display_vehicles::Truck) &&
+                            b.w >= w * .20f && b.h >= h * .16f && b.y + b.h >= h * .72f &&
+                            b.w >= b.h * .8f && b.w <= b.h * 3.4f;
+                        const float car_share=near_car && has_rear_window(rgb,stride,b) ? .34f : .65f;
+                        if (near_car && vehicle_class == display_vehicles::Truck &&
+                            at(base + 5 + display_vehicles::Car,pos) >= car_share * vehicle_class_score) {
+                            vehicle_class = display_vehicles::Car;
+                            vehicle_class_score = at(base + 5 + display_vehicles::Car,pos);
+                        }
+                        if (near_car && obj * vehicle_class_score < near_car_threshold) vehicle_class = -1;
+                        if (vehicle_class == display_vehicles::Car && !near_car &&
+                            obj * vehicle_class_score < vehicle_threshold) vehicle_class = -1;
+                        if (vehicle_class == display_vehicles::Truck && obj * vehicle_class_score < vehicle_threshold &&
+                            ((!native_crop && b.y+b.h < .58f*h) || b.w < .035f*w || b.h < .065f*h)) vehicle_class=-1;
                         if(signal_hints&&score>=.04f&&b.w>=3&&b.h>=5&&b.y+b.h*.5<h*.75)
                             signal_hints->push_back(b); // crop hints only, never published as a detection
                         bool person_top = persons && person_score >= FRONT_PERSON_CONFIDENCE_THRESHOLD;
@@ -269,6 +333,10 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                             if (!std::isfinite(other) || other<-.01f || other>1.02f)
                             { valid=false; person_top=signal_top=false; vehicle_class=-1; break; }
                             if (id!=0 && other>person_cls) person_top=false;
+                            if (near_car && id == display_vehicles::Truck && vehicle_class_score >= car_share * other)
+                                continue;
+                            if(cargo && vehicle_class==display_vehicles::Truck &&
+                               (id==2 || id==5 || id==13) && other<=1.8f*vehicle_class_score)continue;
                             if (vehicle_class >= 0 && (other > vehicle_class_score ||
                                 (id < vehicle_class && other == vehicle_class_score)))
                                 vehicle_class = -1;
@@ -302,18 +370,36 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                                  return a.box.score > b.box.score;
                              });
             for (const auto &candidate : vehicle_candidates) {
+                const bool cycle = candidate.coco_class == display_vehicles::Bicycle ||
+                                   candidate.coco_class == display_vehicles::Motorcycle;
+                const auto corroborated = [&] {
+                    return std::any_of(vehicle_candidates.begin(), vehicle_candidates.end(),
+                        [&](const VehicleDetection &other) {
+                            return &candidate != &other && other.coco_class == candidate.coco_class &&
+                                   overlap(other.box, candidate.box) > .60f;
+                        });
+                };
+                if ((candidate.coco_class == display_vehicles::Car || candidate.coco_class == display_vehicles::Truck) && candidate.box.score < .50f &&
+                    !corroborated() && !(candidate.coco_class==display_vehicles::Truck && candidate.box.score>=.07f &&
+                                        has_cargo_doors(rgb,stride,candidate.box))) continue;
                 // Below the standalone two-wheeler threshold, require a
                 // separate rider above the vehicle in this same inference.
-                if (candidate.box.score < .28f && (!persons ||
+                if (cycle && candidate.box.score < .28f && (!persons ||
+                    (candidate.box.score < .16f && !corroborated()) ||
                     std::none_of(persons->candidates.begin(), persons->candidates.end(),
                         [&](const Box &p) {
-                            return p.score >= .35f && candidate.box.y > p.y + .12f * p.h &&
+                            return p.score >= .25f && candidate.box.y > p.y + .12f * p.h &&
                                    seated_on_cycle(p, candidate.box);
                         })))
                     continue;
                 const bool duplicate = std::any_of(vehicles->begin(), vehicles->end(),
                     [&](const VehicleDetection &accepted) {
-                        return accepted.coco_class == candidate.coco_class &&
+                        const bool both_cycles = cycle && (accepted.coco_class == display_vehicles::Bicycle ||
+                                                            accepted.coco_class == display_vehicles::Motorcycle);
+                        const bool same_motor = display_vehicles::motor_vehicle(accepted.coco_class) &&
+                                                display_vehicles::motor_vehicle(candidate.coco_class) &&
+                                                overlap(accepted.box,candidate.box) > .65f;
+                        return (accepted.coco_class == candidate.coco_class || both_cycles || same_motor) &&
                                overlap(accepted.box, candidate.box) > .45f;
                     });
                 if (!duplicate)

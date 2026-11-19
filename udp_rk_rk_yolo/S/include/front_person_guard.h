@@ -15,8 +15,7 @@ static inline unsigned front_person_guard_observe(FrontPersonGuard *p, const Fro
                                                    uint64_t now, int link_ok)
 {
     const unsigned valid = d && d->session && front_person_fresh(d, now) &&
-        (d->flags & (FRONT_PERSON_VALID | FRONT_PERSON_READY | FRONT_PERSON_HDMI_DISPLAY_ONLY)) ==
-            (FRONT_PERSON_VALID | FRONT_PERSON_READY);
+        (d->flags & (FRONT_PERSON_VALID | FRONT_PERSON_READY)) == (FRONT_PERSON_VALID | FRONT_PERSON_READY);
     if (!valid || !link_ok)
     {
         p->clear_since = p->clear_latest = 0;
@@ -25,8 +24,8 @@ static inline unsigned front_person_guard_observe(FrontPersonGuard *p, const Fro
 
     const int changed = !p->have_source || d->session != p->session;
     const int32_t step = (int32_t)(d->source_id - p->source_id);
-    const int person = (d->flags & FRONT_PERSON_FOUND) != 0;
-    if (changed || now >= p->evidence_deadline || person)
+    const int occupied = (d->flags & FRONT_PERSON_FOUND) != 0;
+    if (changed || now >= p->evidence_deadline || occupied)
         p->clear_since = p->clear_latest = 0;
     if (!changed && step < 0)
     {
@@ -39,7 +38,7 @@ static inline unsigned front_person_guard_observe(FrontPersonGuard *p, const Fro
         p->session = d->session;
         p->source_id = d->source_id;
         p->evidence_deadline = front_person_deadline(d);
-        if (!person)
+        if (!occupied)
         {
             if (!p->clear_since)
                 p->clear_since = now;

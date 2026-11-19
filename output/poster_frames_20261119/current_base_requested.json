@@ -1,0 +1,8 @@
+[
+  {"shot":"city_green_29","view":"ipm","file":"01_车道线_直道","title":"车道线 · 直道"},
+  {"shot":"mountain_left_19","view":"ipm","file":"02_车道线_左弯","title":"车道线 · 左弯"},
+  {"shot":"mountain_right_19","view":"ipm","file":"03_车道线_右弯","title":"车道线 · 右弯"},
+  {"shot":"city_red_20","view":"raw","file":"04_红绿灯_红灯","title":"信号灯 · 红灯"},
+  {"shot":"city_green_76","view":"raw","file":"05_红绿灯_绿灯","title":"信号灯 · 绿灯"},
+  {"shot":"city_lines_68","view":"raw","file":"06_标线_左实右虚","title":"标线 · 左实线、右虚线"}
+]

@@ -63,5 +63,14 @@ int main(){
  assert(front_person_wire::encode(wire,d,now));front_person_wire::put(wire+4,0x00010048u);
  front_person_wire::put(wire+68,front_person_wire::checksum(wire,68));
  front_person_wire::Receiver old;assert(old.ingest(wire,sizeof wire,now,now,q) && front_person_hazard(&q));
- puts("FRONT PERSON POLICY/WIRE PASS: v1/v2/CRC, in-road/uncertain stop, full three-second no-person interval, duplicates, expiry and link loss");
+ // Older v2 senders may still set the retired bit. The result is pedestrian-only.
+ d={};d.session=801;d.flags=3;d.source_id=1;
+ front_person_set_deadline(&d,now+FRONT_PERSON_TTL_NS);
+ front_person_wire::Receiver legacy_v2;
+ assert(front_person_wire::encode(wire,d,now));
+ front_person_wire::put(wire+24,3|256);
+ front_person_wire::put(wire+68,front_person_wire::checksum(wire,68));
+ assert(legacy_v2.ingest(wire,sizeof wire,now,now,q) && q.flags==3);
+ p={};assert(front_person_guard_observe(&p,&q,now,1)==0);
+ puts("FRONT PERSON POLICY/WIRE PASS: two sources use one STOP/clear rule, 3s, cutoff, session change and expiry");
 }

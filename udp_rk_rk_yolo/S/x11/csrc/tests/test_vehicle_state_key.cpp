@@ -92,6 +92,27 @@ int main(){
      assert(selected(second, 7) && selected(second, 8));
  };
  verify_top_vehicles();
+ {
+     auto person=display_people::box(display_people::Front,180,111,16,60,.8f);
+     auto neighbour=person;neighbour.x=212;
+     pedestrian_scene::Actors people;people.count=2;people.people[0]=person;people.people[1]=neighbour;
+     people.motion[1].phase=2;
+     vehicle_scene::Geometry cycles;cycles.count=1;
+     cycles.vehicles[0]={display_vehicles::Bicycle,display_people::box(display_people::Front,173,149,35,32,.6f)};
+     vehicle_scene::hide_rider_duplicates(people,cycles);
+     assert(people.count==1 && people.people[0].x==neighbour.x && people.motion[0].phase==2);
+ }
+ {
+     vehicle_scene::Geometry scene;scene.count=2;
+     scene.vehicles[0]={display_vehicles::Car,display_people::box(display_people::Front,73,122,110,80,.42f)};
+     scene.vehicles[1]={display_vehicles::Car,display_people::box(display_people::Front,191,125,104,74,.7f)};
+     auto &foot=scene.vehicles[1].footprint;
+     auto position=pedestrian_scene::locate(foot,0,320,480);
+     const auto road=lane_cue::road_section(lane_cue::picture_rect(320,480),320,0,position.y);
+     assert(vehicle_scene::place_vehicle(scene,1,position,320,480,0)>road.center+road.half);
+     foot.flags=display_vehicles::LaneRelative;foot.gx=500;
+     assert(vehicle_scene::place_vehicle(scene,1,position,320,480,0)==road.center);
+ }
  constexpr int panel_width=300, panel_height=480;
  for(int heading:{-24,0,24}) {
      auto p=display_people::box(display_people::Front,120,90,22,43,.8f);

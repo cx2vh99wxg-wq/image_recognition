@@ -31,6 +31,9 @@ static float zero_raw, curve_gain = .25f, target_limit = 12, last_target, target
                        center_tolerance = 3;
 static int initialized, confirmed, bench, have_lane, have_frame;
 static int range_recovery, skip_first_recovery_frame;
+static int startup_calibration, startup_center_pending;
+static uint32_t calibration_session;
+static uint64_t calibration_deadline, next_calibration_request, feedback_lost_since;
 static int scheduling_changed, memory_locked, previous_policy;
 static struct sched_param previous_schedule;
 static uint64_t now_ns(void *p)
@@ -230,6 +233,10 @@ steer_result_t steering_runtime_init(int bench_mode)
     center_ready_until = 0;
     reference_file = ref;
     confirmed = have_lane = have_frame = 0;
+    const char *startup = getenv("STEERING_STARTUP_CALIBRATION");
+    startup_calibration = !bench && !model.burst_max_us && startup && !strcmp(startup, "1");
+    startup_center_pending = startup_calibration;
+    feedback_lost_since = 0;
     range_recovery = skip_first_recovery_frame = 0;
     snapshot_ns = 0;
     blocked_frame = 0;
@@ -284,7 +291,12 @@ void steering_runtime_poll_lane(int allowed, steering_lane_reader_t reader, void
 
 int steering_runtime_center_sampling(void)
 {
-    return center.status == STEERING_CENTER_SAMPLING;
+    return center.status == STEERING_CENTER_SAMPLING || center.status == STEERING_CENTER_CALIBRATING_IMU;
+}
+
+int steering_runtime_autopilot_ready(void)
+{
+    return initialized && (!startup_calibration || (!startup_center_pending && confirmed && !range_recovery));
 }
 
 int steering_runtime_center_waiting_for_touch(void)
@@ -302,17 +314,82 @@ static unsigned center_prompt(void)
     return center.status;
 }
 
+static unsigned startup_center_input(uint8_t key, int parked, int switch_off, uint64_t now)
+{
+    if (!parked || !switch_off ||
+        (center.control_ns && now - center.control_ns >= CENTER_CONTROL_TTL_NS && steering_runtime_center_sampling()))
+    {
+        steering_center_set(&center, !switch_off ? STEERING_CENTER_SWITCH_OFF : STEERING_CENTER_RETRY);
+        return center.status;
+    }
+    if (center.control_ns && now - center.control_ns >= CENTER_CONTROL_TTL_NS)
+        steering_center_set(&center, STEERING_CENTER_HOLD_STOP);
+    center.control_ns = now;
+
+    if (center.status == STEERING_CENTER_CALIBRATING_IMU)
+    {
+        steering_feedback_t feedback;
+        if (now >= calibration_deadline || (key != 0 && key != DISPLAY_MODE_ALL_CAMERAS))
+            steering_center_set(&center, STEERING_CENTER_RETRY);
+        else if (steering_feedback_read(&feedback) == STEER_OK &&
+                 feedback.session_id == calibration_session)
+        {
+            steering_center_set(&center, STEERING_CENTER_SAMPLING);
+            center.session = calibration_session;
+            center.sample_start = now;
+        }
+        else if (now >= next_calibration_request)
+        {
+            (void)steering_feedback_request_center(calibration_session);
+            next_calibration_request = now + 100000000ULL;
+        }
+        return center.status;
+    }
+    const unsigned previous = center.status;
+    steering_center_key(&center, key, now);
+    if (previous != STEERING_CENTER_SAMPLING && center.status == STEERING_CENTER_SAMPLING)
+    {
+        calibration_session = steering_feedback_center_session();
+        if (calibration_session && calibration_session != reference_session)
+        {
+            (void)steering_feedback_request_center(calibration_session);
+            next_calibration_request = now + 100000000ULL;
+            calibration_deadline = now + 25000000000ULL;
+            steering_center_set(&center, STEERING_CENTER_CALIBRATING_IMU);
+        }
+        else
+            steering_center_set(&center, STEERING_CENTER_RETRY);
+    }
+    return center.status;
+}
+
 unsigned steering_runtime_center_input(uint8_t key, int parked, int switch_off)
 {
     if (!initialized || bench || model.burst_max_us)
         return STEERING_CENTER_HIDDEN;
     const uint64_t now = steering_now_ns();
+    if (startup_center_pending)
+        return startup_center_input(key, parked, switch_off, now);
     steering_feedback_t feedback;
     if (steering_feedback_read(&feedback) != STEER_OK)
     {
+        if (startup_calibration)
+        {
+            if (!feedback_lost_since)
+                feedback_lost_since = now;
+            if (now - feedback_lost_since >= 1000000000ULL)
+            {
+                steering_runtime_cancel();
+                confirmed = 0;
+                startup_center_pending = 1;
+                steering_center_set(&center, STEERING_CENTER_HOLD_STOP);
+                return startup_center_input(key, parked, switch_off, now);
+            }
+        }
         steering_center_set(&center, center.session ? STEERING_CENTER_RETRY : STEERING_CENTER_HIDDEN);
         return range_recovery ? STEERING_CENTER_LIMIT_WAIT_IMU : center.status;
     }
+    feedback_lost_since = 0;
     if (feedback.session_id == reference_session && !range_recovery)
     {
         steering_center_set(&center, now < center_ready_until ? STEERING_CENTER_READY
@@ -410,6 +487,7 @@ static void observe_center(void)
     reference_session = center.session;
     zero_raw = raw;
     confirmed = 1;
+    startup_center_pending = 0;
     skip_first_recovery_frame = range_recovery;
     range_recovery = 0;
     center_ready_until = now + 5000000000ULL;
@@ -420,8 +498,10 @@ void steering_runtime_tick(void)
 {
     if (!initialized)
         return;
-    if (steering_runtime_center_sampling())
+    if (center.status == STEERING_CENTER_SAMPLING)
         observe_center();
+    if (startup_center_pending)
+        return;
     if (!confirmed)
     {
         if (range_recovery)

@@ -19,6 +19,7 @@ void steering_runtime_poll_lane(int allowed, steering_lane_reader_t reader, void
 unsigned steering_runtime_center_input(uint8_t key, int parked, int switch_off);
 int steering_runtime_center_waiting_for_touch(void);
 int steering_runtime_center_sampling(void);
+int steering_runtime_autopilot_ready(void);
 void steering_runtime_cancel(void);
 void steering_runtime_close(void);
 #endif

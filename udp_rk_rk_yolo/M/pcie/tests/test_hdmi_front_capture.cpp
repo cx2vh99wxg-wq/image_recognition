@@ -108,6 +108,13 @@ extern "C" int __wrap_ioctl(int fd, unsigned long request, ...)
 
 static void test_capture()
 {
+    for (auto &buffer : fake_buffers)
+        for (unsigned row=0; row<360; ++row)
+            for (unsigned x=0; x<1280; x+=4)
+            {
+                buffer[1280*row+x]=buffer[1280*row+x+2]=(row<160?50:170);
+                buffer[1280*row+x+1]=buffer[1280*row+x+3]=128;
+            }
     uint64_t captured = 0;
     hdmi_front::Capture capture("/dev/hdmi-test");
     assert(!capture.latest(1000000000, captured));
@@ -129,6 +136,13 @@ static void test_capture()
     active_signal = false;
     assert(!capture.latest(3100000000, captured));
     assert(!capture.latest(4000000000, captured));
+    active_signal = true;
+    report_dv = false;
+    std::fill(fake_buffers[0], fake_buffers[0]+sizeof(fake_buffers[0]), 128);
+    queued_frames = 1;
+    assert(!capture.latest(5000000000, captured));
+    queued_frames = 1;
+    assert(!capture.latest(5033000000, captured) && !captured);
 }
 
 static void test_metadata()
@@ -140,7 +154,7 @@ static void test_metadata()
     meta.curve_frame_id = 1;
     meta.curve_age_ms = 10;
     meta.curve_angle = 200;
-    meta.curve_confidence = CURVE_HDMI_DISPLAY_ONLY | 92;
+    meta.curve_confidence = 92;
     uint8_t curve_packet[curve_wire::SIZE];
     assert(curve_wire::encode(curve_packet, meta));
     curve_wire::Receiver curve_receiver;
@@ -152,19 +166,18 @@ static void test_metadata()
     line.session = 1;
     line.source_id = 1;
     line.left = LINE_SOLID;
-    line.diagnostic = LINE_HDMI_DISPLAY_ONLY;
     line_set_deadline(&line, now + LINE_STYLE_TTL_NS);
     uint8_t line_packet[line_wire::SIZE];
     assert(line_wire::encode(line_packet, line, now));
     line_wire::Receiver line_receiver;
     LineStyleData copy = {};
     assert(line_receiver.ingest(line_packet, sizeof(line_packet), now, now, copy));
-    assert(copy.left == LINE_SOLID && copy.diagnostic == LINE_HDMI_DISPLAY_ONLY);
+    assert(copy.left == LINE_SOLID && copy.diagnostic == 0);
 
     FrontPersonData person = {};
     person.session = 1;
     person.source_id = 1;
-    person.flags = FRONT_PERSON_READY | FRONT_PERSON_VALID | FRONT_PERSON_HDMI_DISPLAY_ONLY;
+    person.flags = FRONT_PERSON_READY | FRONT_PERSON_VALID;
     front_person_set_deadline(&person, now + FRONT_PERSON_TTL_NS);
     uint8_t person_packet[front_person_wire::SIZE];
     assert(front_person_wire::encode(person_packet, person, now));
@@ -172,13 +185,22 @@ static void test_metadata()
     FrontPersonData person_copy = {};
     assert(person_receiver.ingest(person_packet, sizeof(person_packet), now, now, person_copy));
     FrontPersonGuard guard = {};
-    assert(front_person_guard_observe(&guard, &person_copy, now, 1) == FRONT_STOP_REQUEST);
+    assert(front_person_guard_observe(&guard, &person_copy, now, 1) == 0);
+    std::vector<uint8_t> playback(320*240*3,0);
+    assert(!hdmi_front::has_scene_content(playback.data()));
+    for(int y=0;y<240;++y)for(int x=0;x<320;++x) {
+        auto *p=&playback[3*(320*y+x)];
+        p[(x/40)%3]=225;
+    }
+    assert(!hdmi_front::has_scene_content(playback.data()));
+    for(int x=0;x<320;++x)for(int y=110;y<190;++y)playback[3*(320*y+x)]=100;
+    assert(hdmi_front::has_scene_content(playback.data()));
 
     TrafficLightData traffic = {};
     traffic.session = 1;
     traffic.source_id = 1;
     traffic.state = traffic.raw_state = TRAFFIC_GREEN;
-    traffic.flags = TRAFFIC_TRACKED | TRAFFIC_BOX | TRAFFIC_CONFIRMED | TRAFFIC_MODEL_READY | TRAFFIC_HDMI_DISPLAY_ONLY;
+    traffic.flags = TRAFFIC_TRACKED | TRAFFIC_BOX | TRAFFIC_CONFIRMED | TRAFFIC_MODEL_READY;
     traffic.width = traffic.height = 20;
     traffic_set_deadline(&traffic, now + TRAFFIC_TTL_NS);
     uint8_t traffic_packet[traffic_wire::SIZE];
@@ -186,9 +208,7 @@ static void test_metadata()
     traffic_wire::Receiver traffic_receiver;
     TrafficLightData traffic_copy = {};
     assert(traffic_receiver.ingest(traffic_packet, sizeof(traffic_packet), now, now, traffic_copy));
-    assert(traffic_copy.state == TRAFFIC_GREEN && traffic_go_color(&traffic_copy, now) == TRAFFIC_UNKNOWN);
-    traffic_copy.flags &= ~TRAFFIC_HDMI_DISPLAY_ONLY;
-    assert(traffic_go_color(&traffic_copy, now) == TRAFFIC_GREEN);
+    assert(traffic_copy.state == TRAFFIC_GREEN && traffic_go_color(&traffic_copy, now) == TRAFFIC_GREEN);
 }
 #endif
 
@@ -198,8 +218,8 @@ int main()
     {
         using hdmi_front::SignalDetail;
         const unsigned stride = SignalDetail::WIDTH * 2 + 8;
-        std::vector<uint8_t> padded(stride * SignalDetail::ROWS, 0);
-        for (int row = 0; row < SignalDetail::ROWS; ++row)
+        std::vector<uint8_t> padded(stride * SignalDetail::HEIGHT, 0);
+        for (int row = 0; row < SignalDetail::HEIGHT; ++row)
             std::copy(red, red + sizeof(red), padded.data() + row * stride);
         SignalDetail detail, consumer;
         detail.capture(padded.data(), 640, 480, stride, false, false);

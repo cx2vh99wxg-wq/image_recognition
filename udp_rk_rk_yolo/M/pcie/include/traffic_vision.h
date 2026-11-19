@@ -480,7 +480,7 @@ class Admission
                now >= lane.captured && now - lane.captured <= 300000000ULL &&
                lane.duration <= 350000000ULL && now >= due_ && estimate_ <= budget_ms_ * 1000000ULL;
     }
-    void completed(uint64_t now, uint64_t duration)
+    void completed(uint64_t now, uint64_t duration, bool shed_refinements=false)
     {
         estimate_ = std::max(duration, (estimate_ * 3 + duration) / 4);
         // Faster lane models must not accidentally reduce detector frequency
@@ -489,6 +489,14 @@ class Admission
         due_ = now + interval_ms_ * 1000000ULL;
         if (duration > budget_ms_ * 1000000ULL)
         {
+            if (shed_refinements) {
+                // The caller disables HDMI regional searches after an overrun.
+                // Retry the full-frame detector on a fresh lane frame.
+                due_ += std::min<uint64_t>(duration,200000000ULL);
+                estimate_=30000000ULL;
+                violations_=0;
+                return;
+            }
             ++violations_;
             due_ = now + 10000000000ULL;
             estimate_ = 30000000ULL;

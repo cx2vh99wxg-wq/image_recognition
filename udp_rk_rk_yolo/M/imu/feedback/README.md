@@ -16,9 +16,10 @@
 `--calibration /绝对路径/安装标定.cal`。本次实板仅应用测得的静止零偏，Z 轴仍是待验证参考轴，
 服务没有 `--zero-at-center`；不能将其相对角度作为已确认的机械中位角度。
 
-服务入口`tools/start_angle_monitor.py`在每次启动时先做约12秒静止零偏校准及独立回放，
-通过后加载`calibration/startup_bias.current.cal`启动原测角程序。开机前约15秒保持静止；
-启动样本不合格时不发送有效角度。此流程不自动确认机械中位，详情见上一级README。
+服务入口 `tools/start_angle_monitor.py` 等待 S 板发往 UDP 54322 的校准请求。
+收到请求后采集约 12 秒的静止数据并运行独立回放。
+安装标定文件提供转向轴方向。本次零偏来自新采样，验证通过后用于测角，并记录在
+`calibration/startup_bias.current.cal`。测角反馈仍使用 UDP 54321，会话号跟本次请求绑定。
 
 新增只读健康检查：`python3 tools/feedback_health.py --seconds 3`，检查常驻进程和样本是否持续推进；
 不重启采集、不访问SPI、不设置零位。它是低频诊断，不替代S闭环100ms的新鲜度检查。
@@ -30,7 +31,6 @@
 旧基准、原始数据及验证报告保留；检查阈值、安装轴、ZERO_VALID及控制逻辑未改变。
 此文件是当前这块MPU的实测基准，不代替换传感器或换安装轴后的重新标定。
 
-若启动时移动导致连续拒绝、出现`Start request repeated too quickly`，先保持完全静止，
-然后执行`sudo systemctl reset-failed m-steering-imu`和`sudo systemctl start m-steering-imu`。
-开机初始约15秒仍需静止，不能仅清除systemd失败状态而忽略实际校准拒绝原因。
-恢复服务会产生新M会话；自动转向前须先把方向盘摆在机械中位，再按S端既有流程确认。
+每次启动 S 板后，停车摆正前轮，关闭 Autopilot，长按 S/R 3 秒。看到松手提示后松开，
+在 30 秒内点六路总览，保持静止直到显示 `ZERO SAVED`。M 板采样期间如果停车确认中断，
+本轮取消。采样不合格时，M 板继续等待下一次 S/R 确认。

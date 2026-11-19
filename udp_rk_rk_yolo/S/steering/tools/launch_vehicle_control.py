@@ -33,6 +33,7 @@ def main():
     if a.check:
         print(json.dumps(dict(configuration_present=config.exists(),mode=env.get('STEERING_CONTROL_MODE','legacy'),no_actuation=True)));return 0
     binary=root/'fspi/build/vehicle_control'
+    env['STEERING_STARTUP_CALIBRATION']='1'
     os.chdir(binary.parent.parent);os.execve(str(binary),[str(binary)],env)
 
 if __name__=='__main__':raise SystemExit(main())

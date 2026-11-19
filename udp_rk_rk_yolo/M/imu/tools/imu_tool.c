@@ -204,6 +204,17 @@ int imu_tool_main(int argc, char **argv, int estimate)
         }
     }
     int fpga = !strcmp(backend, "fpga");
+    uint32_t requested_session = 0;
+    const char *session_id = estimate && fpga ? getenv("STEERING_IMU_SESSION") : NULL;
+    if (session_id)
+    {
+        char *end;
+        errno = 0;
+        unsigned long value = strtoul(session_id, &end, 10);
+        if (!*session_id || *session_id == '-' || *end || errno || !value || value > UINT32_MAX)
+            return 2;
+        requested_session = (uint32_t)value;
+    }
     int idx = !strcmp(axis_name, "x")   ? 0
               : !strcmp(axis_name, "y") ? 1
               : !strcmp(axis_name, "z") ? 2
@@ -319,6 +330,8 @@ int imu_tool_main(int argc, char **argv, int estimate)
              previous_stamp = 0;
     uint32_t reported_i2c_errors = 0;
     uint32_t previous_seq = 0, session = (uint32_t)last_good ^ (uint32_t)(last_good >> 32);
+    if (requested_session)
+        session = requested_session;
     if (!session)
         session = 1;
     int have_sample = 0, zero_valid = request_zero, exit_code = 0;

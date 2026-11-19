@@ -27,6 +27,7 @@ class Service : public NpuTask
     Service &operator=(const Service &) = delete;
     void submit_raw(const uint8_t *rgb, int width, int height, uint64_t source, uint64_t captured,
                     hdmi_front::SignalDetail *detail=nullptr);
+    void mark_hdmi_preview(uint8_t *bgr, int stride_bytes, uint64_t captured) const;
     void after_lane(const LaneBudget &lane) override;
     bool overlap_capable() const override { return true; }
     void prepare_lane(const LaneBudget &lane) override;

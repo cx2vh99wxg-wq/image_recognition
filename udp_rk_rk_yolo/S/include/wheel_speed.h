@@ -6,6 +6,7 @@
 #define WHEEL_PERIOD_UNKNOWN UINT16_MAX
 #define WHEEL_PERIOD_INVALID (UINT16_MAX - 1u)
 #define WHEEL_PERIOD_MAX 30000u
+#define WHEEL_DEFAULT_PULSES_PER_TURN 1u
 
 static inline uint16_t wheel_decode_period(const uint8_t bytes[4])
 {

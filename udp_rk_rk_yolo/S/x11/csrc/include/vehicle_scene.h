@@ -3,17 +3,19 @@
 
 #include "pedestrian_scene.h"
 #include "../../../../common/perception/include/display_vehicles.h"
+#include "../../../../common/perception/include/rider_geometry.h"
 
 namespace vehicle_scene {
 
 constexpr display_vehicles::Kind kinds[] = {
-    display_vehicles::Bicycle, display_vehicles::Motorcycle, display_vehicles::Car, display_vehicles::Bus
+    display_vehicles::Bicycle, display_vehicles::Motorcycle, display_vehicles::Car, display_vehicles::Bus, display_vehicles::Truck
 };
+constexpr unsigned KIND_COUNT = sizeof(kinds)/sizeof(kinds[0]);
 constexpr unsigned MAX_CARS_AND_BUSES = 5;
 
 inline bool is_car_or_bus(uint32_t kind)
 {
-    return kind == display_vehicles::Car || kind == display_vehicles::Bus;
+    return display_vehicles::motor_vehicle(kind);
 }
 
 struct Geometry {
@@ -26,13 +28,58 @@ struct Geometry {
     }
 };
 
+inline void hide_rider_duplicates(pedestrian_scene::Actors &actors, const Geometry &vehicles,
+                                  pedestrian_scene::MotionTracker *motion = nullptr,
+                                  const display_vehicles::Snapshot *current = nullptr)
+{
+    unsigned kept = 0;
+    for (unsigned i = 0; i < actors.count; ++i) {
+        const auto &person = actors.people[i];
+        bool riding = false;
+        if (motion && person.view == display_people::Front) {
+            const uint64_t captured = current ? display_vehicles::deadline(*current) - display_vehicles::TTL : 0;
+            riding = motion->confirmed_rider(person, captured, [&](const display_people::Person &raw) {
+                if (current) for (unsigned j=0; j<current->count; ++j) {
+                    const auto &v=current->vehicles[j];
+                    if (!is_car_or_bus(v.kind) && rider_geometry::seated(raw,v.footprint)) return true;
+                }
+                return false;
+            });
+        }
+        if (person.view == display_people::Front)
+            for (unsigned j = 0; j < vehicles.count; ++j) {
+                const auto &v = vehicles.vehicles[j];
+                if (!is_car_or_bus(v.kind) && rider_geometry::seated(person, v.footprint)) {
+                    riding = true;
+                    break;
+                }
+            }
+        if (!riding) {
+            actors.people[kept] = person;
+            actors.motion[kept++] = actors.motion[i];
+        }
+    }
+    actors.count = kept;
+}
+
 class Tracker {
-    std::array<display_people::History, 4> histories_;
+    std::array<display_people::History, KIND_COUNT> histories_;
+    std::array<uint32_t,display_people::CAPACITY> cycle_kind_ = {};
+
+    static bool same_cycle(const display_people::Person &a,const display_people::Person &b)
+    {
+        const int shared=std::min(a.x+a.w,b.x+b.w)-int(std::max(a.x,b.x));
+        return display_people::overlap(a,b)>.45f ||
+            (shared>=.80*std::min(a.w,b.w) && std::max(a.w,b.w)<=1.6*std::min(a.w,b.w) &&
+             std::abs(int(a.y+a.h)-int(b.y+b.h))<=.20*std::min(a.h,b.h) &&
+             std::abs(int(2*a.x+a.w)-int(2*b.x+b.w))<=.45*std::min(a.w,b.w));
+    }
 
   public:
     Geometry update(const display_vehicles::Snapshot *snapshot, uint64_t now)
     {
-        std::array<display_people::Snapshot, 4> by_kind = {};
+        std::array<display_people::Snapshot, KIND_COUNT> by_kind = {};
+        std::array<uint32_t,display_people::CAPACITY> labels = {};
         const bool fresh = snapshot && display_vehicles::fresh(*snapshot, now) && display_vehicles::valid(*snapshot);
         if (fresh) {
             for (auto &batch : by_kind) {
@@ -43,6 +90,16 @@ class Tracker {
             }
             for (unsigned i = 0; i < snapshot->count; ++i) {
                 const auto &vehicle = snapshot->vehicles[i];
+                if (!is_car_or_bus(vehicle.kind)) {
+                    // One physical two-wheeler can alternate between the two COCO classes.
+                    auto &batch=by_kind[0];unsigned j=0;
+                    while(j<batch.count && !same_cycle(batch.people[j],vehicle.footprint)) ++j;
+                    if(j==batch.count || vehicle.footprint.quality>batch.people[j].quality) {
+                        batch.people[j]=vehicle.footprint;labels[j]=vehicle.kind;
+                        if(j==batch.count) ++batch.count;
+                    }
+                    continue;
+                }
                 for (unsigned kind = 0; kind < by_kind.size(); ++kind) {
                     if (vehicle.kind == kinds[kind]) {
                         auto &batch = by_kind[kind];
@@ -52,16 +109,30 @@ class Tracker {
             }
         }
         struct VisibleTrack { uint32_t kind; const display_people::History::Track *track; };
-        std::array<VisibleTrack, 2 * display_vehicles::CAPACITY> cars_and_buses, two_wheelers;
+        std::array<VisibleTrack, 3 * display_vehicles::CAPACITY> cars_and_buses, two_wheelers;
         unsigned car_bus_count = 0, two_wheeler_count = 0;
         for (unsigned i = 0; i < histories_.size(); ++i) {
             histories_[i].update(fresh ? &by_kind[i] : nullptr, now);
             const bool car_or_bus = is_car_or_bus(kinds[i]);
             auto &visible = car_or_bus ? cars_and_buses : two_wheelers;
             auto &count = car_or_bus ? car_bus_count : two_wheeler_count;
-            for (const auto &track : histories_[i].tracks) {
-                if (track.active)
-                    visible[count++] = {kinds[i], &track};
+            for (unsigned slot=0;slot<histories_[i].tracks.size();++slot) {
+                const auto &track=histories_[i].tracks[slot];
+                if (!track.active) continue;
+                if(car_or_bus && fresh && track.seen!=now) {
+                    bool replaced=false;
+                    for(unsigned j=0;j<snapshot->count;++j) {
+                        const auto &newer=snapshot->vehicles[j];
+                        if(is_car_or_bus(newer.kind) && newer.kind!=kinds[i] &&
+                           display_people::overlap(newer.footprint,track.raw)>.68f) {replaced=true;break;}
+                    }
+                    if(replaced)continue;
+                }
+                if(i==0 && track.seen==now) {
+                    for(unsigned j=0;j<by_kind[0].count;++j)
+                        if(!std::memcmp(&track.raw,&by_kind[0].people[j],sizeof(track.raw)))cycle_kind_[slot]=labels[j];
+                }
+                visible[count++] = {i==0 ? cycle_kind_[slot] : uint32_t(kinds[i]), &track};
             }
         }
         const auto by_identity = [](const VisibleTrack &a, const VisibleTrack &b) {
@@ -79,6 +150,10 @@ class Tracker {
             std::nth_element(cars_and_buses.begin(), cars_and_buses.begin() + shown_car_buses,
                              cars_and_buses.begin() + car_bus_count,
                              [&](const VisibleTrack &a, const VisibleTrack &b) {
+                                 const auto near=[](const display_people::Person &p){
+                                     return p.w>=70 && p.h>=42 && p.y+p.h>=182;
+                                 };
+                                 if(near(a.track->raw)!=near(b.track->raw))return near(a.track->raw);
                                  if (a.track->raw.quality != b.track->raw.quality)
                                      return a.track->raw.quality > b.track->raw.quality;
                                  return by_recency(a, b);
@@ -86,20 +161,28 @@ class Tracker {
         }
         // Keep the same draw order while confidence changes within the selected set.
         std::sort(cars_and_buses.begin(), cars_and_buses.begin() + shown_car_buses, by_identity);
-        const unsigned shown_two_wheelers = std::min(two_wheeler_count,
-                                                     display_vehicles::CAPACITY - shown_car_buses);
-        if (two_wheeler_count > shown_two_wheelers) {
-            std::partial_sort(two_wheelers.begin(), two_wheelers.begin() + shown_two_wheelers,
-                              two_wheelers.begin() + two_wheeler_count, by_recency);
-        }
+        std::stable_sort(two_wheelers.begin(), two_wheelers.begin() + two_wheeler_count, by_recency);
         Geometry result;
         const auto append = [&](const VisibleTrack &entry) {
             auto &vehicle = result.vehicles[result.count++];
             vehicle = {entry.kind, entry.track->shown};
+            if (!is_car_or_bus(entry.kind)) {
+                // A nearby cyclist crosses many pixels between detections.
+                // Keep the current wheel position when smoothing falls behind.
+                const auto &raw=entry.track->raw;
+                const int dx=int(2*raw.x+raw.w)-int(2*vehicle.footprint.x+vehicle.footprint.w);
+                if(std::abs(dx)>10)vehicle.footprint=raw;
+            }
             vehicle.footprint.quality = 0; // Confidence can change membership, never the pixels of a selected model.
         };
-        for (unsigned i = 0; i < shown_two_wheelers; ++i)
-            append(two_wheelers[i]);
+        for (unsigned i = 0; i < two_wheeler_count && result.count < display_vehicles::CAPACITY - shown_car_buses; ++i) {
+            const auto &entry = two_wheelers[i];
+            const bool duplicate = std::any_of(result.vehicles, result.vehicles + result.count,
+                [&](const display_vehicles::Vehicle &v) {
+                    return v.kind != entry.kind && display_people::overlap(v.footprint, entry.track->shown) > .45f;
+                });
+            if (!duplicate) append(entry);
+        }
         for (unsigned i = 0; i < shown_car_buses; ++i)
             append(cars_and_buses[i]);
         return result;
@@ -123,6 +206,11 @@ class Sprite {
         } else if (kind == display_vehicles::Car) {
             scale_ = 8.f;
             four_wheeler(false);
+        } else if (kind == display_vehicles::Truck) {
+            scale_ = 6.f;
+            four_wheeler(false);
+            block(0,.55f,1.04f,1.66f,.83f,2.74f,1.f,218,249);
+            block(0,-1.64f,.93f,.55f,.89f,1.85f,.82f,162,239);
         } else {
             scale_ = 6.f;
             four_wheeler(true);
@@ -283,10 +371,11 @@ class Sprite {
 inline const Sprite &sprite(uint32_t kind)
 {
     static const Sprite bicycle(display_vehicles::Bicycle), motorcycle(display_vehicles::Motorcycle),
-                        car(display_vehicles::Car), bus(display_vehicles::Bus);
+                        car(display_vehicles::Car), bus(display_vehicles::Bus), truck(display_vehicles::Truck);
     if (kind == display_vehicles::Bicycle) return bicycle;
     if (kind == display_vehicles::Motorcycle) return motorcycle;
     if (kind == display_vehicles::Bus) return bus;
+    if (kind == display_vehicles::Truck) return truck;
     return car;
 }
 
@@ -296,6 +385,31 @@ inline double vehicle_x(const display_people::Person &p, const pedestrian_scene:
     if (!(p.flags & display_vehicles::LaneRelative)) return placed.x;
     const auto section=lane_cue::road_section(lane_cue::picture_rect(width,height),width,angle,placed.y);
     return section.center + section.half*(2.*p.gx/1000.-1.);
+}
+
+// When a close lead car hides the markings, its disjoint neighbour should
+// still appear beside it. Measured lane coordinates always take precedence.
+inline double place_vehicle(const Geometry &scene, unsigned index, const pedestrian_scene::Placement &position,
+                            int width, int height, int angle)
+{
+    const auto &v = scene.vehicles[index];
+    const auto &p = v.footprint;
+    double x = vehicle_x(p, position, width, height, angle);
+    if (!is_car_or_bus(v.kind) || (p.flags & display_vehicles::LaneRelative) ||
+        p.w < 50 || p.y + p.h < 177 || (p.x <= 160 && p.x+p.w >= 160)) return x;
+    const auto road = lane_cue::road_section(lane_cue::picture_rect(width,height),width,angle,position.y);
+    for (unsigned i = 0; i < scene.count; ++i) {
+        const auto &lead = scene.vehicles[i].footprint;
+        if (!is_car_or_bus(scene.vehicles[i].kind) || lead.w < 70 || lead.h < 45 ||
+            lead.x > 160 || lead.x + lead.w < 160 ||
+            std::abs(int(lead.y+lead.h)-int(p.y+p.h)) > 24) continue;
+        const int margin = int(std::min(lead.w,p.w) / 8);
+        if (int(p.x) >= int(lead.x+lead.w)-margin)
+            return std::max(x,road.center+1.5*road.half);
+        if (int(p.x+p.w) <= int(lead.x)+margin)
+            return std::min(x,road.center-1.5*road.half);
+    }
+    return x;
 }
 
 inline void draw(uint32_t *pixels, int stride, int width, int height, const Geometry &scene, int angle)
@@ -317,11 +431,11 @@ inline void draw(uint32_t *pixels, int stride, int width, int height, const Geom
         const auto &p = positions[index];
         const auto &s = sprite(vehicle.kind);
         const bool wider_spacing = is_car_or_bus(vehicle.kind);
-        const double size = vehicle.kind == display_vehicles::Bus ? 1.18 :
+        const double size = (vehicle.kind == display_vehicles::Bus || vehicle.kind == display_vehicles::Truck) ? 1.18 :
                             vehicle.kind == display_vehicles::Car ? .98 : .80;
         const int h = std::max(14, int(std::lround(p.height * size * 1.44)));
         const int w = std::max(1, h * (s.right - s.left) / (s.bottom - s.top));
-        const double x = vehicle_x(vehicle.footprint,p,width,height,angle);
+        const double x = place_vehicle(scene,index,p,width,height,angle);
         int left = int(std::lround(x)) - w / 2;
         if (wider_spacing && w <= width)
             left = std::max(0, std::min(width - w, left));

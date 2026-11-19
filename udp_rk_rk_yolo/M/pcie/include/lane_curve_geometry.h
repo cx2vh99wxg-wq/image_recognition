@@ -77,7 +77,7 @@ inline EgoCurve fit_ego_centers(const double (&centers)[5], double span, double 
     const double curvature = std::abs(2. * quadratic) /
                              (step * step * tangent_length * tangent_length * tangent_length);
     out.curvature = (float)curvature;
-    constexpr double low_curvature_limit = .312; // equivalent to 0.0013 px^-1 at 240 px height
+    constexpr double low_curvature_limit = .168; // 0.0007 px^-1 at 240 px height
     const bool low_curvature = curvature * height <= low_curvature_limit;
     constexpr double degrees_per_radian = 57.29577951308232;
     constexpr double low_curvature_turn_deg = 25.;

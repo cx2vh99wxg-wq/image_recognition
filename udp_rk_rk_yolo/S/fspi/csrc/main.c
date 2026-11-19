@@ -534,7 +534,7 @@ static int poll_autopilot_gate(AutopilotGate *gate, uint64_t now, int control_ok
             gate->inhibit_until_off = 0;
         return 0;
     }
-    if (!(status & AUTOPILOT_REQUEST_ON))
+    if (!(status & AUTOPILOT_REQUEST_ON) || !steering_runtime_autopilot_ready())
         return 0;
 
     uint8_t counter = (gate->counter + 1) & 0x0f;

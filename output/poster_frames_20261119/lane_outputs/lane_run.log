@@ -1,0 +1,44 @@
+正在初始化YOLOPv2引擎（车道线和可行驶区域检测）...
+模型输入数量: 1, 输出数量: 2
+输出 0: drivable
+输出 1: lane
+模型输入尺寸: 320x240
+输出缓冲区: 车道线=307200 bytes, 可行驶区域=614400 bytes
+YOLOPv2引擎初始化成功
+/userdata/poster_frames_20261119/outputs/112507_01.ppm lane_pixels=2845
+/userdata/poster_frames_20261119/outputs/112507_05.ppm lane_pixels=3193
+/userdata/poster_frames_20261119/outputs/113343_01.ppm lane_pixels=1475
+/userdata/poster_frames_20261119/outputs/113343_03.ppm lane_pixels=2338
+/userdata/poster_frames_20261119/outputs/113343_07.ppm lane_pixels=285
+/userdata/poster_frames_20261119/outputs/113452_02.ppm lane_pixels=1197
+/userdata/poster_frames_20261119/outputs/113539_02.ppm lane_pixels=2145
+/userdata/poster_frames_20261119/outputs/113539_08.ppm lane_pixels=5497
+/userdata/poster_frames_20261119/outputs/mountain_001.ppm lane_pixels=2330
+/userdata/poster_frames_20261119/outputs/mountain_002.ppm lane_pixels=1903
+/userdata/poster_frames_20261119/outputs/mountain_003.ppm lane_pixels=1742
+/userdata/poster_frames_20261119/outputs/mountain_004.ppm lane_pixels=2415
+/userdata/poster_frames_20261119/outputs/mountain_005.ppm lane_pixels=2260
+/userdata/poster_frames_20261119/outputs/mountain_006.ppm lane_pixels=1900
+/userdata/poster_frames_20261119/outputs/mountain_007.ppm lane_pixels=1986
+/userdata/poster_frames_20261119/outputs/mountain_008.ppm lane_pixels=2895
+/userdata/poster_frames_20261119/outputs/mountain_009.ppm lane_pixels=2107
+/userdata/poster_frames_20261119/outputs/mountain_010.ppm lane_pixels=3146
+/userdata/poster_frames_20261119/outputs/mountain_011.ppm lane_pixels=2599
+/userdata/poster_frames_20261119/outputs/mountain_012.ppm lane_pixels=2584
+/userdata/poster_frames_20261119/outputs/mountain_013.ppm lane_pixels=3666
+/userdata/poster_frames_20261119/outputs/mountain_014.ppm lane_pixels=3593
+/userdata/poster_frames_20261119/outputs/mountain_015.ppm lane_pixels=3232
+/userdata/poster_frames_20261119/outputs/mountain_016.ppm lane_pixels=2353
+/userdata/poster_frames_20261119/outputs/mountain_017.ppm lane_pixels=2566
+/userdata/poster_frames_20261119/outputs/mountain_018.ppm lane_pixels=2324
+/userdata/poster_frames_20261119/outputs/mountain_019.ppm lane_pixels=3645
+/userdata/poster_frames_20261119/outputs/mountain_020.ppm lane_pixels=3338
+/userdata/poster_frames_20261119/outputs/mountain_021.ppm lane_pixels=2905
+/userdata/poster_frames_20261119/outputs/mountain_022.ppm lane_pixels=2587
+/userdata/poster_frames_20261119/outputs/mountain_023.ppm lane_pixels=2066
+/userdata/poster_frames_20261119/outputs/mountain_024.ppm lane_pixels=2513
+/userdata/poster_frames_20261119/outputs/mountain_025.ppm lane_pixels=2018
+/userdata/poster_frames_20261119/outputs/mountain_026.ppm lane_pixels=2122
+/userdata/poster_frames_20261119/outputs/mountain_027.ppm lane_pixels=3298
+/userdata/poster_frames_20261119/outputs/mountain_028.ppm lane_pixels=2543
+/userdata/poster_frames_20261119/outputs/mountain_029.ppm lane_pixels=2472

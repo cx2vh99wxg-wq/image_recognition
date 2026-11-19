@@ -5,7 +5,8 @@
 
 namespace display_vehicles {
 
-enum Kind : uint32_t { Bicycle = 1, Car = 2, Motorcycle = 3, Bus = 5 };
+enum Kind : uint32_t { Bicycle = 1, Car = 2, Motorcycle = 3, Bus = 5, Truck = 7 };
+inline bool motor_vehicle(unsigned kind) { return kind == Car || kind == Bus || kind == Truck; }
 // Preserve the existing wire bit for road-relative lateral positions. For a
 // front vehicle gx=0/1000 are the measured left/right ego-lane markings.
 constexpr uint32_t LaneRelative = display_people::RoadAligned;
@@ -49,7 +50,7 @@ inline bool valid(const Snapshot &s)
         return false;
     for (unsigned i = 0; i < s.count; ++i) {
         const auto &v = s.vehicles[i];
-        if (v.kind != Bicycle && v.kind != Car && v.kind != Motorcycle && v.kind != Bus)
+        if (v.kind != Bicycle && v.kind != Motorcycle && !motor_vehicle(v.kind))
             return false;
         const auto &p = v.footprint;
         if (p.view != display_people::Front || p.x >= 320 || p.y >= 240 || !p.w || !p.h ||

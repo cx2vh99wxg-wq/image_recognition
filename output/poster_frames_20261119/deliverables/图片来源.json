@@ -1,0 +1,299 @@
+[
+  {
+    "file": "车道线识别/左弯/01_左弯_中弯_2.00秒.png",
+    "original": "车道线原始尺寸/01_左弯_中弯_2.00秒.png",
+    "group": "左弯",
+    "description": "中弯",
+    "name": "mountain_001",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 2
+  },
+  {
+    "file": "车道线识别/左弯/02_左弯_中弯_6.00秒.png",
+    "original": "车道线原始尺寸/02_左弯_中弯_6.00秒.png",
+    "group": "左弯",
+    "description": "中弯",
+    "name": "mountain_002",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 6
+  },
+  {
+    "file": "车道线识别/左弯/03_左弯_中弯_10.00秒.png",
+    "original": "车道线原始尺寸/03_左弯_中弯_10.00秒.png",
+    "group": "左弯",
+    "description": "中弯",
+    "name": "mountain_003",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 10
+  },
+  {
+    "file": "车道线识别/左弯/04_左弯_急弯_30.00秒.png",
+    "original": "车道线原始尺寸/04_左弯_急弯_30.00秒.png",
+    "group": "左弯",
+    "description": "急弯",
+    "name": "mountain_008",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 30
+  },
+  {
+    "file": "车道线识别/左弯/05_左弯_急弯_34.00秒.png",
+    "original": "车道线原始尺寸/05_左弯_急弯_34.00秒.png",
+    "group": "左弯",
+    "description": "急弯",
+    "name": "mountain_009",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 34
+  },
+  {
+    "file": "车道线识别/左弯/06_左弯_急弯_38.00秒.png",
+    "original": "车道线原始尺寸/06_左弯_急弯_38.00秒.png",
+    "group": "左弯",
+    "description": "急弯",
+    "name": "mountain_010",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 38
+  },
+  {
+    "file": "车道线识别/左弯/07_左弯_急弯_62.00秒.png",
+    "original": "车道线原始尺寸/07_左弯_急弯_62.00秒.png",
+    "group": "左弯",
+    "description": "急弯",
+    "name": "mountain_016",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 62
+  },
+  {
+    "file": "车道线识别/左弯/08_左弯_中弯_66.00秒.png",
+    "original": "车道线原始尺寸/08_左弯_中弯_66.00秒.png",
+    "group": "左弯",
+    "description": "中弯",
+    "name": "mountain_017",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 66
+  },
+  {
+    "file": "车道线识别/右弯/09_右弯_缓弯_22.00秒.png",
+    "original": "车道线原始尺寸/09_右弯_缓弯_22.00秒.png",
+    "group": "右弯",
+    "description": "缓弯",
+    "name": "mountain_006",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 22
+  },
+  {
+    "file": "车道线识别/右弯/10_右弯_中弯_26.00秒.png",
+    "original": "车道线原始尺寸/10_右弯_中弯_26.00秒.png",
+    "group": "右弯",
+    "description": "中弯",
+    "name": "mountain_007",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 26
+  },
+  {
+    "file": "车道线识别/右弯/11_右弯_中弯_46.00秒.png",
+    "original": "车道线原始尺寸/11_右弯_中弯_46.00秒.png",
+    "group": "右弯",
+    "description": "中弯",
+    "name": "mountain_012",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 46
+  },
+  {
+    "file": "车道线识别/右弯/12_右弯_急弯_50.00秒.png",
+    "original": "车道线原始尺寸/12_右弯_急弯_50.00秒.png",
+    "group": "右弯",
+    "description": "急弯",
+    "name": "mountain_013",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 50
+  },
+  {
+    "file": "车道线识别/右弯/13_右弯_急弯_54.00秒.png",
+    "original": "车道线原始尺寸/13_右弯_急弯_54.00秒.png",
+    "group": "右弯",
+    "description": "急弯",
+    "name": "mountain_014",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 54
+  },
+  {
+    "file": "车道线识别/右弯/14_右弯_中弯_70.00秒.png",
+    "original": "车道线原始尺寸/14_右弯_中弯_70.00秒.png",
+    "group": "右弯",
+    "description": "中弯",
+    "name": "mountain_018",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 70
+  },
+  {
+    "file": "车道线识别/右弯/15_右弯_急弯_74.00秒.png",
+    "original": "车道线原始尺寸/15_右弯_急弯_74.00秒.png",
+    "group": "右弯",
+    "description": "急弯",
+    "name": "mountain_019",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 74
+  },
+  {
+    "file": "车道线识别/右弯/16_右弯_中弯_78.00秒.png",
+    "original": "车道线原始尺寸/16_右弯_中弯_78.00秒.png",
+    "group": "右弯",
+    "description": "中弯",
+    "name": "mountain_020",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 78
+  },
+  {
+    "file": "车道线识别/右弯/17_右弯_缓弯_82.00秒.png",
+    "original": "车道线原始尺寸/17_右弯_缓弯_82.00秒.png",
+    "group": "右弯",
+    "description": "缓弯",
+    "name": "mountain_021",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 82
+  },
+  {
+    "file": "车道线识别/右弯/18_右弯_急弯_110.00秒.png",
+    "original": "车道线原始尺寸/18_右弯_急弯_110.00秒.png",
+    "group": "右弯",
+    "description": "急弯",
+    "name": "mountain_028",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 110
+  },
+  {
+    "file": "车道线识别/过渡弯道/19_过渡弯道_山路_14.00秒.png",
+    "original": "车道线原始尺寸/19_过渡弯道_山路_14.00秒.png",
+    "group": "过渡弯道",
+    "description": "山路",
+    "name": "mountain_004",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 14
+  },
+  {
+    "file": "车道线识别/过渡弯道/20_过渡弯道_山路_18.00秒.png",
+    "original": "车道线原始尺寸/20_过渡弯道_山路_18.00秒.png",
+    "group": "过渡弯道",
+    "description": "山路",
+    "name": "mountain_005",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 18
+  },
+  {
+    "file": "车道线识别/过渡弯道/21_过渡弯道_山路_42.00秒.png",
+    "original": "车道线原始尺寸/21_过渡弯道_山路_42.00秒.png",
+    "group": "过渡弯道",
+    "description": "山路",
+    "name": "mountain_011",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 42
+  },
+  {
+    "file": "车道线识别/过渡弯道/22_过渡弯道_山路_58.00秒.png",
+    "original": "车道线原始尺寸/22_过渡弯道_山路_58.00秒.png",
+    "group": "过渡弯道",
+    "description": "山路",
+    "name": "mountain_015",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 58
+  },
+  {
+    "file": "车道线识别/过渡弯道/23_过渡弯道_山路_86.00秒.png",
+    "original": "车道线原始尺寸/23_过渡弯道_山路_86.00秒.png",
+    "group": "过渡弯道",
+    "description": "山路",
+    "name": "mountain_022",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 86
+  },
+  {
+    "file": "车道线识别/过渡弯道/24_过渡弯道_山路_90.00秒.png",
+    "original": "车道线原始尺寸/24_过渡弯道_山路_90.00秒.png",
+    "group": "过渡弯道",
+    "description": "山路",
+    "name": "mountain_023",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 90
+  },
+  {
+    "file": "车道线识别/过渡弯道/25_过渡弯道_山路_94.00秒.png",
+    "original": "车道线原始尺寸/25_过渡弯道_山路_94.00秒.png",
+    "group": "过渡弯道",
+    "description": "山路",
+    "name": "mountain_024",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 94
+  },
+  {
+    "file": "车道线识别/过渡弯道/26_过渡弯道_山路_98.00秒.png",
+    "original": "车道线原始尺寸/26_过渡弯道_山路_98.00秒.png",
+    "group": "过渡弯道",
+    "description": "山路",
+    "name": "mountain_025",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 98
+  },
+  {
+    "file": "车道线识别/过渡弯道/27_过渡弯道_山路_106.00秒.png",
+    "original": "车道线原始尺寸/27_过渡弯道_山路_106.00秒.png",
+    "group": "过渡弯道",
+    "description": "山路",
+    "name": "mountain_027",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 106
+  },
+  {
+    "file": "车道线识别/过渡弯道/28_过渡弯道_山路_114.00秒.png",
+    "original": "车道线原始尺寸/28_过渡弯道_山路_114.00秒.png",
+    "group": "过渡弯道",
+    "description": "山路",
+    "name": "mountain_029",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\20261119-0716-09.8896139.mp4",
+    "seconds": 114
+  },
+  {
+    "file": "车道线识别/直道与路口/29_直道与路口_城市直道_多车道_2.81秒.png",
+    "original": "车道线原始尺寸/29_直道与路口_城市直道_多车道_2.81秒.png",
+    "group": "直道与路口",
+    "description": "城市直道_多车道",
+    "name": "112507_01",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\video_20260929_112507.mp4",
+    "seconds": 2.811
+  },
+  {
+    "file": "车道线识别/直道与路口/30_直道与路口_城市直道_前方车辆_1.37秒.png",
+    "original": "车道线原始尺寸/30_直道与路口_城市直道_前方车辆_1.37秒.png",
+    "group": "直道与路口",
+    "description": "城市直道_前方车辆",
+    "name": "113343_01",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\video_20260929_113343.mp4",
+    "seconds": 1.366
+  },
+  {
+    "file": "车道线识别/直道与路口/31_直道与路口_城市直道_两侧车辆_6.83秒.png",
+    "original": "车道线原始尺寸/31_直道与路口_城市直道_两侧车辆_6.83秒.png",
+    "group": "直道与路口",
+    "description": "城市直道_两侧车辆",
+    "name": "113343_03",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\video_20260929_113343.mp4",
+    "seconds": 6.828
+  },
+  {
+    "file": "车道线识别/直道与路口/32_直道与路口_城市直道_车辆骑行者_2.69秒.png",
+    "original": "车道线原始尺寸/32_直道与路口_城市直道_车辆骑行者_2.69秒.png",
+    "group": "直道与路口",
+    "description": "城市直道_车辆骑行者",
+    "name": "113452_02",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\video_20260929_113452.mp4",
+    "seconds": 2.695
+  },
+  {
+    "file": "车道线识别/直道与路口/33_直道与路口_城市路口_绿灯_25.30秒.png",
+    "original": "车道线原始尺寸/33_直道与路口_城市路口_绿灯_25.30秒.png",
+    "group": "直道与路口",
+    "description": "城市路口_绿灯",
+    "name": "112507_05",
+    "source": "D:\\BaiduNetdiskDownload\\紫光同创杯赛题三参考素材\\video_20260929_112507.mp4",
+    "seconds": 25.3
+  }
+]

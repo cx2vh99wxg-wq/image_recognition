@@ -496,7 +496,7 @@ static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::View
 {
     VehicleLayerState state = snapshot_vehicle_state();
     state.front_person = status.front_person;
-    state.front_stop = status.front_person; // visual risk, independent of actuator enable
+    state.front_stop = status.front_person;
     if (state.front_person) state.blink = blink_state;
     state.left_style = status.line_left;
     state.right_style = status.line_right;
@@ -563,6 +563,9 @@ static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::View
                 if(state.actors.count<24)state.actors.people[state.actors.count++]=actor;
             }
         }
+        // Keep warnings derived from the original people. Collapse reclassified held avatars in the visual layer.
+        vehicle_scene::hide_rider_duplicates(state.actors,state.vehicles,&front_motion,
+            have_vehicles && display_vehicles::fresh(vehicles,now) ? &vehicles : nullptr);
     }
     if(state.person)for(unsigned i=0;i<state.actors.count;++i)
         if(state.actors.people[i].view!=display_people::Front)state.warning_views|=1u<<state.actors.people[i].view;
@@ -1428,9 +1431,11 @@ int present_dashboard(RenderEngine *engine)
     static FrontPersonIPC front_ipc = {-1, nullptr};
     FrontPersonData front = {};
     if (!engine->headless && !front_person_ipc_open(&front_ipc,0) && !front_person_ipc_read(&front_ipc,&front)) {
-        const bool found=front_person_fresh(&front,display_clock_ns()) &&
+        const bool fresh=front_person_fresh(&front,display_clock_ns());
+        const bool found=fresh &&
                          (front.flags & (FRONT_PERSON_VALID|FRONT_PERSON_FOUND)) == 5;
         status.front_person = found && front_person_hazard(&front);
+        status.front_rider = found && (front.flags & FRONT_RIDERS_ONLY);
         status.front_person_outside=found && !status.front_person;
         status.front_road_unknown=found && (front.flags & FRONT_PERSON_ROI_MODE) &&
             (!(front.flags & FRONT_PERSON_ROAD_VALID) || (front.flags & FRONT_PERSON_PATH_UNKNOWN));
@@ -1449,10 +1454,11 @@ int present_dashboard(RenderEngine *engine)
             const uint32_t center_ms = (uint32_t)(center >> 32);
             if (center_ms && monotonic_ms - center_ms <= 500)
                 status.steering_center_status = (uint32_t)center;
-            // 110 mm nominal rear-wheel radius and four equally spaced magnets.
+            // 110 mm nominal rear-wheel radius and one magnet.
             static const unsigned circumference =
                 wheel_setting("VISION_WHEEL_CIRCUMFERENCE_MM", 691, 0, 10000);
-            static const unsigned pulses = wheel_setting("VISION_WHEEL_PULSES_PER_TURN", 4, 1, 128);
+            static const unsigned pulses = wheel_setting("VISION_WHEEL_PULSES_PER_TURN",
+                                                         WHEEL_DEFAULT_PULSES_PER_TURN, 1, 128);
             const uint64_t wheel =
                 __atomic_load_n(&display_control_shm->wheel_snapshot, __ATOMIC_ACQUIRE);
             const uint32_t wheel_ms = (uint32_t)(wheel >> 32);

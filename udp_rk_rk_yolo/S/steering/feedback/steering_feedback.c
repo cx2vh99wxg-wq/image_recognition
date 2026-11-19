@@ -7,6 +7,7 @@
 #ifndef _WIN32
 #include <arpa/inet.h>
 #include <errno.h>
+#include <sys/random.h>
 #include <sys/socket.h>
 #endif
 static feedback_tracker_t tracker;
@@ -15,6 +16,33 @@ static int ready;
 static int fd = -1;
 static uint32_t source_address;
 #endif
+uint32_t steering_feedback_center_session(void)
+{
+    uint32_t session = 0;
+#ifndef _WIN32
+    if (getrandom(&session, sizeof(session), GRND_NONBLOCK) != sizeof(session))
+        return 0;
+#endif
+    return session;
+}
+
+int steering_feedback_request_center(uint32_t session)
+{
+#ifdef _WIN32
+    (void)session;
+    return -1;
+#else
+    if (fd < 0 || !session)
+        return -1;
+    struct sockaddr_in peer = {.sin_family = AF_INET, .sin_port = htons(54322)};
+    peer.sin_addr.s_addr = source_address;
+    uint8_t request[8] = {'S', 'C', 'Z', '1'};
+    session = htonl(session);
+    memcpy(request + 4, &session, sizeof(session));
+    return sendto(fd, request, sizeof(request), MSG_DONTWAIT,
+                  (struct sockaddr *)&peer, sizeof(peer)) == sizeof(request) ? 0 : -1;
+#endif
+}
 void steering_feedback_close(void)
 {
 #ifndef _WIN32

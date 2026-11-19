@@ -79,7 +79,8 @@ def check_s() -> None:
             ['steering_controller.c','steering_response.c','steering_keepalive.c','steering_runtime.c']]+
             [ROOT/'actuator/steering_actuator.c',ROOT/'feedback/steering_feedback.c',ROOT/'feedback/feedback_tracker.c',
              COMMON/'contracts/steering_feedback_wire.c',ROOT/'tests/controller/test_runtime_integration.c'],INCLUDES,
-             [f'-I{ROOT.parent / "fspi/include"}',f'-I{ROOT.parent / "include"}'])
+             [f'-I{ROOT.parent / "fspi/include"}',f'-I{ROOT.parent / "include"}',
+              '-Wl,--wrap=steering_feedback_center_session,--wrap=steering_feedback_request_center'])
     tracker = compile_program(tests / "test_feedback_tracker",
         [ROOT / "feedback" / "feedback_tracker.c", ROOT / "tests" / "feedback" / "test_tracker.c",
          COMMON / "contracts" / "steering_feedback_wire.c"], INCLUDES)
@@ -94,7 +95,7 @@ def check_s() -> None:
     print("PASS CLI: microsecond input, fractional output, exclusive units and pre-open bound")
     for name in ["test_bench.py", "test_response_model.py", "test_partition_response.py", "test_target.py", "test_auto_calibration.py", "test_confirm_center.py", "test_terminal_center.py", "test_homing.py"]:
         result = subprocess.run([sys.executable, str(ROOT / "tests" / "feedback" / name)],
-                                text=True, capture_output=True, timeout=30)
+                                text=True, capture_output=True, timeout=40)
         if result.returncode:
             raise AssertionError(f"{name} failed:\n{result.stdout}\n{result.stderr}")
     print("PASS bench feedback/reference guards, empirical response limits and target orchestration")

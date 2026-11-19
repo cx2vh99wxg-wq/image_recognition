@@ -11,6 +11,7 @@ struct RoadLight {
     int x=0,y=0,partner_x=-1,partner_y=-1;
     double radius=0;
     int chroma=0;
+    bool rimmed=false;
 };
 
 inline unsigned lamp_chroma(const uint8_t *p)
@@ -31,7 +32,7 @@ inline bool same_road_head(const RoadLight &a,const RoadLight &b)
 }
 
 inline RoadLight paired_road_light(const uint8_t *rgb,int w,int h,int stride,
-                                   const RoadLight *anchor=nullptr,bool *saw_pair=nullptr)
+                                   const RoadLight *anchor=nullptr,bool *saw_pair=nullptr,bool framed=false)
 {
     RoadLight result;
     if(saw_pair)*saw_pair=false;
@@ -57,7 +58,7 @@ inline RoadLight paired_road_light(const uint8_t *rgb,int w,int h,int stride,
             }
         }
         const int bw=xmax-xmin+1,bh=ymax-ymin+1;
-        if(bw>14*w/320 || bh>14*w/320 || std::max(bw,bh)>3*std::min(bw,bh)) continue;
+        if(bw>14*w/320 || bh>14*w/320 || std::max(bw,bh)>(framed?4:3)*std::min(bw,bh)) continue;
         int chroma=0,peak=0;
         for (const int pixel : component) {
             const uint8_t *p=rgb+(pixel/w)*stride+(pixel%w)*3;
@@ -72,6 +73,39 @@ inline RoadLight paired_road_light(const uint8_t *rgb,int w,int h,int stride,
         const int x=int(std::lround(double(sx)/component.size())), y=int(std::lround(double(sy)/component.size()));
         const double radius=std::max(.85,(bw+bh)*.25);
         const int side=state==TRAFFIC_RED?1:-1;
+        // HDMI chroma subsampling and the aspect conversion can turn a round
+        // lens into a tall core. Measure its horizontal housing independently
+        // of the apparent radius. Look for two pale rims around a dark body.
+        if (framed && state==TRAFFIC_GREEN && chroma>=65 && peak>=165) {
+            RoadLight best_shell;
+            int best_contrast=0;
+            for(int length=std::max(5,2*bw);length<=std::min(48,10*std::max(bw,bh));++length) {
+                if(x-length<1) break;
+                for(int half=std::max(2,bh/2);half<=std::min(13,bh+3);++half) {
+                    if(y-half<1 || y+half>=bottom || length<2*half || length>6*half) continue;
+                    int matches=0,sum=0;
+                    for(int i=0;i<5;++i) {
+                        const int xx=x-(length*(4+i*3))/18;
+                        const int body=lum(xx,y);
+                        auto edge_at=[&](int row) {return std::min(rgb[row*stride+xx*3],std::min(rgb[row*stride+xx*3+1],rgb[row*stride+xx*3+2]));};
+                        const int edge=std::min(std::max(edge_at(y-half),edge_at(y-half+1)),
+                                                std::max(edge_at(y+half),edge_at(y+half-1)));
+                        if(body<122 && edge>body+23) {++matches;sum+=edge-body;}
+                    }
+                    if(matches<4 || sum<=best_contrast)continue;
+                    best_contrast=sum;
+                    best_shell.x=x;best_shell.y=y;best_shell.radius=std::max(1.,length/5.8);
+                    best_shell.state=state;best_shell.chroma=chroma;best_shell.rimmed=true;
+                    best_shell.box=clipped(Box(x-length,y-half,length+bw*.5f+1,2*half+1,.7f),w,h);
+                }
+            }
+            if(best_shell.state) {
+                if(heads.size()>=128)return {};
+                heads.push_back(best_shell);
+                continue;
+            }
+        }
+        if(framed)continue;
         // Sample both unlit lamp positions and the space between them. Compare
         // the dark shell with its surroundings above AND below, not the lamp hue.
         for(double factor:{1.,1.45,2.0,2.8,.7}) {
@@ -121,9 +155,10 @@ inline RoadLight paired_road_light(const uint8_t *rgb,int w,int h,int stride,
         const double r=std::max(a.radius,b.radius), dx=std::abs(a.x-b.x),dy=std::abs(a.y-b.y);
         // An oblique approach tilts both housings and their connecting bar.
         // Require two saturated cores before searching the wider slope range.
-        const bool bright_pair = std::min(a.chroma,b.chroma)>=92;
+        const bool rims=a.rimmed && b.rimmed;
+        const bool bright_pair = rims || std::min(a.chroma,b.chroma)>=92;
         const double tilt = bright_pair ? .18 : .06;
-        if(std::min(a.radius,b.radius)<.62*r || dx<9*r || dx>31*r ||
+        if(std::min(a.radius,b.radius)<(rims?.40:.62)*r || dx<(rims?6:9)*r || dx>(rims?44:31)*r ||
            dy>std::max(1.5,std::min(r*(bright_pair?3.:1.5),dx*tilt))) continue;
         // An overhead bar has a continuous horizontal edge BETWEEN the two
         // housings. Repeating windows, leaves and colored car trim also produce
@@ -143,7 +178,7 @@ inline RoadLight paired_road_light(const uint8_t *rgb,int w,int h,int stride,
                 const int delta=2*lum(x,y)-lum(x,y-offset)-lum(x,y+offset);
                 bright+=delta>=25;shadow+=delta<=-25;
             }
-            bar=std::max(bright,shadow)>=7;
+            bar=std::max(bright,shadow)>=(rims?6:7);
         }
         if(!bar)continue;
         if(a.state!=b.state){conflict=true;continue;}
@@ -160,6 +195,32 @@ inline RoadLight paired_road_light(const uint8_t *rgb,int w,int h,int stride,
     if(conflict)return {};
     if(result.state){if(saw_pair)*saw_pair=true;return result;}
     if(anchor)for(const auto &head:heads)if(same_road_head(*anchor,head))return head;
+    if(framed) for(const auto &head:heads) {
+        // A pole may obscure one housing. Require the remaining housing to
+        // attach to a long, pale crossbar with a dark edge on both sides.
+        const int length=std::max(6,int(head.box.w));
+        const int gap=std::max(2,int(head.box.h*.42f));
+        if(head.y-2*gap<0 || head.y+2*gap>=bottom) continue;
+        int best_support=0;
+        for(int dir:{-1,1}) for(int shift=-2;shift<=2;++shift) {
+            int support=0;
+            for(int i=0;i<14;++i) {
+                const int x=head.x+dir*(length+(i*length)/7);
+                const int y=head.y+shift;
+                if(x<0 || x>=w || y-gap<0 || y+gap>=bottom)continue;
+                const auto p=rgb+y*stride+3*x;
+                const int pale=std::min(p[0],std::min(p[1],p[2]));
+                const int contrast=lum(x,y)-std::max(lum(x,y-gap),lum(x,y+gap));
+                support+=pale>=135 && contrast>=20;
+            }
+            best_support=std::max(best_support,support);
+        }
+        if(best_support>=10 && head.chroma>=85 && head.chroma*best_support>best) {
+            best=head.chroma*best_support;result=head;
+        }
+    }
+    if(result.state && saw_pair)*saw_pair=true;
+    if(result.state)return result;
     return {};
 }
 
@@ -167,6 +228,39 @@ class PairedRoadLightTracker {
     RoadLight previous_;
     uint64_t pair_ns_=0;
     bool confirmed_=false;
+    RoadLight framed_previous_;
+    unsigned framed_hits_=0;
+    uint64_t framed_stamp_=0;
+    // After locating a housing, check its actual emitting lens in this frame.
+    // Chroma subsampling on a moving HDMI frame can erase one of the pale rims.
+    static RoadLight current_green(const uint8_t *rgb,int width,const RoadLight &known) {
+        const int bottom=width*3/4*63/100;
+        const int step=std::max(2,int(std::round(known.radius)));
+        const int span=std::min(13,2*step+3);
+        for(int member=0;member<2;++member) {
+            const int ax=member?known.partner_x:known.x,ay=member?known.partner_y:known.y;
+            if(ax<0)continue;
+            int best=0;RoadLight result;
+            for(int y=std::max(2,ay-span);y<=std::min(bottom-3,ay+span);++y) {
+                for(int x=std::max(6*step+1,ax-span);x<=std::min(width-3,ax+span);++x) {
+                    const auto at=[&](int u,int v){return rgb+3*(v*width+u);};
+                    const auto *p=at(x,y);
+                    if(lamp_chroma(p)!=TRAFFIC_GREEN || p[1]<170 || std::min(p[1],p[2])-p[0]<70)continue;
+                    int pixels=0,glass=0;
+                    for(int dy=-1;dy<=1;++dy)for(int dx=-1;dx<=1;++dx)
+                        pixels+=lamp_chroma(at(x+dx,y+dy))==TRAFFIC_GREEN;
+                    for(int k=2;k<=5;++k)glass+=luminance(at(x-k*step,y))<115;
+                    if(pixels<4 || glass<3)continue;
+                    const int strength=2*pixels+3*glass-std::abs(ax-x)-std::abs(ay-y);
+                    if(strength<=best)continue;
+                    best=strength;result=known;result.x=x;result.y=y;
+                    result.box.x+=x-known.x;result.box.y+=y-known.y;
+                }
+            }
+            if(best)return result;
+        }
+        return {};
+    }
 public:
     RoadLight observe(const uint8_t *rgb,uint64_t stamp,int width=320) {
         const bool fresh=pair_ns_ && stamp>pair_ns_ && stamp-pair_ns_<=800000000ULL;
@@ -178,7 +272,25 @@ public:
         } else if(!fresh) confirmed_=false;
         // A single visible lamp can bridge LED flicker only after two paired
         // observations. It must show the same shell and fresh color now.
-        if(!confirmed_) return {};
+        if(!confirmed_) head={};
+        if(width==640 && !head.state) {
+            const bool recent=framed_stamp_ && stamp>framed_stamp_ && stamp-framed_stamp_<=450000000ULL;
+            auto next=paired_road_light(rgb,width,width*3/4,width*3,
+                                       recent&&framed_hits_>=3 ? &framed_previous_ : nullptr,nullptr,true);
+            const bool tracking=recent && next.state==TRAFFIC_GREEN &&
+                (same_road_head(framed_previous_,next) ||
+                 (std::abs(framed_previous_.x-next.x)<=18 && std::abs(framed_previous_.y-next.y)<=14 &&
+                  std::max(framed_previous_.radius,next.radius)<=2.3*std::min(framed_previous_.radius,next.radius)));
+            if(next.state) {
+                framed_hits_=tracking ? std::min(3u,framed_hits_+1) : 1;
+                framed_stamp_=stamp;framed_previous_=next;
+                if(framed_hits_>=3 || (next.partner_x>=0 && (framed_hits_>=2 || (next.rimmed && next.chroma>=96))))head=next;
+            }
+            if(!head.state && !next.state && recent && framed_hits_>=2)
+                head=current_green(rgb,width,framed_previous_);
+        } else if(head.state==TRAFFIC_GREEN) {
+            framed_previous_=head;framed_hits_=3;framed_stamp_=stamp;
+        } else if(head.state) framed_hits_=0;
         const float scale=320.f/width;
         head.box.x*=scale;head.box.y*=scale;head.box.w*=scale;head.box.h*=scale;
         return head;

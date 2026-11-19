@@ -42,6 +42,7 @@ struct ViewStatus
     bool udp_live = false;
     bool person = false;
     bool front_person = false;
+    bool front_rider = false;
     bool front_person_outside = false, front_road_unknown = false;
     float fps = 0;      // 该统计供渲染诊断，不作为视频帧率显示。
     float pcie_fps = 0; // S 完整视频输入速率按 frame_id 增量计算。
@@ -211,9 +212,10 @@ class Dashboard
             case STEERING_CENTER_SWITCH_OFF: hint = "SWITCH AUTOPILOT OFF"; break;
             case STEERING_CENTER_RELEASE_STOP: hint = "RELEASE S/R"; break;
             case STEERING_CENTER_TAP_OVERVIEW: hint = "TAP SIX-VIEW TO CONFIRM"; break;
+            case STEERING_CENTER_CALIBRATING_IMU: hint = "IMU CALIBRATING / KEEP STILL"; break;
             case STEERING_CENTER_SAMPLING: hint = "KEEP VEHICLE STILL"; break;
             case STEERING_CENTER_READY: hint = "ZERO SAVED / ENABLE AUTOPILOT"; break;
-            case STEERING_CENTER_RETRY: hint = "KEEP STILL AND START AGAIN"; break;
+            case STEERING_CENTER_RETRY: hint = "KEEP STILL / HOLD S/R TO RETRY"; break;
             default: hint = "PARK, ALIGN WHEELS, HOLD S/R 3S"; break;
             }
             centeredText(frame_, title, {1238, 234, 296, 16}, 1, 0xFF93B1CB);
@@ -261,10 +263,12 @@ class Dashboard
             text(frame_, 74, 781, "FOCUSED CAMERA / 4:3", 1, 0xFF658CA8);
         }
 
-        const uint32_t alert = status.person || status.go_blocked ? 0xFFFF748C : 0xFF6BDBE7;
+        const bool hazard = status.person || status.go_blocked;
+        const uint32_t alert = hazard ? 0xFFFF748C : 0xFF6BDBE7;
         fillChamfer(frame_, {1240, 744, 292, 30}, 7,
-                    status.person || status.go_blocked ? 0xFF281321 : 0xFF0A1B2A);
-        const char *detection = status.front_road_unknown ? "PERSON / ROAD UNKNOWN"
+                    hazard ? 0xFF281321 : 0xFF0A1B2A);
+        const char *detection = status.front_rider ? "FRONT RIDER"
+                                : status.front_road_unknown ? "PERSON / ROAD UNKNOWN"
                                 : status.front_person ? "FRONT PERSON IN ROAD"
                                 : status.person       ? "PERSON DETECTED"
                                 : status.front_person_outside ? "PERSON OFF ROAD"
@@ -327,7 +331,7 @@ class Dashboard
         // `fps` is diagnostic only. Every field that paints a visible status
         // remains in this key, including freshness, unknown and alarm states.
         const auto key=[](const ViewStatus &s){return std::tie(s.pcie_live,s.udp_live,s.person,
-            s.front_person,s.front_person_outside,s.front_road_unknown,s.pcie_fps,s.udp_fps,s.recorded,
+            s.front_person,s.front_rider,s.front_person_outside,s.front_road_unknown,s.pcie_fps,s.udp_fps,s.recorded,
             s.motion,s.lane_blocked,s.line_left,s.line_right,s.line_left_quality,s.line_right_quality,
             s.line_left_reason,s.line_right_reason,s.line_left_raw,s.line_right_raw,s.lane_angle_valid,
             s.lane_angle_deg,s.steering_center_status,s.traffic,s.traffic_raw,s.traffic_quality,s.traffic_detector_quality,

@@ -267,12 +267,21 @@ const uint8_t *Capture::latest(uint64_t now, uint64_t &captured)
             convert_yuyv(static_cast<const uint8_t *>(buffer.address), latest.bytesused,
                          width_, height_, stride_, full_range_, bt709_, tile_.data()))
         {
-            if (!last_frame_ns_ || timestamp - last_frame_ns_ >= TIMEOUT_NS)
+            if (!has_scene_content(tile_.data()))
+            {
                 good_frames_ = 0;
-            good_frames_ = std::min(2u, good_frames_ + 1);
-            last_frame_ns_ = timestamp;
-            detail_.capture(static_cast<const uint8_t *>(buffer.address),width_,height_,stride_,
-                            full_range_,bt709_);
+                last_frame_ns_ = 0;
+                detail_.yuyv.clear();
+            }
+            else
+            {
+                if (!last_frame_ns_ || timestamp - last_frame_ns_ >= TIMEOUT_NS)
+                    good_frames_ = 0;
+                good_frames_ = std::min(2u, good_frames_ + 1);
+                last_frame_ns_ = timestamp;
+                detail_.capture(static_cast<const uint8_t *>(buffer.address),width_,height_,stride_,
+                                full_range_,bt709_);
+            }
         }
         if (query(fd_, VIDIOC_QBUF, &latest) < 0)
         {

@@ -19,6 +19,14 @@ static uint32_t seq,frame,feedback_session=7;
 static int slow_release_window,late_status_reads;
 static uint32_t lane_frame;
 static unsigned lane_confidence,lane_reads;
+static unsigned calibration_requests;
+uint32_t __wrap_steering_feedback_center_session(void) { return 4242; }
+int __wrap_steering_feedback_request_center(uint32_t session)
+{
+    assert(session == 4242 && !active);
+    ++calibration_requests;
+    return 0;
+}
 static int read_lane(void *context,uint32_t *id,unsigned *kind,unsigned *quality,unsigned *road_angle){
     (void)context;assert(!active);++lane_reads;
     *id=lane_frame;*kind=1;*quality=lane_confidence;*road_angle=20;return 0;
@@ -320,5 +328,57 @@ int main(int argc,char **argv){
     assert(!active && starts == 1);
     steering_runtime_close();
     puts("PASS steering limit recovery: same-session manual zero, switch interlock, and fresh lane required; FAKE IO only");
+
+    /* Production cold start accepts the full gesture before M sends angles. */
+    assert(setenv("STEERING_STARTUP_CALIBRATION", "1", 1) == 0);
+    starts = 0;
+    assert(steering_runtime_init(0) == STEER_OK);
+    assert(!steering_runtime_autopilot_ready());
+    assert(steering_runtime_center_input(0, 1, 1) == STEERING_CENTER_HOLD_STOP);
+    start=steering_now_ns();
+    do {
+        steering_runtime_center_input(0xee, 1, 1);
+        steering_runtime_tick();
+        steering_sleep_ms(8);
+    } while (steering_now_ns()-start<CENTER_STOP_HOLD_NS+25000000ULL);
+    assert(steering_runtime_center_input(0, 1, 1) == STEERING_CENTER_TAP_OVERVIEW);
+    assert(steering_runtime_center_input(0x99, 1, 1) == STEERING_CENTER_CALIBRATING_IMU);
+    assert(calibration_requests==1 && !steering_runtime_autopilot_ready());
+    angle=2.0f;
+    feed(); /* Still the old session from the file. */
+    steering_runtime_tick();
+    assert(steering_runtime_center_input(0, 1, 1) == STEERING_CENTER_CALIBRATING_IMU);
+    assert(!steering_runtime_autopilot_ready());
+    feedback_session=4242;
+    feed();
+    assert(steering_runtime_center_input(0, 1, 1) == STEERING_CENTER_SAMPLING);
+    start=steering_now_ns();
+    while(steering_runtime_center_sampling() && steering_now_ns()-start<2500000000ULL)
+    {
+        feed();
+        steering_runtime_center_input(0, 1, 1);
+        steering_runtime_lane(1, 6000, 1, 90, 20);
+        steering_runtime_tick();
+        steering_sleep_ms(8);
+    }
+    assert(steering_runtime_autopilot_ready() && !starts);
+    assert(steering_runtime_center_input(0, 1, 1) == STEERING_CENTER_READY);
+    start=steering_now_ns();
+    while (steering_now_ns()-start < 1000000000ULL)
+    {
+        feed();
+        const uint32_t id = 6001 + (uint32_t)((steering_now_ns()-start)/100000000ULL);
+        steering_runtime_lane(steering_runtime_autopilot_ready(), id, 1, 90, 20);
+        steering_runtime_tick();
+        steering_sleep_ms(1);
+    }
+    steering_get_state(&state);
+    assert(!active && starts==1 && state.status==STEERING_SETTLED && fabsf(state.angle_deg-5)<1);
+    steering_runtime_close();
+    assert(steering_runtime_init(0) == STEER_OK);
+    feed();steering_runtime_tick();
+    assert(!steering_runtime_autopilot_ready());
+    steering_runtime_close();
+    puts("PASS startup S/R: no initial feedback, reject old session, confirm mechanical zero, require confirmation after restart");
     puts("PASS runtime integration: lane angle mapping, duplicate frame/goal suppression, stale feedback, S/R rearm, STOP release; FAKE IO only");return 0;
 }

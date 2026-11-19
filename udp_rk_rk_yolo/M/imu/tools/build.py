@@ -42,6 +42,7 @@ def check_m() -> None:
         [ROOT / "csrc" / "steering_angle.c", ROOT / "csrc" / "imu_stationary.c",
          ROOT / "tests" / "test_stationary.c"], INCLUDES)
     print(run(hold, []).stdout.strip())
+    subprocess.run([sys.executable, str(ROOT / "tests" / "test_startup_bias.py")], check=True)
     if sys.platform.startswith("linux"):
         subprocess.run([sys.executable, str(ROOT / "tests" / "test_udp_source.py")], check=True)
 

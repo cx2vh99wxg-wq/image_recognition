@@ -102,7 +102,7 @@ int main(int argc, char **argv){
         assert(low.type==0&&low.confidence>=60&&low.angle==0);
     }
     auto gentle=corridor(-20);
-    gentle.left.fit_c=gentle.right.fit_c=9; // midpoint curvature is about 0.00108 px^-1
+    gentle.left.fit_c=gentle.right.fit_c=5;
     auto gentle_result=m_lane::estimate_ego_curve(gentle);
     assert(gentle_result.type==0&&gentle_result.confidence>=60&&gentle_result.angle==0);
     auto above_curvature_limit=gentle;
@@ -114,6 +114,17 @@ int main(int argc, char **argv){
     assert(l.type==1&&l.confidence>=60&&l.angle==25);
     assert(r.type==2&&r.confidence>=60&&r.angle==25);
     // Production IPM point tracks use the same low-curvature threshold.
+    for(double curvature:{.00069,.00071}) {
+        const double slope=std::tan(20.*.017453292519943295);
+        double centers[5];
+        for(int i=0;i<5;++i){
+            const double y=(2-i)*20.;
+            centers[i]=160.+slope*y+.5*curvature*std::pow(1.+slope*slope,1.5)*y*y;
+        }
+        const auto ipm=m_lane::fit_ego_centers(centers,80,80,320,240,true,true);
+        assert(std::abs(ipm.curvature-curvature)<1.e-7);
+        assert(ipm.type==(curvature<.0007?0u:2u));
+    }
     for(double degrees:{-35.,-30.,-25.1,-25.,-24.9,0.,24.9,25.,25.1,30.,35.}) {
         double centers[5];
         for(int i=0;i<5;++i) centers[i]=160.+(2-i)*20.*std::tan(degrees*.017453292519943295);

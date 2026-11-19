@@ -172,6 +172,9 @@ int main(void) {
     view_reply=0x22;wheel_reply=2500;poll();
     assert((uint32_t)display.wheel_snapshot==2500 && (display.wheel_snapshot>>32));
     assert(wheel_rpm(2500, 2)==120 && wheel_speed_tenths(2500, 200, 2)==14);
+    assert(WHEEL_DEFAULT_PULSES_PER_TURN==1);
+    assert(wheel_rpm(1000, WHEEL_DEFAULT_PULSES_PER_TURN)==600);
+    assert(wheel_speed_tenths(1000, 691, WHEEL_DEFAULT_PULSES_PER_TURN)==249);
     assert(fpga_camera_view_available && display.mode==DISPLAY_MODE_REAR_LEFT);
     view_reply=0x33;poll();
     assert(display.mode==DISPLAY_MODE_REAR_RIGHT);

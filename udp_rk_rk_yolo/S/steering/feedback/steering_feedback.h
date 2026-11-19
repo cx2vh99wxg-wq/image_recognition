@@ -10,4 +10,7 @@ void steering_feedback_close(void);
 /* 可移植报文接收接口，供确定性检查及现有接收器复用。 */
 steer_result_t steering_feedback_ingest(const uint8_t *packet, unsigned size, uint64_t received_ns);
 steer_result_t steering_feedback_read(steering_feedback_t *feedback);
+/* Request stationary bias sampling on M. The token identifies the resulting IMU session. */
+uint32_t steering_feedback_center_session(void);
+int steering_feedback_request_center(uint32_t session);
 #endif

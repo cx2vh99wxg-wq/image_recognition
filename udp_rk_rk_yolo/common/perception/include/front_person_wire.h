@@ -39,9 +39,11 @@ inline bool valid(const FrontPersonData &d)
             !!(d.flags & FRONT_PERSON_PATH_UNKNOWN)!=!!d.unknown_count ||
             (road && (d.road_pixels<64 || d.road_source_id!=d.source_id)) ||
             (!road && (d.risk_count || d.outside_count))) return false;
-    } else if ((d.flags & ~(7u | FRONT_PERSON_HDMI_DISPLAY_ONLY)) || d.risk_count || d.outside_count || d.unknown_count ||
+    } else if ((d.flags & ~(7u | FRONT_RIDERS_ONLY)) || d.risk_count || d.outside_count || d.unknown_count ||
                d.road_pixels || d.road_source_id) return false;
-    return d.session && (d.flags & ~255u)==0 && d.quality<=100 && d.count<=100000 &&
+    return d.session && (d.flags & ~(127u | FRONT_RIDERS_ONLY))==0 &&
+           (!(d.flags & FRONT_RIDERS_ONLY) || (d.flags & FRONT_PERSON_FOUND)) &&
+           d.quality<=100 && d.count<=100000 &&
            d.x<=320 && d.y<=240 && d.width<=320-d.x && d.height<=240-d.y &&
            (!(d.flags & FRONT_PERSON_FOUND) ||
             ((d.flags & (FRONT_PERSON_VALID|FRONT_PERSON_READY))==3 && d.count && d.width && d.height)) &&
@@ -87,6 +89,11 @@ class Receiver
             if (q.flags & ~7u) return false;
             for (int i=48;i<68;i+=4) if(get(p+i)) return false;
         } else {
+            // Ignore retired v2 control bits. A legacy display-only packet
+            // without its capture-valid bit still cannot authorize release.
+            if ((q.flags & 128u) && !(q.flags & 1024u))
+                return false;
+            q.flags &= ~(128u | 256u | 1024u);
             q.risk_count=get(p+48); q.outside_count=get(p+52); q.unknown_count=get(p+56);
             q.road_pixels=get(p+60); q.road_source_id=get(p+64);
         }

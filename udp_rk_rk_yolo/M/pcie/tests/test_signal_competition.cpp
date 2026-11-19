@@ -30,13 +30,27 @@ int rknn_outputs_get(rknn_context,uint32_t n,rknn_output *out,rknn_output_extend
     for(int k=0;k<3;++k){const int d=40>>k,area=d*d;floats[k].assign(255*area,0.f);
         const auto set=[&](int channel,int pos,float value){floats[k][nhwc?pos*255+channel:channel*area+pos]=value;};
         if(k==0){const int pos=28*d+30;for(int ch=0;ch<4;++ch)set(ch,pos,.5f);set(4,pos,.8f);set(5,pos,.8f);set(14,pos,.7f);}
-        if(k==0 && mode>=4) {
+        if(k==0 && mode>=4 && mode<=6) {
             const int pos=29*d+(mode==5?22:30), base=85;
             for(int ch=0;ch<3;++ch)set(base+ch,pos,.5f);
             set(base+3,pos,std::sqrt(14.f/(4*30)));
             set(base+4,pos,.5f);
             set(base+5+3,pos,.4f);
             if(mode==6)set(base+5+2,pos,.8f);
+        }
+        if(k==2 && mode>=7) {
+            // Close rear profile with split car/truck votes. A single weak
+            // anchor or a pair near the skyline must not create a car.
+            const int cells=(mode==8?1:2), pos=(mode==9?3:7)*d+4;
+            const int anchor_w[]={116,156},anchor_h[]={90,198};
+            for(int i=0;i<cells;++i) {
+                const int base=85*i;
+                set(base,pos,.5f);set(base+1,pos,.5f);
+                set(base+2,pos,std::sqrt(98.f/(4*anchor_w[i])));
+                set(base+3,pos,std::sqrt(62.f/(4*anchor_h[i])));
+                set(base+4,pos,.70f);set(base+5+2,pos,.56f);
+                set(base+5+7,pos,.62f);
+            }
         }
         if(k==1){const int pos=6*d+5,base=85;
             // The 320x240 image has 40 padded rows above it in the NN input.
@@ -81,6 +95,13 @@ int main(){
             assert(people.count==1);
             assert(vehicles.size()==(scenario==4?1u:0u));
             if(!vehicles.empty())assert(vehicles[0].coco_class==3);
+            ++tests;
+        }
+        for(int scenario : {7,8,9}){
+            mode=scenario;PersonResult people;std::vector<VehicleDetection> vehicles;
+            assert(d.detect(rgb.data(),320,240,960,extra,&error,60,&people,false,nullptr,&vehicles));
+            assert(vehicles.size()==(scenario==7?1u:0u));
+            if(!vehicles.empty())assert(vehicles[0].coco_class==2);
             ++tests;
         }
     }

@@ -5,6 +5,7 @@
 #include "traffic_light_ipc.h"
 #include "front_person_ipc.h"
 #include "front_actor_projection.h"
+#include "front_vehicle_tracking.h"
 #include "traffic_structure.h"
 #include "paired_road_lights.h"
 #include "../../../common/perception/include/display_people.h"
@@ -25,6 +26,7 @@ struct Frame
 {
     std::vector<uint8_t> pixels;
     uint64_t id = 0, captured = 0;
+    std::shared_ptr<const hdmi_front::SignalDetail> detail;
 };
 struct PreparedDetection {
     Frame frame;
@@ -42,6 +44,12 @@ struct PreparedDetection {
     unsigned next_cursor=0;
     unsigned next_seen=0;
     std::array<float,SIGNAL_WINDOWS> merits={};
+    void add_pass(const Detector &detector) {
+        const auto t = detector.last_timing();
+        timing.prepare += t.prepare; timing.inputs += t.inputs; timing.run += t.run;
+        timing.outputs += t.outputs; timing.decode += t.decode; timing.release += t.release;
+        timing.filter += t.filter; passes += detector.last_passes();
+    }
 };
 struct Observation
 {
@@ -55,21 +63,24 @@ struct Service::Impl
 {
     Detector detector;
     PersonRoadAssociation road_association;
+    FrontVehicleTracking vehicle_tracking;
     Admission admission{configured_budget_ms(std::getenv("TRAFFIC_NPU_BUDGET_MS")),
                         configured_locator_interval_ms(std::getenv("TRAFFIC_NPU_INTERVAL_MS"))};
     bool ready = false, enabled = true;
     const InputView view;
     const m_lane::FrontRadialPreview *correction;
-    const bool hdmi;
     std::atomic<unsigned> deferred{0};
     std::atomic<bool> model_failed{false};
     std::mutex mutex;
     std::condition_variable wake;
     Frame latest;
-    hdmi_front::SignalDetail latest_detail;
+    struct NativeFrame { uint64_t stamp=0; std::shared_ptr<hdmi_front::SignalDetail> pixels; };
+    std::array<NativeFrame,6> native_frames;
+    unsigned native_slot=0;
     uint64_t pending_id = 0;
     bool stopping = false;
     std::shared_ptr<const Observation> observation;
+    std::shared_ptr<const display_vehicles::Snapshot> preview_vehicles;
     std::thread cpu;
     TrafficLightIPC ipc = {-1, nullptr};
     FrontPersonIPC person_ipc = {-1, nullptr};
@@ -83,12 +94,13 @@ struct Service::Impl
     std::unique_ptr<PreparedDetection> prepared;
     uint64_t prepared_used=0,prepared_discarded=0;
     uint64_t scout_after=0;
+    uint64_t refine_after=0;
     unsigned scout_cursor=0;
     unsigned scout_seen=0;
     std::array<float,SIGNAL_WINDOWS> scout_merits={};
     explicit Impl(const char *path, InputView input, const m_lane::FrontRadialPreview *front,
                   const m_lane::GroundProjection *hdmi_ground, unsigned source_session)
-        : view(input), correction(front), hdmi(hdmi_ground != nullptr),
+        : view(input), correction(front),
           display_ground(hdmi_ground ? *hdmi_ground :
                          m_lane::GroundProjection::for_camera(nullptr, "front_ipm_test.conf"))
     {
@@ -112,7 +124,7 @@ struct Service::Impl
                     error.c_str());
         }
         std::printf(
-                "[TRAFFIC] enabled=%d ready=%d input=%d locator_interval_ms=%u max_NPU_passes=2 extra_signal_ROI=conditional color_rate=10Hz budget_ms=%u single_NPU_owner=lane_worker classes=person:0,traffic_light:9,vehicles:1/2/3/5 view=full-front control_output=metadata\n",
+                "[TRAFFIC] enabled=%d ready=%d input=%d locator_interval_ms=%u max_NPU_passes=2 extra_ROI=conditional color_rate=10Hz budget_ms=%u single_NPU_owner=lane_worker classes=person:0,traffic_light:9,vehicles:1/2/3/5/7 view=full-front control_output=metadata\n",
             enabled, ready, detector.input_size(), admission.interval_ms(), admission.budget_ms());
         std::printf(
             "[TRAFFIC INPUT] geometry=%s source_rect=%d,%d,320,240 source_order=%s detector_order=RGB\n",
@@ -142,6 +154,14 @@ struct Service::Impl
             return;
         {
             std::lock_guard<std::mutex> lock(mutex);
+            if(stopping)return;
+            std::shared_ptr<const hdmi_front::SignalDetail> native;
+            if(detail && !detail->yuyv.empty()) {
+                auto &slot=native_frames[native_slot++%native_frames.size()];
+                if(!slot.pixels.unique())slot.pixels=std::make_shared<hdmi_front::SignalDetail>();
+                slot.pixels->swap(*detail);
+                slot.stamp=captured;native=slot.pixels;
+            }
             if (stopping ||
                 (latest.captured &&
                  (captured <= latest.captured || captured - latest.captured < 100000000ULL)) ||
@@ -151,8 +171,7 @@ struct Service::Impl
                 return;
             latest.id = id;
             latest.captured = captured;
-            if(detail) latest_detail.swap(*detail);
-            else latest_detail.yuyv.clear();
+            latest.detail=native;
             pending_id = id;
         }
         wake.notify_one();
@@ -166,6 +185,10 @@ struct Service::Impl
         if(d->matched){
             if(!copy_camera_rgb(lane.front.pixels,320,240,320*3,InputView(0,0,view.order),frame.pixels))return nullptr;
             frame.id=lane.source;frame.captured=lane.captured;
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                for(const auto &slot:native_frames)if(slot.stamp==frame.captured){frame.detail=slot.pixels;break;}
+            }
         }else{
             std::lock_guard<std::mutex> lock(mutex);
             if(stopping||latest.pixels.empty())return nullptr;
@@ -195,7 +218,17 @@ struct Service::Impl
         const bool structure_lock=prior&&prior->valid&&prior->structural&&frame.captured>=prior->reference.captured&&frame.captured-prior->reference.captured<=1800000000ULL;
         bool regional_missing=prior&&prior->valid&&prior->regional&&frame.captured>=prior->reference.captured&&frame.captured-prior->reference.captured<=1500000000ULL;
         if(regional_missing)for(const auto&b:d->boxes)if(overlap(prior->box,b)>.2f)regional_missing=false;
-        if(d->okay&&!structure_lock&&now>=scout_after&&(strongest<.30f||conflict||regional_missing)&&!hints.empty()){
+        const Box *subject = nullptr;
+        if(d->okay) for(const auto &p:d->people.candidates) {
+            if(p.score<.25f || p.h<18 || p.h>124 || p.y+p.h<130 || is_visible_rider(p,d->vehicles)) continue;
+            if(!subject || p.h*p.score>subject->h*subject->score) subject=&p;
+        }
+        // Share the single extra pass. Persistent weak traffic hints must not
+        // starve a possible rider of every look at the lower half of the frame.
+        const bool refine=now>=refine_after;
+        if(refine && d->okay&&!structure_lock&&now>=scout_after&&
+           ((!subject && calls%2==0) || calls%3==0 || conflict)&&
+           (strongest<.30f||conflict||regional_missing)&&!hints.empty()){
             unsigned index=scout_cursor%SIGNAL_WINDOWS;
             if(!scout_seen){
                 float best=0;
@@ -209,7 +242,7 @@ struct Service::Impl
             for(int y=0;y<size;++y)std::memcpy(crop.data()+y*size*3,frame.pixels.data()+(y+y0)*960+x0*3,size*3);
             std::vector<Box> local;std::string crop_error;
             const bool okay=detector.detect(crop.data(),size,size,size*3,local,&crop_error,admission.budget_ms(),nullptr,true);
-            const auto t=detector.last_timing();d->timing.prepare+=t.prepare;d->timing.inputs+=t.inputs;d->timing.run+=t.run;d->timing.outputs+=t.outputs;d->timing.decode+=t.decode;d->timing.release+=t.release;d->timing.filter+=t.filter;d->passes+=detector.last_passes();
+            d->add_pass(detector);
             if(okay){
                 d->scouted=true;d->next_cursor=scout_cursor+1;d->next_seen=scout_seen|(1u<<index);d->merits[index]=0;
                 for(auto b:local){
@@ -224,6 +257,61 @@ struct Service::Impl
                 if(*std::max_element(scout_merits.begin(),scout_merits.end())>0&&*std::max_element(d->merits.begin(),d->merits.end())<=0){d->next_seen=1u<<index;if(index==1)d->next_cursor=3;}
                 d->next_scout=now+signal_scout_delay(d->merits,d->next_seen);
                 std::fprintf(stderr,"[TRAFFIC SCOUT] source=%llu window=%u seen=%u boxes=%zu merit=%.3f/%.3f/%.3f/%.3f\n",(unsigned long long)frame.id,index,d->next_seen,local.size(),d->merits[0],d->merits[1],d->merits[2],d->merits[3]);
+            }
+        }
+        // Use a remaining pass for a possible rider. Only a detected wheel
+        // vehicle aligned with the person can change the displayed class.
+        if (refine && d->okay && d->passes==1 && (subject || strongest<.30f) &&
+            2*(traffic_clock_ns()-start)<admission.budget_ms()*1000000ULL) {
+            // Use the native pixels of THIS lane frame: resizing a cropped
+            // 320x240 tile cannot recover wheels or a distant cargo body.
+            const auto close=std::find_if(d->vehicles.begin(),d->vehicles.end(),[](const VehicleDetection &v) {
+                return display_vehicles::motor_vehicle(v.coco_class) && v.box.w>=78 && v.box.h>=52;
+            });
+            int w=124,h=102,x=(320-w)/2 + (calls%4==3 ? -24 : 26),y=100,dw=320,dh=240;
+            if(close!=d->vehicles.end()) {x=80;y=82;w=176;h=148;dw=290;dh=205;}
+            const bool foreground_rider=subject && subject->h>=34 && subject->y+subject->h>=182;
+            if(subject && (foreground_rider || calls%3==1)) {
+                w=h=std::max(94,std::min(156,int(subject->h*2.2f)));
+                x=std::max(0,std::min(320-w,int(subject->x+.5f*subject->w)-w/2));
+                y=std::max(0,std::min(240-h,int(subject->y+.75f*subject->h)-h/2));
+                dw=dh=240;
+            }
+            std::vector<uint8_t> crop;
+            if (frame.detail)
+                frame.detail->object_view(x,y,w,h,dw,dh,crop);
+            else
+            {
+                crop.assign(320*240*3,114);
+                const int ox=(320-dw)/2,oy=(240-dh)/2;
+                for(int j=0;j<dh;++j)
+                    for(int i=0;i<dw;++i)
+                    {
+                        const int sy=y+(2*j+1)*h/(2*dh);
+                        const int sx=x+(2*i+1)*w/(2*dw);
+                        std::memcpy(&crop[3*((oy+j)*320+ox+i)],&frame.pixels[3*(sy*320+sx)],3);
+                    }
+            }
+            std::vector<Box> ignored;PersonResult crop_people;std::vector<VehicleDetection> local;
+            const auto schedule=detector.schedule();
+            const bool ok=detector.detect(crop.data(),320,240,960,ignored,nullptr,admission.budget_ms(),
+                                          &crop_people,true,nullptr,&local,true);
+            d->add_pass(detector);detector.restore_schedule(schedule);
+            if(ok) for(auto v:local) {
+                auto &b=v.box;const int ox=(320-dw)/2,oy=(240-dh)/2;
+                if(b.x<ox+1 || b.y<oy+1 || b.x+b.w>ox+dw-1 || b.y+b.h>oy+dh-1)continue;
+                b.x=x+(b.x-ox)*w/dw;b.y=y+(b.y-oy)*h/dh;b.w*=float(w)/dw;b.h*=float(h)/dh;
+                const bool motor=display_vehicles::motor_vehicle(v.coco_class);
+                if(!motor && !std::any_of(d->people.candidates.begin(),d->people.candidates.end(),
+                        [&](const Box &p){return seated_on_cycle(p,b);}))continue;
+                auto existing=std::find_if(d->vehicles.begin(),d->vehicles.end(),[&](const VehicleDetection &a) {
+                    return motor==display_vehicles::motor_vehicle(a.coco_class) && overlap(a.box,b)>.5f;
+                });
+                if(existing==d->vehicles.end()) {
+                    if(d->vehicles.size()<display_vehicles::CAPACITY)d->vehicles.push_back(v);
+                } else if(v.box.score>existing->box.score ||
+                          (v.coco_class==display_vehicles::Car && existing->coco_class==display_vehicles::Truck &&
+                           b.w>=78 && v.box.score>=.32f)) *existing=v;
             }
         }
         d->compute_ns=traffic_clock_ns()-start;
@@ -272,12 +360,7 @@ struct Service::Impl
             person.flags |= FRONT_PERSON_VALID;
         road_association.annotate(people,matched ? lane.front : FrontRoadFrame{},
                                   frame.id,frame.captured,person);
-        if (hdmi)
-            person.flags |= FRONT_PERSON_HDMI_DISPLAY_ONLY;
         front_person_set_deadline(&person, frame.captured + FRONT_PERSON_TTL_NS);
-        front_person_ipc_open(&person_ipc, 1); front_person_ipc_write(&person_ipc, &person);
-        // Independent, bounded visual metadata. Brake/control records above
-        // remain unchanged, including all threshold-passing anchor statistics.
         display_people::Snapshot scene={};scene.session=session;scene.source=(uint32_t)frame.id;
         scene.ready=(person.flags&FRONT_PERSON_VALID)?1:0;
         display_people::expires(scene,frame.captured+display_people::TTL);
@@ -285,6 +368,7 @@ struct Service::Impl
         const auto project = [&](const Box &b) {
             return front_actor(b, road_association.classify(b), display_ground, scale);
         };
+        if(scene.ready)vehicle_tracking.update(frame.pixels.data(),frame.captured,detection->vehicles);
         auto display_candidates=people.candidates;
         std::sort(display_candidates.begin(),display_candidates.end(),[](const Box&a,const Box&b){return a.score>b.score;});
         if(scene.ready)for(const auto&b:display_candidates){
@@ -313,6 +397,18 @@ struct Service::Impl
         }
         if (vehicle_ipc.open(display_vehicles::KEY, true))
             vehicle_ipc.write(vehicles);
+        if (scene.ready) {
+            if ((person.flags & FRONT_PERSON_FOUND) && !people.candidates.empty() &&
+                std::all_of(people.candidates.begin(),people.candidates.end(),[&](const Box &p) {
+                    return is_visible_rider(p,detection->vehicles);
+                })) person.flags |= FRONT_RIDERS_ONLY;
+        }
+        front_person_ipc_open(&person_ipc, 1); front_person_ipc_write(&person_ipc, &person);
+        if (frame.detail) {
+            std::shared_ptr<const display_vehicles::Snapshot> snapshot =
+                std::make_shared<display_vehicles::Snapshot>(vehicles);
+            std::atomic_store(&preview_vehicles, snapshot);
+        }
         // Keep the existing person/brake publication above ahead of any
         // optional CPU signal search. This path does not alter its candidates.
         const bool structural=okay&&boxes.empty();
@@ -365,7 +461,9 @@ struct Service::Impl
         std::atomic_store(&observation, immutable);
         // CPU 候选仲裁的时间也计入车道间隙预算。
         uint64_t end = traffic_clock_ns(), elapsed = detection->compute_ns + end - commit_started;
-        admission.completed(end, elapsed);
+        if(elapsed>admission.budget_ms()*1000000ULL)
+            refine_after=end+1500000000ULL;
+        admission.completed(end, elapsed, true);
         ++calls;
         passes += detection->passes;
         total_ns += elapsed;
@@ -395,7 +493,6 @@ struct Service::Impl
         HousingTracker tracker;
         ColorConfirmation confirmation;
         PairedRoadLightTracker paired_lights, native_lights;
-        hdmi_front::SignalDetail detail;
         std::vector<uint8_t> detail_rgb;
         Box tracked;
         uint64_t detector_id = 0, last_id = 0, last_captured = 0, last_log = 0;
@@ -411,7 +508,6 @@ struct Service::Impl
                     if (stopping)
                         return;
                     frame = latest;
-                    latest_detail.swap(detail);
                     last_id = frame.id;
                 }
                 uint64_t now = traffic_clock_ns();
@@ -425,8 +521,6 @@ struct Service::Impl
                 data.reason = enabled ? TRAFFIC_NO_BOX : TRAFFIC_DEFERRED;
                 data.flags = (ready ? TRAFFIC_MODEL_READY : 0) | deferred.load() |
                              (!enabled ? TRAFFIC_DISABLED : 0);
-                if (hdmi)
-                    data.flags |= TRAFFIC_HDMI_DISPLAY_ONLY;
                 traffic_set_deadline(&data, frame.captured + TRAFFIC_TTL_NS);
                 auto box = std::atomic_load(&observation);
                 if (!ready || model_failed.load())
@@ -488,13 +582,13 @@ struct Service::Impl
                         confirmation.reset();
                     }
                 }
-                if(hdmi && ready && !model_failed.load()) {
+                if(ready && !model_failed.load()) {
                     // Downsampling can turn isolated cyan window pixels into
                     // apparent lamp cores. Decide at native capture resolution
                     // whenever that frame's detail is available.
                     auto head = paired_lights.observe(frame.pixels.data(), frame.captured);
-                    if (detail.rgb(detail_rgb)) {
-                        const auto native = native_lights.observe(detail_rgb.data(), frame.captured, detail.WIDTH);
+                    if (frame.detail && frame.detail->rgb(detail_rgb)) {
+                        const auto native = native_lights.observe(detail_rgb.data(), frame.captured, hdmi_front::SignalDetail::WIDTH);
                         // A dim red arrow may be more coherent after scaling.
                         // A green fallback needs native-resolution support.
                         if (native.state && head.state && native.state != head.state) head = {};
@@ -539,6 +633,28 @@ Service::Service(const char *path, InputView view, const m_lane::FrontRadialPrev
 {
 }
 Service::~Service() = default;
+void Service::mark_hdmi_preview(uint8_t *bgr, int stride_bytes, uint64_t captured) const
+{
+    const auto scene = std::atomic_load(&impl_->preview_vehicles);
+    if (!bgr || stride_bytes < 320 * 3 || !scene) return;
+    const uint64_t source_time = display_vehicles::deadline(*scene) - display_vehicles::TTL;
+    if (captured < source_time || captured - source_time > 250000000ULL) return;
+    for (unsigned i = 0; i < scene->count; ++i) {
+        const auto &v = scene->vehicles[i];
+        const auto &p = v.footprint;
+        const bool cycle = v.kind == display_vehicles::Bicycle || v.kind == display_vehicles::Motorcycle;
+        const auto mark = [&](unsigned x, unsigned y) {
+            uint8_t *pixel = bgr + y * stride_bytes + 3 * x;
+            pixel[0] = cycle ? 30 : 255; pixel[1] = cycle ? 192 : 240; pixel[2] = cycle ? 255 : 35;
+        };
+        const unsigned corner = std::min(9u, std::min(p.w, p.h) / 2);
+        for (unsigned n = 0; n < corner; ++n) {
+            const unsigned right = p.x + p.w - 1, bottom = p.y + p.h - 1;
+            for (unsigned x : {p.x + n, right - n}) { mark(x,p.y); mark(x,bottom); }
+            for (unsigned y : {p.y + n, bottom - n}) { mark(p.x,y); mark(right,y); }
+        }
+    }
+}
 void Service::submit_raw(const uint8_t *p, int w, int h, uint64_t id, uint64_t captured,
                          hdmi_front::SignalDetail *detail)
 {

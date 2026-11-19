@@ -76,6 +76,14 @@ int main(){
     lane.captured=1200000000ULL;assert(!legacy_interval.allow(lane,1479999999ULL));assert(legacy_interval.allow(lane,1480000000ULL));
     for(int i=0;i<3;++i)admission.completed(3000000000ULL+i*11000000000ULL,90000000ULL);
     lane.captured=50000000000ULL;assert(!admission.allow(lane,50280000000ULL));
+    Admission hdmi_admission;
+    for(int i=1;i<=4;++i) {
+        const uint64_t end=uint64_t(i)*1000000000ULL;
+        hdmi_admission.completed(end,85000000ULL,true);
+        lane.captured=end;
+        assert(!hdmi_admission.allow(lane,end+100000000ULL));
+        assert(hdmi_admission.allow(lane,end+200000000ULL));
+    }
     assert(configured_budget_ms(nullptr)==60&&configured_budget_ms("75")==75);
     assert(configured_budget_ms("81")==60&&configured_budget_ms("70ms")==60);
     Admission extended(75);extended.completed(1300000000ULL,70000000ULL);
