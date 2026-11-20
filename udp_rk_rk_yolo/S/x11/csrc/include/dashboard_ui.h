@@ -42,6 +42,7 @@ struct ViewStatus
     bool udp_live = false;
     bool person = false;
     bool front_person = false;
+    bool front_car = false;
     bool front_rider = false;
     bool front_person_outside = false, front_road_unknown = false;
     float fps = 0;      // 该统计供渲染诊断，不作为视频帧率显示。
@@ -64,7 +65,7 @@ struct ViewStatus
     unsigned gear = 0;
     bool gear_known = false, gear_live = false, gear_shifting = false;
     bool wheel_known = false, wheel_metric = false;
-    unsigned wheel_value = 0;
+    unsigned wheel_value = 0; // Tenths of km/h in metric mode, RPM otherwise.
 };
 
 class Dashboard
@@ -263,7 +264,7 @@ class Dashboard
             text(frame_, 74, 781, "FOCUSED CAMERA / 4:3", 1, 0xFF658CA8);
         }
 
-        const bool hazard = status.person || status.go_blocked;
+        const bool hazard = status.person || status.front_car || status.go_blocked;
         const uint32_t alert = hazard ? 0xFFFF748C : 0xFF6BDBE7;
         fillChamfer(frame_, {1240, 744, 292, 30}, 7,
                     hazard ? 0xFF281321 : 0xFF0A1B2A);
@@ -271,6 +272,7 @@ class Dashboard
                                 : status.front_road_unknown ? "PERSON / ROAD UNKNOWN"
                                 : status.front_person ? "FRONT PERSON IN ROAD"
                                 : status.person       ? "PERSON DETECTED"
+                                : status.front_car    ? "FRONT CAR"
                                 : status.front_person_outside ? "PERSON OFF ROAD"
                                 : status.go_blocked ? "RED LIGHT / GO HOLD"
                                                     : "VISION MONITOR";
@@ -331,7 +333,7 @@ class Dashboard
         // `fps` is diagnostic only. Every field that paints a visible status
         // remains in this key, including freshness, unknown and alarm states.
         const auto key=[](const ViewStatus &s){return std::tie(s.pcie_live,s.udp_live,s.person,
-            s.front_person,s.front_rider,s.front_person_outside,s.front_road_unknown,s.pcie_fps,s.udp_fps,s.recorded,
+            s.front_person,s.front_car,s.front_rider,s.front_person_outside,s.front_road_unknown,s.pcie_fps,s.udp_fps,s.recorded,
             s.motion,s.lane_blocked,s.line_left,s.line_right,s.line_left_quality,s.line_right_quality,
             s.line_left_reason,s.line_right_reason,s.line_left_raw,s.line_right_raw,s.lane_angle_valid,
             s.lane_angle_deg,s.steering_center_status,s.traffic,s.traffic_raw,s.traffic_quality,s.traffic_detector_quality,
@@ -364,6 +366,7 @@ class Dashboard
     {
         bool known = status.gear_known && status.gear >= 1 && status.gear <= 3;
         bool high = known && status.gear >= 2;
+        const bool overspeed = status.wheel_known && status.wheel_metric && status.wheel_value >= 100;
         uint32_t color = high ? 0xFFFFBE55 : known && status.gear_live ? 0xFF6BDBE7 : 0xFF8A9AAD;
         fillChamfer(frame_, {650, 52, 450, 62}, 8, high ? 0xFF2B1E14 : 0xFF0A1428);
         drawGauge(679, 82, 18, color, known ? status.gear : 1);
@@ -380,10 +383,8 @@ class Dashboard
                              : status.gear_shifting ? "SPEED BUTTON HELD"
                                                     : "REMOTE GEAR ESTIMATE";
         text(frame_, 712, 90, detail, 1, high ? 0xFFE6BC82 : 0xFF8DA5BD);
-        if (high)
+        if (overspeed)
         {
-            // 告警放在档位卡右侧，每帧随卡片一起刷新，
-            // 因而回到一档时立即清除该提示。
             for (int y = 0; y < SPEED_WARNING_HEIGHT; ++y)
                 for (int x = 0; x < SPEED_WARNING_WIDTH; ++x)
                     if (SPEED_WARNING_MASK[y][x / 8] & (0x80 >> (x % 8)))

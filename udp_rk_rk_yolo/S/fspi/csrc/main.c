@@ -145,10 +145,8 @@ static void monitor_speed_warning(uint64_t now)
     int display_gear = state.known ? (int)state.gear : 0;
     if (display_gear != previous || ok != previous_link)
     {
-        printf(
-            "[SPEED_GEAR] estimated_gear=%d link=%s errno=%u warning=%s (gear estimate; no motion writes)\n",
-            display_gear, ok ? "OK" : "OFFLINE", state.read_errno,
-            display_gear >= 2 ? "HIGH GEAR" : "NONE");
+        printf("[SPEED_GEAR] estimated_gear=%d link=%s errno=%u (gear estimate; no motion writes)\n",
+               display_gear, ok ? "OK" : "OFFLINE", state.read_errno);
         previous = display_gear;
         previous_link = ok;
     }
@@ -198,18 +196,20 @@ static void monitor_lane_rule(void)
     front_status.link_ok = front_snapshot_ok;
     front_status.person = front_person_fresh(&front_result,now) && front_person_hazard(&front_result);
     front_status.valid = front_person_fresh(&front_result,now) && ((front_result.flags & 3)==3);
+    const unsigned front_car = front_status.valid && (front_result.flags & FRONT_CLOSE_CAR);
     front_guard_set_deadline(&front_status,now+400000000ULL);
     front_guard_write(&front_guard_ipc,&front_status);
     static int previous_front = -1;
     int front_state = (front_status.person ? 1 : 0) | (front_status.blocked ? 2 : 0) |
         (front_status.valid ? 4 : 0) | (front_enabled ? 8 : 0) | (int)front_command |
+        (front_car ? 0x10000 : 0) |
         (front_snapshot_ok ? 0x40 | ((front_contacts & (CONTACT_GO_N | CONTACT_STOP_N)) << 8) : 0);
     if (front_state != previous_front)
     {
-        printf("[FRONT_PERSON] detected=%u valid=%u auto=%u forward_hold=%u raw_stop=%u resume_ready=%u read_ok=%d go_n=%u sr_n=%u reg5_write=%d\n",
+        printf("[FRONT_PERSON] detected=%u valid=%u auto=%u forward_hold=%u raw_stop=%u resume_ready=%u read_ok=%d go_n=%u sr_n=%u reg5_write=%d car=%u\n",
                !!front_status.person, front_status.valid, front_enabled, front_status.blocked,
                front_status.raw_request, front_command == FRONT_RESUME_ALLOWED, front_snapshot_ok,
-               !!(front_contacts & CONTACT_GO_N), !!(front_contacts & CONTACT_STOP_N), written);
+               !!(front_contacts & CONTACT_GO_N), !!(front_contacts & CONTACT_STOP_N), written, front_car);
         previous_front=front_state;
     }
     TrafficGoData go_status = {0};

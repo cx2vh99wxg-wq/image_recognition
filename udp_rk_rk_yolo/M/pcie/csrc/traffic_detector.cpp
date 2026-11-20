@@ -259,7 +259,7 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                         const float person_score = obj * person_cls;
                         // Small two-wheelers still have to win the full COCO class competition.
                         constexpr float cycle_threshold = .10f, vehicle_threshold = .50f;
-                        constexpr float near_car_threshold = .15f;
+                        constexpr float near_car_threshold = .25f;
                         const float truck_threshold = native_crop ? .11f : .24f;
                         int vehicle_class = -1;
                         float vehicle_class_score = 0;
@@ -315,7 +315,9 @@ bool Detector::detect(const uint8_t *rgb, int w, int h, int stride, std::vector<
                             vehicle_class = display_vehicles::Car;
                             vehicle_class_score = at(base + 5 + display_vehicles::Car,pos);
                         }
-                        if (near_car && obj * vehicle_class_score < near_car_threshold) vehicle_class = -1;
+                        const float near_threshold = vehicle_class == display_vehicles::Car
+                            ? near_car_threshold : .15f; // Preserve the truck refinement threshold.
+                        if (near_car && obj * vehicle_class_score < near_threshold) vehicle_class = -1;
                         if (vehicle_class == display_vehicles::Car && !near_car &&
                             obj * vehicle_class_score < vehicle_threshold) vehicle_class = -1;
                         if (vehicle_class == display_vehicles::Truck && obj * vehicle_class_score < vehicle_threshold &&

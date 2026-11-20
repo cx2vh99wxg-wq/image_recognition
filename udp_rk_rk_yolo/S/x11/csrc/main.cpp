@@ -496,7 +496,7 @@ static bool update_vehicle_layer(RenderEngine *engine, const perception_ui::View
 {
     VehicleLayerState state = snapshot_vehicle_state();
     state.front_person = status.front_person;
-    state.front_stop = status.front_person;
+    state.front_stop = status.front_person || status.front_car;
     if (state.front_person) state.blink = blink_state;
     state.left_style = status.line_left;
     state.right_style = status.line_right;
@@ -1435,6 +1435,7 @@ int present_dashboard(RenderEngine *engine)
         const bool found=fresh &&
                          (front.flags & (FRONT_PERSON_VALID|FRONT_PERSON_FOUND)) == 5;
         status.front_person = found && front_person_hazard(&front);
+        status.front_car = fresh && (front.flags & FRONT_CLOSE_CAR);
         status.front_rider = found && (front.flags & FRONT_RIDERS_ONLY);
         status.front_person_outside=found && !status.front_person;
         status.front_road_unknown=found && (front.flags & FRONT_PERSON_ROI_MODE) &&

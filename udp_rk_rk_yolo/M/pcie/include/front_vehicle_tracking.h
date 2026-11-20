@@ -5,6 +5,24 @@
 #include <array>
 
 namespace traffic {
+struct RoadsideTruckWindow {
+    int x;
+    static constexpr int y=114, width=106, height=55, output_width=320;
+    static constexpr int output_height=height*output_width/width;
+};
+
+inline RoadsideTruckWindow roadside_truck_window(bool right)
+{
+    return {right ? 145 : 320 - 145 - RoadsideTruckWindow::width};
+}
+
+inline bool roadside_truck_detection(const VehicleDetection &vehicle)
+{
+    const auto &box=vehicle.box;
+    return vehicle.coco_class==display_vehicles::Truck &&
+           box.w>=11 && box.h>=13 && box.w<=3.f*box.h;
+}
+
 // Bridge intermittent detector misses with a fresh image match. Only the
 // detector reinitializes the template or extends its lifetime.
 class FrontVehicleTracking {

@@ -92,7 +92,8 @@ class LatestWorker
     LatestWorker(YOLOEngine *engine, int width, int height,
                  traffic::NpuTask *optional_task = nullptr,
                  const FrontRadialPreview *ipm_test = nullptr,
-                 const FrontRadialPreview *front_input = nullptr, bool hdmi = false)
+                 const FrontRadialPreview *front_input = nullptr, bool hdmi = false,
+                 const FrontRadialPreview *style_ipm = nullptr)
         : engine_(engine), optional_task_(optional_task),
           radial_(hdmi ? FrontRadial() : FrontRadial::for_camera(std::getenv("LANE_RADIAL_LAMBDA"),
                                                                   "front_radial.conf")),
@@ -100,7 +101,7 @@ class LatestWorker
                                                                               "front_ground.conf")),
           width_(width), height_(height),
           pending_pixels_((size_t)width * height * 3), working_pixels_((size_t)width * height * 3),
-          ipm_test_(ipm_test), front_input_(front_input)
+          ipm_test_(ipm_test), front_input_(front_input), style_ipm_(ipm_test ? style_ipm : nullptr)
     {
         const char *curve_mode = std::getenv("LANE_CURVE_MODE");
         ego_curve_ = !curve_mode || std::strcmp(curve_mode, "ego-boundaries") == 0;
@@ -142,6 +143,14 @@ class LatestWorker
                 if(restore_map_)mask_pull_=ipm_test_->compose_masks_from(*restore_map_);
             }
             if(!mask_pull_.enabled()) {raw_lane_.resize(pixels);raw_road_.resize(2*pixels);}
+        }
+        if (style_ipm_)
+        {
+            style_rgb_.resize(ipm_rgb_.size());
+            style_coverage_.resize(ipm_coverage_.size());
+            style_ipm_->coverage_mask(style_coverage_.data());
+            if (restore_map_)
+                style_mask_pull_ = style_ipm_->compose_masks_from(*restore_map_);
         }
         const char *overlap=std::getenv("VISION_LANE_NPU_OVERLAP");
         if(optional_task_ && optional_task_->overlap_capable() && (!overlap||std::strcmp(overlap,"0")))
@@ -281,7 +290,7 @@ class LatestWorker
                                 raw = {raw_lane_.data(), raw_road_.data(), width_, height_};
                             }
                         }
-                        PointLanePair front_points, style_points;
+                        PointLanePair front_points, style_points, calibrated_points;
                         YOLOLineStyleResult observed = {};
                         const PointLanePair *line_points = nullptr;
                         if (!use_ipm_heading())
@@ -380,6 +389,27 @@ class LatestWorker
                                 std::fprintf(stderr, "[IPM_TEST] mask size does not match input\n");
                         }
                         result->line_style = line_analyzer_.confirm(observed, source, captured, line_points);
+                        if (style_ipm_ &&
+                            (style_mask_pull_.enabled()
+                                ? style_mask_pull_.remap(raw.lane_line_data, raw.drivable_area_data,
+                                      raw.width, raw.height, ipm_lane_.data(), ipm_green_.data())
+                                : style_ipm_->remap_masks(raw.lane_line_data, raw.drivable_area_data,
+                                      raw.width, raw.height, ipm_lane_.data(), ipm_green_.data())))
+                        {
+                            const int w = width_ / 2, h = height_ / 2;
+                            const auto rows = lane_mask_rows(ipm_lane_.data(), w, h, 0, h);
+                            const auto points = select_point_lanes(ipm_lane_.data(), w, h, &rows);
+                            calibrated_points = marking_profile(ipm_lane_.data(), points, &rows);
+                            style_ipm_->render(working_pixels_.data(), style_rgb_.data());
+                            const auto long_observed = EgoLaneSelector::describe_points(
+                                calibrated_points, style_rgb_.data(), true, style_coverage_.data());
+                            const auto long_style = style_line_analyzer_.confirm(
+                                long_observed, source, captured, &calibrated_points);
+                            result->line_style.left = reconcile_line_style(
+                                result->line_style.left, long_style.left);
+                            result->line_style.right = reconcile_line_style(
+                                result->line_style.right, long_style.right);
+                        }
                         snapshot_request_.poll_lazy(now, source, captured, working_pixels_.data(),
                             width_, height_, [&]{return result->restore_map?result->masks():raw;},
                             observed, result->line_style);
@@ -587,6 +617,7 @@ class LatestWorker
     YOLOEngine *engine_;
     traffic::NpuTask *optional_task_;
     LineStyleAnalyzer line_analyzer_;
+    LineStyleAnalyzer style_line_analyzer_;
     bool use_point_lanes() const
     {
         return ego_curve_ && line_analyzer_.bottom_up() && !ground_.enabled();
@@ -610,9 +641,12 @@ class LatestWorker
     std::vector<uint8_t> pending_pixels_, working_pixels_;
     const FrontRadialPreview *ipm_test_;
     const FrontRadialPreview *front_input_;
+    const FrontRadialPreview *style_ipm_;
     std::vector<float> raw_lane_, raw_road_;
     std::shared_ptr<const FrontMaskRestore> restore_map_;
     FrontMaskPull mask_pull_;
+    FrontMaskPull style_mask_pull_;
+    std::vector<uint8_t> style_rgb_, style_coverage_;
     std::vector<uint8_t> ipm_rgb_, ipm_green_, ipm_coverage_;
     std::vector<float> ipm_lane_;
     crosswalk::Detector crosswalk_detector_;

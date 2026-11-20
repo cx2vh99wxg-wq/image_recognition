@@ -72,5 +72,22 @@ int main(){
  front_person_wire::put(wire+68,front_person_wire::checksum(wire,68));
  assert(legacy_v2.ingest(wire,sizeof wire,now,now,q) && q.flags==3);
  p={};assert(front_person_guard_observe(&p,&q,now,1)==0);
+    d.flags=FRONT_PERSON_VALID|FRONT_PERSON_READY|FRONT_CLOSE_CAR;
+    assert(front_person_wire::encode(wire,d,now));
+    assert(front_person_wire::get(wire+4)==0x00030048u);
+    front_person_wire::Receiver with_car;
+    assert(with_car.ingest(wire,sizeof wire,now,now,q) && (q.flags&FRONT_CLOSE_CAR));
+    assert(!front_person_hazard(&q));
+    p={};
+    assert(front_person_guard_observe(&p,&q,now,1)==FRONT_STOP_REQUEST);
+    d.flags=FRONT_PERSON_VALID|FRONT_PERSON_READY;
+    for(unsigned i=0;i<=6;++i) {
+        const uint64_t t=now+100000000ULL+i*500000000ULL;
+        ++d.source_id;
+        front_person_set_deadline(&d,t+FRONT_PERSON_TTL_NS);
+        assert(front_person_wire::encode(wire,d,t));
+        assert(with_car.ingest(wire,sizeof wire,t,t,q));
+        assert(front_person_guard_observe(&p,&q,t,1)==(i==6?FRONT_RESUME_ALLOWED:0));
+    }
  puts("FRONT PERSON POLICY/WIRE PASS: two sources use one STOP/clear rule, 3s, cutoff, session change and expiry");
 }

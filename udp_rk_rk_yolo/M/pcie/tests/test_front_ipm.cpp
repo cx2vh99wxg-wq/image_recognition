@@ -123,8 +123,10 @@ int main(int argc, char **argv)
                                                          corrected.data(), w, h, &trace, true);
     assert(trace.selected_left >= 0 && trace.selected_right >= 0);
     assert(trace.near_y == 178 && pair.left.last_y == 178 && pair.right.last_y == 205);
-    const auto turn = m_lane::estimate_ego_curve(pair, true);
-    assert(turn.confidence && turn.type == 2 && turn.span_px == 98);
+    // The corridor is slanted in the IPM image but has essentially no bend.
+    const auto heading = m_lane::estimate_ego_curve(pair, true);
+    assert(heading.confidence && heading.span_px == 98);
+    assert(heading.curvature < .0005 && heading.type == 0 && heading.angle == 0);
     std::fill(rgb.begin(), rgb.end(), 51);
     std::vector<uint16_t> wire(pixels);
     frame_pack_rgb565(rgb.data(), wire.data(), pixels);

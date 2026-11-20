@@ -1,12 +1,12 @@
 #ifndef FRONT_PERSON_DATA_H
 #define FRONT_PERSON_DATA_H
 #include <stdint.h>
-/* M corrected front camera, before lane overlay/IPM. Dedicated class-0 result;
- * no traffic-light color, lane decision or actuator state shares this record. */
+/* M front camera, before lane overlay/IPM. Person boxes and the close-car
+ * result share a capture timestamp, with separate flags and counts. */
 enum { FRONT_PERSON_VALID=1, FRONT_PERSON_READY=2, FRONT_PERSON_FOUND=4,
        FRONT_PERSON_ROAD_VALID=8, FRONT_PERSON_IN_PATH=16,
        FRONT_PERSON_PATH_UNKNOWN=32, FRONT_PERSON_ROI_MODE=64,
-       FRONT_RIDERS_ONLY=512 };
+       FRONT_RIDERS_ONLY=512, FRONT_CLOSE_CAR=2048 };
 #define FRONT_PERSON_CONFIDENCE_THRESHOLD .15f
 typedef struct {
     uint32_t session, source_id, count, flags;

@@ -11,6 +11,18 @@
 #include <vector>
 namespace m_lane
 {
+inline YOLOLineBoundary reconcile_line_style(const YOLOLineBoundary &near_view,
+                                             const YOLOLineBoundary &long_view)
+{
+    // The long view can reveal a dash period outside the nominal crop.
+    // A weak isolated gap there can also be a wiper or distorted far paint.
+    if (!long_view.type ||
+        (long_view.type == LINE_DASHED && long_view.gaps <= 1 &&
+         near_view.type == LINE_SOLID && near_view.duty >= 85))
+        return near_view;
+    return long_view;
+}
+
 /* 这是独立只读路径，不修改原弯道掩码或显示图像。 */
 class LineStyleAnalyzer
 {

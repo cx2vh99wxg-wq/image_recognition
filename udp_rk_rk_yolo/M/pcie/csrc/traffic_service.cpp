@@ -271,6 +271,14 @@ struct Service::Impl
             int w=124,h=102,x=(320-w)/2 + (calls%4==3 ? -24 : 26),y=100,dw=320,dh=240;
             if(close!=d->vehicles.end()) {x=80;y=82;w=176;h=148;dw=290;dh=205;}
             const bool foreground_rider=subject && subject->h>=34 && subject->y+subject->h>=182;
+            // Use spare native-detail passes to revisit small roadside trucks.
+            // Leave the signal scout, rider refinement and close vehicles first.
+            const bool roadside=frame.detail && !subject && close==d->vehicles.end() && calls%4!=0;
+            if (roadside) {
+                const auto window=roadside_truck_window(calls%4!=3);
+                x=window.x; y=window.y; w=window.width; h=window.height;
+                dw=window.output_width; dh=window.output_height;
+            }
             if(subject && (foreground_rider || calls%3==1)) {
                 w=h=std::max(94,std::min(156,int(subject->h*2.2f)));
                 x=std::max(0,std::min(320-w,int(subject->x+.5f*subject->w)-w/2));
@@ -301,6 +309,7 @@ struct Service::Impl
                 auto &b=v.box;const int ox=(320-dw)/2,oy=(240-dh)/2;
                 if(b.x<ox+1 || b.y<oy+1 || b.x+b.w>ox+dw-1 || b.y+b.h>oy+dh-1)continue;
                 b.x=x+(b.x-ox)*w/dw;b.y=y+(b.y-oy)*h/dh;b.w*=float(w)/dw;b.h*=float(h)/dh;
+                if(roadside && !roadside_truck_detection(v))continue;
                 const bool motor=display_vehicles::motor_vehicle(v.coco_class);
                 if(!motor && !std::any_of(d->people.candidates.begin(),d->people.candidates.end(),
                         [&](const Box &p){return seated_on_cycle(p,b);}))continue;
@@ -309,9 +318,7 @@ struct Service::Impl
                 });
                 if(existing==d->vehicles.end()) {
                     if(d->vehicles.size()<display_vehicles::CAPACITY)d->vehicles.push_back(v);
-                } else if(v.box.score>existing->box.score ||
-                          (v.coco_class==display_vehicles::Car && existing->coco_class==display_vehicles::Truck &&
-                           b.w>=78 && v.box.score>=.32f)) *existing=v;
+                } else if(prefer_vehicle_refinement(*existing,v)) *existing=v;
             }
         }
         d->compute_ns=traffic_clock_ns()-start;
@@ -392,6 +399,8 @@ struct Service::Impl
                     if(!tried_fit){fits=m_lane::fit_vehicle_markings(lane.front.lane_mask);tried_fit=true;}
                     set_lane_position(footprint,lanes,&fits);
                 }
+                if (vehicle.coco_class == display_vehicles::Car && close_car_in_path(footprint))
+                    person.flags |= FRONT_CLOSE_CAR;
                 vehicles.vehicles[vehicles.count++] = {vehicle.coco_class, footprint};
             }
         }

@@ -919,7 +919,7 @@ class RenderWorker
         thread_.join();
     }
 
-    void submit(const uint8_t *pixels, const uint8_t *hdmi_tile,
+    void submit(const uint8_t *pixels, bool crop_camera_preview, const uint8_t *hdmi_preview,
                 const traffic::Service *service, uint64_t captured)
     {
         if (!accepting_.load(std::memory_order_relaxed))
@@ -929,13 +929,14 @@ class RenderWorker
             if (has_pending_)
                 ++totals_.replaced;
             memcpy(pending_.data(), pixels, pending_.size());
-            pending_uses_hdmi_ = hdmi_tile != nullptr;
-            if (hdmi_tile)
+            pending_camera_crop_ = crop_camera_preview;
+            if (hdmi_preview)
             {
                 const size_t lower_right = (DISPLAY_HEIGHT / 2 * DISPLAY_WIDTH + DISPLAY_WIDTH / 2) * 3;
-                hdmi_front::apply_bgr(hdmi_tile, pending_.data() + lower_right, DISPLAY_WIDTH);
+                auto *preview = pending_.data() + lower_right;
+                hdmi_front::apply_bgr(hdmi_preview, preview, DISPLAY_WIDTH);
                 if (service)
-                    service->mark_hdmi_preview(pending_.data() + lower_right, DISPLAY_WIDTH * 3, captured);
+                    service->mark_hdmi_preview(preview, DISPLAY_WIDTH * 3, captured);
             }
             has_pending_ = true;
         }
@@ -970,7 +971,7 @@ class RenderWorker
                 exit_requested_.store(true, std::memory_order_relaxed);
                 break;
             }
-            bool uses_hdmi;
+            bool crop_camera_preview;
             {
                 std::unique_lock<std::mutex> lock(mutex_);
                 ready_.wait_for(lock, std::chrono::milliseconds(50),
@@ -980,12 +981,12 @@ class RenderWorker
                 if (!has_pending_)
                     continue;
                 working_.swap(pending_);
-                uses_hdmi = pending_uses_hdmi_;
+                crop_camera_preview = pending_camera_crop_;
                 has_pending_ = false;
             }
             // Xorg waits happen after releasing the handoff lock.
             const uint64_t start = monotonic_ns();
-            if (!uses_hdmi)
+            if (crop_camera_preview)
                 front_crop.apply(working_.data());
             if (render_engine_render_frame_with_detections(&engine, working_.data()) == 0)
             {
@@ -1003,7 +1004,7 @@ class RenderWorker
     std::mutex mutex_;
     std::condition_variable ready_;
     RenderTotals totals_ = {};
-    bool pending_uses_hdmi_ = false;
+    bool pending_camera_crop_ = false;
     bool has_pending_ = false, stopping_ = false;
     std::atomic<bool> accepting_{false}, exit_requested_{false};
     std::thread thread_;
@@ -1261,7 +1262,7 @@ int main()
     std::unique_ptr<m_lane::FrontRadialPreview> ipm_preview;
     std::unique_ptr<m_lane::FrontRadialPreview> lane_input;
     std::unique_ptr<m_lane::FrontRadialPreview> traffic_input;
-    std::unique_ptr<m_lane::FrontRadialPreview> hdmi_lane_input, hdmi_ipm;
+    std::unique_ptr<m_lane::FrontRadialPreview> hdmi_lane_input, hdmi_ipm, hdmi_style_ipm;
     std::unique_ptr<traffic::Service> traffic_service;
     std::unique_ptr<m_lane::LatestWorker> lane_worker;
     int frame_count = 0;
@@ -1469,7 +1470,7 @@ int main()
         if (view->enabled())
         {
             ipm_preview = std::move(view);
-            fprintf(stderr, "[IPM_TEST] enabled M+S front preview\n");
+            fprintf(stderr, "[IPM_TEST] enabled for lane geometry and front preview\n");
         }
         else
             fprintf(stderr, "[IPM_TEST] invalid preview calibration\n");
@@ -1481,8 +1482,11 @@ int main()
     const auto hdmi_calibration = hdmi_capture.enabled()
         ? m_lane::GroundProjection::for_camera(nullptr, "front_hdmi_ipm.conf")
         : m_lane::GroundProjection();
+    const auto hdmi_style_calibration = hdmi_capture.enabled()
+        ? m_lane::GroundProjection::for_camera(std::getenv("VISION_HDMI_LINE_IPM"), "front_hdmi_line_ipm.conf")
+        : m_lane::GroundProjection();
     if (!hdmi_calibration.valid())
-        fprintf(stderr, "[HDMI] Invalid front_hdmi_ipm.conf; using nominal IPM for preview\n");
+        fprintf(stderr, "[HDMI] Invalid front_hdmi_ipm.conf; using nominal IPM\n");
     if (hdmi_capture.enabled() && lane_input)
         hdmi_lane_input.reset(new m_lane::FrontRadialPreview(
             IMAGE_WIDTH, IMAGE_HEIGHT, m_lane::FrontRadial(), nullptr, true));
@@ -1492,6 +1496,7 @@ int main()
         {
             const char *traffic_model = getenv("VISION_TRAFFIC_MODEL");
             m_lane::GroundProjection hdmi_ground;
+            hdmi_style_ipm.reset();
             if (hdmi)
             {
                 const auto rect = hdmi_capture.content_rect();
@@ -1511,6 +1516,17 @@ int main()
                 }
                 fprintf(stderr, "[HDMI] IPM=%s lens=off content=%dx%d+%d+%d\n",
                         calibrated ? "calibrated" : "nominal", rect.width, rect.height, rect.x, rect.y);
+                if (hdmi_style_calibration.enabled() && hdmi_style_calibration.valid())
+                {
+                    const auto style_ground = m_lane::GroundProjection::for_video(
+                        hdmi_style_calibration, rect.x, rect.y, rect.width, rect.height);
+                    hdmi_style_ipm.reset(new m_lane::FrontRadialPreview(
+                        IMAGE_WIDTH, IMAGE_HEIGHT, m_lane::FrontRadial(), &style_ground));
+                    if (!hdmi_style_ipm->enabled())
+                        hdmi_style_ipm.reset();
+                }
+                if (hdmi_style_calibration.enabled() || !hdmi_style_calibration.valid())
+                    fprintf(stderr, "[HDMI] marking IPM=%s\n", hdmi_style_ipm ? "calibrated" : "default");
             }
             if (!hdmi && !lane_input && !traffic_input)
             {
@@ -1527,7 +1543,7 @@ int main()
                 hdmi ? &hdmi_ground : nullptr));
             lane_worker.reset(new m_lane::LatestWorker(&yolo_engine, IMAGE_WIDTH, IMAGE_HEIGHT,
                 traffic_service.get(), hdmi ? hdmi_ipm.get() : ipm_preview.get(),
-                hdmi ? hdmi_lane_input.get() : lane_input.get(), hdmi));
+                hdmi ? hdmi_lane_input.get() : lane_input.get(), hdmi, hdmi_style_ipm.get()));
             return true;
         }
         catch (const std::exception &error)
@@ -1552,27 +1568,7 @@ int main()
     line_ipc_write(&line_ipc, &line_initial);
     m_lane::LineStyleAnalyzer synchronous_line_analyzer;
     m_lane::FrontCameraLayout front_layout;
-    std::unique_ptr<m_lane::FrontRadialPreview> front_preview;
-    const char *preview_mode = getenv("LANE_RADIAL_PREVIEW");
-    if (!ipm_preview && (!preview_mode || strcmp(preview_mode, "0") != 0))
-    {
-        const auto camera = m_lane::FrontRadial::for_camera(getenv("LANE_RADIAL_LAMBDA"),
-                                                           "front_radial.conf");
-        if (camera.valid() && camera.enabled())
-        {
-            try
-            {
-                front_preview.reset(new m_lane::FrontRadialPreview(IMAGE_WIDTH, IMAGE_HEIGHT, camera));
-                if (front_preview->enabled())
-                    printf("[FRONT_PREVIEW] centered 4:3 crop enabled lambda=%.6f scale=%.3f M=top-left S=front-center\n",
-                           camera.coefficient(), front_preview->display_scale());
-            }
-            catch (const std::exception &error)
-            {
-                fprintf(stderr, "[FRONT_PREVIEW] unavailable: %s\n", error.what());
-            }
-        }
-    }
+    m_lane::LocalFrontPreviewCrop front_crop(IMAGE_WIDTH, IMAGE_HEIGHT);
     bool using_hdmi = false;
     uint64_t last_hdmi_submission = 0;
     while (g_running)
@@ -1764,14 +1760,27 @@ int main()
         // 转换RGB888回RGB565格式到专用的输出缓冲区（避免与原始数据缓冲区冲突）
         // 停用示例，仅供对照：printf("[DEBUG] RGB888转RGB565开始\n");
         mark = monotonic_ns();
-        // S reads the processed front view from the lower-right UDP slot.
-        rgb888_to_rgb565(image_buf_888, (uint16_t *)image_buf_565_out, IMAGE_WIDTH * IMAGE_HEIGHT);
+        // When IPM is available, the UDP center tile will be replaced below.
+        // The unwarped preview crop is then only needed by the local renderer.
+        if (!active_ipm)
+        {
+            if (using_hdmi)
+            {
+                const size_t lower_right = (IMAGE_HEIGHT / 2 * IMAGE_WIDTH + IMAGE_WIDTH / 2) * 3;
+                auto *preview = image_buf_888 + lower_right;
+                hdmi_front::apply_bgr(hdmi_tile, preview, IMAGE_WIDTH);
+                if (traffic_service)
+                    traffic_service->mark_hdmi_preview(preview, IMAGE_WIDTH * 3, captured_ns);
+            }
+            else
+                front_crop.apply(image_buf_888);
+        }
+        auto *udp_frame = reinterpret_cast<uint16_t *>(image_buf_565_out);
+        rgb888_to_rgb565(image_buf_888, udp_frame, IMAGE_WIDTH * IMAGE_HEIGHT);
         if (active_ipm)
-            active_ipm->apply(image_buf_888, (uint16_t *)image_buf_565_out,
+            active_ipm->apply(image_buf_888, udp_frame,
                               ipm_result ? &ipm_result->ipm_pair : nullptr,
                               ipm_result ? &ipm_result->ipm_points : nullptr);
-        else if (front_preview)
-            front_preview->apply(image_buf_888, (uint16_t *)image_buf_565_out);
         perf.colors += monotonic_ns() - mark;
         // 停用示例，仅供对照：printf("[DEBUG] RGB888转RGB565完成\n");
 
@@ -1800,7 +1809,8 @@ int main()
         if (renderer)
         {
             mark = monotonic_ns();
-            renderer->submit(image_buf_888, hdmi_tile, traffic_service.get(), captured_ns);
+            renderer->submit(image_buf_888, !using_hdmi && active_ipm,
+                             active_ipm ? hdmi_tile : nullptr, traffic_service.get(), captured_ns);
             perf.display_submit += monotonic_ns() - mark;
         }
 #endif

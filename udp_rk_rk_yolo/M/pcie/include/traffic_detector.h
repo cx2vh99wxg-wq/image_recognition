@@ -1,6 +1,7 @@
 #ifndef TRAFFIC_DETECTOR_H
 #define TRAFFIC_DETECTOR_H
 #include "traffic_vision.h"
+#include "../../../common/perception/include/display_vehicles.h"
 #include "../../../common/perception/include/rider_geometry.h"
 #include <memory>
 #include <string>
@@ -15,6 +16,17 @@ struct VehicleDetection {
     unsigned coco_class;
     Box box;
 };
+inline bool prefer_vehicle_refinement(const VehicleDetection &full, const VehicleDetection &crop)
+{
+    // Magnification changes both context and confidence. A crop around a
+    // passenger car can cut out its rear glass and score the body as a truck.
+    if (full.coco_class == display_vehicles::Car && full.box.score >= .50f &&
+        crop.coco_class == display_vehicles::Truck)
+        return false;
+    return crop.box.score > full.box.score ||
+           (crop.coco_class == display_vehicles::Car && full.coco_class == display_vehicles::Truck &&
+            crop.box.w >= 78 && crop.box.score >= .32f);
+}
 inline bool seated_on_cycle(const Box &person, const Box &cycle)
 {
     return rider_geometry::seated(person, cycle);

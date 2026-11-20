@@ -15,6 +15,25 @@ int main() {
     car.x+=100;assert(set_lane_position(car,traces) && car.gx==1500);
     car.x-=200;assert(set_lane_position(car,traces) && car.gx==-500);
     car.y+=30;assert(!set_lane_position(car,traces));
+    // Recorded YOLO box for the lead car at 19.128 s in video_20260929_113343.
+    const auto recorded_lead = display_people::box(display_people::Front,82,128,118,89,.30f);
+    assert(close_car_in_path(recorded_lead));
+    auto close=display_people::box(display_people::Front,68,124,140,76,.25f);
+    assert(close_car_in_path(close)); // The bumper occludes both lane markings.
+    close.flags=display_vehicles::LaneRelative;
+    close.gx=-150;
+    assert(!close_car_in_path(close)); // A measured adjacent lane overrides image centering.
+    close.gx=500;
+    assert(close_car_in_path(close));
+    close.quality=24;
+    assert(!close_car_in_path(close));
+    close.quality=80;
+    close.flags=0;
+    close.x=12;
+    assert(!close_car_in_path(close)); // Large left-side car without usable lane lines.
+    close.x=68;
+    close.w=78;
+    assert(!close_car_in_path(close)); // Same lane, but less close.
     // Two interrupted markings with a vanishing point around (160,120).
     std::vector<float> dashed(320*240);
     for (int y=136; y<=210; ++y) {

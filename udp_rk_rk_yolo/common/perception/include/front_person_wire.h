@@ -39,9 +39,11 @@ inline bool valid(const FrontPersonData &d)
             !!(d.flags & FRONT_PERSON_PATH_UNKNOWN)!=!!d.unknown_count ||
             (road && (d.road_pixels<64 || d.road_source_id!=d.source_id)) ||
             (!road && (d.risk_count || d.outside_count))) return false;
-    } else if ((d.flags & ~(7u | FRONT_RIDERS_ONLY)) || d.risk_count || d.outside_count || d.unknown_count ||
+    } else if ((d.flags & ~(7u | FRONT_RIDERS_ONLY | FRONT_CLOSE_CAR)) || d.risk_count || d.outside_count || d.unknown_count ||
                d.road_pixels || d.road_source_id) return false;
-    return d.session && (d.flags & ~(127u | FRONT_RIDERS_ONLY))==0 &&
+    return d.session && (d.flags & ~(127u | FRONT_RIDERS_ONLY | FRONT_CLOSE_CAR))==0 &&
+           (!(d.flags & FRONT_CLOSE_CAR) ||
+            (d.flags & (FRONT_PERSON_VALID | FRONT_PERSON_READY)) == (FRONT_PERSON_VALID | FRONT_PERSON_READY)) &&
            (!(d.flags & FRONT_RIDERS_ONLY) || (d.flags & FRONT_PERSON_FOUND)) &&
            d.quality<=100 && d.count<=100000 &&
            d.x<=320 && d.y<=240 && d.width<=320-d.x && d.height<=240-d.y &&
@@ -56,7 +58,8 @@ inline bool encode(uint8_t *p, const FrontPersonData &d, uint64_t now)
     const uint32_t age =
         (uint32_t)((FRONT_PERSON_TTL_NS - (front_person_deadline(&d) - now) + 999999ULL) / 1000000ULL);
     const uint32_t v[] = {
-        0x46505331u, 0x00020048u, d.session, d.source_id, d.count, age,
+        0x46505331u, (d.flags & FRONT_CLOSE_CAR) ? 0x00030048u : 0x00020048u,
+        d.session, d.source_id, d.count, age,
         d.flags, d.quality, d.x, d.y, d.width, d.height, d.risk_count,d.outside_count,
         d.unknown_count,d.road_pixels,d.road_source_id};
     for (int i = 0; i < 17; ++i)
@@ -74,8 +77,10 @@ class Receiver
     bool ingest(const uint8_t *p, size_t n, uint64_t received, uint64_t now, FrontPersonData &d)
     {
         if (n != SIZE || get(p) != 0x46505331u ||
-            (get(p + 4) != 0x00010048u && get(p + 4) != 0x00020048u) ||
             get(p + 68) != checksum(p, 68))
+            return false;
+        const uint32_t version = get(p + 4);
+        if (version != 0x00010048u && version != 0x00020048u && version != 0x00030048u)
             return false;
         uint32_t session = get(p + 8), id = get(p + 12), age = get(p + 20);
         if (!session || age >= 750 || received > now)
@@ -85,15 +90,17 @@ class Receiver
         q.source_id = id;
         q.count=get(p+16); q.flags=get(p+24); q.quality=get(p+28);
         q.x=get(p+32); q.y=get(p+36); q.width=get(p+40); q.height=get(p+44);
-        if (get(p+4)==0x00010048u) {
+        if (version==0x00010048u) {
             if (q.flags & ~7u) return false;
             for (int i=48;i<68;i+=4) if(get(p+i)) return false;
         } else {
             // Ignore retired v2 control bits. A legacy display-only packet
             // without its capture-valid bit still cannot authorize release.
-            if ((q.flags & 128u) && !(q.flags & 1024u))
-                return false;
-            q.flags &= ~(128u | 256u | 1024u);
+            if (version == 0x00020048u) {
+                if ((q.flags & FRONT_CLOSE_CAR) || ((q.flags & 128u) && !(q.flags & 1024u)))
+                    return false;
+                q.flags &= ~(128u | 256u | 1024u);
+            }
             q.risk_count=get(p+48); q.outside_count=get(p+52); q.unknown_count=get(p+56);
             q.road_pixels=get(p+60); q.road_source_id=get(p+64);
         }

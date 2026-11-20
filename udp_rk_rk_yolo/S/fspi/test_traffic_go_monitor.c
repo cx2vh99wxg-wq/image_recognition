@@ -127,7 +127,7 @@ int main(void) {
     traffic_policy.blocked=0;traffic_policy_initialized=0;
     publish(TRAFFIC_UNKNOWN,0,0);s=poll();assert(s.blocked&&(last_permission&4));
     assert((last_permission&0x40)&&warning.blocked==2&&writes>8);
-    // 档位告警只发布状态，不写运动或 STOP；
+    // 档位只发布状态，不写运动或 STOP；
     // 上方 ioctl 替身会拒绝既有 reg5 以外的全部写入。
     for(unsigned gear=1;gear<=3;++gear){
         speed_reply=0xc0|gear;poll();SpeedWarningData status={0};

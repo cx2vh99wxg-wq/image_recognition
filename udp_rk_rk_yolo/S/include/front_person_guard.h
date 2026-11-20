@@ -24,7 +24,8 @@ static inline unsigned front_person_guard_observe(FrontPersonGuard *p, const Fro
 
     const int changed = !p->have_source || d->session != p->session;
     const int32_t step = (int32_t)(d->source_id - p->source_id);
-    const int occupied = (d->flags & FRONT_PERSON_FOUND) != 0;
+    const int car = (d->flags & FRONT_CLOSE_CAR) != 0;
+    const int occupied = car || (d->flags & FRONT_PERSON_FOUND) != 0;
     if (changed || now >= p->evidence_deadline || occupied)
         p->clear_since = p->clear_latest = 0;
     if (!changed && step < 0)
@@ -45,7 +46,7 @@ static inline unsigned front_person_guard_observe(FrontPersonGuard *p, const Fro
             p->clear_latest = now;
         }
     }
-    if (front_person_hazard(d))
+    if (car || front_person_hazard(d))
         return FRONT_STOP_REQUEST;
     return p->clear_since && p->clear_latest - p->clear_since >= FRONT_CLEAR_NS
         ? FRONT_RESUME_ALLOWED : 0;

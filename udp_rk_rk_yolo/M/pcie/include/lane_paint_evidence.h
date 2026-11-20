@@ -35,6 +35,34 @@ class LanePaintEvidence {
     static int median(int a,int b,int c) {
         return std::max(std::min(a,b),std::min(std::max(a,b),c));
     }
+    bool dark_crossing(double x, double y, double nx, double ny) const
+    {
+        const auto blocked = [&](double px, double py) {
+            Pixel center;
+            if (!read(px,py,center) || center.value>65)
+                return false;
+            for (int sign : {-1,1})
+            {
+                Pixel near, far;
+                if ((!read(px+sign*8*ny,py-sign*8*nx,near) || near.value<center.value+30) &&
+                    (!read(px+sign*16*ny,py-sign*16*nx,far) || far.value<center.value+30))
+                    return false;
+            }
+            return true;
+        };
+        if (!blocked(x,y))
+            return false;
+        // A wiper or shadow edge crosses the stripe and the road on both
+        // sides. A real interval between dashes leaves the flanks unchanged.
+        for (int side : {-1,1}) {
+            bool flank = false;
+            for (int shift : {-2,0,2})
+                flank |= blocked(x+side*8*nx-shift*ny,y+side*8*ny+shift*nx);
+            if (!flank)
+                return false;
+        }
+        return true;
+    }
   public:
     LanePaintEvidence(const uint8_t *image,int width,int height,const uint8_t *coverage)
         :image_(image),coverage_(coverage),width_(width),height_(height){}
@@ -45,6 +73,8 @@ class LanePaintEvidence {
     {
         if(!image_ || width_<1 || height_<1)return -1;
         const double nx=1./std::sqrt(1.+slope*slope),ny=-slope*nx;
+        if (dark_crossing(x,y,nx,ny))
+            return -1;
         int strength=0,supported=0;
         for(int offset=-4;offset<=4;++offset) {
             const double px=x+offset;
@@ -77,6 +107,8 @@ class LanePaintEvidence {
         Pixel center;
         if(!read(x,y,center)) return -1;
         const double nx=1./std::sqrt(1.+slope*slope),ny=-slope*nx;
+        if (dark_crossing(x,y,nx,ny))
+            return PAINT_MISSING;
         const double tx=-ny,ty=nx;
         const int search=std::max(4,std::min(6,mask_width/2+3));
         const int distance=std::max(6,std::min(12,mask_width/2+4));

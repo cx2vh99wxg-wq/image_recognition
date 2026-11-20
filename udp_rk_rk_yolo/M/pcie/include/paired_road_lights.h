@@ -12,6 +12,7 @@ struct RoadLight {
     double radius=0;
     int chroma=0;
     bool rimmed=false;
+    bool dark_housing=false;
 };
 
 inline unsigned lamp_chroma(const uint8_t *p)
@@ -59,11 +60,12 @@ inline RoadLight paired_road_light(const uint8_t *rgb,int w,int h,int stride,
         }
         const int bw=xmax-xmin+1,bh=ymax-ymin+1;
         if(bw>14*w/320 || bh>14*w/320 || std::max(bw,bh)>(framed?4:3)*std::min(bw,bh)) continue;
-        int chroma=0,peak=0;
+        int chroma=0,peak=0,brightest_red=0;
         for (const int pixel : component) {
             const uint8_t *p=rgb+(pixel/w)*stride+(pixel%w)*3;
             const int c=state==TRAFFIC_RED ? p[0]-std::max(p[1],p[2]) : std::min(p[1],p[2])-p[0];
             if (c>chroma) { chroma=c; peak=state==TRAFFIC_RED?p[0]:p[1]; }
+            if (state==TRAFFIC_RED && c>=45) brightest_red=std::max(brightest_red,int(p[0]));
         }
         // Pale cyan window reflections can have the correct hue and housing
         // geometry. Require an emitting core in each candidate green head.
@@ -103,6 +105,38 @@ inline RoadLight paired_road_light(const uint8_t *rgb,int w,int h,int stride,
                 if(heads.size()>=128)return {};
                 heads.push_back(best_shell);
                 continue;
+            }
+        }
+        if (framed && ((state==TRAFFIC_GREEN && chroma>=65 && peak>=165) ||
+                       (state==TRAFFIC_RED && chroma>=60 && brightest_red>=160))) {
+            // Two adjoining LEDs may form one elongated core. Find the dark
+            // unlit end beyond the component, on the side for this color.
+            const int offset = std::max(3, bh);
+            const int edge=side>0 ? xmax : xmin;
+            int housing = edge;
+            int run = 0;
+            for (int d=1; d<=2*offset; ++d) {
+                const int xx=edge+side*d;
+                if (xx<2 || xx>=w-2) break;
+                const int center = lum(xx,y);
+                if (y-offset < 1 || y+offset >= bottom)
+                    break;
+                const int background = std::min(lum(xx,y-offset),lum(xx,y+offset));
+                if (center < 115 && background >= center + 35) {
+                    if (++run >= 2)
+                        housing = xx;
+                } else
+                    run = 0;
+            }
+            if (housing != edge) {
+                if (heads.size() >= 128)
+                    return {};
+                RoadLight head;
+                head.x=x;head.y=y;head.radius=std::max(1.,bh*.5);
+                head.state=state;head.chroma=chroma;head.dark_housing=true;
+                const int left=std::min(housing,xmin),right=std::max(housing,xmax);
+                head.box=clipped(Box(left,ymin-1,right-left+2,bh+2,.7f),w,h);
+                heads.push_back(head);
             }
         }
         if(framed)continue;
@@ -156,9 +190,14 @@ inline RoadLight paired_road_light(const uint8_t *rgb,int w,int h,int stride,
         // An oblique approach tilts both housings and their connecting bar.
         // Require two saturated cores before searching the wider slope range.
         const bool rims=a.rimmed && b.rimmed;
+        const bool dark_pair=a.dark_housing || b.dark_housing;
+        if (dark_pair && (!framed ||
+            dx < std::max(17.,4*r) || dx > 140 || dy > std::max(1.5,dx*.07)))
+            continue;
         const bool bright_pair = rims || std::min(a.chroma,b.chroma)>=92;
         const double tilt = bright_pair ? .18 : .06;
-        if(std::min(a.radius,b.radius)<(rims?.40:.62)*r || dx<(rims?6:9)*r || dx>(rims?44:31)*r ||
+        if(std::min(a.radius,b.radius)<(rims?.40:.62)*r || (!dark_pair && dx<(rims?6:9)*r) ||
+           dx>(rims?44:31)*r ||
            dy>std::max(1.5,std::min(r*(bright_pair?3.:1.5),dx*tilt))) continue;
         // An overhead bar has a continuous horizontal edge BETWEEN the two
         // housings. Repeating windows, leaves and colored car trim also produce
@@ -178,7 +217,8 @@ inline RoadLight paired_road_light(const uint8_t *rgb,int w,int h,int stride,
                 const int delta=2*lum(x,y)-lum(x,y-offset)-lum(x,y+offset);
                 bright+=delta>=25;shadow+=delta<=-25;
             }
-            bar=std::max(bright,shadow)>=(rims?6:7);
+            const bool red_pair=a.state==TRAFFIC_RED && b.state==TRAFFIC_RED;
+            bar=dark_pair ? shadow>=(red_pair?6:7) : std::max(bright,shadow)>=(rims?6:7);
         }
         if(!bar)continue;
         if(a.state!=b.state){conflict=true;continue;}
@@ -194,8 +234,10 @@ inline RoadLight paired_road_light(const uint8_t *rgb,int w,int h,int stride,
     }
     if(conflict)return {};
     if(result.state){if(saw_pair)*saw_pair=true;return result;}
-    if(anchor)for(const auto &head:heads)if(same_road_head(*anchor,head))return head;
+    if(anchor)for(const auto &head:heads)if(!head.dark_housing && same_road_head(*anchor,head))return head;
     if(framed) for(const auto &head:heads) {
+        if (head.dark_housing)
+            continue;
         // A pole may obscure one housing. Require the remaining housing to
         // attach to a long, pale crossbar with a dark edge on both sides.
         const int length=std::max(6,int(head.box.w));
@@ -277,7 +319,7 @@ public:
             const bool recent=framed_stamp_ && stamp>framed_stamp_ && stamp-framed_stamp_<=450000000ULL;
             auto next=paired_road_light(rgb,width,width*3/4,width*3,
                                        recent&&framed_hits_>=3 ? &framed_previous_ : nullptr,nullptr,true);
-            const bool tracking=recent && next.state==TRAFFIC_GREEN &&
+            const bool tracking=recent && next.state && next.state==framed_previous_.state &&
                 (same_road_head(framed_previous_,next) ||
                  (std::abs(framed_previous_.x-next.x)<=18 && std::abs(framed_previous_.y-next.y)<=14 &&
                   std::max(framed_previous_.radius,next.radius)<=2.3*std::min(framed_previous_.radius,next.radius)));
@@ -286,7 +328,8 @@ public:
                 framed_stamp_=stamp;framed_previous_=next;
                 if(framed_hits_>=3 || (next.partner_x>=0 && (framed_hits_>=2 || (next.rimmed && next.chroma>=96))))head=next;
             }
-            if(!head.state && !next.state && recent && framed_hits_>=2)
+            if(!head.state && !next.state && recent && framed_hits_>=2 &&
+               framed_previous_.state==TRAFFIC_GREEN)
                 head=current_green(rgb,width,framed_previous_);
         } else if(head.state==TRAFFIC_GREEN) {
             framed_previous_=head;framed_hits_=3;framed_stamp_=stamp;

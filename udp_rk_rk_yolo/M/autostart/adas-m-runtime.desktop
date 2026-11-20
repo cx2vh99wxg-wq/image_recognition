@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ADAS M Board
+TryExec=/usr/bin/xterm
+Exec=/usr/bin/xterm -hold -T "ADAS M Board" -e /usr/bin/make -C /home/linaro/M run-installed
+Path=/home/linaro/M
+OnlyShowIn=XFCE;
+Terminal=false

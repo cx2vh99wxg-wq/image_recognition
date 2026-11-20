@@ -90,13 +90,12 @@ int main(int argc, char **argv){
         auto bird=m_lane::estimate_ego_curve_mapped(scene,[&](m_lane::ImagePoint &point){
             return ground.ground_at(point,320,240);
         },true);
-        assert(bird.confidence>=60&&bird.type==(slope<0?1u:slope>0?2u:0u));
-        assert(bird.angle==(slope?14u:0u));
+        assert(bird.confidence>=60&&bird.type==0&&bird.angle==0);
     }
-    // Check both sides of 25 degrees before rounding the transmitted angle.
+    // Check both sides of 30 degrees before rounding the transmitted angle.
     constexpr float radians_per_degree=.017453292519943295f;
-    const float below=240.f*.52f*std::tan(24.9f*radians_per_degree);
-    const float above=240.f*.52f*std::tan(25.1f*radians_per_degree);
+    const float below=240.f*.52f*std::tan(29.9f*radians_per_degree);
+    const float above=240.f*.52f*std::tan(30.1f*radians_per_degree);
     for(float heading:{below,-below}){
         auto low=m_lane::estimate_ego_curve(corridor(heading));
         assert(low.type==0&&low.confidence>=60&&low.angle==0);
@@ -109,10 +108,14 @@ int main(int argc, char **argv){
     above_curvature_limit.left.fit_c=above_curvature_limit.right.fit_c=12; // about 0.00142 px^-1
     auto moderate=m_lane::estimate_ego_curve(above_curvature_limit);
     assert(moderate.type==2&&moderate.confidence>=60&&moderate.angle==13);
-    auto left=corridor(above);auto right=corridor(-above);
+    const auto oblique_straight=m_lane::estimate_ego_curve(corridor(above));
+    assert(oblique_straight.type==0&&oblique_straight.confidence>=60&&oblique_straight.angle==0);
+    auto left=corridor(above+6.4f);auto right=corridor(-above+6.4f);
+    left.left.fit_c=left.right.fit_c=8;
+    right.left.fit_c=right.right.fit_c=8;
     auto l=m_lane::estimate_ego_curve(left);auto r=m_lane::estimate_ego_curve(right);
-    assert(l.type==1&&l.confidence>=60&&l.angle==25);
-    assert(r.type==2&&r.confidence>=60&&r.angle==25);
+    assert(l.type==1&&l.confidence>=60&&l.angle==30);
+    assert(r.type==2&&r.confidence>=60&&r.angle==30);
     // Production IPM point tracks use the same low-curvature threshold.
     for(double curvature:{.00069,.00071}) {
         const double slope=std::tan(20.*.017453292519943295);
@@ -125,12 +128,19 @@ int main(int argc, char **argv){
         assert(std::abs(ipm.curvature-curvature)<1.e-7);
         assert(ipm.type==(curvature<.0007?0u:2u));
     }
-    for(double degrees:{-35.,-30.,-25.1,-25.,-24.9,0.,24.9,25.,25.1,30.,35.}) {
-        double centers[5];
-        for(int i=0;i<5;++i) centers[i]=160.+(2-i)*20.*std::tan(degrees*.017453292519943295);
-        const auto ipm=m_lane::fit_ego_centers(centers,80,80,320,240,true,true);
-        assert(ipm.confidence>=60 && ipm.curvature<1e-6);
-        assert(ipm.type==(degrees<-25 ? 1u : degrees>25 ? 2u : 0u));
+    for (double curvature : {0., .000499, .000501, .00069}) {
+        for (double degrees : {-35., -30.1, -30., -29.9, 0., 29.9, 30., 30.1, 35.}) {
+            const double slope=std::tan(degrees*.017453292519943295);
+            double centers[5];
+            for (int i=0;i<5;++i) {
+                const double y=(2-i)*20.;
+                centers[i]=160.+slope*y+.5*curvature*std::pow(1.+slope*slope,1.5)*y*y;
+            }
+            const auto ipm=m_lane::fit_ego_centers(centers,80,80,320,240,true,true);
+            assert(ipm.confidence>=60 && std::abs(ipm.curvature-curvature)<1.e-7);
+            const unsigned expected = curvature<.0005 ? 0u : degrees<-30 ? 1u : degrees>30 ? 2u : 0u;
+            assert(ipm.type==expected);
+        }
     }
     auto translated=right;translated.left.fit_a+=20;translated.right.fit_a+=20;
     assert(m_lane::estimate_ego_curve(translated).angle==r.angle);
@@ -168,5 +178,5 @@ int main(int argc, char **argv){
     }
     auto invalid=raw;invalid.signed_angle_deg=NAN;invalid.angle=100;
     assert(!immediate.update(invalid,9,9000000000ULL).confidence);
-    puts("PASS ego curve geometry: immediate fresh heading, jumps and sign changes, duplicate/time/error rejection, 25-degree low-curvature gate");
+    puts("PASS ego curve geometry: straight below 0.0005, 30-degree low-curvature gate, immediate fresh heading and time rejection");
 }

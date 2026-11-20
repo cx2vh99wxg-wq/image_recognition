@@ -39,6 +39,22 @@ inline bool set_lane_position(display_people::Person &actor, const m_lane::Point
     return true;
 }
 
+inline bool close_car_in_path(const display_people::Person &actor)
+{
+    // Close 320x240 front-camera reference: a large car filling the lower field.
+    if (actor.quality < 25 || actor.w < 96 || actor.h < 48 || actor.y + actor.h < 174)
+        return false;
+    if (actor.flags & display_vehicles::LaneRelative)
+        return actor.gx >= 0 && actor.gx <= 1000;
+    if (actor.flags & display_people::OffRoad)
+        return false;
+    // A close bumper can hide both lines. Require a centered box that
+    // visibly covers the entire central travel band in that case.
+    const unsigned center_twice = actor.x * 2 + actor.w;
+    return actor.w >= 112 && center_twice >= 256 && center_twice <= 384 &&
+           actor.x <= 144 && actor.x + actor.w >= 176;
+}
+
 inline bool is_visible_rider(const Box &p, const std::vector<VehicleDetection> &vehicles)
 {
     for (const auto &v : vehicles) {

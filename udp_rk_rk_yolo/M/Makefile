@@ -46,7 +46,7 @@ INCLUDES = -I$(INCDIR)
 #############################################################################
 # 直接调用 make 时采用的入口
 #############################################################################
-.PHONY: all clean install help info pcie udp shared_memory debug release test status run run-background run-pcie run-udp run-both stop debug-shared-memory check-system distclean
+.PHONY: all clean install help info pcie udp shared_memory debug release test status run run-installed run-background run-pcie run-udp run-both stop debug-shared-memory check-system distclean
 
 all: info shared_memory pcie udp
 
@@ -148,7 +148,10 @@ run-udp: udp tune-network
 	cd $(UDP_DIR) && ./build/udp_sender
 
 # 运行完整M端系统
-run: all tune-network
+run: all
+
+# Desktop autostart uses deployed binaries without building on the root partition.
+run run-installed: tune-network
 	@echo "=== 运行M端FPGA系统 ==="
 	@echo "说明：系统: $$(uname -s) $$(uname -m)"
 	@echo "说明：时间: $$(date)"

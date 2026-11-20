@@ -32,7 +32,34 @@ static void framed_scene(std::vector<float>& mask,std::vector<uint8_t>& rgb,int 
     }
 }
 int main() {
+    YOLOLineBoundary near{}, distant{};
+    near.type=LINE_SOLID;
+    near.duty=92;
+    assert(m_lane::reconcile_line_style(near,distant).type==LINE_SOLID);
+    distant.type=LINE_DASHED;
+    distant.gaps=1;
+    assert(m_lane::reconcile_line_style(near,distant).type==LINE_SOLID);
+    distant.gaps=2;
+    assert(m_lane::reconcile_line_style(near,distant).type==LINE_DASHED);
     m_lane::LineStyleAnalyzer a;std::vector<float> mask;std::vector<uint8_t> rgb;
+    {
+        constexpr int w=320,h=240;
+        std::vector<uint8_t> wet(w*h*3,108);
+        const auto pixel=[&](int x,int y,uint8_t value){
+            std::fill_n(wet.data()+3*(y*w+x),3,value);
+        };
+        for (int y=60;y<190;++y)
+            for(int x=217;x<=221;++x)
+                pixel(x,y,225);
+        for(int x=197;x<=241;++x)
+            for(int y=103+(x-219)/4;y<=107+(x-219)/4;++y)
+                pixel(x,y,25);
+        const m_lane::LanePaintEvidence evidence(wet.data(),w,h,nullptr);
+        assert(evidence.sample(219,99,0,5)==m_lane::PAINT_PRESENT);
+        assert(evidence.sample(219,105,0,5)==m_lane::PAINT_MISSING);
+        assert(evidence.ridge_strength(219,105,0)<0);
+        assert(evidence.sample(100,105,0,5)==m_lane::PAINT_GAP);
+    }
     for(bool bend:{false,true})for(bool fill:{false,true})for(int l:{1,2})for(int r:{1,2}) {
         scene(mask,rgb,l,r,fill,bend);auto raw=a.analyze(mask.data(),320,240,rgb.data(),320,240);
         printf("scene bend=%d filled=%d expected=%d/%d got=%u/%u duty=%u/%u spans=%u/%u\n",bend,fill,l,r,raw.left.type,raw.right.type,raw.left.duty,raw.right.duty,raw.left.spans,raw.right.spans);
