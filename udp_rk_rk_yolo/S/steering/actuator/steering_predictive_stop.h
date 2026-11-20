@@ -21,7 +21,7 @@ static inline int steering_predictive_release_capped(float angle, float rate,
 {
     if (!isfinite(angle) || !isfinite(rate) || !isfinite(target) || !isfinite(tolerance) ||
         !isfinite(limit) || (direction != STEER_LEFT && direction != STEER_RIGHT) ||
-        tolerance <= 0 || tolerance > 3 || limit <= 0 || limit > 18 || fabsf(target) > limit ||
+        tolerance <= 0 || tolerance > 3 || limit <= 0 || limit > 20 || fabsf(target) > limit ||
         coast_ms > 200 || guard_ms < coast_ms || guard_ms > 500 || !isfinite(coast_cap) ||
         !isfinite(guard_cap) || coast_cap < 0 || guard_cap < coast_cap || guard_cap > 18 ||
         ((coast_cap == 0) != (guard_cap == 0)))

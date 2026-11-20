@@ -127,7 +127,7 @@ steer_result_t steering_response_choose(const steering_response_model_t *m, floa
 {
     if (!m || !out || !m->count || m->count > STEERING_RESPONSE_MAX_CELLS || !isfinite(current) ||
         !isfinite(target) || !isfinite(tol) || tol <= 0 || !isfinite(minimum) ||
-        !isfinite(maximum) || minimum >= maximum || minimum < -18 || maximum > 18 ||
+        !isfinite(maximum) || minimum >= maximum || minimum < -20 || maximum > 20 ||
         current < minimum || current > maximum || target < minimum || target > maximum || !max_us ||
         max_us > 60000 || !min_n)
         return STEER_ERR_ARGUMENT;

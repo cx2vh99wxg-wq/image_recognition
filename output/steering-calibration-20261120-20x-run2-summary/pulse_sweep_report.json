@@ -1,0 +1,167 @@
+{
+  "reference": [
+    295927152,
+    0.009
+  ],
+  "sources": [
+    {
+      "file": "output\\steering-calibration-20261120-20x-run2.csv",
+      "sha256": "393f58d19e7274ea56c8fd3abaae2c77303a496b262b6c92a22dcdee8335f943"
+    }
+  ],
+  "groups": [
+    {
+      "direction": 1,
+      "request_us": 19000,
+      "retained_samples": 4,
+      "moved_samples": 1,
+      "mean_turn_deg": 1.088
+    },
+    {
+      "direction": 2,
+      "request_us": 19000,
+      "retained_samples": 4,
+      "moved_samples": 1,
+      "mean_turn_deg": 0.8087500000000001
+    },
+    {
+      "direction": 1,
+      "request_us": 22000,
+      "retained_samples": 4,
+      "moved_samples": 1,
+      "mean_turn_deg": 0.764
+    },
+    {
+      "direction": 2,
+      "request_us": 22000,
+      "retained_samples": 4,
+      "moved_samples": 1,
+      "mean_turn_deg": 0.87525
+    },
+    {
+      "direction": 1,
+      "request_us": 25000,
+      "retained_samples": 4,
+      "moved_samples": 3,
+      "mean_turn_deg": 2.91025
+    },
+    {
+      "direction": 2,
+      "request_us": 25000,
+      "retained_samples": 4,
+      "moved_samples": 4,
+      "mean_turn_deg": 2.7635
+    },
+    {
+      "direction": 1,
+      "request_us": 30000,
+      "retained_samples": 4,
+      "moved_samples": 4,
+      "mean_turn_deg": 3.82725
+    },
+    {
+      "direction": 2,
+      "request_us": 30000,
+      "retained_samples": 4,
+      "moved_samples": 4,
+      "mean_turn_deg": 2.6165000000000003
+    },
+    {
+      "direction": 1,
+      "request_us": 40000,
+      "retained_samples": 4,
+      "moved_samples": 4,
+      "mean_turn_deg": 4.60675
+    },
+    {
+      "direction": 2,
+      "request_us": 40000,
+      "retained_samples": 4,
+      "moved_samples": 4,
+      "mean_turn_deg": 3.6465
+    },
+    {
+      "direction": 1,
+      "request_us": 50000,
+      "retained_samples": 0,
+      "moved_samples": 0,
+      "mean_turn_deg": null
+    },
+    {
+      "direction": 2,
+      "request_us": 50000,
+      "retained_samples": 4,
+      "moved_samples": 4,
+      "mean_turn_deg": 3.04675
+    },
+    {
+      "direction": 1,
+      "request_us": 60000,
+      "retained_samples": 0,
+      "moved_samples": 0,
+      "mean_turn_deg": null
+    },
+    {
+      "direction": 2,
+      "request_us": 60000,
+      "retained_samples": 4,
+      "moved_samples": 4,
+      "mean_turn_deg": 5.0015
+    },
+    {
+      "direction": 1,
+      "request_us": 70000,
+      "retained_samples": 0,
+      "moved_samples": 0,
+      "mean_turn_deg": null
+    },
+    {
+      "direction": 2,
+      "request_us": 70000,
+      "retained_samples": 6,
+      "moved_samples": 6,
+      "mean_turn_deg": 5.365666666666667
+    },
+    {
+      "direction": 1,
+      "request_us": 80000,
+      "retained_samples": 0,
+      "moved_samples": 0,
+      "mean_turn_deg": null
+    },
+    {
+      "direction": 2,
+      "request_us": 80000,
+      "retained_samples": 5,
+      "moved_samples": 5,
+      "mean_turn_deg": 6.4542
+    },
+    {
+      "direction": 1,
+      "request_us": 90000,
+      "retained_samples": 0,
+      "moved_samples": 0,
+      "mean_turn_deg": null
+    },
+    {
+      "direction": 2,
+      "request_us": 90000,
+      "retained_samples": 0,
+      "moved_samples": 0,
+      "mean_turn_deg": null
+    }
+  ],
+  "rejected": [
+    {
+      "file": "output\\steering-calibration-20261120-20x-run2.csv",
+      "row": 105,
+      "reason": "response outlier by median absolute deviation"
+    },
+    {
+      "file": "output\\steering-calibration-20261120-20x-run2.csv",
+      "row": 118,
+      "reason": "response outlier by median absolute deviation"
+    }
+  ],
+  "coverage_ready": false
+}

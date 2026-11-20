@@ -1,0 +1,208 @@
+{
+  "sources": [
+    {
+      "file": "output\\steering-calibration-20261120-20x-run1.csv",
+      "sha256": "a1eb1e16632c1c9ec6d034b0aedce1878134e0e9ea064c6f1172dbb2196ffa63"
+    },
+    {
+      "file": "output\\steering-calibration-20261120-20x-run2.csv",
+      "sha256": "393f58d19e7274ea56c8fd3abaae2c77303a496b262b6c92a22dcdee8335f943"
+    }
+  ],
+  "previous_runtime_table_sha256": "5ecbcb62be79f08d876d0de94eef8f70ebb92fcdf8afb7f22bf08432ce892401",
+  "runtime_table_sha256": "c32ee5882b1653509061c013ffea36f7c4a6ec7e252f76f801fcfd8180a5b800",
+  "unchanged_partitions_outside_center": 36,
+  "center_zone_deg": [
+    -2,
+    2
+  ],
+  "maximum_runtime_pulse_ms": 60,
+  "manual_adjustment": {
+    "pulse_ms": 19,
+    "direction": "left",
+    "calibration_mean_turn_deg": 1.5,
+    "method": "Scale moving observations other than the largest by a common factor. Preserve no-motion count, maximum observation and recorded transient bounds."
+  },
+  "groups": [
+    {
+      "pulse_ms": 19,
+      "direction": "left",
+      "retained_samples": 20,
+      "moved_samples": 9,
+      "measured_mean_turn_deg": 1.81085,
+      "calibration_mean_turn_deg": 1.5,
+      "included_in_runtime_table": true
+    },
+    {
+      "pulse_ms": 19,
+      "direction": "right",
+      "retained_samples": 20,
+      "moved_samples": 8,
+      "measured_mean_turn_deg": 1.1492,
+      "calibration_mean_turn_deg": 1.1492,
+      "included_in_runtime_table": true
+    },
+    {
+      "pulse_ms": 22,
+      "direction": "left",
+      "retained_samples": 20,
+      "moved_samples": 9,
+      "measured_mean_turn_deg": 1.7929,
+      "calibration_mean_turn_deg": 1.7929,
+      "included_in_runtime_table": true
+    },
+    {
+      "pulse_ms": 22,
+      "direction": "right",
+      "retained_samples": 20,
+      "moved_samples": 11,
+      "measured_mean_turn_deg": 1.6333,
+      "calibration_mean_turn_deg": 1.6333,
+      "included_in_runtime_table": true
+    },
+    {
+      "pulse_ms": 25,
+      "direction": "left",
+      "retained_samples": 19,
+      "moved_samples": 14,
+      "measured_mean_turn_deg": 3.06878947,
+      "calibration_mean_turn_deg": 3.06878947,
+      "included_in_runtime_table": true
+    },
+    {
+      "pulse_ms": 25,
+      "direction": "right",
+      "retained_samples": 20,
+      "moved_samples": 15,
+      "measured_mean_turn_deg": 2.3107,
+      "calibration_mean_turn_deg": 2.3107,
+      "included_in_runtime_table": true
+    },
+    {
+      "pulse_ms": 30,
+      "direction": "left",
+      "retained_samples": 18,
+      "moved_samples": 18,
+      "measured_mean_turn_deg": 4.01966667,
+      "calibration_mean_turn_deg": 4.01966667,
+      "included_in_runtime_table": true
+    },
+    {
+      "pulse_ms": 30,
+      "direction": "right",
+      "retained_samples": 20,
+      "moved_samples": 20,
+      "measured_mean_turn_deg": 2.9887,
+      "calibration_mean_turn_deg": 2.9887,
+      "included_in_runtime_table": true
+    },
+    {
+      "pulse_ms": 40,
+      "direction": "left",
+      "retained_samples": 20,
+      "moved_samples": 20,
+      "measured_mean_turn_deg": 4.64395,
+      "calibration_mean_turn_deg": 4.64395,
+      "included_in_runtime_table": true
+    },
+    {
+      "pulse_ms": 40,
+      "direction": "right",
+      "retained_samples": 20,
+      "moved_samples": 20,
+      "measured_mean_turn_deg": 3.27175,
+      "calibration_mean_turn_deg": 3.27175,
+      "included_in_runtime_table": true
+    },
+    {
+      "pulse_ms": 50,
+      "direction": "left",
+      "retained_samples": 15,
+      "moved_samples": 15,
+      "measured_mean_turn_deg": 5.7676,
+      "calibration_mean_turn_deg": 5.7676,
+      "included_in_runtime_table": true
+    },
+    {
+      "pulse_ms": 50,
+      "direction": "right",
+      "retained_samples": 19,
+      "moved_samples": 19,
+      "measured_mean_turn_deg": 3.51563158,
+      "calibration_mean_turn_deg": 3.51563158,
+      "included_in_runtime_table": true
+    },
+    {
+      "pulse_ms": 60,
+      "direction": "left",
+      "retained_samples": 15,
+      "moved_samples": 15,
+      "measured_mean_turn_deg": 7.28826667,
+      "calibration_mean_turn_deg": 7.28826667,
+      "included_in_runtime_table": true
+    },
+    {
+      "pulse_ms": 60,
+      "direction": "right",
+      "retained_samples": 19,
+      "moved_samples": 19,
+      "measured_mean_turn_deg": 5.276,
+      "calibration_mean_turn_deg": 5.276,
+      "included_in_runtime_table": true
+    },
+    {
+      "pulse_ms": 70,
+      "direction": "left",
+      "retained_samples": 6,
+      "moved_samples": 6,
+      "measured_mean_turn_deg": 7.94116667,
+      "calibration_mean_turn_deg": 7.94116667,
+      "included_in_runtime_table": false
+    },
+    {
+      "pulse_ms": 70,
+      "direction": "right",
+      "retained_samples": 19,
+      "moved_samples": 19,
+      "measured_mean_turn_deg": 5.385,
+      "calibration_mean_turn_deg": 5.385,
+      "included_in_runtime_table": false
+    },
+    {
+      "pulse_ms": 80,
+      "direction": "left",
+      "retained_samples": 3,
+      "moved_samples": 3,
+      "measured_mean_turn_deg": 9.64133333,
+      "calibration_mean_turn_deg": 9.64133333,
+      "included_in_runtime_table": false
+    },
+    {
+      "pulse_ms": 80,
+      "direction": "right",
+      "retained_samples": 20,
+      "moved_samples": 20,
+      "measured_mean_turn_deg": 6.79525,
+      "calibration_mean_turn_deg": 6.79525,
+      "included_in_runtime_table": false
+    },
+    {
+      "pulse_ms": 90,
+      "direction": "left",
+      "retained_samples": 1,
+      "moved_samples": 1,
+      "measured_mean_turn_deg": 11.286,
+      "calibration_mean_turn_deg": 11.286,
+      "included_in_runtime_table": false
+    },
+    {
+      "pulse_ms": 90,
+      "direction": "right",
+      "retained_samples": 0,
+      "moved_samples": 0,
+      "measured_mean_turn_deg": null,
+      "calibration_mean_turn_deg": null,
+      "included_in_runtime_table": false
+    }
+  ]
+}

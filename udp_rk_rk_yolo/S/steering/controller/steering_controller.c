@@ -120,7 +120,7 @@ steer_result_t steering_bind(steering_controller_io_t binding)
 steer_result_t steering_init(const steering_config_t *c)
 {
     if (!c || !isfinite(c->min_angle_deg) || !isfinite(c->max_angle_deg) ||
-        c->min_angle_deg >= c->max_angle_deg || c->min_angle_deg < -18 || c->max_angle_deg > 18 ||
+        c->min_angle_deg >= c->max_angle_deg || c->min_angle_deg < -20 || c->max_angle_deg > 20 ||
         !isfinite(c->tolerance_deg) || c->tolerance_deg < .1f || c->tolerance_deg > 3 ||
         !c->feedback_timeout_ms || c->feedback_timeout_ms > 250 || !c->max_pulse_ms ||
         c->max_pulse_ms > 250)

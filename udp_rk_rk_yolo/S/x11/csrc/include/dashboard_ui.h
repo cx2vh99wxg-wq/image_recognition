@@ -198,15 +198,15 @@ class Dashboard
             switch (status.steering_center_status)
             {
             case STEERING_CENTER_LIMIT_WAIT_IMU:
-                title = "STEERING LIMIT (+/-18 DEG)";
+                title = "STEERING LIMIT (+/-20 DEG)";
                 hint = "WAIT FOR IMU / KEEP AUTOPILOT OFF";
                 break;
             case STEERING_CENTER_LIMIT_SWITCH_OFF:
-                title = "STEERING LIMIT (+/-18 DEG)";
+                title = "STEERING LIMIT (+/-20 DEG)";
                 hint = "PARK AND SWITCH AUTOPILOT OFF";
                 break;
             case STEERING_CENTER_LIMIT_HOLD_STOP:
-                title = "STEERING LIMIT (+/-18 DEG)";
+                title = "STEERING LIMIT (+/-20 DEG)";
                 hint = "PARK, ALIGN WHEELS, HOLD S/R 3S";
                 break;
             case STEERING_CENTER_SWITCH_OFF: hint = "SWITCH AUTOPILOT OFF"; break;

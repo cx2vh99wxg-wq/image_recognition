@@ -33,7 +33,12 @@ def export_partition(model):
     reproduced=fit([s['file'] for s in sources],model['partition_width_deg'])
     if reproduced['cells']!=model['cells'] or reproduced['reference']!=tuple(model['reference']):
         raise ValueError('Partition statistics do not reproduce from real trials')
-    cells=[c for c in model['cells'] if not c['brake_us']]
+    return encode_partition_cells(model['cells'])
+
+
+def encode_partition_cells(cells):
+    """Encode cells after the caller validates their source measurements."""
+    cells=[c for c in cells if not c['brake_us']]
     if not 1<=len(cells)<=128:raise ValueError('Runtime supports 1..128 single-pulse partitions')
     lines=['STEER_RESPONSE_TABLE_V2 '+str(len(cells))]
     for c in cells:

@@ -255,7 +255,11 @@ int main(int argc,char **argv){
     assert(steering_runtime_init(0) == STEER_OK);
     feed();
     steering_runtime_tick();
-    angle = -14.8f;
+    angle = -15.6f; /* -19 degrees relative to the saved 3.4 degree zero. */
+    feed();
+    steering_runtime_tick();
+    assert(steering_runtime_center_input(0, 1, 0) == STEERING_CENTER_HIDDEN);
+    angle = -16.8f;
     feed();
     steering_runtime_tick();
     assert(steering_runtime_center_input(0, 1, 0) == STEERING_CENTER_LIMIT_SWITCH_OFF);
@@ -316,8 +320,12 @@ int main(int argc,char **argv){
     assert(!active && starts == 1 && state.status == STEERING_SETTLED && fabsf(state.angle_deg - 5) < 1);
     steering_runtime_close();
 
-    angle = 22.5f;
+    angle = 24.25f; /* Exactly +20 degrees relative to the saved 4.25 degree zero. */
     assert(steering_runtime_init(0) == STEER_OK);
+    feed();
+    steering_runtime_tick();
+    assert(steering_runtime_center_input(0, 1, 1) == STEERING_CENTER_HIDDEN);
+    angle = 24.5f;
     feed();
     steering_runtime_tick();
     assert(steering_runtime_center_input(0, 1, 1) == STEERING_CENTER_LIMIT_HOLD_STOP);

@@ -1,0 +1,187 @@
+{
+  "reference": [
+    946900388,
+    0.024
+  ],
+  "sources": [
+    {
+      "file": "output\\steering-calibration-20261120-20x-run1.csv",
+      "sha256": "a1eb1e16632c1c9ec6d034b0aedce1878134e0e9ea064c6f1172dbb2196ffa63"
+    }
+  ],
+  "groups": [
+    {
+      "direction": 1,
+      "request_us": 19000,
+      "retained_samples": 16,
+      "moved_samples": 8,
+      "mean_turn_deg": 1.9915625
+    },
+    {
+      "direction": 2,
+      "request_us": 19000,
+      "retained_samples": 16,
+      "moved_samples": 7,
+      "mean_turn_deg": 1.2343125
+    },
+    {
+      "direction": 1,
+      "request_us": 22000,
+      "retained_samples": 16,
+      "moved_samples": 8,
+      "mean_turn_deg": 2.050125
+    },
+    {
+      "direction": 2,
+      "request_us": 22000,
+      "retained_samples": 16,
+      "moved_samples": 10,
+      "mean_turn_deg": 1.8228125
+    },
+    {
+      "direction": 1,
+      "request_us": 25000,
+      "retained_samples": 15,
+      "moved_samples": 11,
+      "mean_turn_deg": 3.1110666666666664
+    },
+    {
+      "direction": 2,
+      "request_us": 25000,
+      "retained_samples": 16,
+      "moved_samples": 11,
+      "mean_turn_deg": 2.1975000000000002
+    },
+    {
+      "direction": 1,
+      "request_us": 30000,
+      "retained_samples": 14,
+      "moved_samples": 14,
+      "mean_turn_deg": 4.074642857142857
+    },
+    {
+      "direction": 2,
+      "request_us": 30000,
+      "retained_samples": 16,
+      "moved_samples": 16,
+      "mean_turn_deg": 3.08175
+    },
+    {
+      "direction": 1,
+      "request_us": 40000,
+      "retained_samples": 16,
+      "moved_samples": 16,
+      "mean_turn_deg": 4.65325
+    },
+    {
+      "direction": 2,
+      "request_us": 40000,
+      "retained_samples": 16,
+      "moved_samples": 16,
+      "mean_turn_deg": 3.1780625000000002
+    },
+    {
+      "direction": 1,
+      "request_us": 50000,
+      "retained_samples": 15,
+      "moved_samples": 15,
+      "mean_turn_deg": 5.7676
+    },
+    {
+      "direction": 2,
+      "request_us": 50000,
+      "retained_samples": 15,
+      "moved_samples": 15,
+      "mean_turn_deg": 3.6406666666666667
+    },
+    {
+      "direction": 1,
+      "request_us": 60000,
+      "retained_samples": 15,
+      "moved_samples": 15,
+      "mean_turn_deg": 7.288266666666667
+    },
+    {
+      "direction": 2,
+      "request_us": 60000,
+      "retained_samples": 15,
+      "moved_samples": 15,
+      "mean_turn_deg": 5.3492
+    },
+    {
+      "direction": 1,
+      "request_us": 70000,
+      "retained_samples": 6,
+      "moved_samples": 6,
+      "mean_turn_deg": 7.941166666666667
+    },
+    {
+      "direction": 2,
+      "request_us": 70000,
+      "retained_samples": 13,
+      "moved_samples": 13,
+      "mean_turn_deg": 5.393923076923077
+    },
+    {
+      "direction": 1,
+      "request_us": 80000,
+      "retained_samples": 3,
+      "moved_samples": 3,
+      "mean_turn_deg": 9.641333333333334
+    },
+    {
+      "direction": 2,
+      "request_us": 80000,
+      "retained_samples": 15,
+      "moved_samples": 15,
+      "mean_turn_deg": 6.908933333333334
+    },
+    {
+      "direction": 1,
+      "request_us": 90000,
+      "retained_samples": 1,
+      "moved_samples": 1,
+      "mean_turn_deg": 11.286
+    },
+    {
+      "direction": 2,
+      "request_us": 90000,
+      "retained_samples": 0,
+      "moved_samples": 0,
+      "mean_turn_deg": null
+    }
+  ],
+  "rejected": [
+    {
+      "file": "output\\steering-calibration-20261120-20x-run1.csv",
+      "row": 77,
+      "reason": "response outlier by median absolute deviation"
+    },
+    {
+      "file": "output\\steering-calibration-20261120-20x-run1.csv",
+      "row": 80,
+      "reason": "response outlier by median absolute deviation"
+    },
+    {
+      "file": "output\\steering-calibration-20261120-20x-run1.csv",
+      "row": 231,
+      "reason": "response outlier by median absolute deviation"
+    },
+    {
+      "file": "output\\steering-calibration-20261120-20x-run1.csv",
+      "row": 132,
+      "reason": "response outlier by median absolute deviation"
+    },
+    {
+      "file": "output\\steering-calibration-20261120-20x-run1.csv",
+      "row": 359,
+      "reason": "response outlier by median absolute deviation"
+    },
+    {
+      "file": "output\\steering-calibration-20261120-20x-run1.csv",
+      "row": 130,
+      "reason": "response outlier by median absolute deviation"
+    }
+  ],
+  "coverage_ready": false
+}

@@ -1,0 +1,156 @@
+{
+  "reference": [
+    1609459592,
+    0.003
+  ],
+  "sources": [
+    {
+      "file": "output\\steering-calibration-20261120-repeat.csv",
+      "sha256": "681f390722a6cbea5a84f853c92b7f56555ec6b11933d8dbab1261bf395d745e"
+    }
+  ],
+  "groups": [
+    {
+      "direction": 1,
+      "request_us": 19000,
+      "retained_samples": 4,
+      "moved_samples": 1,
+      "mean_turn_deg": 1.3685
+    },
+    {
+      "direction": 2,
+      "request_us": 19000,
+      "retained_samples": 4,
+      "moved_samples": 2,
+      "mean_turn_deg": 1.25
+    },
+    {
+      "direction": 1,
+      "request_us": 22000,
+      "retained_samples": 4,
+      "moved_samples": 2,
+      "mean_turn_deg": 2.45975
+    },
+    {
+      "direction": 2,
+      "request_us": 22000,
+      "retained_samples": 4,
+      "moved_samples": 3,
+      "mean_turn_deg": 2.435
+    },
+    {
+      "direction": 1,
+      "request_us": 25000,
+      "retained_samples": 4,
+      "moved_samples": 4,
+      "mean_turn_deg": 4.362500000000001
+    },
+    {
+      "direction": 2,
+      "request_us": 25000,
+      "retained_samples": 4,
+      "moved_samples": 3,
+      "mean_turn_deg": 2.6229999999999998
+    },
+    {
+      "direction": 1,
+      "request_us": 30000,
+      "retained_samples": 4,
+      "moved_samples": 4,
+      "mean_turn_deg": 4.0584999999999996
+    },
+    {
+      "direction": 2,
+      "request_us": 30000,
+      "retained_samples": 4,
+      "moved_samples": 4,
+      "mean_turn_deg": 3.2904999999999998
+    },
+    {
+      "direction": 1,
+      "request_us": 40000,
+      "retained_samples": 4,
+      "moved_samples": 4,
+      "mean_turn_deg": 4.3635
+    },
+    {
+      "direction": 2,
+      "request_us": 40000,
+      "retained_samples": 3,
+      "moved_samples": 3,
+      "mean_turn_deg": 3.655666666666667
+    },
+    {
+      "direction": 1,
+      "request_us": 50000,
+      "retained_samples": 3,
+      "moved_samples": 3,
+      "mean_turn_deg": 4.597333333333333
+    },
+    {
+      "direction": 2,
+      "request_us": 50000,
+      "retained_samples": 3,
+      "moved_samples": 3,
+      "mean_turn_deg": 4.020333333333333
+    },
+    {
+      "direction": 1,
+      "request_us": 60000,
+      "retained_samples": 3,
+      "moved_samples": 3,
+      "mean_turn_deg": 6.585
+    },
+    {
+      "direction": 2,
+      "request_us": 60000,
+      "retained_samples": 3,
+      "moved_samples": 3,
+      "mean_turn_deg": 6.233
+    },
+    {
+      "direction": 1,
+      "request_us": 70000,
+      "retained_samples": 0,
+      "moved_samples": 0,
+      "mean_turn_deg": null
+    },
+    {
+      "direction": 2,
+      "request_us": 70000,
+      "retained_samples": 3,
+      "moved_samples": 3,
+      "mean_turn_deg": 6.030666666666667
+    },
+    {
+      "direction": 1,
+      "request_us": 80000,
+      "retained_samples": 0,
+      "moved_samples": 0,
+      "mean_turn_deg": null
+    },
+    {
+      "direction": 2,
+      "request_us": 80000,
+      "retained_samples": 1,
+      "moved_samples": 1,
+      "mean_turn_deg": 7.375
+    },
+    {
+      "direction": 1,
+      "request_us": 90000,
+      "retained_samples": 0,
+      "moved_samples": 0,
+      "mean_turn_deg": null
+    },
+    {
+      "direction": 2,
+      "request_us": 90000,
+      "retained_samples": 0,
+      "moved_samples": 0,
+      "mean_turn_deg": null
+    }
+  ],
+  "rejected": [],
+  "coverage_ready": false
+}

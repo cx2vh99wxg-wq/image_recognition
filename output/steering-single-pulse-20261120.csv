@@ -1,0 +1,2 @@
+type,direction,request_us,actual_us,before_deg,after_deg,delta_deg,peak_min_deg,peak_max_deg,reference_session,zero_raw_deg
+TEST,left,19000,19120.5,0.077,3.494,3.417,0.077,4.386,2262855881,-0.014

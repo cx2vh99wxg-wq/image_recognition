@@ -15,7 +15,7 @@
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <unistd.h>
-enum { STEERING_ANGLE_LIMIT_DEG = 18 };
+enum { STEERING_ANGLE_LIMIT_DEG = 20 };
 static steering_response_model_t model;
 static SteeringCenter center;
 static const char *reference_file;
