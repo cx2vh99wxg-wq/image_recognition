@@ -231,6 +231,23 @@ int main()
         assert(last_row[0] > 250 && last_row[1] < 4 && last_row[2] < 4);
         consumer.capture(padded.data(), 640, 360, stride, false, false);
         assert(!consumer.rgb(rgb));
+        assert(!consumer.signal_view(3, 5, 2, rgb));
+        for (int y = 0; y < 4; ++y)
+            for (int x = 0; x < 4; x += 2)
+            {
+                auto *pair = padded.data() + (10 + y) * stride + (6 + x) * 2;
+                pair[0] = 48 + y + x;
+                pair[1] = 128;
+                pair[2] = 148 + y + x;
+                pair[3] = 128;
+            }
+        consumer.capture(padded.data(), 640, 480, stride, true, false);
+        assert(consumer.signal_view(3, 5, 2, rgb) && rgb.size() == 4 * 4 * 3);
+        for (int y = 0; y < 4; ++y)
+            for (int x = 0; x < 4; ++x)
+                for (int c = 0; c < 3; ++c)
+                    assert(rgb[(y * 4 + x) * 3 + c] == (x % 2 ? 148 : 48) + y + (x & ~1));
+        assert(!consumer.signal_view(319, 239, 2, rgb));
     }
     std::vector<uint8_t> tile(hdmi_front::WIDTH * hdmi_front::HEIGHT * 3);
     assert(!hdmi_front::convert_yuyv(red, sizeof(red) - 1, 4, 1, 8, false, false, tile.data()));

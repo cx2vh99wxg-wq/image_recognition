@@ -289,15 +289,22 @@ class FrontRadialPreview
         }
         if (ground_view_ && width_ >= 42 && height_ >= 22)
         {
-            // Visible test badge, also a deterministic RGB565 marker for the S receiver probe.
-            static const uint16_t letters[7] = {0x7451, 0x457b, 0x4555, 0x4451,
-                                                 0x4451, 0x4451, 0x7451};
+            // Draw IPM in the preview before copying it to the UDP tile.
+            static const char letters[7][17] = {
+                "###.####..#...#.",
+                ".#..#...#.##.##.",
+                ".#..#...#.#.#.#.",
+                ".#..####..#...#.",
+                ".#..#.....#...#.",
+                ".#..#.....#...#.",
+                "###.#.....#...#.",
+            };
             for (int y = 4; y < 22; ++y)
                 for (int x = 4; x < 42; ++x)
                 {
                     const int row = (y - 6) / 2, col = (x - 7) / 2;
                     const bool lit = y >= 6 && y < 20 && x >= 7 && x < 39 &&
-                                     (letters[row] & (1u << (15 - col)));
+                                     letters[row][col] == '#';
                     uint8_t *p = tile_.data() + ((size_t)y * width_ + x) * 3;
                     p[0] = p[1] = p[2] = lit ? 255 : 0;
                 }

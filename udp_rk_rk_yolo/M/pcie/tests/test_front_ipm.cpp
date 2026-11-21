@@ -51,6 +51,15 @@ static void test_hdmi_ipm(int pad_y)
 
     std::vector<uint16_t> wire(mw*mh, 123);
     bird.apply(mosaic.data(), wire.data());
+    const auto badge_pixel = [&](int col, int row) {
+        return mosaic[((6 + 2 * row) * mw + 7 + 2 * col) * 3];
+    };
+    assert(badge_pixel(0, 0) == 255 && badge_pixel(0, 3) == 0 &&
+           badge_pixel(1, 3) == 255); // I
+    assert(badge_pixel(8, 1) == 255 && badge_pixel(7, 3) == 255 &&
+           badge_pixel(8, 5) == 0);   // P
+    assert(badge_pixel(11, 1) == 255 && badge_pixel(12, 2) == 255 &&
+           badge_pixel(12, 5) == 0);  // M
     for (int row = 0; row < h; ++row)
         for (int col = 0; col < w; ++col)
         {

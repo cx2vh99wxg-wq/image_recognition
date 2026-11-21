@@ -1,0 +1,14 @@
+[Unit]
+Description=ADAS M PCIe capture driver
+After=systemd-modules-load.service
+Before=display-manager.service
+ConditionPathExists=/usr/local/lib/adas/pango_pci_driver.ko
+ConditionPathExists=!/dev/pango_pci_driver
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/insmod /usr/local/lib/adas/pango_pci_driver.ko
+RemainAfterExit=yes
+
+[Install]
+WantedBy=graphical.target

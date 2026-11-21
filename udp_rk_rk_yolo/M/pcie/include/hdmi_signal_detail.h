@@ -71,6 +71,27 @@ struct SignalDetail {
         }
         return true;
     }
+    // Coordinates refer to the 320x240 front frame. Preserve both native
+    // pixels in each YUYV pair instead of enlarging an already reduced crop.
+    bool signal_view(int x, int y, int size, std::vector<uint8_t> &out) const {
+        if (yuyv.size()!=WIDTH*HEIGHT*2 || size<=0 || x<0 || y<0 ||
+            size>WIDTH/2 || size>HEIGHT/2 || x>WIDTH/2-size || y>HEIGHT/2-size)
+            return false;
+        const int side=2*size;
+        const YuvMatrix matrix(full,bt709);
+        out.resize(static_cast<size_t>(side)*side*3);
+        for (int row=0;row<side;++row) {
+            const auto *src=yuyv.data()+((2*y+row)*WIDTH+2*x)*2;
+            auto *dst=out.data()+static_cast<size_t>(row)*side*3;
+            for (int col=0;col<side;col+=2) {
+                matrix.decode(src,0,dst[0],dst[1],dst[2]);
+                matrix.decode(src,1,dst[3],dst[4],dst[5]);
+                src+=4;
+                dst+=6;
+            }
+        }
+        return true;
+    }
     void object_view(int x,int y,int w,int h,int dw,int dh,std::vector<uint8_t> &out) const {
         const YuvMatrix matrix(full,bt709);
         out.assign(320*240*3,114);

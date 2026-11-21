@@ -41,6 +41,18 @@ int main() {
     assert(m_lane::reconcile_line_style(near,distant).type==LINE_SOLID);
     distant.gaps=2;
     assert(m_lane::reconcile_line_style(near,distant).type==LINE_DASHED);
+    near.spans=1;
+    near.coverage=41;
+    distant.gaps=1;
+    distant.spans=3;
+    distant.duty=54;
+    distant.coverage=100;
+    assert(m_lane::reconcile_line_style(near,distant).type==LINE_DASHED);
+    distant.reason=LINE_TRACK_HELD;
+    assert(m_lane::reconcile_line_style(near,distant).type==LINE_SOLID);
+    distant.reason=LINE_OK;
+    distant.coverage=70;
+    assert(m_lane::reconcile_line_style(near,distant).type==LINE_SOLID);
     m_lane::LineStyleAnalyzer a;std::vector<float> mask;std::vector<uint8_t> rgb;
     {
         constexpr int w=320,h=240;

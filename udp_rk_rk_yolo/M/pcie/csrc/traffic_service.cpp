@@ -238,14 +238,26 @@ struct Service::Impl
                 }
             }
             index=next_signal_window(scout_seen,scout_cursor,scout_merits,index);
-            const auto window=signal_window(index);const int x0=window.x,y0=window.y,size=window.size;std::vector<uint8_t> crop(size*size*3);
-            for(int y=0;y<size;++y)std::memcpy(crop.data()+y*size*3,frame.pixels.data()+(y+y0)*960+x0*3,size*3);
+            const auto window=signal_window(index);
+            const int x0=window.x,y0=window.y,size=window.size;
+            std::vector<uint8_t> crop;
+            const bool native=frame.detail && frame.detail->signal_view(x0,y0,size,crop);
+            const int scale=native ? 2 : 1;
+            const int side=size*scale;
+            if (!native) {
+                crop.resize(size*size*3);
+                for(int y=0;y<size;++y)
+                    std::memcpy(crop.data()+y*size*3,
+                                frame.pixels.data()+(y+y0)*960+x0*3,size*3);
+            }
             std::vector<Box> local;std::string crop_error;
-            const bool okay=detector.detect(crop.data(),size,size,size*3,local,&crop_error,admission.budget_ms(),nullptr,true);
+            const bool okay=detector.detect(crop.data(),side,side,side*3,local,
+                                            &crop_error,admission.budget_ms(),nullptr,true);
             d->add_pass(detector);
             if(okay){
                 d->scouted=true;d->next_cursor=scout_cursor+1;d->next_seen=scout_seen|(1u<<index);d->merits[index]=0;
                 for(auto b:local){
+                    b.x/=scale;b.y/=scale;b.w/=scale;b.h/=scale;
                     if(b.x<3||b.y<2||b.x+b.w>size-3||b.y+b.h>size-2)continue;
                     b.x+=x0;b.y+=y0;
                     if(classify_signal_color(frame.pixels.data(),320,240,960,b).state)
